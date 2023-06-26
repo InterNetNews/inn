@@ -73,9 +73,11 @@ B<innfeed> expects a couple of things to be able to run correctly: a
 directory where it can store backlog files and a configuration file to
 describe which peers it should handle.
 
-The configuration file is described in innfeed.conf(5).  The B<-c> option
-can be used to specify a different file.  For each peer (say, C<foo>),
-B<innfeed> manages up to 4 files in the backlog directory:
+The configuration file is described in innfeed.conf(5).  The B<-c> option can
+be used to specify a different file, and B<-b> to specify a different backlog
+directory.  The I<backlog-*> keys in the configuration file parameterize the
+behaviour of backlogging.  For each peer (say, C<foo>), B<innfeed> manages up
+to 4 files in the backlog directory:
 
 =over 2
 
@@ -92,14 +94,18 @@ for re-processing.
 =item *
 
 A F<foo.output> file where B<innfeed> is writing information on articles
-that could not be processed (normally due to a slow or blocked peer).
+that could not be processed (normally due to a slow or blocked peer).  Every
+I<backlog-rotate-period> seconds, B<innfeed> checks whether it is not empty,
+and, if no F<foo> file exists and F<foo.input> is empty, will then rename
+F<foo.output> to F<foo.input> and start reading from it.
 
 =item *
 
-A F<foo> file that is never created by B<innfeed>, but if B<innfeed>
-notices it, it will rename it to F<foo.input> at the next opportunity and
-will start reading from it.  This lets you create a batch file and put it
-in a place where B<innfeed> will find it.
+A F<foo> file that is never created by B<innfeed>, but if B<innfeed> notices
+it when checking every I<backlog-newfile-period> seconds, it will rename it to
+F<foo.input> at the next opportunity (every I<backlog-rotate-period> seconds
+if F<foo.input> is empty) and will start reading from it.  This lets you
+create a batch file and put it in a place where B<innfeed> will find it.
 
 =back
 

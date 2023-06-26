@@ -240,10 +240,10 @@ before starting to write new entries to disk.
 
 =item I<backlog-ckpt-period>
 
-This key requires a positive integer value and defaults to C<30>.
-It specifies how many seconds elapse between checkpoints of the input
-backlog file.  Too small a number will mean frequent disk accesses; too
-large a number will mean after a crash, B<innfeed> will re-offer more
+This key requires a positive integer value and defaults to C<30>.  It
+specifies how many seconds elapse between checkpoints and rewrites of the
+input backlog file.  Too small a number will mean frequent disk accesses;
+too large a number will mean after a crash, B<innfeed> will re-offer more
 already-processed articles than necessary.
 
 =item I<backlog-newfile-period>
@@ -255,9 +255,11 @@ generated backlog files that are to be picked up and processed.
 =item I<backlog-rotate-period>
 
 This key requires a positive integer value and defaults to C<60>.
-It specifies how many seconds elapse before B<innfeed> checks for a
-manually created backlog file and moves the output backlog file to the
-input backlog file.
+It specifies how many seconds elapse before B<innfeed> moves an externally
+generated backlog file to the input backlog file (if I<backlog-newfile-period>
+seconds have elapsed) or in the absence of such a file, moves the output
+backlog file to the input backlog file.  No moves occur if the input backlog
+file is not empty.
 
 =item I<dns-retry>
 
