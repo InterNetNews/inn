@@ -3208,7 +3208,8 @@ sub Usage {
     my $exitcode = shift;
     my ($base) = $0 =~ /([^\/]+)$/;
     print "Usage:\n";
-    print "  $base -f innreport.conf [-[no]options]\n\n";
+    print "  $base -f innreport.conf [-[no]options] logfile [logfile2 ...]";
+    print "\n\n";
     print "Options:\n";
     print "  -h (or -help)       this help page\n";
     print "  -v                  display the version number of innreport\n";
