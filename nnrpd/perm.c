@@ -28,11 +28,6 @@ enum {
 #include "nnrpd.h"
 #include "tls.h"
 
-/* Needed on AIX 4.1 to get fd_set and friends. */
-#ifdef HAVE_SYS_SELECT_H
-#    include <sys/select.h>
-#endif
-
 /* Data types. */
 typedef struct _CONFCHAIN {
     CONFFILE *f;

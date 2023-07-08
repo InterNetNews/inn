@@ -4,6 +4,11 @@
 
 #include "portable/system.h"
 
+/* Needed on AIX 4.1 to get fd_set and friends. */
+#ifdef HAVE_SYS_SELECT_H
+#    include <sys/select.h>
+#endif
+
 #include "inn/innconf.h"
 #include "inn/messages.h"
 #include "inn/newsuser.h"

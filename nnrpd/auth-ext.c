@@ -12,6 +12,11 @@
 #include <signal.h>
 #include <sys/wait.h>
 
+/* Needed on AIX 4.1 to get fd_set and friends. */
+#if HAVE_SYS_SELECT_H
+#    include <sys/select.h>
+#endif
+
 #include "inn/buffer.h"
 #include "inn/messages.h"
 #include "inn/vector.h"
