@@ -13,6 +13,13 @@ NoCeM issuers, and make sure the right PGP keys are present on your system.
 Fixed a hang when posting articles if COMPRESS DEFLATE is active but TLS
 is not.  Thanks to Enrik Berkhan for the patch for B<nnrpd>.
 
+=item *
+
+If needing to use more file descriptors than the default system limit, a new
+C<LARGE_FD_SETSIZE> option can be set at build time.  See the documentation
+for I<rlimitnofile> in F<inn.conf> for more information.  Thanks to Jesse
+Rehmer for the bug report.
+
 =back
 
 =head1 Changes in 2.7.1 (2023-04-16)

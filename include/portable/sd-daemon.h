@@ -48,6 +48,18 @@ int sd_notify(int, const char *);
 int sd_notifyf(int, const char *, ...);
 #endif
 
+/*
+ * See portable/system.h for more information about the following code.
+ *
+ * systemd/sd-daemon.h includes linux/posix_types.h which unconditionally
+ * redefines __FD_SETSIZE to 1024 (even if already set), so we need redefining
+ * it again, if wanted.
+ */
+#if defined(HAVE_SD_NOTIFY) && defined(__linux__) && LARGE_FD_SETSIZE > 1024
+#    undef __FD_SETSIZE
+#    define __FD_SETSIZE LARGE_FD_SETSIZE
+#endif
+
 END_DECLS
 
 #endif /* !PORTABLE_SD_DAEMON_H */

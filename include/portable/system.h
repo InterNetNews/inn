@@ -46,6 +46,39 @@
 /* BEGIN_DECL and __attribute__. */
 #include "portable/macros.h"
 
+/*
+ * Provide a way to increase FD_SETSIZE at build time for servers needing more
+ * than the usual default of 1024 file descriptors.
+ * It otherwise leads to corruption of the tracking of open file descriptors
+ * in programs like innd because fd_set is not large enough.
+ * Use for instance -DLARGE_FD_SETSIZE=4096 at build time to increase the
+ * limit to 4096.
+ *
+ * FD_SETSIZE cannot be increased on Linux, but __FD_SETSIZE can with
+ * glibc 2.2 and also probably later versions.  We do this by including
+ * bits/types.h which defines __FD_SETSIZE first (before any other include),
+ * then we redefine __FD_SETSIZE.  Of course, a user program may *never*
+ * include bits/whatever.h directly, so this is a dirty hack!
+ * We assume that on systems other than Linux, just defining FD_SETSIZE works.
+ * Idea taken from Diablo which also has running instances needing more than
+ * 1024 files descriptors.
+ * Naturally, the right long-term solution is to switch to libevent which
+ * handles select/poll/epoll/etc. and does not suffer from the hard-coded
+ * fd_set size for select(2) calls.
+ */
+#if LARGE_FD_SETSIZE > 1024
+#    if defined(__linux__)
+#        include <features.h>
+#        if (__GLIBC__ > 2) || (__GLIBC__ == 2 && __GLIBC_MINOR__ >= 2)
+#            include <bits/types.h>
+#            undef __FD_SETSIZE
+#            define __FD_SETSIZE LARGE_FD_SETSIZE
+#        endif
+#    else
+#        define FD_SETSIZE LARGE_FD_SETSIZE
+#    endif
+#endif
+
 /* A set of standard ANSI C headers.  We don't care about pre-ANSI systems. */
 #if HAVE_INTTYPES_H
 #    include <inttypes.h>

@@ -1725,6 +1725,11 @@ C<1024> (and may need to if you have a particularly large site), but that
 can cause RPC and some stdio applications to break.  It therefore probably
 isn't a good idea on a machine that isn't dedicated to INN.
 
+Note for expert users building INN from sources: if you need using more than
+C<FD_SETSIZE> file descriptors, you can increase this value for instance to
+C<4096> by building INN with the C<-DLARGE_FD_SETSIZE=4096> option given to
+the compiler.
+
 =head1 Starting and Stopping the System
 
 INN is started via the shell script B<rc.news>.  This must be run as the
