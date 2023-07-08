@@ -16,7 +16,7 @@ OBJECTS		= $(SOURCES:.c=.o)
 all: $(ALL)
 
 warnings:
-	$(MAKE) COPT='$(WARNINGS)' all
+	$(MAKE) COPT="$(COPT) $(WARNINGS)" all
 
 install: all
 	$(LI_XPRI) innd $D$(PATHBIN)/innd

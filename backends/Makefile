@@ -18,7 +18,7 @@ SOURCES       = actsync.c archive.c batcher.c buffchan.c cvtbatch.c \
 all: $(ALL) $(MAN)
 
 warnings:
-	$(MAKE) COPT='$(WARNINGS)' all
+	$(MAKE) COPT="$(COPT) $(WARNINGS)" all
 
 install: all
 	for F in actmerge actsyncd news2mail nntpsend send-ihave \

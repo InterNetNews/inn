@@ -32,7 +32,7 @@ FIX	= $(SHELL) $(FIXSCRIPT)
 include Make.methods
 
 warnings:
-	$(MAKE) COPT='$(WARNINGS)' all
+	$(MAKE) COPT="$(COPT) $(WARNINGS)" all
 
 install: all
 	$(LI_LPUB) libinnstorage.$(EXTLIB) $D$(PATHLIB)/libinnstorage.$(EXTLIB)

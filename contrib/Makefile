@@ -18,7 +18,7 @@ ALL	      = analyze-traffic archivegz authmysql auth_pass backlogstat \
 all: $(ALL)
 
 warnings:
-	$(MAKE) COPT='$(WARNINGS)' all
+	$(MAKE) COPT="$(COPT) $(WARNINGS)" all
 
 clean clobber distclean maintclean:
 	rm -f *.o $(ALL)
