@@ -119,6 +119,23 @@ AC_DEFUN([_INN_LIB_SQLITE3_INTERNAL],\
                         ${TEMP}
                 fi
 
+                if [ "$3" = "sd-daemon.h" ]; then
+                    sed -i -e '53 i \
+/*\
+ * See portable/system.h for more information about the following code.\
+ *\
+ * systemd/sd-daemon.h includes linux/posix_types.h which unconditionally\
+ * redefines __FD_SETSIZE to 1024 (even if already set), so we need redefining\
+ * it again, if wanted.\
+ */\
+#if defined(HAVE_SD_NOTIFY) && defined(__linux__) && LARGE_FD_SETSIZE > 1024\
+#    undef __FD_SETSIZE\
+#    define __FD_SETSIZE LARGE_FD_SETSIZE\
+#endif\
+' \
+                        ${TEMP}
+                fi
+
                 if [ "$3" = "socket.h" ]; then
                     sed -i -e 's/  If we.*visibility//g' \
                         -e '190d' \
@@ -134,7 +151,41 @@ AC_DEFUN([_INN_LIB_SQLITE3_INTERNAL],\
 
                 if [ "$3" = "system.h" ]; then
                     # Add INN-specific stuff.
-                    sed -i -e "108 i \\
+                    sed -i -e '49 i \
+/*\
+ * Provide a way to increase FD_SETSIZE at build time for servers needing more\
+ * than the usual default of 1024 file descriptors.\
+ * It otherwise leads to corruption of the tracking of open file descriptors\
+ * in programs like innd because fd_set is not large enough.\
+ * Use for instance -DLARGE_FD_SETSIZE=4096 at build time to increase the\
+ * limit to 4096.\
+ *\
+ * FD_SETSIZE cannot be increased on Linux, but __FD_SETSIZE can with\
+ * glibc 2.2 and also probably later versions.  We do this by including\
+ * bits/types.h which defines __FD_SETSIZE first (before any other include),\
+ * then we redefine __FD_SETSIZE.  Of course, a user program may *never*\
+ * include bits/whatever.h directly, so this is a dirty hack!\
+ * We assume that on systems other than Linux, just defining FD_SETSIZE works.\
+ * Idea taken from Diablo which also has running instances needing more than\
+ * 1024 files descriptors.\
+ * Naturally, the right long-term solution is to switch to libevent which\
+ * handles select/poll/epoll/etc. and does not suffer from the hard-coded\
+ * fd_set size for select(2) calls.\
+ */\
+#if LARGE_FD_SETSIZE > 1024\
+#    if defined(__linux__)\
+#        include <features.h>\
+#        if (__GLIBC__ > 2) || (__GLIBC__ == 2 && __GLIBC_MINOR__ >= 2)\
+#            include <bits/types.h>\
+#            undef __FD_SETSIZE\
+#            define __FD_SETSIZE LARGE_FD_SETSIZE\
+#        endif\
+#    else\
+#        define FD_SETSIZE LARGE_FD_SETSIZE\
+#    endif\
+#endif\
+' \
+                        -e "108 i \\
 /*\\
  * This almost certainly isn't necessary, but it's not hurting anything.\\
  * gcc assumes that if SEEK_SET isn't defined none of the rest are either,\\

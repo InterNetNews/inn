@@ -1645,6 +1645,12 @@ Solaris versions prior to 11.0.  See the L<Solaris documentation about file
 descriptors|https://support.oracle.com/knowledge/Sun%20Microsystems/1005979_1.html>
 for more details.
 
+Note for expert users building INN from sources: if you need using more than
+C<FD_SETSIZE> file descriptors (as defined in the F<sys/select.h> system
+header, usually defaulting to 1024), you can increase this value for instance
+to C<4096> by rebuilding INN with the C<-DLARGE_FD_SETSIZE=4096> option given
+to the compiler.
+
 =back
 
 =head2 Paths Names
