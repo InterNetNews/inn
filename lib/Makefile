@@ -42,7 +42,7 @@ LOBJECTS      = $(OBJECTS:.o=.lo)
 all: libinn.$(EXTLIB) canlock.o perl.o
 
 warnings:
-	$(MAKE) COPT='$(WARNINGS)' all
+	$(MAKE) COPT="$(COPT) $(WARNINGS)" all
 
 install: all
 	$(LI_LPUB) libinn.$(EXTLIB) $D$(PATHLIB)/libinn.$(EXTLIB)

@@ -12,7 +12,7 @@ SOURCES       = auth_krb5.c ckpasswd.c domain.c ident.c libinnauth.c radius.c
 all: $(ALL)
 
 warnings:
-	$(MAKE) COPT='$(WARNINGS)' all
+	$(MAKE) COPT="$(COPT) $(WARNINGS)" all
 
 install: all
 	if [ x"$(KRB5_AUTH)" != x ] ; then \

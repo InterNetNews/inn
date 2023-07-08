@@ -23,10 +23,10 @@ PATHRNEWS     = $(PATHBIN)/rnews.libexec
 all: $(ALL) $(MAN)
 
 optional:
-	$(MAKE) COPT='$(WARNINGS)' $(OPTIONAL)
+	$(MAKE) COPT="$(COPT) $(WARNINGS)" $(OPTIONAL)
 
 warnings:
-	$(MAKE) COPT='$(WARNINGS)' all
+	$(MAKE) COPT="$(COPT) $(WARNINGS)" all
 
 install: all
 	$(LI_INEWS) inews $D$(PATHBIN)/inews

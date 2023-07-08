@@ -42,7 +42,7 @@ all check test tests: $(TESTS) $(EXTRA)
 build: $(TESTS) $(EXTRA)
 
 warnings:
-	$(MAKE) COPT='$(WARNINGS)' build
+	$(MAKE) COPT="$(COPT) $(WARNINGS)" build
 
 clean clobber distclean maintclean:
 	rm -f *.o *.lo */*.o */*.lo */*/*.o */*/*.o \

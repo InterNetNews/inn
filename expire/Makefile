@@ -12,7 +12,7 @@ SOURCES       = convdate.c expire.c expireover.c fastrm.c grephistory.c \
 all: $(ALL)
 
 warnings:
-	$(MAKE) COPT='$(WARNINGS)' all
+	$(MAKE) COPT="$(COPT) $(WARNINGS)" all
 
 install: all
 	for F in convdate fastrm grephistory ; do \

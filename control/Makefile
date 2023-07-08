@@ -13,7 +13,7 @@ SOURCES	      = gencancel.c
 all: $(ALL) $(MAN)
 
 warnings:
-	$(MAKE) COPT='$(WARNINGS)' all
+	$(MAKE) COPT="$(COPT) $(WARNINGS)" all
 
 install: all
 	$(LI_XPRI) gencancel $D$(PATHBIN)/gencancel

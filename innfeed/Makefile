@@ -20,7 +20,7 @@ OBJECTS	      = article.o buffer.o config_l.o config_y.o endpoint.o host.o \
 all: $(ALL)
 
 warnings:
-	$(MAKE) COPT='$(WARNINGS)' all
+	$(MAKE) COPT="$(COPT) $(WARNINGS)" all
 
 install: all
 	$(LI_XPRI) innfeed $D$(PATHBIN)/innfeed
