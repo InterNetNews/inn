@@ -1679,33 +1679,32 @@ And it is also a good practice to refresh each day INN's cached IP addresses:
 
     30 2 * * * <pathbin in inn.conf>/ctlinnd -t 120 -s reload incoming.conf 'flush cache'
 
-
 =head1 File Descriptor Limits
 
 INN likes to use a lot of file descriptors, particularly if you have a lot
 of peers.  Depending on what your system defaults are, you may need to
 make sure the default limit is increased for INN (particularly for B<innd>
-and B<innfeed>).  This is vital on Solaris, which defaults (at least as of
-2.6) to an absurdly low limit of 64 file descriptors per process.
+and B<innfeed>).  This is vital on Solaris, which defaults to an absurdly
+low limit of 64 file descriptors per process up to Solaris 7, and 256 up to
+Solaris 11.4 SRU 26 included.
 
-One way to increase the number of file descriptors is to set
-I<rlimitnofile> in F<inn.conf> to a higher value.  This will cause B<innd>
-and B<innfeed> to try to increase the file descriptor limits when they
-start.  Note, however, that INN won't be able to increase the limits above
-the hard limits set by your operating system; on some systems, that hard
-limit is normally 256 file descriptors (Linux, for example).  On others,
-like Solaris, it's 1024.  Increasing the limit beyond that value may
-require serious system configuration work.  (On some operating systems, it
-requires patching and recompiling the kernel.  On Solaris it can be
-changed in F</etc/system>, but for 2.6 or earlier the limit cannot be
-increased beyond 1024 without breaking select(2) and thereby breaking all
-of INN.  For current versions of Linux, you may be able to change the
-maximum by writing to F</proc/sys/fs/file-max>.)
+One way to increase the number of file descriptors is to set I<rlimitnofile>
+in F<inn.conf> to a higher value.  This will cause B<innd> and B<innfeed> to
+try to increase the file descriptor limits when they start.  Note, however,
+that INN won't be able to increase the limits above the hard limits set by
+your operating system, usually either 256, 1024, or 65536 (see the value
+of C<FD_SETSIZE> in the F<sys/select.h> system header).  Increasing the
+limit beyond that value may require serious system configuration work.
+(On some operating systems, it requires patching and recompiling the kernel.
+On Solaris, it can be changed in F</etc/system>, but for 2.6 or earlier the
+limit cannot be increased beyond 1024 without breaking select(2) and thereby
+breaking all of INN.  For current versions of Linux, you may be able to change
+the maximum with the C<ulimit -n> command.)
 
 256 file descriptors will probably be enough for all but the largest
 sites.  There is no harm in setting the limits higher than you actually
 need (provided they're set to something lower than or equal to your system
-hard limit).  C<256> is therefore a reasonable value to try.
+hard limit).  C<256> or C<1024> are therefore reasonable values to try.
 
 If you're installing INN on a Solaris system, particularly if you're
 installing it on a dedicated news server machine, it may be easier to just

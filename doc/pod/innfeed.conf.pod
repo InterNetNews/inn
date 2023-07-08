@@ -337,9 +337,11 @@ If the value is greater than zero, then whenever a network socket file
 descriptor is created and it has a value I<less than> this, the file
 descriptor will be dup'ed to bring the value up greater than this.  This is
 to leave lower numbered file descriptors free for stdio.  Certain systems,
-Sun's in particular, require this.  SunOS 4.1.x usually requires a value
-of 128 and Solaris requires a value of 256.  The default if this is not
-specified, is C<0>.
+Sun's in particular, require this.  SunOS 4.1.x usually requires a value of
+128, 32-bit Solaris versions prior to 11.4 and 64-bit Solaris versions prior
+to 11.0 require a value of 256.  See the L<Solaris documentation about file
+descriptors|https://support.oracle.com/knowledge/Sun%20Microsystems/1005979_1.html>
+for more details.  The default if this is not specified, is C<0>.
 
 =back
 
