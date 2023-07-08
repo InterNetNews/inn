@@ -1512,7 +1512,9 @@ endpointConfigLoadCbk(void *data)
 #if !defined(FD_SETSIZE)
 
         if (stdioFdMax > 0) {
-            logOrPrint(LOG_ERR, fp, NO_STDIO_FDMAX);
+            logOrPrint(LOG_ERR, fp,
+                       "ME config: cannot define stdio-fdmax if FD_SETSIZE is "
+                       "not available");
             stdioFdMax = 0;
             rval = 0;
         }
