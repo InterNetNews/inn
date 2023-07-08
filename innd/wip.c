@@ -1,8 +1,8 @@
 /*
-** Routines for keeping track of incoming articles, articles that haven't
-** acked from a duplex channel feed, and history caching.
+**  Routines for keeping track of incoming articles, articles that haven't
+**  acked from a duplex channel feed, and history caching.
 **
-** WIP stands for work-in-progress
+**  WIP stands for work-in-progress.
 */
 
 #include "portable/system.h"
@@ -11,9 +11,9 @@
 #include "innd.h"
 
 #define WIPTABLESIZE 1024
-#define WIP_ARTMAX   300 /* innfeed default max send time */
+#define WIP_ARTMAX   300 /* innfeed default max send time. */
 
-static WIP *WIPtable[WIPTABLESIZE]; /* Top level of the WIP hash table */
+static WIP *WIPtable[WIPTABLESIZE]; /* Top level of the WIP hash table. */
 
 void
 WIPsetup(void)
@@ -21,8 +21,10 @@ WIPsetup(void)
     memset(WIPtable, '\0', sizeof(WIPtable));
 }
 
-/* Add a new entry into the table.  It is the appilications responsiblity to
-   to call WIPinprogress or WIPbyid first. */
+/*
+ * Add a new entry into the table.  It is the responsiblity of the applications
+ * to call WIPinprogress or WIPbyid first.
+ */
 WIP *
 WIPnew(const char *messageid, CHANNEL *cp)
 {
@@ -39,7 +41,7 @@ WIPnew(const char *messageid, CHANNEL *cp)
     new->MessageID = hash;
     new->Timestamp = Now.tv_sec;
     new->Chan = cp;
-    /* Link the new entry into the list */
+    /* Link the new entry into the list. */
     new->Next = WIPtable[bucket];
     WIPtable[bucket] = new;
     return new;
@@ -69,8 +71,8 @@ WIPfree(WIP *wp)
     WIP *prev = NULL;
     int i;
     /* This is good error checking, but also allows us to
-          WIPfree(WIPbymessageid(id))
-       without having to check if id exists first */
+     *     WIPfree(WIPbymessageid(id))
+     * without having to check if id exists first. */
     if (wp == NULL)
         return;
 
@@ -96,12 +98,14 @@ WIPfree(WIP *wp)
     else
         prev->Next = cur->Next;
 
-    /* unlink the entry and free the memory */
+    /* Unlink the entry and free the memory. */
     free(wp);
 }
 
-/* Check if the given messageid is being transfered on another channel.  If
-   Add is true then add the given message-id to the current channel */
+/*
+ * Check if the given Message-ID is being transferred on another channel.  If
+ * Precommit is false, then add the given Message-ID to the current channel.
+ */
 bool
 WIPinprogress(const char *msgid, CHANNEL *cp, bool Precommit)
 {
@@ -160,7 +164,7 @@ WIPbyid(const char *messageid)
            sizeof(bucket) < sizeof(hash) ? sizeof(bucket) : sizeof(hash));
     bucket = bucket % WIPTABLESIZE;
 
-    /* Traverse the list until we find a match or find the head again */
+    /* Traverse the list until we find a match or find the head again. */
     for (wp = WIPtable[bucket]; wp != NULL; wp = wp->Next)
         if (!memcmp(&hash, &wp->MessageID, sizeof(HASH)))
             return wp;
@@ -178,7 +182,7 @@ WIPbyhash(const HASH hash)
            sizeof(bucket) < sizeof(hash) ? sizeof(bucket) : sizeof(hash));
     bucket = bucket % WIPTABLESIZE;
 
-    /* Traverse the list until we find a match or find the head again */
+    /* Traverse the list until we find a match or find the head again. */
     for (wp = WIPtable[bucket]; wp != NULL; wp = wp->Next)
         if (!memcmp(&hash, &wp->MessageID, sizeof(HASH)))
             return wp;
