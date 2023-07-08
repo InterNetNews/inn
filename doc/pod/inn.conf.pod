@@ -652,7 +652,7 @@ C<tradindexed>, and this is set to a value other than C<0>, INN will keep
 around and open that many recently written-to overview files in case more
 articles come in for those newsgroups.  Every overview cache slot consumes
 two file descriptors, so be careful not to set this value too high.  You
-may be able to use the C<limit> command to see how many open file
+may be able to use the C<ulimit -n> command to see how many open file
 descriptors your operating system allows.  innd(8) also uses an open file
 descriptor for each incoming feed and outgoing channel or batch file, and
 if it runs out of open file descriptors, it may throttle and stop accepting
@@ -1560,8 +1560,8 @@ If set to anything other than C<0>, maximum buffer size (in bytes) for
 reading NNTP command will have this value.  It should not be large on
 systems which are slow to process and store articles, as that would lead
 to innd(8) spending a long time on each channel and keeping other channels
-waiting.  The default value is BUFSIZ defined in stdio.h (C<1024> in most
-environments, see setbuf(3)).
+waiting.  The default value is BUFSIZ defined in stdio.h (usually between
+C<1024> and C<8192> in most environments, see setbuf(3)).
 
 =item I<maxforks>
 
@@ -1619,15 +1619,20 @@ innd closes it.  The default value is C<3600> (an hour).
 The maximum number of file descriptors that innd(8) or innfeed(8) can have
 open at once.  If innd(8) or innfeed(8) attempts to open more file
 descriptors than this value, it is possible the program may throttle or
-otherwise suffer reduced functionality.  The number of open file
-descriptors is roughly the maximum number of incoming feeds and outgoing
+otherwise malfunction or suffer reduced functionality.  The number of open
+file descriptors is roughly the maximum number of incoming feeds and outgoing
 batches for innd(8) and the number of outgoing streams for innfeed(8).  If
 this parameter is set to a negative value, the default limit of the
 operating system will be used; this will normally be adequate on systems
 other than Solaris.  Nearly all operating systems have some hard maximum
-limit beyond which this value cannot be raised, usually either 128, 256,
-or 1024.  The default value of this parameter is C<-1>.  Setting it to
-C<256> on Solaris systems is highly recommended.
+limit beyond which this value cannot be raised, usually either 256, 1024,
+or 65536.  The default value of this parameter is C<-1>.
+
+Setting this parameter to C<256> on Solaris systems is highly
+recommended for 32-bit Solaris versions prior to 11.4, or 64-bit
+Solaris versions prior to 11.0.  See the L<Solaris documentation about file
+descriptors|https://support.oracle.com/knowledge/Sun%20Microsystems/1005979_1.html>
+for more details.
 
 =back
 
