@@ -1540,8 +1540,19 @@ C<1048576>) and the default value is C<16384>.
 
 =item I<icdsynccount>
 
-How many article writes between updating the active and history files.
+How many article writes between updating the F<active> and F<history> files.
 The default value is C<10>.
+
+This is a trade-off between faster speed and more data loss if B<innd> crashes
+(or the system crashes, or loses power, etc.).  The higher this parameter
+is, the less frequent syncs are done.  It is essentially the frequency of
+checkpoints: the maximum number of articles that may be orphaned in case of a
+crash as they wouldn't have been recorded in the F<history> file.  Besides,
+the missing updates to the F<active> file would cause other problems later,
+such as duplicate article numbers and corresponding errors when storing new
+articles.  (If B<innd> has crashed, you can fix these errors by rebuilding the
+F<history> file and overview with makehistory(8).  The F<active> file will be
+automatically be renumbered after that operation.)
 
 =item I<keepmmappedthreshold>
 
