@@ -189,10 +189,16 @@ Then, B<scanlogs> rotates this log file.
 You should have the following line in your system F<syslog.conf> file, using
 a tab character for the delimiter:
 
-    news.notice		<pathlog>/news.notice
+    news.notice		-<pathlog>/news.notice
 
 (A typical entry is shown; it should agree with I<pathlog> in F<inn.conf>
 and be tab-delimited.)
+
+The minus sign as the first character for the path to F<news.notice> instructs
+syslogd not to synchronize the log file to disk every time there is a new log
+entry (it otherwise degrades performance).  Depending on the syslog daemon
+you are using, log synchronization may already be disabled by default (that is
+for instance the case for rsyslogd or syslog-ng).
 
 =item F<nntpsend.log>
 
