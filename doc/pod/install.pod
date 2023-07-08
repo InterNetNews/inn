@@ -1592,21 +1592,28 @@ see a line that looks like:
 If that says LOG_LOCAL1 instead, change the below instructions to use
 C<local1> instead of C<news>.
 
-Edit F</etc/syslog.conf> on your system and add lines that look like the
-following:
+If you're using syslogd, edit F</etc/syslog.conf> on your system and add lines
+that look like the following:
 
     news.crit           <pathlog in inn.conf>/news.crit
     news.err            <pathlog in inn.conf>/news.err
-    news.notice         <pathlog in inn.conf>/news.notice
+    news.notice         -<pathlog in inn.conf>/news.notice
 
 (Change the path names as necessary in order to match I<pathlog>, which
-defaults to F</usr/local/news/log>.)  These lines I<must> be tab-delimited,
-so don't copy and paste from these instructions.  Type it in by hand and make
-sure you use a tab, or you'll get mysterious failures.  You'll also want
-to make sure that news log messages don't fill your other log files (INN
-generates a lot of log traffic); so for every entry in F</etc/syslog.conf>
-that starts with C<*>, add C<;news.none> to the end of the first column.
-For example, if you have a line like:
+defaults to F</usr/local/news/log>.)
+
+The minus sign as the first character for the path to F<news.notice> instructs
+syslogd not to synchronize the log file to disk every time there is a new log
+entry (it otherwise degrades performance).  Depending on the syslog daemon you
+are using, log synchronization may already be disabled by default (that is for
+instance the case for rsyslogd or syslog-ng).
+
+These lines I<must> be tab-delimited, so don't copy and paste from these
+instructions.  Type it in by hand and make sure you use a tab, or you'll get
+mysterious failures.  You'll also want to make sure that news log messages
+don't fill your other log files (INN generates a lot of log traffic); so for
+every entry in F</etc/syslog.conf> that starts with C<*>, add C<;news.none>
+to the end of the first column.  For example, if you have a line like:
 
     *.err               /dev/console
 
