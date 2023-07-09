@@ -72,9 +72,15 @@ libinn - InterNetNews library routines
     extern void Radix32(unsigned long value, char *buff);
     extern char *ReadInDescriptor(int fd, struct stat *Sbp);
     extern char *ReadInFile(const char *name, struct stat *Sbp);
+
+    /* Reserving file descriptors. */
     extern bool fdreserve(int fdnum);
     extern FILE *Fopen(const char *name, const char *mode, int fdindex);
     extern int Fclose(FILE *fp);
+
+    /* Determining and setting the limit on open file descriptors. */
+    extern int getfdlimit(void);
+    extern int setfdlimit(unsigned int limit);
 
     /* Setting or clearing file descriptor flags. */
     #include "inn/fdflag.h"
@@ -291,6 +297,8 @@ results of a stat(2) call.
 B<ReadInDescriptor> performs the same function as B<ReadInFile> except that
 I<fd> refers to an already-open file.
 
+=head2 FILE DESCRIPTOR RESERVATION
+
 B<fdreserve> permits reserving I<fdnum> file descriptors for future use.
 On platforms that have a stdio limitation, such as 64-bit Solaris versions
 prior to 11.0, all 32-bit Solaris versions and 32-bit applications running
@@ -319,6 +327,19 @@ B<Fclose> closes the file descriptor used for I<fp> without keeping it, unless
 this file descriptor was a reserved one, in which case it is kept (and read
 C</dev/null>).  It returns C<0> on success.  Any other value (like EOF) is
 a failure.
+
+=head2 FILE DESCRIPTOR LIMITS
+
+B<getfdlimit> returns the limit on open file descriptors.  It uses the
+getrlimit(2) function when available.  If not, it tries sysconf(2), then
+getdtablesize(2), then ulimit(2), then a possible hard-coded C<NOFILE>
+constant in the F<sys/param.h> system header, or then falls back to the
+POSIX-guaranteed minimum of 20.
+
+B<setfdlimit> sets the limit on open file descriptors to the given parameter
+I<limit>.  It uses the setrlimit(2) function when available.  It returns
+C<1> on success, and C<-1> on failure (when setrlimit(2) is not available or
+I<limit> is higher than select(2) can handle, checking against C<FD_SETSIZE>).
 
 =head2 FILE DESCRIPTOR FLAGS
 
