@@ -124,7 +124,7 @@ getfdlimit(void)
 #    include <sys/param.h>
 
 int
-getfdcount(void)
+getfdlimit(void)
 {
 #    ifdef NOFILE
     return NOFILE;
