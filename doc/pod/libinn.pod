@@ -78,9 +78,11 @@ libinn - InterNetNews library routines
     extern FILE *Fopen(const char *name, const char *mode, int fdindex);
     extern int Fclose(FILE *fp);
 
-    /* Determining and setting the limit on open file descriptors. */
+    /* Determining, setting and checking the limit on open file
+       descriptors. */
     extern int getfdlimit(void);
     extern int setfdlimit(unsigned int limit);
+    extern bool isvalidfd(unsigned int fd);
 
     /* Setting or clearing file descriptor flags. */
     #include "inn/fdflag.h"
@@ -340,6 +342,9 @@ B<setfdlimit> sets the limit on open file descriptors to the given parameter
 I<limit>.  It uses the setrlimit(2) function when available.  It returns
 C<1> on success, and C<-1> on failure (when setrlimit(2) is not available or
 I<limit> is higher than select(2) can handle, checking against C<FD_SETSIZE>).
+
+B<isvalidfd> returns true if I<fd> is not higher than the system supports, and
+false otherwise.
 
 =head2 FILE DESCRIPTOR FLAGS
 

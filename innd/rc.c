@@ -482,6 +482,15 @@ RCreader(CHANNEL *cp)
         return;
     }
 
+    if (!isvalidfd(fd)) {
+        syslog(L_ERROR,
+               "%s cant accept RCreader: file descriptor %d too high (see "
+               "rlimitnofile in inn.conf)",
+               LogName, fd);
+        close(fd);
+        return;
+    }
+
     /* If RemoteTimer is not zero, then check the limits on incoming
        connections on a total and per host basis.
 
@@ -1766,6 +1775,11 @@ RCsetup(void)
             if (sd_is_socket(i, AF_UNSPEC, SOCK_STREAM, 1) <= 0)
                 die("SERVER can't use socket-activated non-AF_INET socket %u",
                     i);
+            if (!isvalidfd(i))
+                die("SERVER can't use socket-activated non-AF_INET socket: "
+                    "file descriptor %u too high (see rlimitnofile in "
+                    "inn.conf)",
+                    i);
             rc = CHANcreate(i, CTremconn, CSwaiting, RCreader, RCwritedone);
             notice("%s rcsetup %s", LogName, CHANname(rc));
             RCHANadd(rc);
@@ -1825,6 +1839,12 @@ RCsetup(void)
     for (i = 0; i < count; i++) {
         if (fds[i] < 0)
             continue;
+        if (!isvalidfd(fds[i])) {
+            syswarn("SERVER cant listen to socket: file descriptor %u too "
+                    "high (see rlimitnofile in inn.conf)",
+                    fds[i]);
+            continue;
+        }
         if (listen(fds[i], innconf->maxlisten) < 0) {
             if (i != 0 && errno == EADDRINUSE)
                 continue;
