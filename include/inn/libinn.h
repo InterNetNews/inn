@@ -162,6 +162,7 @@ extern char *GetModeratorAddress(FILE *FromServer, FILE *ToServer, char *group,
                                  char *moderatormailer);
 
 
+/* Reserved file descriptors for use with Fopen(). */
 #define TEMPORARYOPEN 0
 #define INND_HISTORY  1
 #define INND_HISLOG   2
@@ -193,7 +194,7 @@ extern char *ReadInDescriptor(int fd, struct stat *Sbp);
 extern char *ReadInFile(const char *name, struct stat *Sbp);
 extern FILE *xfopena(const char *p);
 extern bool fdreserve(int fdnum);
-extern FILE *Fopen(const char *p, const char *type, int fd);
+extern FILE *Fopen(const char *name, const char *mode, int fdindex);
 extern int Fclose(FILE *fp);
 
 END_DECLS
