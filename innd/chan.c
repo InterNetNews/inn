@@ -185,6 +185,13 @@ CHANcreate(int fd, enum channel_type type, enum channel_state state,
     struct buffer in = {0, 0, 0, NULL};
     struct buffer out = {0, 0, 0, NULL};
 
+    /* Last time to ensure the file descriptor is not too high.  Callers have
+       normally already handled that case.
+       Note that the channel table, created in CHANsetup, is known to have
+       enough room. */
+    if (!isvalidfd(fd))
+        return NULL;
+
     /* Currently, we do no dynamic allocation, but instead assume that the
        channel table is sized large enough to hold all possible file
        descriptors.  The difficulty with dynamically resizing is that it may

@@ -2156,6 +2156,14 @@ CCsetup(void)
     }
 #endif /* defined(HAVE_UNIX_DOMAIN_SOCKETS) */
 
+    if (!isvalidfd(i)) {
+        syslog(L_FATAL,
+               "%s cant CHANcreate %s: file descriptor %d too high (see "
+               "rlimitnofile in inn.conf)",
+               LogName, CCpath, i);
+        exit(1);
+    }
+
     CCchan = CHANcreate(i, CTcontrol, CSwaiting, CCreader, CCwritedone);
     syslog(L_NOTICE, "%s ccsetup %s", LogName, CHANname(CCchan));
     RCHANadd(CCchan);

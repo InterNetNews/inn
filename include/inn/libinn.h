@@ -77,6 +77,7 @@ extern bool inn_lock_range(int fd, enum inn_locktype type, bool block,
 */
 extern int getfdlimit(void);
 extern int setfdlimit(unsigned int limit);
+extern bool isvalidfd(unsigned int fd);
 extern void (*xsignal(int signum, void (*sigfunc)(int)))(int);
 extern void (*xsignal_norestart(int signum, void (*sigfunc)(int)))(int);
 extern void xsignal_mask(void);

@@ -60,6 +60,9 @@ main(void)
     fd = open("output", O_WRONLY | O_CREAT | O_TRUNC, 0644);
     if (fd < 0)
         sysdie("cannot create output");
+    if (!isvalidfd(fd))
+        sysdie("file descriptor %d too high (see rlimitnofile in inn.conf)",
+               fd);
     cp = CHANcreate(fd, CTany, CSwriting, reader, writedone);
     ok_int(1, fd, cp->fd);
     ok_int(2, CTany, cp->Type);
@@ -89,6 +92,9 @@ writedone(CHANNEL *cp)
     fd = open("output", O_RDONLY | O_EXCL);
     if (fd < 0)
         sysdie("cannot open output");
+    if (!isvalidfd(fd))
+        sysdie("file descriptor %d too high (see rlimitnofile in inn.conf)",
+               fd);
     newcp = CHANcreate(fd, CTany, CSgetbody, reader, NULL);
     RCHANadd(newcp);
     ok(7, !CHANsleeping(newcp));

@@ -1,5 +1,5 @@
 /*
-**  Portably determine or set the limit on open file descriptors.
+**  Portably determine, set or check the limit on open file descriptors.
 **
 **  Pretty much all platforms these days have getrlimit and setrlimit, so
 **  prefer those, but for determining the current limit preserve the old
@@ -134,3 +134,22 @@ getfdlimit(void)
 }
 
 #endif
+
+/*
+ * Return true if fd is not higher than the system supports,
+ * and false otherwise.
+ */
+bool
+isvalidfd(unsigned int fd)
+{
+#if defined(FD_SETSIZE)
+    if (fd >= FD_SETSIZE) {
+        return false;
+    }
+#else
+    if (fd >= (sizeof(fd_set) * CHAR_BIT)) {
+        return false;
+    }
+#endif
+    return true;
+}

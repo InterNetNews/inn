@@ -37,6 +37,16 @@ LCreader(CHANNEL *cp)
         syslog(L_ERROR, "%s cant accept CCreader %m", LogName);
         return;
     }
+
+    if (!isvalidfd(fd)) {
+        syslog(L_ERROR,
+               "%s cant accept CCreader: file descriptor %d too high (see "
+               "rlimitnofile in inn.conf)",
+               LogName, fd);
+        close(fd);
+        return;
+    }
+
     if ((new = NCcreate(fd, false, true)) != NULL) {
         memset(&new->Address, 0, sizeof(new->Address));
         syslog(L_NOTICE, "%s connected %d", "localhost", new->fd);
@@ -93,6 +103,15 @@ LCsetup(void)
         syslog(L_FATAL, "%s cant listen %s %m", LogName, LCpath);
         exit(1);
     }
+
+    if (!isvalidfd(i)) {
+        syslog(L_FATAL,
+               "%s cant listen %s: file descriptor %d too high (see "
+               "rlimitnofile in inn.conf)",
+               LogName, LCpath, i);
+        exit(1);
+    }
+
     LCchan = CHANcreate(i, CTlocalconn, CSwaiting, LCreader, LCwritedone);
     syslog(L_NOTICE, "%s lcsetup %s", LogName, CHANname(LCchan));
     RCHANadd(LCchan);

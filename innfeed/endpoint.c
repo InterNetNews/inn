@@ -202,21 +202,13 @@ newEndPoint(int fd)
     ASSERT(endPoints[fd] == NULL);
 
     if (fd > absHighestFd) {
-
-#if defined(FD_SETSIZE)
-        if ((unsigned int) fd >= FD_SETSIZE) {
-            warn("ME fd (%d) looks too big (%d -- FD_SETSIZE)", fd,
-                 FD_SETSIZE);
+        if (!isvalidfd(fd)) {
+            warn("ME fd (%d) is higher than the system supports (fd_set not "
+                 "large enough; see how to increase FD_SETSIZE in the "
+                 "documentation for rlimitnofile in inn.conf)",
+                 fd);
             return NULL;
         }
-#else
-        if (fd > (sizeof(fd_set) * CHAR_BIT)) {
-            warn("ME fd (%d) looks too big (%d -- sizeof (fd_set) * CHAR_BIT)",
-                 fd, (sizeof(fd_set) * CHAR_BIT));
-            return NULL;
-        }
-#endif
-
         absHighestFd = fd;
     }
 

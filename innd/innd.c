@@ -678,20 +678,22 @@ main(int ac, char *av[])
     if (i < 0)
         sysdie("SERVER cant get file descriptor limit");
 
-#ifdef FD_SETSIZE
-    if (FD_SETSIZE > 0 && (unsigned) i >= FD_SETSIZE) {
+    if (!isvalidfd(i)) {
         /* Only log a warning if rlimitnofile has been set
          * to a value different than the default setting of letting
          * the system set the number of file descriptors. */
         if (innconf->rlimitnofile > 0) {
             syslog(LOG_WARNING,
-                   "%s number of descriptors (%d) exceeding or equaling "
-                   "FD_SETSIZE (%d)",
-                   LogName, i, FD_SETSIZE);
+                   "%s number of file descriptors (%d) larger than the system "
+                   "supports (rlimitnofile too high in inn.conf)",
+                   LogName, i);
         }
+#if defined(FD_SETSIZE)
         i = FD_SETSIZE - 1;
-    }
+#else
+        i = sizeof(fd_set) * CHAR_BIT - 1;
 #endif
+    }
 
     /* There is no file descriptor limit on some hosts; for those, cap at
        MaxOutgoing plus maxconnections plus 20, or 5000, whichever is larger.
