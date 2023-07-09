@@ -1639,9 +1639,10 @@ other than Solaris.  Nearly all operating systems have some hard maximum
 limit beyond which this value cannot be raised, usually either 256, 1024,
 or 65536.  The default value of this parameter is C<-1>.
 
-Setting this parameter to C<256> on Solaris systems is highly
-recommended for 32-bit Solaris versions prior to 11.4, or 64-bit
-Solaris versions prior to 11.0.  See the L<Solaris documentation about file
+Setting this parameter to C<256> on Solaris systems is
+highly recommended for 32-bit Solaris versions or 32-bit
+applications running on 64-bit Solaris, as well as 64-bit Solaris
+versions prior to 11.0.  See the L<Solaris documentation about file
 descriptors|https://support.oracle.com/knowledge/Sun%20Microsystems/1005979_1.html>
 for more details.
 
