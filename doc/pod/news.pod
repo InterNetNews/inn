@@ -10,6 +10,13 @@ NoCeM issuers, and make sure the right PGP keys are present on your system.
 
 =item *
 
+B<innreport> now supports high-precision timestamps like
+C<2023-07-29T04:15:01.889064+02:00> that syslog can be parameterized to use;
+daily Usenet reports otherwise indicated all these logs as unknown entries,
+as a format like C<Jul 29 04:15:01> was expected.
+
+=item *
+
 Fixed a hang when posting articles if COMPRESS DEFLATE is active but TLS
 is not.  Thanks to Enrik Berkhan for the patch for B<nnrpd>.
 
