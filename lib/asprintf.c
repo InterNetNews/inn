@@ -21,8 +21,8 @@
  */
 
 #include "config.h"
-#include "portable/macros.h"
 #include "portable/system.h"
+#include "portable/macros.h"
 
 #include <errno.h>
 

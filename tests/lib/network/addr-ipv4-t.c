@@ -33,8 +33,8 @@
 #define LIBTEST_NEW_FORMAT 1
 
 #include "config.h"
-#include "portable/socket.h"
 #include "portable/system.h"
+#include "portable/socket.h"
 
 #include "inn/network.h"
 #include "tap/basic.h"

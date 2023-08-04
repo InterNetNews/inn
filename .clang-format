@@ -13,6 +13,9 @@ AlwaysBreakAfterReturnType: AllDefinitions
 BreakBeforeBinaryOperators: NonAssignment
 BreakBeforeBraces: WebKit
 ColumnLimit: 79
+IncludeCategories:
+    - Regex: '^"(config.h|portable/system.h)"'
+      Priority: 0
 IndentPPDirectives: AfterHash
 IndentWidth: 4
 IndentWrappedFunctionNames: false

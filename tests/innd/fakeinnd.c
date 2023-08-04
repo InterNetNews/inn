@@ -11,8 +11,9 @@
 #endif
 
 #define DEFINE_DATA 1
-#include "../../innd/innd.h"
 #include "portable/system.h"
+
+#include "../../innd/innd.h"
 
 /* Global variables defined in innd.c. */
 bool Debug = false;
