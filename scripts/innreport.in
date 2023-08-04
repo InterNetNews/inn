@@ -95,6 +95,7 @@
 use strict;
 use Carp qw( cluck confess );
 use Time::Local;
+use Time::Piece;
 
 ## Default display configuration file (parameter added in INN 2.7.0).
 my $DISPLAY_FILE = 'innreport-display.conf';
@@ -372,11 +373,11 @@ my $unrecognize_max = 0;
 my @unrecognize;
 my ($total_line, $total_size) = (0, 0);
 my ($suffix, $HTML_output, %config, %prog_type, %prog_size);
-my $current_year;
+my $current_year, $local_timezone;
 {
-    my ($sec, $min, $hour, $mday, $mon, $year, $wday, $yday, $isdst)
-      = localtime(time);
-    $current_year = $year += 1900;
+    my $local_time = localtime(time);
+    $current_year = $local_time->year;
+    $local_timezone = $local_time->strftime("%z");
 }
 
 my $HTML_header = '';
@@ -452,6 +453,27 @@ while (!eof()) {
         my ($res, $day, $hour, $prog, $left);
       DECODE:
         {
+            # Convert a high-precision timestamp like
+            #   2023-07-23T04:15:01.882775+02:00
+            # to the low-precision timestamp used by innreport.
+            if ($_ =~ /^(\d+-\d+-\d+T\d+:\d+:\d+)(\.\d+)?([+-]\d+):?(\d+)/) {
+                my $timezone = "$3$4";
+                my $t;
+
+                # Use the local time zone if logging is in UTC.
+                if ("$timezone" eq "+0000") {
+                    $t = Time::Piece->strptime(
+                        "$1 " . $local_timezone,
+                        "%Y-%m-%dT%T %z"
+                    );
+                } else {
+                    $t = Time::Piece->strptime("$1", "%Y-%m-%dT%T");
+                }
+
+                my $newdate = $t->monname . " " . $t->mday . " " . $t->hms;
+                $_ =~ s/^\S+/$newdate/;
+            }
+
             ($day, $hour, $prog, $left)
               = $_ =~ m/^(\S+\s+\S+) (\S+) \S+ (\S+): \[ID \d+ \S+\] (.*)$/o;
             if ($day) { last DECODE; }
@@ -466,6 +488,8 @@ while (!eof()) {
             if ($day) { last DECODE; }
 
             # Dec 31 03:01:30.796 + localhost <foo@bar.baz> 1821 inpaths!
+            # Always in low-precision timestamp with milliseconds (format
+            # enforced by ARTlog, not syslog).
             ($day, $hour, $res, $left)
               = $_ =~ m/^(\S+\s+\S+) (\S+)\.\d+ (\S+) (.*)$/o;
             if ($day) { $prog = 'inn'; last DECODE; }
