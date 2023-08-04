@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 #
 # Authenticate users for INN against a MySQL database.
-# Written by Daniel Marsh
+# Written by Daniel Marsh.
 # Covered under the same license as INN in general.
 
 # You really shouldn't need to edit this file.
@@ -11,33 +11,34 @@
 use DBI;
 use strict;
 
-# get STDIN and retun it as a HASH
+# Get STDIN and return it as a HASH.
 my %stdin = get_stdin();
 
-# edit this path to wherever you want your config to reside.
-my %conf = readconf('/usr/local/news/etc/authmysql.config');  # read our config
+# Edit this path to wherever you want your config to reside.
+# Read our config.
+my %conf = readconf('/usr/local/news/etc/authmysql.config');
 
-# create our dbi string for the connection
+# Create our dbi string for the connection.
 $conf{'database'} = "dbi:mysql:database=$conf{'DB'};host=$conf{'HOST'};";
 
-# open the database connection
+# Open the database connection.
 my $dbh = db_open(%conf);
 
-# create the query we're going to pass through
+# Create the query we're going to pass through.
 my $query
   = "SELECT $conf{'passcol'} FROM $conf{'TABLE'}"
   . " WHERE $conf{'usercol'}=\'$stdin{'ClientAuthname'}\'";
 
-# get our statement handler... not really a result.
+# Get our statement handler... not really a result.
 my $result = $dbh->prepare($query);
 $result->execute;
-my $cryptedpw
-  = $result->fetchrow_array();    # the database needs to store this encrypted
+# The database needs to store this encrypted.
+my $cryptedpw = $result->fetchrow_array();
 
-$stdin{'ClientPassword'} = crypt($stdin{'ClientPassword'}, $cryptedpw)
-  ;                               # encrypt the client password we were given.
+# Encrypt the client password we were given.
+$stdin{'ClientPassword'} = crypt($stdin{'ClientPassword'}, $cryptedpw);
 
-# this query is to return a count of 1. there should either be one
+# This query is to return a count of 1.  There should either be one
 # match of the encrypted password/username or none.
 $query
   = "SELECT COUNT(*) FROM $conf{'TABLE'} WHERE"
@@ -47,22 +48,21 @@ $query
 $result = $dbh->prepare($query);
 $result->execute;
 my $query_result
-  = $result->fetchrow_array();    # this should be 1 or 0, 1 on success
+  = $result->fetchrow_array();    # This should be 1 or 0, 1 on success.
 
 $result->finish;
 
-# need to get the return shit working now so it will reply proper
-# information to news clients
-
-if ($query_result) {    # the user authenticated fine.
-    print "user:$stdin{'ClientAuthname'}\n";    # return based on nnrpd
+# Need to get the return shit working now so it will reply proper
+# information to news clients.
+if ($query_result) {    # The user authenticated fine.
+    print "user:$stdin{'ClientAuthname'}\n";    # Return based on nnrpd
                                                 # auth specs.
-    exit(0);                                    # exit with no error
+    exit(0);                                    # Exit with no error.
 } else {
-    exit(502);    # exit with error. username/password incorrect
+    exit(502);    # Exit with error: username/password incorrect.
 }
 
-# subs below
+# Subs below.
 sub readconf {
     my ($file) = @_;
 
