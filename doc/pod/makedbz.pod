@@ -8,8 +8,9 @@ B<makedbz> [B<-io>] [B<-f> I<filename>] [B<-s> I<size>]
 
 =head1 DESCRIPTION
 
-B<makedbz> rebuilds I<dbz> database.  The default name of the text
-file is I<pathdb>/history; to specify a different name, use the B<-f> flag.
+B<makedbz> rebuilds I<dbz> database (also known as the F<history> file).
+The default name of the text file is I<pathdb>/history; to specify a different
+name, use the B<-f> flag.
 
 =head1 OPTIONS
 
@@ -25,27 +26,43 @@ and C<history.n.dir>.
 
 =item B<-i>
 
-To ignore the old database, use the B<-i> flag.  Using the B<-o> or B<-s>
-flags implies the B<-i> flag.
+To ignore the old database when determining the size of the new one to create,
+use the B<-i> flag.  Using the B<-o> or B<-s> flags implies the B<-i> flag.
+
+When the old database is ignored, and a size is not specified with B<-s>,
+B<makedbz> will count the number of lines of the current text F<history>
+file, add 10% to that count (for the next articles to arrive), and another 50%
+(or 100% if the slower tagged hash format is used) to determine the size of
+the new database to create.  The aim is to optimize the performances of the
+database, keeping it filled below 2/3 of its size (or 1/2 with the tagged hash
+format).
+
+If no text F<history> file exists, the new one will have the default creation
+size (see B<-s>).
 
 =item B<-o>
 
 If the B<-o> flag is used, then the temporary link to C<history.n>
 (or the name specified by the B<-f> flag) is not made and any existing
-history files are overwritten.  If the old database exists, B<makedbz>
-will use it to determine the size of the new database.
+F<history> files are overwritten.  If the old database exists, B<makedbz>
+will use it to determine the size of the new database (see B<-i>).
 
 =item B<-s> I<size>
 
 B<makedbz> will also ignore any old database if the B<-s> flag is used to
 specify the approximate number of entries in the new database.  Accurately
 specifying the size is an optimization that will create a more efficient
-database.  Size is measured in key-value pairs (i.e. lines).  (The size
-should be the estimated eventual size of the file, typically the size
-of the old file.)
+database.  The news server will still accept more articles, but will be
+slower.  Size is measured in key-value pairs (i.e. lines).  (The size should
+be the estimated eventual size of the file, typically the size of the old
+file.)
 
-For more information, see the discussion of B<dbzfresh> and B<dbzsize>
-in libinn_dbz(3).
+The effective size used will be larger, to optimize the performances of the
+database.  For more information, see B<-i> and the discussion of B<dbzfresh>
+and B<dbzsize> in libinn_dbz(3).
+
+The default is 6,666,666 when creating a new F<history> database.  (If the
+slower tagged hash format is used, the default is 500,000.)
 
 =back
 

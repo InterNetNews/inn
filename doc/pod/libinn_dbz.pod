@@ -80,7 +80,8 @@ B<dbzfresh> is a variant of B<dbzinit> for creating a new database with
 more control over details.  The I<size> parameter specifies the size of
 the first hash table within the database, in number of key-value pairs.
 Performance will be best if the number of key-value pairs stored in the
-database does not exceed about 2/3 of I<size>.  (The B<dbzsize> function,
+database does not exceed about 2/3 of I<size>, or 1/2 of I<size> when
+the tagged hash format is used.  (The B<dbzsize> function,
 given the expected number of key-value pairs, will suggest a database size
 that meets these criteria.)  Assuming that an I<fseek> offset is 4 bytes,
 the F<.index> file will be 4 * I<size> bytes.  The F<.hash> file will be
@@ -96,7 +97,8 @@ F<.hash> file to confirm a hit.  This eliminates the need to read the base
 file to handle collisions.
 
 A I<size> of C<0> given to B<dbzfresh> is synonymous with the local default;
-the normal default is suitable for tables of 5,000,000 key-value pairs.
+the normal default is suitable for tables of about 6,000,000 key-value
+pairs (or 500,000 key-value pairs when the tagged hash format is used).
 That default value is used by B<dbzinit>.
 
 When databases are regenerated periodically, as it is the case for the

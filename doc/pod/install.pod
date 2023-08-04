@@ -1563,6 +1563,18 @@ Next, you need to create an empty F<history> database.  To do this, type:
     touch history
     makedbz -i -o
 
+B<makedbz> will then create a database optimized for handling about 6,000,000
+articles (or 500,000 if the slower tagged hash format is used).  If you
+expect to inject more articles than that, use the B<-s> flag to specify the
+number of entries to size the initial F<history> file for.  To pre-size it for
+100,000,000 articles, type:
+
+    makedbz -i -o -s 100000000
+
+This initial size does not limit the number of articles the news server will
+accept.  It will just get slower when that size is exceeded, until the next
+run of B<news.daily> which will appropriately resize it.
+
 (Note that if you install INN with C<make install>, you do not need to
 run these commands: the installation takes care of creating the
 F<history> database.)
