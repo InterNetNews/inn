@@ -360,9 +360,9 @@ mmap.o: mmap.c ../include/portable/system.h ../include/config.h \
 network.o: network.c ../include/config.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/options.h \
   ../include/inn/system.h ../include/portable/stdbool.h \
-  ../include/portable/socket.h ../include/portable/macros.h \
+  ../include/portable/system.h ../include/portable/macros.h \
+  ../include/portable/stdbool.h ../include/portable/socket.h \
   ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
-  ../include/portable/system.h ../include/portable/stdbool.h \
   ../include/inn/fdflag.h ../include/inn/portable-socket.h \
   ../include/inn/portable-stdbool.h ../include/inn/innconf.h \
   ../include/inn/macros.h ../include/inn/messages.h \
@@ -551,7 +551,7 @@ xwrite.o: xwrite.c ../include/config.h ../include/inn/macros.h \
 asprintf.o: asprintf.c ../include/config.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/options.h \
   ../include/inn/system.h ../include/portable/stdbool.h \
-  ../include/portable/macros.h ../include/portable/system.h \
+  ../include/portable/system.h ../include/portable/macros.h \
   ../include/portable/stdbool.h
 daemon.o: daemon.c ../include/config.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/options.h \
@@ -571,36 +571,36 @@ ftello.o: ftello.c ../include/portable/system.h ../include/config.h \
 getaddrinfo.o: getaddrinfo.c ../include/config.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/options.h \
   ../include/inn/system.h ../include/portable/stdbool.h \
-  ../include/portable/socket.h ../include/portable/macros.h \
-  ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
-  ../include/portable/system.h ../include/portable/stdbool.h
+  ../include/portable/system.h ../include/portable/macros.h \
+  ../include/portable/stdbool.h ../include/portable/socket.h \
+  ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h
 getnameinfo.o: getnameinfo.c ../include/config.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/options.h \
   ../include/inn/system.h ../include/portable/stdbool.h \
-  ../include/portable/macros.h ../include/portable/socket.h \
-  ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
-  ../include/portable/system.h ../include/portable/stdbool.h
+  ../include/portable/system.h ../include/portable/macros.h \
+  ../include/portable/stdbool.h ../include/portable/socket.h \
+  ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h
 getpagesize.o: getpagesize.c ../include/config.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/options.h \
   ../include/inn/system.h ../include/portable/stdbool.h
 inet_aton.o: inet_aton.c ../include/config.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/options.h \
   ../include/inn/system.h ../include/portable/stdbool.h \
-  ../include/portable/socket.h ../include/portable/macros.h \
-  ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
-  ../include/portable/system.h ../include/portable/stdbool.h
+  ../include/portable/system.h ../include/portable/macros.h \
+  ../include/portable/stdbool.h ../include/portable/socket.h \
+  ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h
 inet_ntoa.o: inet_ntoa.c ../include/config.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/options.h \
   ../include/inn/system.h ../include/portable/stdbool.h \
-  ../include/portable/socket.h ../include/portable/macros.h \
-  ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
-  ../include/portable/system.h ../include/portable/stdbool.h
+  ../include/portable/system.h ../include/portable/macros.h \
+  ../include/portable/stdbool.h ../include/portable/socket.h \
+  ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h
 inet_ntop.o: inet_ntop.c ../include/config.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/options.h \
   ../include/inn/system.h ../include/portable/stdbool.h \
-  ../include/portable/socket.h ../include/portable/macros.h \
-  ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
-  ../include/portable/system.h ../include/portable/stdbool.h
+  ../include/portable/system.h ../include/portable/macros.h \
+  ../include/portable/stdbool.h ../include/portable/socket.h \
+  ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h
 mkstemp.o: mkstemp.c ../include/config.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/options.h \
   ../include/inn/system.h ../include/portable/stdbool.h \

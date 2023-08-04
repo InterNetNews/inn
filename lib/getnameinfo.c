@@ -30,9 +30,9 @@
  */
 
 #include "config.h"
+#include "portable/system.h"
 #include "portable/macros.h"
 #include "portable/socket.h"
-#include "portable/system.h"
 
 #include <ctype.h>
 #include <errno.h>

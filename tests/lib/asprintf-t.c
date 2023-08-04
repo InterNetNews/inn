@@ -20,8 +20,8 @@
 #define LIBTEST_NEW_FORMAT 1
 
 #include "config.h"
-#include "portable/macros.h"
 #include "portable/system.h"
+#include "portable/macros.h"
 
 #include "tap/basic.h"
 

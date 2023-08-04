@@ -23,8 +23,8 @@
  */
 
 #include "config.h"
-#include "portable/socket.h"
 #include "portable/system.h"
+#include "portable/socket.h"
 
 /*
  * If we're running the test suite, rename inet_ntoa to avoid conflicts with

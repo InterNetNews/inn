@@ -22,8 +22,8 @@
  */
 
 #include "config.h"
-#include "portable/socket.h"
 #include "portable/system.h"
+#include "portable/socket.h"
 
 /*
  * If we're running the test suite, rename inet_aton to avoid conflicts with
