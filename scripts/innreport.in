@@ -373,7 +373,7 @@ my $unrecognize_max = 0;
 my @unrecognize;
 my ($total_line, $total_size) = (0, 0);
 my ($suffix, $HTML_output, %config, %prog_type, %prog_size);
-my $current_year, $local_timezone;
+my ($current_year, $local_timezone);
 {
     my $local_time = localtime(time);
     $current_year = $local_time->year;
