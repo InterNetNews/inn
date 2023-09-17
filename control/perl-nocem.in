@@ -180,7 +180,7 @@ sub read_nocem {
         $body .= $_;
         last if /^\@\@BEGIN NCM BODY/;
         my ($key, $val) = /^([^:]+)\s*:\s*(.*)$/;
-        $hdrs{ lc $key } = $val;
+        $hdrs{ lc $key } = $val if defined($key);
     }
     foreach (qw(action issuer notice-id type version)) {
         next if $hdrs{$_};
