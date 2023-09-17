@@ -209,13 +209,21 @@ class InndFilter:
 
         # Example of decoding the Newsgroups header field with Python 3.x
         # using bytes object.
-        #  header = art[Newsgroups].tobytes().decode("utf-8")
+        #  header = (
+        #      art[Newsgroups]
+        #      .tobytes()
+        #      .decode("utf-8", errors="backslashreplace")
+        #  )
         #  syslog("notice", "Newsgroups header field: %s" % header)
         #
         # Another example with the Distribution header field, that may not
         # be present in the headers, and also not in UTF-8.
         #  if art[Distribution]:
-        #      header = art[Distribution].tobytes()
+        #      header = (
+        #          art[Distribution]
+        #          .tobytes()
+        #          .decode(errors="backslashreplace")
+        #      )
         #      syslog("notice", "Distribution header field: %s" % header)
         #
         # Other examples:

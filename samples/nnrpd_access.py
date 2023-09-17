@@ -58,14 +58,18 @@ class ACCESS:
         #      "n_a access() invoked: hostname %s, ipaddress %s, port %lu,"
         #      " interface %s, intipaddr %s, intport %lu, user %s"
         #      % (
-        #          attributes["hostname"].tobytes(),
-        #          attributes["ipaddress"].tobytes(),
+        #          attributes["hostname"]
+        #          .tobytes()
+        #          .decode(errors="backslashreplace"),
+        #          attributes["ipaddress"].tobytes().decode(),
         #          attributes["port"],
-        #          attributes["interface"].tobytes(),
-        #          attributes["intipaddr"].tobytes(),
+        #          attributes["interface"].tobytes().decode(),
+        #          attributes["intipaddr"].tobytes().decode(),
         #          attributes["intport"],
         #          (
-        #              attributes["user"].tobytes()
+        #              attributes["user"]
+        #              .tobytes()
+        #              .decode(errors="backslashreplace")
         #              if attributes["user"]
         #              else "-"
         #          ),
