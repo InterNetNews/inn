@@ -37,9 +37,9 @@ When B<nnrpd> calls an authenticator, the lines it passes are
     .\r\n
 
 where I<user> and I<pass> are the username and password provided by the
-client (e.g. using AUTHINFO).  In addition, B<nnrpd> generally also passes,
+client (e.g. using AUTHINFO).  In addition, B<nnrpd> also passes,
 if available, the fields mentioned as intended for resolvers; in rare
-instances this data may be useful for authenticators.
+instances, this data may be useful for authenticators.
 
 =head2 For Resolvers
 
