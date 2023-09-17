@@ -54,7 +54,7 @@
 ** do file write for each update.  Instead we'll do it at every
 ** OVBUFF_SYNC_COUNT updates.
 */
-#define OVBUFF_SYNC_COUNT   (innconf->icdsynccount * 10 + 1)
+#define OVBUFF_SYNC_COUNT   (innconf->ovflushcount)
 
 /* ovbuff header */
 #define OVBUFFMASIZ         8
@@ -763,6 +763,7 @@ ovbuffinit_disks(void)
             ovbuff->usedblk = 0;
             ovbuff->freeblk = 0;
             ovbuff->updated = 0;
+            /* Force a flush. */
             ovbuff->dirty = OVBUFF_SYNC_COUNT + 1;
             notice("buffindexed: no magic cookie found for ovbuff %d, "
                    "initializing",

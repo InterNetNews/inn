@@ -210,6 +210,7 @@ static const struct config config_table[] = {
     {K(nfswriter),                  BOOL(false)       },
     {K(nnrpdcheckart),              BOOL(true)        },
     {K(overcachesize),              UNUMBER(128)      },
+    {K(ovflushcount),               UNUMBER(50)       },
     {K(ovgrouppat),                 STRING(NULL)      },
     {K(storeonxref),                BOOL(true)        },
     {K(tradindexedmmap),            BOOL(true)        },

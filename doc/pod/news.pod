@@ -35,6 +35,13 @@ NoCeM issuers, and make sure the right PGP keys are present on your system.
 
 =item *
 
+Added a new I<ovflushcount> parameter in F<inn.conf>, defaulting to C<50>, to
+parameterize the number of articles received between flushing their overview
+data to disk, when using the buffindexed overview storage method.  (In
+previous releases, that number was ten times the value of I<icdsynccount>.)
+
+=item *
+
 B<innreport> now supports high-precision timestamps like
 C<2023-07-29T04:15:01.889064+02:00> that syslog can be parameterized to use;
 daily Usenet reports otherwise indicated all these logs as unknown entries,

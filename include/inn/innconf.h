@@ -80,6 +80,7 @@ struct innconf {
     bool mergetogroups;          /* Refile articles from to.* into to */
     bool nfswriter;              /* Use NFS writer functionality */
     unsigned long overcachesize; /* fd size cache for tradindexed */
+    unsigned long ovflushcount;  /* Articles between buffindexed flushes */
     char *ovgrouppat;            /* Newsgroups to store overview for */
     char *ovmethod;              /* Which overview method to use */
     bool storeonxref;            /* SMstore use Xref to detemine class? */

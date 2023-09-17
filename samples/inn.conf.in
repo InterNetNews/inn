@@ -70,6 +70,7 @@ groupbaseexpiry:             true
 mergetogroups:               false
 nfswriter:                   false
 overcachesize:               128
+ovflushcount:                50
 #ovgrouppat:
 storeonxref:                 true
 useoverchan:                 false
