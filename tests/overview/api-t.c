@@ -59,8 +59,7 @@ group_del(void *entry)
 
 /* Build a stripped-down innconf struct that contains only those settings that
    the overview backend cares about.  (May still be missing additional bits
-   for ovdb.)
-   innconf->icdsynccount defines OVBUFF_SYNC_COUNT. */
+   for ovdb.) */
 static void
 fake_innconf(void)
 {
@@ -76,10 +75,10 @@ fake_innconf(void)
     memset(innconf, 0, sizeof(*innconf));
     innconf->enableoverview = true;
     innconf->groupbaseexpiry = true;
-    innconf->icdsynccount = 10;
     innconf->keepmmappedthreshold = 1024;
     innconf->nfsreader = false;
     innconf->overcachesize = 20;
+    innconf->ovflushcount = 50;
     innconf->ovgrouppat = NULL;
     innconf->pathdb = xstrdup("ov-tmp");
     innconf->pathetc = xstrdup("etc");

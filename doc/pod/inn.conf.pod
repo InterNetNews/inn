@@ -670,6 +670,18 @@ set to true and the storage method for these newsgroups does not have
 self-expire functionality, storing overview data will fail.
 The default is unset.
 
+=item I<ovflushcount>
+
+How many articles received between flushing their overview data to disk.
+This parameter is only used for the buffindexed overview storage method, and
+defaults to C<50>.  (Flushing to disk is parameterized differently for other
+methods: I<txn_nosync> in F<ovdb.conf>, I<transrowlimit> and I<transtimelimit>
+in F<ovsqlite.conf>, and always after each article arrival for tradindexed.)
+
+See I<icdsynccount> (related to flushes of the I<active> and I<history> files)
+for more information about this trade-off between faster speed and more data
+loss if B<innd> crashes.
+
 =item I<ovmethod>
 
 Which overview storage method to use.  Currently supported values are

@@ -35,6 +35,9 @@ method.
 You can see the current usage of the buffers with the B<-o> option to
 B<inndf>.
 
+The overview data of received articles are flushed to disk every
+I<ovflushcount> articles, as set in F<inn.conf>.
+
 In the F<buffindexed.conf> file, blank lines and lines beginning with a
 number sign (C<#>) are ignored.  All other lines must be of the format:
 
