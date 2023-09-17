@@ -125,7 +125,8 @@ already-established database.  Default is C<32>.
 If txn_nosync is set to false, S<Berkeley DB> flushes the log after every
 transaction.  This minimizes the number of transactions that may be lost
 in the event of a crash, but results in significantly degraded
-performance.  Default is true.
+performance.  Default is true, in which case B<ovdb_monitor> flushes the
+transaction logs every 30 seconds.
 
 =item I<useshm>
 

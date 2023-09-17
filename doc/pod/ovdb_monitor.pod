@@ -10,8 +10,9 @@ Use B<ovdb_init> to start B<ovdb_monitor>
 
 When started (normally by B<ovdb_init> that is invoked by B<rc.news>),
 B<ovdb_monitor> forks three processes that perform routine database
-maintenance tasks.  These are transaction checkpointing, deadlock
-detection, and transaction log removal.
+maintenance tasks.  These are transaction checkpointing (every 30 seconds),
+deadlock detection (every 30 seconds), and transaction log removal (every 45
+seconds).
 
 The process ID of the parent is written to F<ovdb_monitor.pid> in the
 I<pathrun> directory.  This PID is used by other INN commands to verify
