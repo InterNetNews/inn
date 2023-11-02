@@ -47,6 +47,7 @@ bool
 IsValidHeaderBody(const char *p)
 {
     bool emptycontentline = true;
+    const char *start = p;
 
     /* Not NULL and not empty. */
     if (p == NULL || *p == '\0')
@@ -73,7 +74,7 @@ IsValidHeaderBody(const char *p)
              * re-initialize emptycontentline to true. */
             emptycontentline = true;
             continue;
-        } else if (p[-1] == '\r') {
+        } else if (p > start && p[-1] == '\r') {
             /* Case of CR not followed by LF (handled at the previous
              * if statement). */
             return false;
