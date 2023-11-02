@@ -1277,7 +1277,7 @@ tradspool_next(ARTHANDLE *article, const RETRTYPE amount)
         /* Only log an error if art->len is non-zero, since otherwise we get
            all the ones skipped via the hard-link skipping algorithm
            commented above. */
-        if (art->len > 0)
+        if (art->len > 0 && sub == NULL)
             warn("tradspool: can't determine class of %s: %s",
                  TokenToText(token), SMerrorstr);
     } else {
