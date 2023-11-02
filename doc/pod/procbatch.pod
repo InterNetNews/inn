@@ -43,7 +43,7 @@ F<peer2.tmp>, F<peer3.tmp>, etc. of the format:
 These tape files will be sorted and stripped of duplicate entries.  Simply
 renaming them to F<peer1>, F<peer2>, F<peer3>, etc. in a running B<innfeed>'s
 backlog directory will cause them to be picked up automatically by B<innfeed>
-every I<backlog-newfile-period> seconds (as set in in F<innfeed.conf>).
+every I<backlog-newfile-period> seconds (as set in F<innfeed.conf>).
 Use the B<-m> flag to have B<procbatch> rename and move them into place
 automatically.
 
