@@ -19,5 +19,5 @@ news@uni-berlin.de:Admincancel
 nocem@aioe.org:aioe-spam
 nocem@arcor.de:spam
 nocem@novabbs.com:spam
-nocem-fr@alphanet.ch:spam
 pgpmoose@killfile.org:pgpmoose-forged-moderation
+robot@pasdenom.info:spam,site
