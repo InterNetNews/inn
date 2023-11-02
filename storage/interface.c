@@ -632,8 +632,10 @@ SMgetsub(const ARTHANDLE article)
         return NULL;
     }
 
-    if (article.groups == NULL)
+    if (article.groups == NULL) {
+        SMseterror(SMERR_NOMATCH, "empty Newsgroups header field");
         return NULL;
+    }
 
     for (sub = subscriptions; sub != NULL; sub = sub->next) {
         if (!(method_data[typetoindex[sub->type]].initialized == INIT_FAIL)
