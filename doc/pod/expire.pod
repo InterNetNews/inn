@@ -126,10 +126,12 @@ also the B<-n> flag.
 
 =item B<-s> I<size>
 
-Optimize the new history database for approximately I<size> pairs
-(lines in F<history>).  Accurately specifying the size will create
-a more efficient database.  (The size should be the estimated eventual size
-of the file, typically the size of the old file.)
+B<expire> determines the optimal size of the new F<history> file from the size
+of the old one.  In case you want to force a specific size, use this flag to
+optimize the new history database for approximately I<size> key-value pairs
+(i.e. lines in F<history>).  Accurately specifying the size will create a
+more efficient database.  (The size should be the estimated eventual number of
+articles, typically the size of the old F<history> file, in lines.)
 
 =item B<-t>
 

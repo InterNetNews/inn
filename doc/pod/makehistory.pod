@@ -181,10 +181,18 @@ ignored.  This option only makes sense in combination with B<-O>.
 
 =item B<-s> I<size>
 
-Size the history database for approximately I<size> pairs.  Accurately
-specifying the size is an optimization that will create a more
-efficient database.  (The size should be the estimated eventual size
-of the F<history> file, typically the size of the old file, in lines.)
+Size the history database for approximately I<size> key-value pairs
+(i.e. lines in F<history>).  Accurately specifying the size is an optimization
+that will create a more efficient database.  (The size should be the estimated
+eventual number of articles, typically the size of the old F<history> file,
+in lines.)
+
+By default, B<makehistory> will create a database optimized for handling about
+6,000,000 articles (or 500,000 if the slower tagged hash format is used).
+This size does not limit the number of articles the news server can store
+in its F<history> file.  It will just get slower when that optimal size is
+exceeded, until the next run of B<news.daily> which will appropriately resize
+it.
 
 =item B<-T> I<tmpdir>
 
@@ -237,6 +245,14 @@ For a simpler example:
 
 will scan the spool, removing broken articles and generating history and
 overview entries for articles missing from history.
+
+To pre-size the F<history> file for 100,000,000 articles, and generate
+overview data at the same time, you may directly use the following command:
+
+    makehistory -O -s 100000000
+
+You then do not need running B<makedbz> as the F<history> file has already
+been generated and optimized for the expected number of articles.
 
 To just rebuild overview:
 
