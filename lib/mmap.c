@@ -26,8 +26,8 @@ inn__msync_page(void *p, size_t length, int flags)
         return -1;
     } else {
         const size_t mask = ~(size_t) (pagesize - 1);
-        char *start = (char *) ((size_t) p & mask);
-        char *end = (char *) (((size_t) p + length + pagesize) & mask);
+        char *start = (char *) ((uintptr_t) p & mask);
+        char *end = (char *) (((uintptr_t) p + length + pagesize) & mask);
 
         return msync(start, end - start, flags);
     }
