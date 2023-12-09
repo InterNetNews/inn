@@ -1864,7 +1864,8 @@ CCtrace(char *av[])
     case '7':
     case '8':
     case '9':
-        if ((cp = CHANfromdescriptor(atoi(p))) == NULL)
+        cp = CHANfromdescriptor(atoi(p));
+        if (cp == NULL || cp->Type == CTfree)
             return CCnochannel;
         CHANtracing(cp, Flag);
         break;
