@@ -780,6 +780,8 @@ SITEsetup(SITE *sp)
 void
 SITEprocdied(SITE *sp, int process, PROCESS *pp)
 {
+    CHANNEL *cp;
+
     syslog(pp->Status ? L_ERROR : L_NOTICE, "%s exit %d elapsed %ld pid %ld",
            sp->Name ? sp->Name : "?", pp->Status,
            (long) (pp->Collected - pp->Started), (long) pp->Pid);
@@ -787,8 +789,8 @@ SITEprocdied(SITE *sp, int process, PROCESS *pp)
         /* We already started a new process for this channel
          * or this site has been dropped. */
         return;
-    if (sp->Channel != NULL)
-        CHANclose(sp->Channel, CHANname(sp->Channel));
+    if ((cp = sp->Channel) != NULL && cp->Type != CTfree)
+        CHANclose(cp, CHANname(cp));
     sp->Working = SITEsetup(sp);
     if (!sp->Working) {
         syslog(L_ERROR, "%s cant restart %m", sp->Name);
