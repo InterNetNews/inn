@@ -98,6 +98,13 @@ flag) which had not the expected native LF line termination.
 
 =item *
 
+Fixed a database lock issue when running B<ovsqlite-util> on a running server
+with the I<transtimelimit> parameter in F<ovsqlite.conf> set to a higher value
+than the default busy timeout of 30 seconds of B<ovsqlite-util>.  Thanks to
+Jesse Rehmer for the bug report and Bo Lindbergh for the fix.
+
+=item *
+
 B<innd> no longer malfunctions nor throttles when the maximum number of file
 descriptors supported by the system is reached.  If needing to use more file
 descriptors than the default system limit, a new C<LARGE_FD_SETSIZE> option

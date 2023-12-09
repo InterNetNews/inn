@@ -107,6 +107,12 @@ my $dbh = DBI->connect(
 # To process multiple SQL statements in a do() handle.
 $dbh->{sqlite_allow_multiple_statements} = 1;
 
+# Raise the busy timeout value to the same (huge) number of milliseconds
+# that ovsqlite-server internally uses.  This will prevent timeouts because
+# of database locks when transtimelimit in ovsqlite.conf is set to a higher
+# value than the default busy timeout value of 30 seconds.
+$dbh->sqlite_busy_timeout(999999999);
+
 # Check the specified newsgroup exists, and create appropriate SQL requests.
 if (defined($opt{'n'})) {
     my $groupid = get_groupid($opt{'n'});
