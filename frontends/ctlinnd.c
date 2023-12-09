@@ -31,13 +31,13 @@ typedef struct _COMMAND {
 static COMMAND Commands[] = {
     { "addhist",      "id arr exp post token...\tAdd history line",
       5,  SC_ADDHIST,        true },
-    { "allow",        "reason...\t\t\tAllow remote connections",
+    { "allow",        "reason...\t\tAllow remote connections",
       1,  SC_ALLOW,          true },
     { "begin",        "site\t\t\tStart newly-added site",
       1,  SC_BEGIN,          false },
     { "cancel",       "id\t\t\tCancel message locally",
       1,  SC_CANCEL,         false },
-    { "changegroup",  "group rest\tChange mode of group",
+    { "changegroup",  "group status\tChange mode of group",
       2,  SC_CHANGEGROUP,    false },
     { "checkfile",    "\t\t\tCheck syntax of newsfeeds file",
       0,  SC_CHECKFILE,      false },
@@ -53,13 +53,17 @@ static COMMAND Commands[] = {
       1,  SC_GO,             true },
     { "hangup",       "channel\t\tHangup specified incoming channel",
       1,  SC_HANGUP,         false },
-    { "logmode",      "\t\t\t\tSend server mode to syslog",
+    { "kill",         "signal site\t\tSend signal to site's process",
+      2,  SC_SIGNAL,         false },
+    { "logmode",      "\t\t\tSend server mode to syslog",
       0,  SC_LOGMODE,        false },
+    { "lowmark",      "filename\t\tReset active file low article marks",
+      1,  SC_LOWMARK,        false },
     { "mode",         "\t\t\t\tPrint operating mode",
       0,  SC_MODE,           false },
     { "name",         "nnn\t\t\tPrint name of specified channel*",
       1,  SC_NAME,           false },
-    { "newgroup",     "group rest creator\tCreate new group",
+    { "newgroup",     "group [status [creator]]\tCreate new group",
       3,  SC_NEWGROUP,       false },
     { "param",        "letter value\t\tChange command-line parameters",
       2,  SC_PARAM,          false },
@@ -75,12 +79,14 @@ static COMMAND Commands[] = {
 #endif
     { "readers",      "flag text...\t\tEnable or disable newsreading",
       2,  SC_READERS,        true },
-    { "reject",       "reason...\t\t\tReject remote connections",
+    { "reject",       "reason...\t\tReject remote connections",
       1,  SC_REJECT,         true },
     { "reload",       "what reason...\t\tRe-read config files*",
       2,  SC_RELOAD,         true },
     { "renumber",     "group\t\tRenumber the active file*",
       1,  SC_RENUMBER,       false },
+    { "renumberlow",  "filename\t\tReset active file low article marks",
+      1,  SC_LOWMARK,        false },
     { "reserve",      "reason...\t\tReserve the next pause or throttle",
       1,  SC_RESERVE,        true },
     { "rmgroup",      "group\t\t\tRemove named group",
@@ -93,8 +99,6 @@ static COMMAND Commands[] = {
       1,  SC_STATHIST,       false },
     { "status",       "interval|off\t\tTurn innd status generation on or off",
       1,  SC_STATUS,         false },
-    { "kill",         "signal site\t\tSend signal to site's process",
-      2,  SC_SIGNAL,         false },
     { "throttle",     "reason...\t\tStop accepting articles",
       1,  SC_THROTTLE,       true },
     { "timer",        "interval|off\t\tTurn performance monitoring on or off",
@@ -103,10 +107,6 @@ static COMMAND Commands[] = {
       2,  SC_TRACE,          false },
     { "xabort",       "text...\t\tAbort the server",
       1,  SC_XABORT,         true },
-    { "lowmark",      "filename\t\tReset active file low article marks",
-      1,  SC_LOWMARK,        false },
-    { "renumberlow",  "filename\t\tReset active file low article marks",
-      1,  SC_LOWMARK,        false },
     { "xexec",        "path\t\t\tExec new server",
       1,  SC_XEXEC,          false }
 };
@@ -125,9 +125,17 @@ Help(char *p)
     COMMAND *cp;
 
     if (p == NULL) {
+        printf("Usage:\n");
+        printf("  ctlinnd [-hs] [-t timeout] [command [argument ...]]\n\n");
+        printf("Options:\n");
+        printf("  -h [command]\t\t\tPrint (specific) command summary\n");
+        printf("  -s\t\t\t\tIf successful, don't print the output\n");
+        printf("  -t timeout\t\t\tSet the timeout for the command\n\n");
         printf("Command summary:\n");
+        printf("  help [command]\t\tPrint (specific) command summary\n");
         for (cp = Commands; cp < ARRAY_END(Commands); cp++)
             printf("  %s %s\n", cp->Command, cp->Text);
+        printf("\n");
         printf("*   Empty string means all sites/groups/etc.\n");
         printf("... All trailing words are glued together.\n");
         exit(0);
