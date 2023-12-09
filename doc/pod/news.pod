@@ -29,6 +29,12 @@ is not.  Thanks to Enrik Berkhan for the patch for B<nnrpd>.
 
 =item *
 
+INN now properly handles header field names starting with a leading dot:
+B<innd> correctly computes the C<:bytes> metadata item of articles with such
+header field names.
+
+=item *
+
 Fixed the computation of the Bytes header field by B<pullnews> (in header-only
 mode with the B<-B> flag).
 

@@ -877,6 +877,9 @@ ARTparseheader(CHANNEL *cp)
                     ARTcheckheader(cp, i - data->CurHeader);
                     data->CurHeader = i;
                 }
+                /* Remember that the line begins with a dot. */
+                if (bp->data[i] == '.')
+                    data->DotStuffedLines++;
             }
             if (bp->data[i] == '\r' && bp->data[i + 1] == '\n') {
                 cp->Next = i + 2;
