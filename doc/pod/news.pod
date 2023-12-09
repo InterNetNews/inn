@@ -29,6 +29,10 @@ is not.  Thanks to Enrik Berkhan for the patch for B<nnrpd>.
 
 =item *
 
+B<innd> no longer dies when C<ctlinnd trace> is run on an invalid channel.
+
+=item *
+
 INN now properly handles header field names starting with a leading dot:
 
 =over 2
