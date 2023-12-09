@@ -54,6 +54,16 @@ is not.  Thanks to Enrik Berkhan for the patch for B<nnrpd>.
 
 =item *
 
+Fixed the computation of the Bytes header field by B<pullnews> (in header-only
+mode with the B<-B> flag).
+
+=item *
+
+Fixed the generation of B<rnews> batches by B<pullnews> (when using the B<-r>
+flag) which had not the expected native LF line termination.
+
+=item *
+
 B<innd> no longer malfunctions nor throttles when the maximum number of file
 descriptors supported by the system is reached.  If needing to use more file
 descriptors than the default system limit, a new C<LARGE_FD_SETSIZE> option
