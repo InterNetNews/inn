@@ -500,7 +500,17 @@ sub collect($$$$$$) {
             return 1 if $left =~ /^SERVER Python filtering disabled$/o;
             # SERVER cancelled +id
             return 1 if $left =~ /^SERVER cancelled /o;
+            # SERVER trace (innd|nnrpd) (on|off)
+            return 1 if $left =~ /^SERVER trace \w+ (on|off)$/o;
+            # SERVER changed -c 42
+            return 1 if $left =~ /^SERVER changed -\w \d+$/o;
+            # SERVER changed -T from 12 to 42
+            return 1 if $left =~ /^SERVER changed -\w from \d+ to \d+$/o;
         }
+        # channel tracing
+        return 1 if $left =~ /^\S+:\d+(:\S+)? trace /o;
+        # ctlinnd hangup
+        return 1 if $left =~ /^\S+:\d+(:\S+)? hangup$/o;
         # Python filter
         return 1 if $left =~ /^defined python methods$/o;
         return 1 if $left =~ /^reloading pyfilter$/o;
