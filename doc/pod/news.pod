@@ -68,6 +68,11 @@ header field names.
 B<nnrpd> correctly parses header field names with a leading dot in HDR, XHDR
 and XPAT commands.
 
+=item *
+
+B<nnrpd> correctly parses header field names with a leading dot (and now
+preserves the leading initial dot at injection time).
+
 =back
 
 =item *
