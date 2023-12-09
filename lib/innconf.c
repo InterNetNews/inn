@@ -567,6 +567,33 @@ innconf_validate(struct config_group *group)
         }
     }
 
+    /* Do not accept header field names beginning with a dot (extra complexity
+     * not handled in the code for correctly dot-stuffing them). */
+    if (innconf->extraoverviewadvertised->strings != NULL) {
+        for (i = 0; i < innconf->extraoverviewadvertised->count; i++) {
+            if (innconf->extraoverviewadvertised->strings[i] != NULL
+                && (*innconf->extraoverviewadvertised->strings[i] == '.')) {
+                config_error_param(group, "extraoverviewadvertised",
+                                   "Header field names beginning with a dot "
+                                   "not allowed in overview data");
+                okay = false;
+                break;
+            }
+        }
+    }
+    if (innconf->extraoverviewhidden->strings != NULL) {
+        for (i = 0; i < innconf->extraoverviewhidden->count; i++) {
+            if (innconf->extraoverviewhidden->strings[i] != NULL
+                && (*innconf->extraoverviewhidden->strings[i] == '.')) {
+                config_error_param(group, "extraoverviewhidden",
+                                   "Header field names beginning with a dot "
+                                   "not allowed in overview data");
+                okay = false;
+                break;
+            }
+        }
+    }
+
     return okay;
 }
 
