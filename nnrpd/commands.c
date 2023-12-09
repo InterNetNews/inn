@@ -620,7 +620,7 @@ CMDpost(int ac, char *av[])
     static int size;
     char *p, *q;
     char *end;
-    int longline;
+    int longline, missingdotstuffing;
     READTYPE r;
     int i;
     long l;
@@ -748,6 +748,7 @@ CMDpost(int ac, char *av[])
     end = &article[size];
 
     longline = 0;
+    missingdotstuffing = 0;
     for (l = 1;; l++) {
         size_t len;
         const char *line;
@@ -797,10 +798,12 @@ CMDpost(int ac, char *av[])
             p = i + article;
         }
 
-        /* Reverse any byte-stuffing. */
+        /* Reverse any dot-stuffing. */
         if (*line == '.') {
             ++line;
             --len;
+            if (*line != '.' && missingdotstuffing == 0)
+                missingdotstuffing = l;
         }
         memcpy(p, line, len);
         p += len;
@@ -808,11 +811,19 @@ CMDpost(int ac, char *av[])
         *p = '\0';
     }
 
-    if (longline) {
+    if (longline > 0) {
         warn("%s too long in post", Client.host);
         Reply("%d Line %d too long\r\n",
               ihave ? NNTP_FAIL_IHAVE_REJECT : NNTP_FAIL_POST_REJECT,
               longline);
+        POSTrejected++;
+        return;
+    }
+
+    if (missingdotstuffing > 0) {
+        Reply("%d Line %d without its initial dot doubled (dot-stuffing)\r\n",
+              ihave ? NNTP_FAIL_IHAVE_REJECT : NNTP_FAIL_POST_REJECT,
+              missingdotstuffing);
         POSTrejected++;
         return;
     }

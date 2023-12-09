@@ -52,6 +52,13 @@ preserves the leading initial dot at injection time).
 
 =item *
 
+B<nnrpd> now rejects articles with invalid dot-stuffing (that is to say when
+a dot at the beginning of a line is not doubled) as it is a violation of the
+NNTP protocol.  (B<innd> still goes on accepting and propagating such articles
+as they have already been injected and propagated.)
+
+=item *
+
 Fixed the computation of the Bytes header field by B<pullnews> (in header-only
 mode with the B<-B> flag).
 
