@@ -1447,10 +1447,16 @@ ARTpost(char *article, char *idbuff, bool *permanent)
     for (j = 0; j < OtherCount; j++) {
         if (strchr(OtherHeaders[j], '\n') != NULL) {
             if ((p = Towire(OtherHeaders[j])) != NULL) {
+                /* Dot-stuff if needed. */
+                if (*OtherHeaders[j] == '.')
+                    fprintf(ToServer, ".");
                 fprintf(ToServer, "%s\r\n", p);
                 free(p);
             }
         } else {
+            /* Dot-stuff if needed. */
+            if (*OtherHeaders[j] == '.')
+                fprintf(ToServer, ".");
             fprintf(ToServer, "%s\r\n", OtherHeaders[j]);
         }
     }
@@ -1531,10 +1537,16 @@ ARTpost(char *article, char *idbuff, bool *permanent)
         for (j = 0; j < OtherCount; j++) {
             if (strchr(OtherHeaders[j], '\n') != NULL) {
                 if ((p = Towire(OtherHeaders[j])) != NULL) {
+                    /* Dot-stuff if needed. */
+                    if (*OtherHeaders[j] == '.')
+                        fprintf(ftd, ".");
                     fprintf(ftd, "%s\r\n", p);
                     free(p);
                 }
             } else {
+                /* Dot-stuff if needed. */
+                if (*OtherHeaders[j] == '.')
+                    fprintf(ftd, ".");
                 fprintf(ftd, "%s\r\n", OtherHeaders[j]);
             }
         }
