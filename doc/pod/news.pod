@@ -30,8 +30,20 @@ is not.  Thanks to Enrik Berkhan for the patch for B<nnrpd>.
 =item *
 
 INN now properly handles header field names starting with a leading dot:
+
+=over 2
+
+=item *
+
 B<innd> correctly computes the C<:bytes> metadata item of articles with such
 header field names.
+
+=item *
+
+B<nnrpd> correctly parses header field names with a leading dot in HDR, XHDR
+and XPAT commands.
+
+=back
 
 =item *
 

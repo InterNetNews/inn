@@ -516,6 +516,8 @@ GetHeader(const char *header, bool stripspaces)
 
     limit = ARThandle->data + ARThandle->len;
     cmplimit = ARThandle->data + ARThandle->len - strlen(header) - 1;
+
+    headerlen = strlen(header);
     for (p = ARThandle->data; p < cmplimit; p++) {
         if (*p == '\r')
             continue;
@@ -523,7 +525,12 @@ GetHeader(const char *header, bool stripspaces)
             return NULL;
         }
         if ((lastchar == '\n') || (p == ARThandle->data)) {
-            headerlen = strlen(header);
+            /* If the header field name begins with a dot, it has been
+             * dot-stuffed, so skip the first char in the search (all the
+             * articles are read in wire format when accessed by the storage
+             * manager). */
+            if (*header == '.' && *p == '.')
+                p++;
             if (strncasecmp(p, header, headerlen) == 0 && p[headerlen] == ':'
                 && ISWHITE(p[headerlen + 1])) {
                 p += headerlen + 2;
