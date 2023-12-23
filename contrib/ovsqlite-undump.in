@@ -1,0 +1,97 @@
+#! /usr/bin/perl -w
+# fixscript will replace this line with code to load INN::Config
+
+##  Example of use of INN::ovsqlite_client to create groups and overview data
+##  for articles in these groups in an ovsqlite overview database, from a dump
+##  previously generated with the ovsqlite-dump script.
+##
+##  Progress and errors are written to STDERR, and data is read from STDIN.
+##  Run for instance:
+##      ovsqlite-undump < dump
+##
+##  Already existing articles in your ovsqlite database will be reported as
+##  an error.
+##
+##  Sample written by Bo Lindbergh in December 2023.
+
+use strict;
+use warnings;
+
+use INN::ovsqlite_client qw(:all);
+
+sub undump_all {
+    my ($sock, $src) = @_;
+    my ($code, $errmsg, $lastname, $count);
+
+    $count = 0;
+    while (defined(my $line = readline($src))) {
+        if ($line =~ /^g/) {
+            my ($groupname, $low, $high, $flag_alias);
+
+            chomp $line;
+            (undef, $groupname, $low, $high, undef, $flag_alias)
+              = split(/\t/, $line);
+            $code = $sock->add_group(
+                groupname  => $groupname,
+                low        => $low,
+                high       => $high,
+                flag_alias => $flag_alias,
+                errmsg     => $errmsg
+            );
+            defined($errmsg)
+              and die "add_group($groupname): $errmsg";
+            if (defined($lastname)) {
+                print STDERR $count, "\n";
+            }
+            print STDERR $groupname, "... ";
+            $lastname = $groupname;
+            $count = 0;
+        } elsif ($line =~ /^a/) {
+            my ($artnum, $arrived, $expires, $token, $overview);
+
+            defined($lastname)
+              or die "$.: Bad input";
+            (undef, $artnum, $arrived, $expires, $token, $overview)
+              = split(/\t/, $line, 6);
+            $token =~ /^\@[0-9A-Za-z]{36}\@$/
+              or die "$.: Bad input";
+            $token = pack("H*", substr($token, 1, 36));
+            $code = $sock->add_article(
+                groupname => $lastname,
+                artnum    => $artnum,
+                token     => $token,
+                arrived   => $arrived,
+                expires   => $expires,
+                overview  => $overview,
+                errmsg    => $errmsg
+            );
+            defined($errmsg)
+              and die "add_article($lastname,$artnum): $errmsg";
+            $count++;
+        } else {
+            die "$.: Bad input";
+        }
+    }
+    if (defined($lastname)) {
+        print STDERR $count, "\n";
+    }
+}
+
+sub server_connect {
+    my ($mode) = @_;
+
+    foreach my $leaf (qw(ovsqlite.sock ovsqlite.port)) {
+        my ($path);
+
+        $path = "$INN::Config::pathrun/$leaf";
+        if (-e $path) {
+            return INN::ovsqlite_client::->new(
+                path => $path,
+                mode => $mode
+            );
+        }
+    }
+    die "No ovsqlite-server running?";
+}
+
+undump_all(server_connect(1), \*STDIN);

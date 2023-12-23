@@ -1,0 +1,108 @@
+#! /usr/bin/perl -w
+# fixscript will replace this line with code to load INN::Config
+
+##  Example of use of INN::ovsqlite_client to dump the contents of an ovsqlite
+##  overview database (groups and overview data of articles in these groups).
+##
+##  Progress and errors are written to STDERR, and data to STDOUT.
+##  Run for instance:
+##      ovsqlite-dump > dump
+##
+##  Lines beginning with "g" in the output correspond to overview information
+##  about groups, whereas lines beginning with "a" correspond to the overview
+##  data of articles.
+##
+##  Sample written by Bo Lindbergh in December 2023.
+
+use strict;
+use warnings;
+
+use INN::ovsqlite_client qw(:all);
+
+sub dump_articles {
+    my ($sock, $dst, $groupname) = @_;
+    my ($code, $errmsg, $low, $articles);
+    my ($count);
+
+    print STDERR $groupname, "... ";
+    $count = 0;
+    $low = 1;
+    for (;;) {
+        $code = $sock->search_group(
+            groupname => $groupname,
+            low       => $low,
+            cols      => search_col_arrived | search_col_expires
+              | search_col_token | search_col_overview,
+            readsize => 0xFFFFF,
+            articles => $articles,
+            errmsg   => $errmsg
+        );
+        defined($errmsg)
+          and die "search_group: $errmsg";
+        $code != response_artlist && $code != response_artlist_done
+          and die "search_group: Unexpected response code $code";
+        foreach my $article (@{$articles}) {
+            print $dst join(
+                "\t",
+                "a",
+                @{$article}{qw(artnum arrived expires)},
+                '@' . unpack("H*", $article->{token}) . '@',
+                $article->{overview}
+            );
+            $count++;
+        }
+        $code == response_artlist_done
+          and last;
+        $low = $articles->[-1]->{artnum} + 1;
+    }
+    print STDERR $count, "\n";
+}
+
+sub dump_groups {
+    my ($sock, $dst) = @_;
+    my ($code, $errmsg, $groupid, $groups);
+
+    $groupid = 0;
+    for (;;) {
+        $code = $sock->list_groups(
+            groupid => $groupid,
+            groups  => $groups,
+            errmsg  => $errmsg
+        );
+        defined($errmsg)
+          and die "list_groups: $errmsg";
+        $code != response_grouplist && $code != response_grouplist_done
+          and die "list_groups: Unexpected response code $code\n";
+        foreach my $group (@{$groups}) {
+            print $dst (
+                join(
+                    "\t",
+                    "g",
+                    @{$group}{qw(groupname low high count flag_alias)}
+                ),
+                "\n"
+            );
+            dump_articles($sock, $dst, $group->{groupname});
+        }
+        last if $code == response_grouplist_done;
+    }
+}
+
+sub server_connect {
+    my ($mode) = @_;
+
+    foreach my $leaf (qw(ovsqlite.sock ovsqlite.port)) {
+        my ($path);
+
+        $path = "$INN::Config::pathrun/$leaf";
+        if (-e $path) {
+            return INN::ovsqlite_client::->new(
+                path => $path,
+                mode => $mode
+            );
+        }
+    }
+    die "No ovsqlite-server running?";
+}
+
+dump_groups(server_connect(0), \*STDOUT);

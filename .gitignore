@@ -64,6 +64,8 @@
 /contrib/mlockfile
 /contrib/newsresp
 /contrib/nnrp.access2readers.conf
+/contrib/ovsqlite-dump
+/contrib/ovsqlite-undump
 /contrib/pullart
 /contrib/reset-cnfs
 /contrib/respool
