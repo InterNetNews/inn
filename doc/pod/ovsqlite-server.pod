@@ -18,6 +18,10 @@ overview database.  B<ovsqlite-server> is normally invoked automatically by
 B<rc.news> when starting the news system.  It is also stopped automatically by
 B<rc.news> when stopping the news system.
 
+In case you need to talk to this daemon from Perl, the binary protocol used to
+communicate with it has been implemented in the C<INN::ovsqlite_client> Perl
+module.  See its manual page for more information about its possibilities.
+
 =head1 OPTIONS
 
 =over 4
@@ -68,6 +72,6 @@ Initial implementation of ovsqlite written by Bo Lindbergh
 
 =head1 SEE ALSO
 
-ovsqlite(5), rc.news(8).
+INN::ovsqlite_client(3pm), ovsqlite(5), rc.news(8).
 
 =cut

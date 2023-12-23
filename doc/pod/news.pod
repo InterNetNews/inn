@@ -17,6 +17,16 @@ previous releases, that number was ten times the value of I<icdsynccount>.)
 
 =item *
 
+Added the C<INN::ovsqlite_client> Perl module to access an ovsqlite overview
+database through B<ovsqlite-server> from a Perl script.  This module provides
+search, add, remove and expire functions for information stored in an ovsqlite
+database (newsgroups and overview data associated to articles in these
+newsgroups).  Many thanks to Bo Lindbergh for it, as well as for two samples
+in the F<contrib> directory (B<ovsqlite-dump> and B<ovsqlite-undump>) showing
+how to use the module.
+
+=item *
+
 B<innreport> now supports high-precision timestamps like
 C<2023-07-29T04:15:01.889064+02:00> that syslog can be parameterized to use;
 daily Usenet reports otherwise indicated all these logs as unknown entries,

@@ -134,6 +134,17 @@ nnrp.access2readers.conf
     Converts an old-style nnrp.access file to readers.conf format.
     (readers.conf replaced nnrp.access, starting with INN 2.3.0.)
 
+ovsqlite-dump
+
+    Dumps the contents of an ovsqlite overview database (groups and overview
+    data of articles in these groups), using INN::ovsqlite_client.
+
+ovsqlite-undump
+
+    Creates groups and overview data for articles in these groups in an
+    ovsqlite overview database, from a dump previously generated with the
+    ovsqlite-dump script.
+
 pullart
 
     Attempts to pull news articles out of CNFS cycbuffs.  Useful for

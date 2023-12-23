@@ -83,6 +83,8 @@ contrib/mlockfile.c                   Lock files into memory using mlock
 contrib/mm_ckpasswd                   Check passwords against Mailman db
 contrib/newsresp.c                    Measure responsiveness of remote server
 contrib/nnrp.access2readers.conf.in   Convert nnrp.access file to readers.conf
+contrib/ovsqlite-dump.in              Dump the contents of an ovsqlite database
+contrib/ovsqlite-undump.in            Restore an ovsqlite database from a dump
 contrib/pullart.c                     Recover articles from cyclic buffers
 contrib/reset-cnfs.c                  Reset the state parts of a CNFS buffer
 contrib/respool.c                     Respool articles in the storage manager
@@ -122,6 +124,7 @@ doc/hook-python                       Python hook notes
 doc/man                               nroff documentation (Directory)
 doc/man/INN__Config.3pm               Manpage for INN::Config Perl module
 doc/man/INN__Utils__Shlock.3pm        Manpage for INN::Utils::Shlock Perl module
+doc/man/INN__ovsqlite_client.3pm      Manpage for INN::ovsqlite_client module
 doc/man/Makefile                      Makefile for nroff documentation
 doc/man/active.5                      Manpage for active database
 doc/man/active.times.5                Manpage for active.times file
@@ -663,6 +666,7 @@ perl/INN                              INN Perl modules (Directory)
 perl/INN/Config.pm.in                 INN::Config module
 perl/INN/Utils                        INN::Utils Perl modules (Directory)
 perl/INN/Utils/Shlock.pm.in           INN::Utils::Shlock module
+perl/INN/ovsqlite_client.pm           INN::ovsqlite_client module
 perl/Makefile                         Makefile for perl libraries
 readme.pod                            Master file for README
 samples                               Prototype INN config files (Directory)

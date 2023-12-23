@@ -11,7 +11,8 @@ ALL	      = analyze-traffic archivegz authmysql auth_pass backlogstat \
 		cleannewsgroups count_overview delayer expirectl \
 		findreadgroups fixhist innconfcheck makeexpctl makestorconf \
 		mkbuf mlockfile newsresp \
-		nnrp.access2readers.conf pullart reset-cnfs respool \
+		nnrp.access2readers.conf ovsqlite-dump ovsqlite-undump \
+		pullart reset-cnfs respool \
 		stathist thdexpire \
 		tunefeed
 
@@ -59,6 +60,8 @@ makestorconf:    makestorconf.in    $(FIXSCRIPT) ; $(FIX) makestorconf.in
 mkbuf:           mkbuf.in           $(FIXSCRIPT) ; $(FIX) -i mkbuf.in
 nnrp.access2readers.conf: nnrp.access2readers.conf.in $(FIXSCRIPT)
 	$(FIX) -i nnrp.access2readers.conf.in
+ovsqlite-dump:   ovsqlite-dump.in   $(FIXSCRIPT) ; $(FIX) ovsqlite-dump.in
+ovsqlite-undump: ovsqlite-undump.in $(FIXSCRIPT) ; $(FIX) ovsqlite-undump.in
 stathist:        stathist.in        $(FIXSCRIPT) ; $(FIX) -i stathist.in
 thdexpire:       thdexpire.in       $(FIXSCRIPT) ; $(FIX) thdexpire.in
 tunefeed:        tunefeed.in        $(FIXSCRIPT) ; $(FIX) -i tunefeed.in
