@@ -903,6 +903,10 @@ second argument:
         }
     }
 
+Another alternative to find issues in your tradspool news spool is to run
+the scanspool utility.  It will notably report the above too high article
+numbers.
+
 If you're not already running INN 2.4, upgrade if you can.  Not only can
 you recover directly from this problem if you're using tradindexed
 overview, but INN 2.4 does a better job of flushing data to disk and is

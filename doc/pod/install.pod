@@ -662,8 +662,9 @@ article spool.
 Advantages: Widely used and well-understood storage mechanism, can read
 article spools written by older versions of INN, compatible with all
 third-party INN add-ons, provides easy and direct access to the articles
-stored on your server and makes writing programs that fiddle with the news
-spool very easy, and gives you fine control over article retention times.
+stored on your server, makes writing programs that fiddle with the news spool
+very easy, gives you fine control over article retention times, and comes with
+the B<scanspool> support utility to perform sanity checks.
 
 Disadvantages: Takes a very fast file system and I/O system to keep up
 with current Usenet traffic volumes due to file system overhead.  Groups
