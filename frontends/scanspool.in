@@ -2,39 +2,40 @@
 # fixscript will replace this line with code to load INN::Config
 use strict;
 
-# @(#)scanspool 1.20 4/6/92 00:47:35
+# @(#)scanspool
 #
-# Written by: Landon Curt Noll (chongo was here  /\../\)
+# Originally written by Landon Curt Noll (chongo was here /\../\)
 #
 # This code is placed in the public domain.
 #
-# NOTE: This take a while, -v is a good thing if you want to know
-#       how far this program has progressed.
+# As this may take a while to run, using the -v switch is recommended to see
+# how far the program has progressed.
 #
 # This program will scan first the active file, noting problems such as:
 #
-#       malformed line
-#       group aliased to a non-existent group
-#       group aliased to a group that is also aliased
+#     - malformed lines
+#     - newsgroups aliased to a non-existent newsgroup
+#     - newsgroups aliased to a newsgroup that is also aliased
 #
 # Then it will examine all articles under your news spool directory,
-# looking for articles that:
+# complaining about articles that:
 #
-#       basename that starts with a leading 0
-#       basename that is out of range with the active file
-#       does not contain a Newsgroups header field
-#       article that is all header and no text
-#       is in a directory for which there is no active group
-#       article that is in a group to which it does not belong
+#     - have a basename that starts with a leading 0
+#     - have a basename that is out of range according to the low and high
+#       water marks of the active file
+#     - do not contain a Newsgroups header field
+#     - are all header and no text
+#     - are in a directory for which there is no newsgroup in the active file
+#     - are in a newsgroup to which they do not belong
 #
-# Scanspool understands aliased groups.  Thus, if an article is posted
+# scanspool understands aliased groups.  Thus, if an article is posted
 # to foo.old.name that is aliased to foo.bar, it will be expected to
 # be found under foo.bar and not foo.old.name.
 #
-# Any group that is of type 'j' or 'x' (4th field of the active file)
+# Any group that is of type "j" or "x" (4th field of the active file)
 # will be allowed to show up under the junk group.
 #
-# Scanspool assumes that the path of a valid newsgroup's directory
+# scanspool assumes that the path of a valid newsgroup's directory
 # from the top of the spool tree will not contain any "." character.
 # Thus, directories such as out.going, tmp.dir, in.coming and
 # news.archive will not be searched.  This program also assumes that
@@ -46,14 +47,14 @@ use strict;
 #    FATAL:         fatal or internal error                     (to stderr)
 #
 #    WARN:          active or article format problem,           (to stderr)
-#                   group alias problem, find error,
+#                   newsgroup alias problem, find(1) error,
 #                   article open error
 #
 #    path/123:      basename starts with 0,                     (to stdout)
 #                   article number out of range,
 #                   article in the wrong directory,
-#                   article in directory not related to
-#                   an active non-aliases newsgroup
+#                   article in a directory not related to
+#                   an active non-aliased newsgroup
 #
 #    \t ...         verbose message starting with a tab         (to stdout)
 
@@ -85,8 +86,6 @@ my %highart;
 #                 If $highart{$name} < $lowart{$name},
 #                 then the group should be empty
 
-# perl requirements
-#
 use Getopt::Std;
 
 # Define variables Getopt::Std uses for --help and --version.
@@ -159,7 +158,7 @@ exit(0);
 # From the active file, fill out the %gname2type (type of newsgroup)
 # and %realgname (real/non-aliased name of group), %lowart & %highart
 # (low and high article numbers).  This routine will also check for
-# aliases to missing groups or groups that are also aliases.
+# aliases to missing groups, or groups that are also aliases.
 #
 sub parse_active {
     my ($active) = @_;    # the name of the active file to use
@@ -345,7 +344,7 @@ sub check_spool {
         # remove the ./ that find put in our path
         $filename =~ s#^\./##o;
 
-        # skip if this path has a . in it (beyond a leading ./)
+        # skip if this path has a "." in it (beyond a leading "./")
         next if ($filename =~ /\./o);
 
         # skip if lost+found
@@ -428,11 +427,11 @@ sub check_spool {
             if ($aline =~ /^Newsgroups:\w*\W/io) {
                 # convert $aline into a comma separated list of groups
                 # remove both CR and LF from the header field body (because
-                # the article may be stored in wire-format).
+                # the article may be stored in wire-format)
                 $aline =~ s/^Newsgroups://io;
                 $aline =~ tr/ \t\r\n//d;
 
-                # form an array of news groups
+                # form an array of newsgroups
                 @group = split(",", $aline);
 
                 # see if any groups in the Newsgroups header field
