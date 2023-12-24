@@ -788,7 +788,9 @@ F<history/Makefile>, F<lib/Makefile>, and F<storage/Makefile> has
 been updated since the previous release.  Follow the rules given at
 L<https://www.gnu.org/software/libtool/manual/html_node/Updating-version-info.html>.
 The commit message usually contains a brief description of API changes, if
-any, just for the record.
+any, just for the record.  Avoid bumping SONAME in minor releases (ideally,
+changes in any interfaces should be delayed until the next major release, and
+the bump clearly mentioned in the releases notes).
 
 =back
 
