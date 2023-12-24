@@ -274,9 +274,10 @@ EXPENSIVESTAT is true for this method.
 Advantages: It is widely used and well-understood; it can read article
 spools written by older versions of INN and it is compatible with all
 third-party INN add-ons.  This storage mechanism provides easy and direct
-access to the articles stored on the server and makes writing programs
-that fiddle with the news spool very easy, and gives fine control over
-article retention times.
+access to the articles stored on the server, makes writing programs
+that fiddle with the news spool very easy, gives fine control over
+article retention times, and comes with the B<scanspool> support utility
+to perform sanity checks.
 
 Disadvantages: It takes a very fast file system and I/O system to keep up with
 current Usenet traffic volumes due to file system overhead.  Groups with heavy
@@ -363,6 +364,6 @@ into POD by Julien Elie.
 =head1 SEE ALSO
 
 cycbuff.conf(5), expire.ctl(5), expireover(8), inn.conf(5), innd(8),
-libinn_uwildmat(3).
+libinn_uwildmat(3), scanspool(8).
 
 =cut
