@@ -31,6 +31,13 @@ resume it.
 The number of overview records stored in the database can be obtained with the
 C<inndf -n> command.
 
+As B<ovsqlite-util> directly opens the ovsqlite overview database,
+it may take a longer time to complete when INN is running owing to
+the fact that B<ovsqlite-server> may hold locks on certain tables,
+in which case B<ovsqlite-util> just waits for the locks to be released.
+(The I<transtimelimit> parameter in F<ovsqlite.conf> controls the duration of
+a transaction, so you may check you have not set a too high value.)
+
 =head1 REQUIREMENTS
 
 The C<DBI> Perl module with the C<DBD::SQLite> driver must be installed for
@@ -175,6 +182,6 @@ Written by Julien ÉLIE for InterNetNews.
 
 =head1 SEE ALSO
 
-expireover(8), inndf(8), makehistory(8), nnrpd(8).
+expireover(8), inndf(8), makehistory(8), nnrpd(8), ovsqlite(5).
 
 =cut
