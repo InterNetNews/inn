@@ -27,6 +27,9 @@
 
 #    include "../ovinterface.h"
 
+/* A single overview record must not exceed the client buffer size, so if
+ * SEARCHSPACE is decreased, MAX_OVDATA_SIZE must also be decreased in
+ * ovsqlite-server.c. */
 #    define SEARCHSPACE 0x20000
 
 typedef struct handle_t {
