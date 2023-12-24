@@ -24,6 +24,10 @@ By default, B<makehistory> will scan the entire spool, using the storage
 manager, and write a history line for every article.  To also generate
 overview information, use the B<-O> flag.
 
+If a malformed article is found in the news spool, in a way which prevents its
+integration into the history or overview data, a log line will be output and
+the malformed article will just be skipped.
+
 =head1 OVERVIEW REBUILD
 
 I<WARNING>: If you're trying to rebuild the overview database, be sure to
