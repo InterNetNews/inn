@@ -15,6 +15,11 @@ storage method a perfect choice to store overview data.
 Only one protocol version of the ovsqlite storage method currently
 exists, implemented since S<INN 2.7.0>.
 
+This method comes with a support utility (B<ovsqlite-util>) and a Perl
+module (C<INN::ovsqlite_client>) which permit accessing and manipulating
+overview information.  See their manual pages for more details about their
+possibilities.
+
 =head1 INSTALLATION
 
 The configure script will automatically enable ovsqlite support if it finds
@@ -109,6 +114,7 @@ Initial implementation of ovsqlite written by Bo Lindbergh
 
 =head1 SEE ALSO
 
-inn.conf(5), makehistory(8), ovsqlite-server(8), rc.news(8).
+INN::ovsqlite_client(3pm), inn.conf(5), makehistory(8), ovsqlite-server(8),
+ovsqlite-util(8), rc.news(8).
 
 =cut

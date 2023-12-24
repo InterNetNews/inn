@@ -727,7 +727,7 @@ It uses two files per newsgroup, one containing the overview data
 and one containing the index.  Fast for readers, but slow to write to
 because it has to update two files for each incoming article.  Its main
 advantage is to be the best tested, the most reliable and the method
-with the best recovery tools.
+with the best recovery tools (B<tdx-util>).
 
 =back
 

@@ -15,6 +15,9 @@ S<Berkeley DB> environment.  S<Berkeley DB> may be downloaded from
 L<https://www.oracle.com/database/technologies/related/berkeleydb.html>
 and is needed to build the ovdb backend.
 
+This method comes with a support utility which permits the manipulation of
+overview information.  See ovdb_stat(8) for more details.
+
 =head1 UPGRADING
 
 There are several versions of the ovdb storage method:
