@@ -42,7 +42,8 @@ have a basename that starts with a leading 0;
 
 =item *
 
-have a basename that is out of range according to the F<active> file;
+have a basename that is out of range according to the low and high water marks
+of the F<active> file;
 
 =item *
 
