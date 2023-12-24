@@ -32,9 +32,6 @@ use strict;
 # to foo.old.name that is aliased to foo.bar, it will be expected to
 # be found under foo.bar and not foo.old.name.
 #
-# Any group that is of type "j" or "x" (4th field of the active file)
-# will be allowed to show up under the junk group.
-#
 # scanspool assumes that the path of a valid newsgroup's directory
 # from the top of the spool tree will not contain any "." character.
 # Thus, directories such as out.going, tmp.dir, in.coming and
@@ -207,9 +204,8 @@ sub parse_active {
         $highart{$name} = $high;
 
         # determine the directory and real group name
-        if ($type eq "j" || $type eq "x") {
-            $alias = $name;
-        } elsif ($type =~ /^=(.+)/o) {
+        # no special rule for "j" or "x"
+        if ($type =~ /^=(.+)/o) {
             $alias = $1;
             $gname2type{$name} = "=";    # rename type to be just =
         } else {
