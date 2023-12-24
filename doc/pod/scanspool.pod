@@ -67,9 +67,6 @@ B<scanspool> understands aliased newsgroups.  Thus, if an article is posted
 to foo.old.name that is aliased to foo.bar, it will be expected to
 be found under foo.bar and not foo.old.name.
 
-Articles posted to a newsgroup of status C<j> or C<x> (the fourth field
-of the F<active> file) will be expected to show up under the I<junk> group.
-
 B<scanspool> assumes that the path of a valid newsgroup's directory
 from the root of the spool tree will not contain any C<.> character.
 Thus, directories such as F<out.going>, F<tmp.dir>, F<in.coming> and
@@ -165,7 +162,7 @@ Continuation lines are not taken into account.
 
 =head1 HISTORY
 
-B<scanspool> was written by Landon Curt Noll (chongo was here  /\../\).
+B<scanspool> was written by Landon Curt Noll (chongo was here /\../\).
 
 This manual page was written by Florian Schlichting, largely based on
 comments in the script.
