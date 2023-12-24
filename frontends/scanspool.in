@@ -393,9 +393,13 @@ sub check_spool {
             if ($lowart{$artgrp} > $highart{$artgrp}) {
                 problem("$filename: active indicates group should be empty");
             } elsif ($artnum < $lowart{$artgrp}) {
-                problem("$filename: article number is too low");
+                problem("$filename: article number is too low "
+                      . "(first article has number $lowart{$artgrp} "
+                      . "in the active file)");
             } elsif ($artnum > $highart{$artgrp}) {
-                problem("$filename: article number is too high");
+                problem("$filename: article number is too high "
+                      . "(last article has number $highart{$artgrp} "
+                      . "in the active file");
             }
         }
 
