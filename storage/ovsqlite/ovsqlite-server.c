@@ -43,6 +43,11 @@
 
 #    define OVSQLITE_DB_FILE "ovsqlite.db"
 
+/* A single overview record must not exceed the client buffer size, so if
+ * MAX_OVDATA_SIZE is increased, SEARCHSPACE must also be increased in
+ * ovsqlite.c. */
+#    define MAX_OVDATA_SIZE  100000
+
 #    ifdef HAVE_ZLIB
 
 #        define USE_DICTIONARY 1
@@ -1584,7 +1589,7 @@ do_search_group(client_t *client)
 
             overview = sqlite3_column_blob(stmt, 4);
             size = sqlite3_column_bytes(stmt, 4);
-            if (!overview || size > 100000)
+            if (!overview || size > MAX_OVDATA_SIZE)
                 goto corrupted;
             overview_len = size;
 #    ifdef HAVE_ZLIB
@@ -1605,7 +1610,7 @@ do_search_group(client_t *client)
                 inflation.avail_in = overview_len;
 
                 raw_len = unpack_length(&inflation);
-                if (raw_len > 100000)
+                if (raw_len > MAX_OVDATA_SIZE)
                     goto corrupted;
                 if (raw_len > 0) {
                     buffer_resize(flate, raw_len);
