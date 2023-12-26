@@ -27,11 +27,6 @@
 
 #    include "../ovinterface.h"
 
-/* A single overview record must not exceed the client buffer size, so if
- * SEARCHSPACE is decreased, MAX_OVDATA_SIZE must also be decreased in
- * ovsqlite-server.c. */
-#    define SEARCHSPACE 0x20000
-
 typedef struct handle_t {
     uint8_t buffer[SEARCHSPACE];
     uint64_t low;
@@ -430,11 +425,19 @@ ovsqlite_add(const char *group, ARTNUM artnum, TOKEN token, char *data,
         warn("ovsqlite: not connected to server");
         return false;
     }
+
     groupname_len = strlen(group);
     r_artnum = artnum;
     overview_len = len;
     r_arrived = arrived;
     r_expires = expires;
+
+    if (overview_len > MAX_OVDATA_SIZE) {
+        warn("Too large overview data of %d bytes (most certainly spam)",
+             overview_len);
+        return false;
+    }
+
     start_request(request_add_article);
     pack_now(request, &groupname_len, sizeof groupname_len);
     pack_now(request, group, groupname_len);

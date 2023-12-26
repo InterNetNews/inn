@@ -108,6 +108,15 @@ flag) which had not the expected native LF line termination.
 
 =item *
 
+Fixed an issue preventing articles from expiring when using the ovsqlite
+method, in a very rare case.  When an article had more than 100,000 bytes
+of overview data (for instance with a Subject header field of that length),
+overview expiration was no longer done for newsgroups carrying this article.
+Such articles, which most certainly are spams anyway, are no longer added to
+the ovsqlite database.  Thanks for Jesse Rehmer for the bug report.
+
+=item *
+
 Fixed a database lock issue when running B<ovsqlite-util> on a running server
 with the I<transtimelimit> parameter in F<ovsqlite.conf> set to a higher value
 than the default busy timeout of 30 seconds of B<ovsqlite-util>.  Thanks to
