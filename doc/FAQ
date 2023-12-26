@@ -1360,22 +1360,23 @@ Subject: 6.7. Use INN without a direct news feed
 INN is designed to be used as a regular news server, receiving direct news
 feeds from other news servers and sending news directly to other news
 servers using the peer-to-peer portions of the NNTP protocol.  However,
-with some additional software, it is also possible to use INN as, in
-essence, a local cache for a news server that you can use to read and post
-but which doesn't treat your server like a peer.
+it is also possible to use INN as, in essence, a local cache for a news
+server that you can use to read and post but which doesn't treat your
+server like a peer.
 
 This configuration is generally called a "suck" feed, because rather than
 having news fed directly to your server, you pull it down or "suck" it
 from another news server, and because possibly the first and one of the
 most widely used packages for doing this is named suck.
 
-The software to pull down articles from another server and to feed
-articles to another server using post rather than peer-to-peer commands
-does not come with INN (INN has a few utilities to do this on a small
-scale, but not really anything designed to handle a lot of groups or a lot
-of articles).  You will need an external package to do this.  The two most
-popular are suck and newsx; however, both sites appear to be unavailable
-as of thos writing.  You may be able to find a package in your local
+INN comes with a program named pullnews to pull down articles from another
+server and to feed articles to another server using either POST like a news
+reader or peer-to-peer commands.  See the pullnews manual page for more
+information.
+
+Alternately, you can use an external package to do this.  The two most
+popular are suck and newsx; however, they are no longer actively
+maintained.  You may still be able to find a package in your local
 distribution or package repository.
 
 Note that current versions of INN refer to articles internally using a
@@ -1465,12 +1466,12 @@ software in the path of incoming posts.  This is intentional.
 Some sites like to try to append a standard signature to all posts through
 their service, generally as advertising.  This creates the appearance of
 users saying things that they didn't, runs the risk of corrupting messages
-by appending text without regard to what's in the message, and can
-possibly modify messages that arrive via a suck/rpost connection.  It also
-adds advertising in an obnoxious location, rather than in the Organization
-header field which is more widely used for that purpose.  Accordingly, INN
-does not support this, or any other modification of the body of a message
-from inside the news server.
+by appending text without regard to what's in the message, and can possibly
+modify messages that arrive via a suck/rpost or pullnews/rnews connection.
+It also adds advertising in an obnoxious location, rather than in the
+Organization header field which is more widely used for that purpose.
+Accordingly, INN does not support this, or any other modification of the
+body of a message from inside the news server.
 
 If you only want to do this for a private hierarchy, the easiest way to do
 this (as well as any other modifications and internal filtering that you
@@ -1589,3 +1590,6 @@ You then have to parameter the NNTP feed in incoming.conf, newsfeeds and
 innfeed.conf (assuming you'll use innfeed, the most common way to feed
 articles).  Follow the examples in the man pages of these configuration
 files.
+
+If you need importing old articles, you may want to use pullnews.  See its
+manual page for more information about how to use it.
