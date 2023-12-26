@@ -26,6 +26,12 @@ typedef struct ovsqlite_port {
 
 #    endif /* ! HAVE_UNIX_DOMAIN_SOCKETS */
 
+/* A single overview record must not exceed the client buffer size, so make
+ * sure that SEARCHSPACE is always slightly greater than MAX_OVDATA_SIZE.
+ * 0x20000 corresponds to a client buffer size of 131072 bytes. */
+#    define SEARCHSPACE     0x20000
+#    define MAX_OVDATA_SIZE 100000
+
 /*
  * This needs to stay in sync with the dispatch array
  * in ovsqlite-server.c or things will explode.

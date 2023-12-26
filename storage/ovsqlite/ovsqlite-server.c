@@ -43,11 +43,6 @@
 
 #    define OVSQLITE_DB_FILE "ovsqlite.db"
 
-/* A single overview record must not exceed the client buffer size, so if
- * MAX_OVDATA_SIZE is increased, SEARCHSPACE must also be increased in
- * ovsqlite.c. */
-#    define MAX_OVDATA_SIZE  100000
-
 #    ifdef HAVE_ZLIB
 
 #        define USE_DICTIONARY 1
@@ -1238,6 +1233,9 @@ do_add_article(client_t *client)
         fail(response_bad_request);
     if (!finish_request(client))
         fail(response_bad_request);
+
+    if (overview_len > MAX_OVDATA_SIZE)
+        fail(response_corrupted);
 
     begin_transaction();
 
