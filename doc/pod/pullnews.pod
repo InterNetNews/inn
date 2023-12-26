@@ -40,6 +40,15 @@ run on must have feeding access to the destination news server.
 B<pullnews> is designed for very small sites that do not want to bother
 setting up traditional peering and is not meant for handling large feeds.
 
+In case you have running peers and don't want to propagate them the articles
+you are pulling from upstream servers, you should add a fake hop with the
+F<-F> flag to all the pulled articles, and add that very fake hop in the
+exclusion sub-field of all the sites configured in your F<newsfeeds>
+file.  (For example, using C<pullnews -F myserverimported>, change
+C<sitename:*:Tm:innfeed!> to C<sitename/myserverimported:*:Tm:innfeed!> for
+every I<sitename> in F<newsfeeds> you don't want to feed the pulled articles
+to.)
+
 =head1 OPTIONS
 
 =over 4
