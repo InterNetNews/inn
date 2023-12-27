@@ -157,9 +157,6 @@ other than tradspool.  However, if the files that store your articles
 are named other than just all-digits, they will simply be skipped
 (and your F<active> is still checked).
 
-B<scanspool> only considers the first line of the Newsgroups header field.
-Continuation lines are not taken into account.
-
 =head1 HISTORY
 
 B<scanspool> was written by Landon Curt Noll (chongo was here /\../\).

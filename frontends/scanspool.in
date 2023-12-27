@@ -308,6 +308,7 @@ sub check_spool {
     my $preverrgrp = '';    # previous non-active $artgrp
     my $ARTICLE;            # article handle
     my $aline;              # header line from an article
+    my $newsgroupsField;    # in a continuation line, reading Newsgroups
     my @group;              # array of groups from the Newsgroups header field
     my $FINDFILE;           # find command pipe handle
 
@@ -407,63 +408,71 @@ sub check_spool {
               || $artgrp =~ /^control\./
               || $artgrp eq "junk");
 
+        if (-z "$filename") {
+            problem("WARNING: $filename: empty file");
+            next;
+        }
+
         # try open the file
         if (!open $ARTICLE, '<', $filename) {
-
             # the find is now gone (expired?), give up on it
             problem("WARNING: cannot open $filename");
             next;
         }
 
         @group = ();
+        $newsgroupsField = 0;
 
         # read until the Newsgroups header field is found
       AREADLINE:
         while ($aline = <$ARTICLE>) {
             # catch the Newsgroups header field
-            if ($aline =~ /^Newsgroups:\w*\W/io) {
+            if ($aline =~ /^Newsgroups:/io
+                or ($aline =~ /^\s+/o and $newsgroupsField > 0))
+            {
                 # convert $aline into a comma separated list of groups
                 # remove both CR and LF from the header field body (because
                 # the article may be stored in wire-format)
                 $aline =~ s/^Newsgroups://io;
                 $aline =~ tr/ \t\r\n//d;
 
-                # form an array of newsgroups
-                @group = split(",", $aline);
-
-                # see if any groups in the Newsgroups header field
-                # are our group
-                for (my $j = 0; $j <= $#group; ++$j) {
-
-                    # look at the group
-                    if (exists $realgname{ $group[$j] }
-                        and $realgname{ $group[$j] } eq $artgrp)
-                    {
-                        # this article was posted to this group
-                        last AREADLINE;
-                    }
-                }
-
-                # no group or group alias was found
-                problem("$filename: does not belong in $artgrp"
-                      . " according to its Newsgroups header field");
-                last;
-
-                # else watch for the end of the header field
-            } elsif ($aline =~ /^\s*$/o) {
-
-                # no Newsgroups header field found
+                # form an array of newsgroups, and retain them (in case of a
+                # folded Newsgroups header field)
+                push(@group, split(",", $aline));
+                $newsgroupsField = 1;
+            } elsif ($aline =~ /^\r?\n$/o) {
+                # end of headers
                 problem("WARNING: $filename: no Newsgroups header field");
                 last;
+            } else {
+                # do not continue parsing the headers as we have just found out
+                # the whole contents of the Newsgroups header field
+                last if $newsgroupsField > 0;
             }
             if (eof $ARTICLE) {
-                problem("WARNING: $filename: EOF found while reading headers");
+                problem("WARNING: $filename: article with no body");
             }
         }
 
-        if (scalar(@group) == 0) {
-            problem("WARNING: $filename: no Newsgroups header field "
-                  . "(empty file)");
+        # check if the Newsgroups header field contains our group
+        if ($newsgroupsField > 0) {
+            my $found = 0;
+            for (my $j = 0; $j <= $#group; ++$j) {
+                # look at the group
+                if (exists $realgname{ $group[$j] }
+                    and $realgname{ $group[$j] } eq $artgrp)
+                {
+                    # this article was posted to this group
+                    $found++;
+                    last;
+                }
+            }
+
+            if ($found == 0) {
+                # no group or group alias was found
+                problem("$filename: does not belong in $artgrp"
+                      . " according to its Newsgroups header field");
+            }
         }
 
         # close the article

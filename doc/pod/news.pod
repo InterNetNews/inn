@@ -124,7 +124,8 @@ Jesse Rehmer for the bug report and Bo Lindbergh for the fix.
 
 =item *
 
-B<scanspool> now detects empty files in a tradspool news spool.
+B<scanspool> now detects empty files in a tradspool news spool, and correctly
+parses continuation lines in header fields.
 
 =item *
 
