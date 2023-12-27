@@ -14,6 +14,7 @@ use strict;
 # This program will scan first the active file, noting problems such as:
 #
 #     - malformed lines
+#     - duplicate entries
 #     - newsgroups aliased to a non-existent newsgroup
 #     - newsgroups aliased to a newsgroup that is also aliased
 #
@@ -24,7 +25,6 @@ use strict;
 #     - have a basename that is out of range according to the low and high
 #       water marks of the active file
 #     - do not contain a Newsgroups header field
-#     - are all header and no text
 #     - are in a directory for which there is no newsgroup in the active file
 #     - are in a newsgroup to which they do not belong
 #
@@ -43,7 +43,7 @@ use strict;
 #
 #    FATAL:         fatal or internal error                     (to stderr)
 #
-#    WARN:          active or article format problem,           (to stderr)
+#    WARNING:       active or article format problem,           (to stderr)
 #                   newsgroup alias problem, find(1) error,
 #                   article open error
 #
@@ -177,13 +177,12 @@ sub parse_active {
     # parse each line
     $linenum = 0;
     while ($line = <$ACTIVE>) {
-
         # count the line
         ++$linenum;
 
         # verify that we have a correct number of tokens
         if ($line !~ /^\S+ 0*(\d+) 0*(\d+) \S+$/o) {
-            problem("WARNING: active line is mal-formed at line $linenum");
+            problem("WARNING: active line is malformed at line $linenum");
             next;
         }
         ($name, $high, $low, $type)
@@ -219,7 +218,6 @@ sub parse_active {
 
     # be sure that any alias type is aliased to a real group
     foreach my $name (keys %realgname) {
-
         # skip if not an alias type
         next if $gname2type{$name} ne "=";
 
@@ -330,15 +328,14 @@ sub check_spool {
     # process each history line
     #
     while ($filename = <$FINDFILE>) {
-
-        # if the line contains find:, assume it is a find error and print it
+        # if the line contains "find:", assume it is a find error and print it
         chomp($filename);
         if ($filename =~ /find:\s/o) {
             problem("WARNING:", $filename);
             next;
         }
 
-        # remove the ./ that find put in our path
+        # remove the leading "./" that find put in our path
         $filename =~ s#^\./##o;
 
         # skip if this path has a "." in it (beyond a leading "./")
