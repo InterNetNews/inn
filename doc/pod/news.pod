@@ -99,6 +99,10 @@ Jesse Rehmer for the bug report and Bo Lindbergh for the fix.
 
 =item *
 
+B<scanspool> now detects empty files in a tradspool news spool.
+
+=item *
+
 B<innd> no longer malfunctions nor throttles when the maximum number of file
 descriptors supported by the system is reached.  If needing to use more file
 descriptors than the default system limit, a new C<LARGE_FD_SETSIZE> option

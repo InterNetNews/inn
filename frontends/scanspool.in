@@ -415,10 +415,11 @@ sub check_spool {
             next;
         }
 
+        @group = ();
+
         # read until the Newsgroups header field is found
       AREADLINE:
         while ($aline = <$ARTICLE>) {
-
             # catch the Newsgroups header field
             if ($aline =~ /^Newsgroups:\w*\W/io) {
                 # convert $aline into a comma separated list of groups
@@ -458,6 +459,11 @@ sub check_spool {
             if (eof $ARTICLE) {
                 problem("WARNING: $filename: EOF found while reading headers");
             }
+        }
+
+        if (scalar(@group) == 0) {
+            problem("WARNING: $filename: no Newsgroups header field "
+                  . "(empty file)");
         }
 
         # close the article
