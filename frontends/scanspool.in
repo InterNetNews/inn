@@ -93,7 +93,7 @@ $VERSION =~ s/INN //;
 $0 =~ s!.*/!!;
 
 my $usage = "Usage:
-  $0 [-cnv] [-a active-file] [-s spool-dir]
+  $0 [-cnrv] [-a active-file] [-s spool-dir]
 
   Perform a sanity scan over all articles in <patharticles>
 
@@ -101,6 +101,7 @@ Options:
   -a active-file     active file to use (default <pathdb>/active)
   -c                 check article filenames, don't scan the articles
   -n                 don't throttle innd
+  -r                 remove articles reported to have a problem
   -s spool-dir       spool tree (default <patharticles>)
   -v                 verbose mode
                      verbose messages begin with a tab
@@ -123,7 +124,7 @@ my $reason = "running scanspool";    # throttle reason
 # parse args
 #
 my %opt;
-getopts("a:s:vcn", \%opt) || die $usage;
+getopts("a:cnrs:v", \%opt) || die $usage;
 $active = $opt{'a'} if defined $opt{'a'};
 $spool = $opt{'s'} if defined $opt{'s'};
 
@@ -252,6 +253,26 @@ sub problem {
     return;
 }
 
+# rm_file - remove a file
+#
+# Remove the file given as argument, if the -r flag is used.
+# Otherwise, it is a no-op.
+# Report a fatal error to stderr and exit if the removal fails.
+#
+# usage:
+#       rm_file(filename)
+#
+sub rm_file {
+    my ($filename) = @_;
+
+    if (defined $opt{'r'}) {
+        unlink("$filename") or fatal(4, "cannot remove $filename");
+        problem("$filename: successfully removed");
+    }
+
+    return;
+}
+
 # fatal - report a fatal error to stderr and exit
 #
 # Print a message to stderr.  The message has the program name prepended
@@ -308,6 +329,7 @@ sub check_spool {
     my $aline;              # header line from an article
     my $newsgroupsField;    # in a continuation line, reading Newsgroups
     my @group;              # array of groups from the Newsgroups header field
+    my $remove;             # mark an article as to be removed
     my $FINDFILE;           # find command pipe handle
 
     # if verbose, say what we are doing
@@ -367,12 +389,14 @@ sub check_spool {
         if (!defined $gname2type{$artgrp} || $gname2type{$artgrp} =~ /[=jx]/o)
         {
             if ($preverrgrp ne $artgrp) {
-                problem("$artgrp: not an active group directory");
+                problem("$artgrp: not an active group directory (probably "
+                      . "a removed newsgroup; see articles with -v)");
                 $preverrgrp = $artgrp;
             }
             if (defined $opt{'v'}) {
                 problem("$filename: article found in non-active directory");
             }
+            rm_file($filename);
             next;
         }
 
@@ -381,18 +405,26 @@ sub check_spool {
         $artnum =~ s#^.+/##o;
         if ($artnum =~ m/^0/o) {
             problem("$filename: article basename starts with a 0");
+            rm_file($filename);
+            next if defined $opt{'r'};
         }
         if (defined $gname2type{$artgrp}) {
             if ($lowart{$artgrp} > $highart{$artgrp}) {
                 problem("$filename: active indicates group should be empty");
+                rm_file($filename);
+                next if defined $opt{'r'};
             } elsif ($artnum < $lowart{$artgrp}) {
                 problem("$filename: article number is too low "
                       . "(first article has number $lowart{$artgrp} "
                       . "in the active file)");
+                rm_file($filename);
+                next if defined $opt{'r'};
             } elsif ($artnum > $highart{$artgrp}) {
                 problem("$filename: article number is too high "
                       . "(last article has number $highart{$artgrp} "
                       . "in the active file");
+                rm_file($filename);
+                next if defined $opt{'r'};
             }
         }
 
@@ -407,6 +439,7 @@ sub check_spool {
 
         if (-z "$filename") {
             problem("WARNING: $filename: empty file");
+            rm_file($filename);
             next;
         }
 
@@ -419,6 +452,7 @@ sub check_spool {
 
         @group = ();
         $newsgroupsField = 0;
+        $remove = 0;
 
         # read until the Newsgroups header field is found
       AREADLINE:
@@ -440,6 +474,7 @@ sub check_spool {
             } elsif ($aline =~ /^\r?\n$/o) {
                 # end of headers
                 problem("WARNING: $filename: no Newsgroups header field");
+                $remove++;
                 last;
             } else {
                 # do not continue parsing the headers as we have just found out
@@ -448,6 +483,7 @@ sub check_spool {
             }
             if (eof $ARTICLE) {
                 problem("WARNING: $filename: article with no body");
+                $remove++;
             }
         }
 
@@ -469,11 +505,15 @@ sub check_spool {
                 # no group or group alias was found
                 problem("$filename: does not belong in $artgrp"
                       . " according to its Newsgroups header field");
+                $remove++;
             }
         }
 
         # close the article
         close $ARTICLE;
+
+        # remove the article if asked to
+        rm_file($filename) if $remove > 0;
     }
 
     # all done with the find

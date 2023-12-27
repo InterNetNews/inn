@@ -4,7 +4,7 @@ scanspool - Perform a sanity scan over all articles in news spool
 
 =head1 SYNOPSIS
 
-B<scanspool> [B<-cnv>] [B<-a> I<active-file>] [B<-s> I<spool-dir>]
+B<scanspool> [B<-cnrv>] [B<-a> I<active-file>] [B<-s> I<spool-dir>]
 
 =head1 DESCRIPTION
 
@@ -90,6 +90,15 @@ scan the Newsgroups header field of the articles.
 =item B<-n>
 
 Don't throttle B<innd> while scanning.
+
+=item B<-r>
+
+Remove articles reported to have a problem.  To see the list of articles in
+question, run B<scanspool> without this flag first.
+
+Be warned that using this flag may result in inaccessible articles if articles
+are removed whereas they are perfectly valid articles.  Have a look at them to
+ensure they can be safely removed, and then use this flag.
 
 =item B<-s> I<spool-dir>
 

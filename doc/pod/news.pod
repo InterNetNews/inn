@@ -34,6 +34,12 @@ as a format like C<Jul 29 04:15:01> was expected.
 
 =item *
 
+B<scanspool> now detects empty files in a tradspool news spool, correctly
+parses continuation lines in header fields, and can automatically remove
+articles reported to have a problem (when run with the new B<-r> flag).
+
+=item *
+
 Fixed a hang when posting articles if COMPRESS DEFLATE is active but TLS
 is not.  Thanks to Enrik Berkhan for the patch for B<nnrpd>.
 
@@ -96,11 +102,6 @@ Fixed a database lock issue when running B<ovsqlite-util> on a running server
 with the I<transtimelimit> parameter in F<ovsqlite.conf> set to a higher value
 than the default busy timeout of 30 seconds of B<ovsqlite-util>.  Thanks to
 Jesse Rehmer for the bug report and Bo Lindbergh for the fix.
-
-=item *
-
-B<scanspool> now detects empty files in a tradspool news spool, and correctly
-parses continuation lines in header fields.
 
 =item *
 
