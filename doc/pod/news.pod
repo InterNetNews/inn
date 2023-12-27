@@ -59,9 +59,11 @@ as a format like C<Jul 29 04:15:01> was expected.
 
 =item *
 
-B<scanspool> now detects empty files in a tradspool news spool, correctly
-parses continuation lines in header fields, and can automatically remove
-articles reported to have a problem (when run with the new B<-r> flag).
+B<scanspool> now detects empty files in a tradspool news spool, directories
+with an all-digit component (which may conflict with a possible file with
+the same name), correctly parses continuation lines in header fields, and can
+automatically remove articles reported to have a problem (when run with the
+new B<-r> flag).
 
 =item *
 

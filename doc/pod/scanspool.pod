@@ -13,6 +13,9 @@ It will scan the F<active> file as well as all articles in the spool and
 report on the errors it encounters.  As this may take a while, using the
 B<-v> switch is recommended to see how far the program has progressed.
 
+B<scanspool> will skip any file named other than just all-digits when treating
+the contents of the news spool.
+
 First, B<scanspool> scans the F<active> file, noting problems such as:
 
 =over 4
@@ -62,6 +65,9 @@ are in a directory for which there is no newsgroup in the F<active> file;
 are in a newsgroup to which they do not belong.
 
 =back
+
+B<scanspool> will also complain about directories with an all-digit component
+as they may conflict with a possible file with the same name.
 
 B<scanspool> understands aliased newsgroups.  Thus, if an article is posted
 to foo.old.name that is aliased to foo.bar, it will be expected to
@@ -158,13 +164,6 @@ article in a directory not related to an F<active> non-aliased newsgroup.
 Verbose messages start with a tab.
 
 =back
-
-=head1 BUGS
-
-B<scanspool> is unable to detect and properly deal with spool formats
-other than tradspool.  However, if the files that store your articles
-are named other than just all-digits, they will simply be skipped
-(and your F<active> is still checked).
 
 =head1 HISTORY
 
