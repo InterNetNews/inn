@@ -23,6 +23,10 @@ malformed lines;
 
 =item *
 
+duplicate entries;
+
+=item *
+
 newsgroups aliased to a non-existent newsgroup;
 
 =item *
@@ -48,10 +52,6 @@ of the F<active> file;
 =item *
 
 do not contain a Newsgroups header field;
-
-=item *
-
-are all header and no text;
 
 =item *
 
@@ -115,7 +115,7 @@ The output of B<scanspool> will start with one of the following forms:
 
 Fatal or internal error.
 
-=item C<WARN:> (to stderr)
+=item C<WARNING:> (to stderr)
 
 F<active> or article format problem, newsgroup alias problem, find(1)
 error, article open error.
