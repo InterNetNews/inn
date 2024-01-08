@@ -21,71 +21,68 @@ use INN::ovsqlite_client qw(:all);
 
 sub dump_articles {
     my ($sock, $dst, $groupname) = @_;
-    my ($code, $errmsg, $low, $articles);
+    my ($code, $errmsg);
     my ($count);
 
     print STDERR $groupname, "... ";
     $count = 0;
-    $low = 1;
-    for (;;) {
-        $code = $sock->search_group(
-            groupname => $groupname,
-            low       => $low,
-            cols      => search_col_arrived | search_col_expires
-              | search_col_token | search_col_overview,
-            readsize => 0xFFFFF,
-            articles => $articles,
-            errmsg   => $errmsg
-        );
-        defined($errmsg)
-          and die "search_group: $errmsg";
-        $code != response_artlist && $code != response_artlist_done
-          and die "search_group: Unexpected response code $code";
-        foreach my $article (@{$articles}) {
-            print $dst join(
-                "\t",
-                "a",
-                @{$article}{qw(artnum arrived expires)},
-                '@' . unpack("H*", $article->{token}) . '@',
-                $article->{overview}
-            );
-            $count++;
+    $code = $sock->search_group_all(
+        groupname => $groupname,
+        low       => 1,
+        cols      => search_col_arrived | search_col_expires | search_col_token
+          | search_col_overview,
+        readsize => 0xFFFFF,
+        errmsg   => $errmsg,
+        callback => sub {
+            my ($articles) = @_;
+
+            foreach my $article (@{$articles}) {
+                print $dst join(
+                    "\t",
+                    "a",
+                    @{$article}{qw(artnum arrived expires)},
+                    '@' . unpack("H*", $article->{token}) . '@',
+                    $article->{overview}
+                );
+                $count++;
+            }
+            1;
         }
-        $code == response_artlist_done
-          and last;
-        $low = $articles->[-1]->{artnum} + 1;
-    }
+    );
+    defined($errmsg)
+      and die "search_group_all: $errmsg";
+    $code != response_artlist && $code != response_artlist_done
+      and die "search_group_all: Unexpected response code $code";
     print STDERR $count, "\n";
 }
 
 sub dump_groups {
     my ($sock, $dst) = @_;
-    my ($code, $errmsg, $groupid, $groups);
+    my ($code, $errmsg);
 
-    $groupid = 0;
-    for (;;) {
-        $code = $sock->list_groups(
-            groupid => $groupid,
-            groups  => $groups,
-            errmsg  => $errmsg
-        );
-        defined($errmsg)
-          and die "list_groups: $errmsg";
-        $code != response_grouplist && $code != response_grouplist_done
-          and die "list_groups: Unexpected response code $code\n";
-        foreach my $group (@{$groups}) {
-            print $dst (
-                join(
-                    "\t",
-                    "g",
-                    @{$group}{qw(groupname low high count flag_alias)}
-                ),
-                "\n"
-            );
-            dump_articles($sock, $dst, $group->{groupname});
+    $code = $sock->list_groups_all(
+        errmsg   => $errmsg,
+        callback => sub {
+            my ($groups) = @_;
+
+            foreach my $group (@{$groups}) {
+                print $dst (
+                    join(
+                        "\t",
+                        "g",
+                        @{$group}{qw(groupname low high count flag_alias)}
+                    ),
+                    "\n"
+                );
+                dump_articles($sock, $dst, $group->{groupname});
+            }
+            1;
         }
-        last if $code == response_grouplist_done;
-    }
+    );
+    defined($errmsg)
+      and die "list_groups_all: $errmsg";
+    $code != response_grouplist && $code != response_grouplist_done
+      and die "list_groups_all: Unexpected response code $code\n";
 }
 
 sub server_connect {
