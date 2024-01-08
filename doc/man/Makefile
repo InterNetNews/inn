@@ -11,7 +11,7 @@ SEC3	= libinn.3 libinn_clientlib.3 libinn_dbz.3 libinn_inndcomm.3 \
 	libinnauth.3 libinnhist.3 libinnstorage.3
 
 SEC3PM	= INN__Config.3pm \
-	INN__Utils__Shlock.3pm
+	INN__Utils__Shlock.3pm INN__ovsqlite_client.3pm
 
 SEC5	= active.5 active.times.5 buffindexed.conf.5 control.ctl.5 \
 	cycbuff.conf.5 distrib.pats.5 distributions.5 expire.ctl.5 \
@@ -54,6 +54,7 @@ install-man3:
 install-man3pm:
 	$(CP_MAN) INN__Config.3pm $D$(MAN3PM)/INN\:\:Config.$(MAN3PM_EXT)
 	$(CP_MAN) INN__Utils__Shlock.3pm $D$(MAN3PM)/INN\:\:Utils\:\:Shlock.$(MAN3PM_EXT)
+	$(CP_MAN) INN__ovsqlite_client.3pm $D$(MAN3PM)/INN\:\:ovsqlite_client.$(MAN3PM_EXT)
 
 # We also create symbolic links between config files and programs.
 # We try to use relative symbolic links, when possible.  As '-ef' is
