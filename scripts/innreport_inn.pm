@@ -1664,6 +1664,8 @@ sub collect($$$$$$) {
         # during scanlogs
         return 1 if $left =~ /^\S+ rejected Flushing log and syslog files$/o;
         return 1 if $left =~ /^\S+ rejected Snapshot log and syslog files$/o;
+        # during scanspool
+        return 1 if $left =~ /^\S+ rejected running scanspool$/o;
         # other logs that should not be reported as errors
         return 1 if $left =~ /^\S+ auth also-log: /o;
         return 1 if $left =~ /^\S+ res also-log: /o;
