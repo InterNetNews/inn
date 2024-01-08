@@ -7,7 +7,7 @@ package INN::ovsqlite_client;
 our ($VERSION);
 
 BEGIN {
-    $VERSION = 1.0;
+    $VERSION = 1.001;
     # The integer part of the above will be used
     # as the protocol version in the server handshake.
 }
@@ -641,6 +641,63 @@ BEGIN {
         $code;
     }
 
+    my ($list_groups_all_in, $list_groups_all_out) = argparser(
+        [
+            {
+                name     => "callback",
+                required => 1,
+            },
+            {
+                name    => "readsize",
+                default => 0x20000,
+            },
+        ],
+        [
+            {
+                name => "errmsg",
+            },
+        ],
+    );
+
+    sub list_groups_all {
+        my $self = shift(@_);
+        my ($callback, $readsize);
+        my ($code, $errmsg, $groupid, $groups, $keep_on, $died);
+
+        $list_groups_all_in->(
+            $callback, $readsize,
+            @_
+        );
+        $groupid = 0;
+        $keep_on = 1;
+        while ($keep_on) {
+            $code = $self->list_groups(
+                groupid  => $groupid,
+                readsize => $readsize,
+                groups   => $groups,
+                errmsg   => $errmsg,
+            );
+            $code == response_grouplist || $code == response_grouplist_done
+              or last;
+            eval {
+                $keep_on = $callback->($groups);
+                1;
+            } or do {
+                $died = $@;
+                $keep_on = 0;
+            };
+            $code == response_grouplist_done
+              and last;
+        }
+        $list_groups_all_out->(
+            $errmsg,
+            @_
+        );
+        defined($died)
+          and croak $died;
+        $code;
+    }
+
     my ($add_article_in, $add_article_out) = argparser(
         [
             {
@@ -914,6 +971,81 @@ BEGIN {
         $code;
     }
 
+    my ($search_group_all_in, $search_group_all_out) = argparser(
+        [
+            {
+                name     => "callback",
+                required => 1,
+            },
+            {
+                name     => "groupname",
+                required => 1,
+            },
+            {
+                name     => "low",
+                required => 1,
+            },
+            {
+                name => "high",
+            },
+            {
+                name    => "cols",
+                default => 0,
+            },
+            {
+                name    => "readsize",
+                default => 0x20000,
+            },
+        ],
+        [
+            {
+                name => "errmsg",
+            },
+        ],
+    );
+
+    sub search_group_all {
+        my $self = shift(@_);
+        my ($callback, $groupname, $low, $high, $cols, $readsize);
+        my ($articles, $code, $errmsg, $keep_on, $died);
+
+        $search_group_all_in->(
+            $callback, $groupname, $low, $high, $cols, $readsize,
+            @_
+        );
+        $keep_on = 1;
+        while ($keep_on) {
+            $code = $self->search_group(
+                groupname => $groupname,
+                low       => $low,
+                high      => $high,
+                cols      => $cols,
+                readsize  => $readsize,
+                articles  => $articles,
+                errmsg    => $errmsg
+            );
+            $code == response_artlist || $code == response_artlist_done
+              or last;
+            eval {
+                $keep_on = $callback->($articles);
+                1;
+            } or do {
+                $died = $@;
+                $keep_on = 0;
+            };
+            $code == response_artlist_done
+              and last;
+            $low = $articles->[-1]->{artnum} + 1;
+        }
+        $search_group_all_out->(
+            $errmsg,
+            @_
+        );
+        defined($died)
+          and croak $died;
+        $code;
+    }
+
     my ($start_expire_group_in, $start_expire_group_out) = argparser(
         [
             {
@@ -1027,6 +1159,55 @@ BEGIN {
         $code;
     }
 
+    my ($finish_expire_all_in, $finish_expire_all_out) = argparser(
+        [
+            {
+                name     => "callback",
+                required => 1,
+            },
+        ],
+        [
+            {
+                name => "errmsg",
+            },
+        ],
+    );
+
+    sub finish_expire_all {
+        my $self = shift(@_);
+        my ($callback);
+        my ($code, $errmsg, $keep_on, $died);
+
+        $finish_expire_all_in->(
+            $callback,
+            @_
+        );
+        $keep_on = 1;
+        while ($keep_on) {
+            $code = $self->finish_expire(
+                errmsg => $errmsg,
+            );
+            $code == response_ok || $code == response_done
+              or last;
+            eval {
+                $keep_on = $callback->();
+                1;
+            } or do {
+                $died = $@;
+                $keep_on = 0;
+            };
+            $code == response_done
+              and last;
+        }
+        $finish_expire_all_out->(
+            $errmsg,
+            @_
+        );
+        defined($died)
+          and croak $died;
+        $code;
+    }
+
 }
 
 1;
@@ -1045,26 +1226,30 @@ INN::ovsqlite_client - Talk to ovsqlite-server from Perl
       = INN::ovsqlite_client::->new(
           port => "/usr/local/news/run/ovsqlite.sock");
 
-    $client->search_group(
+    $client->search_group_all(
         groupname => "news.software.nntp",
         low       => 1,
         cols      => search_col_overview,
-        articles  => my $articles,
-        errmsg    => my $errmsg
+        errmsg    => my $errmsg,
+        callback  => sub {
+            my ($articles) = @_;
+
+            foreach my $article (@{$articles}) {
+                print $article->{overview};
+            }
+            1;
+        }
     );
 
     defined($errmsg)
-      and die "search_group: $errmsg";
-
-    foreach my $article (@{$articles}) {
-        print $article->{overview};
-    }
+      and die "search_group_all: $errmsg";
 
 =head1 DESCRIPTION
 
 C<INN::ovsqlite_client> implements the binary protocol used to communicate
-with the B<ovsqlite-server> daemon.  It offers one instance method
-for each request type.  See F<ovsqlite-private.h> for details.
+with the B<ovsqlite-server> daemon.  It offers one instance method for each
+request type plus convenience methods for those requests that need to be
+repeated.  See F<ovsqlite-private.h> for details.
 
 Two examples of use within a Perl script are present in the F<contrib>
 directory (B<ovsqlite-dump> and B<ovsqlite-undump>).
@@ -1247,6 +1432,19 @@ these keys:
 
 Z<>
 
+=item list_groups_all
+
+    $code = $client->list_groups_all(
+        callback   => \&callback,
+        readsize   => $readsize,      # optional, default 0x20000
+        errmsg     => $errmsg,        # optional output
+    );
+
+This convenience method calls C<list_groups> repeatedly to fetch information
+for all groups.  The callback function is called with the I<groups> array
+reference as the only argument.  It should return a true value to keep
+iterating or a false value to terminate.
+
 =item add_article
 
     $code = $client->add_artice(
@@ -1276,7 +1474,7 @@ Z<>
         errmsg     => $errmsg,        # optional output
     );
 
-=item search_groups
+=item search_group
 
     $code = $client->search_group(
         groupname  => $groupname,
@@ -1307,6 +1505,23 @@ these keys:
 
 Z<>
 
+=item search_group_all
+
+    $code = $client->search_group_all(
+        groupname  => $groupname,
+        low        => $low,
+        high       => $high,          # optional
+        cols       => $cols,          # optional, default 0x00
+        callback   => \&callback,
+        readsize   => $readsize,      # optional, default 0x20000
+        errmsg     => $errmsg,        # optional output
+    );
+
+This convenience methods calls C<search_group> repeatedly to fetch information
+for all specified articles.  The callback function is called with the
+I<articles> array reference as the only argument.  It should return a true
+value to keep iterating or a false value to terminate.
+
 =item start_expire_group
 
     $code = $client->start_expire_group(
@@ -1318,17 +1533,28 @@ Z<>
 
     $code = $client->expire_group(
         groupname  => $groupname,
-        artnums    => $artnums,
+        artnums    => \@artnums,
         errmsg     => $errmsg,        # optional output
     );
 
-C<$artnums> must be a reference to an array of article numbers.
+C<@artnums> must be an array of article numbers.
 
 =item finish_expire
 
     $code = $client->finish_expire(
         errmsg     => $errmsg,        # optional output
     );
+
+=item finish_expire_all
+
+    $code = $client->finish_expire_all(
+        callback   => \&callback,
+        errmsg     => $errmsg,        # optional output
+    );
+
+This convenience method calls C<finish_expire> repeatedly until done.
+The callback function is called with no arguments and should return a true
+value to keep iterating or a false value to terminate.
 
 =back
 
