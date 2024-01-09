@@ -18,7 +18,7 @@ use strict;
 sub control_ihave {
     my (
         $par, $sender, $replyto, $site, $action, $log, $approved,
-        $article
+        $article,
     ) = @_;
     my @body = split(/\r?\n/, $article->stringify_body);
 

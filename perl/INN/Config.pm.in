@@ -181,7 +181,7 @@ umask @NEWSUMASK@;
 our @EXPORT_OK = (
     @INNCONFVAR, @DIRVAR, @FILESVAR, @PROGVAR,
     @LOCKVAR, @EXTPROGVAR, @EXTCOMPVAR, @SYSVAR, @PARAMVAR,
-    qw($VERSION)
+    qw($VERSION),
 );
 
 ##  Load another script that can override or add variables.

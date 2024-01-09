@@ -25,7 +25,7 @@ use File::Find qw(find);
     qr%(\A|/)\.git-blame-ignore-revs(/|\Z)%,
     qr/\.l?[ao]\Z/, qr%(\A|/)\.?\#%, qr%(\A|/)core\Z%,
     qr/\.(old|bak|orig|rej)$/, qr/~$/, qr%(\A|/)\.pure$%,
-    qr%(\A|/)\.libs(/|\Z)%
+    qr%(\A|/)\.libs(/|\Z)%,
 );
 
 # Load file names and patterns from the DATA section.

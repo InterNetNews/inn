@@ -346,7 +346,7 @@ sub check_spool {
     if (
         !open $FINDFILE, '-|',
         "find . \\( -type d -o -type f -o -type l \\) -name '[0-9]*' "
-        . "-print 2>&1"
+        . "-print 2>&1",
     ) {
         fatal(3, "cannot start find in $spool");
     }
@@ -383,7 +383,7 @@ sub check_spool {
             problem(
                 "WARNING:",
                 "$filename: directory with an all-digit component",
-                "(may conflict with a possible file with the same name)"
+                "(may conflict with a possible file with the same name)",
             );
             next;
         }

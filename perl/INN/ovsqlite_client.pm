@@ -349,7 +349,7 @@ BEGIN {
 
         $new_in->(
             $path, $mode,
-            @_
+            @_,
         );
         @stat = stat($path)
           or croak "$path: $!";
@@ -382,7 +382,7 @@ BEGIN {
         bless($self, $class);
         $self->send_request(
             "C L L a*",
-            request_hello, int($VERSION), $mode, $cookie
+            request_hello, int($VERSION), $mode, $cookie,
         );
         $self->receive_response($buf, $code, $errmsg);
         if ($code >= response_error) {
@@ -396,12 +396,12 @@ BEGIN {
             {
                 name    => "cutofflow",
                 default => 0,
-            },
+            }
         ],
         [
             {
                 name => "errmsg",
-            },
+            }
         ],
     );
 
@@ -413,16 +413,16 @@ BEGIN {
 
         $set_cutofflow_in->(
             $cutofflow,
-            @_
+            @_,
         );
         $self->send_request(
             "C C",
-            request_set_cutofflow, $cutofflow
+            request_set_cutofflow, $cutofflow,
         );
         $self->receive_response($buf, $code, $errmsg);
         $set_cutofflow_out->(
             $errmsg,
-            @_
+            @_,
         );
         $code;
     }
@@ -449,7 +449,7 @@ BEGIN {
         [
             {
                 name => "errmsg",
-            },
+            }
         ],
     );
 
@@ -461,7 +461,7 @@ BEGIN {
 
         $add_group_in->(
             $groupname, $flag_alias, $low, $high,
-            @_
+            @_,
         );
         $namelen = length($groupname);
         $namelen > 0 && $namelen < 0x10000
@@ -471,12 +471,12 @@ BEGIN {
           or croak "Bad flag_alias length";
         $self->send_request(
             "C S/a Q Q S/a",
-            request_add_group, $groupname, $low, $high, $flag_alias
+            request_add_group, $groupname, $low, $high, $flag_alias,
         );
         $self->receive_response($buf, $code, $errmsg);
         $add_group_out->(
             $errmsg,
-            @_
+            @_,
         );
         $code;
     }
@@ -486,7 +486,7 @@ BEGIN {
             {
                 name     => "groupname",
                 required => 1,
-            },
+            }
         ],
         [
             {
@@ -515,14 +515,14 @@ BEGIN {
 
         $get_groupinfo_in->(
             $groupname,
-            @_
+            @_,
         );
         $namelen = length($groupname);
         $namelen > 0 && $namelen < 0x10000
           or croak "Bad group name length";
         $self->send_request(
             "C S/a",
-            request_get_groupinfo, $groupname
+            request_get_groupinfo, $groupname,
         );
         $self->receive_response($buf, $code, $errmsg);
         if ($code == response_groupinfo) {
@@ -530,7 +530,7 @@ BEGIN {
         }
         $get_groupinfo_out->(
             $errmsg, $low, $high, $count, $flag_alias,
-            @_
+            @_,
         );
         $code;
     }
@@ -540,12 +540,12 @@ BEGIN {
             {
                 name     => "groupname",
                 required => 1,
-            },
+            }
         ],
         [
             {
                 name => "errmsg",
-            },
+            }
         ],
     );
 
@@ -557,19 +557,19 @@ BEGIN {
 
         $delete_group_in->(
             $groupname,
-            @_
+            @_,
         );
         $namelen = length($groupname);
         $namelen > 0 && $namelen < 0x10000
           or croak "Bad group name length\n";
         $self->send_request(
             "C S/a",
-            request_delete_group, $groupname
+            request_delete_group, $groupname,
         );
         $self->receive_response($buf, $code, $errmsg);
         $delete_group_out->(
             $errmsg,
-            @_
+            @_,
         );
         $code;
     }
@@ -607,11 +607,11 @@ BEGIN {
 
         $list_groups_in->(
             $groupid, $readsize,
-            @_
+            @_,
         );
         $self->send_request(
             "C L q",
-            request_list_groups, $readsize, $groupid
+            request_list_groups, $readsize, $groupid,
         );
         $self->receive_response($buf, $code, $errmsg);
         if ($code == response_grouplist || $code == response_grouplist_done) {
@@ -636,7 +636,7 @@ BEGIN {
         }
         $list_groups_out->(
             $errmsg, $groupid, $groups,
-            @_
+            @_,
         );
         $code;
     }
@@ -655,7 +655,7 @@ BEGIN {
         [
             {
                 name => "errmsg",
-            },
+            }
         ],
     );
 
@@ -666,7 +666,7 @@ BEGIN {
 
         $list_groups_all_in->(
             $callback, $readsize,
-            @_
+            @_,
         );
         $groupid = 0;
         $keep_on = 1;
@@ -691,7 +691,7 @@ BEGIN {
         }
         $list_groups_all_out->(
             $errmsg,
-            @_
+            @_,
         );
         defined($died)
           and croak $died;
@@ -729,7 +729,7 @@ BEGIN {
         [
             {
                 name => "errmsg",
-            },
+            }
         ],
     );
 
@@ -741,7 +741,7 @@ BEGIN {
 
         $add_article_in->(
             $groupname, $artnum, $token, $overview, $arrived, $expires,
-            @_
+            @_,
         );
         $namelen = length($groupname);
         $namelen > 0 && $namelen < 0x10000
@@ -751,12 +751,12 @@ BEGIN {
         $self->send_request(
             "C S/a Q q q a18 L/a",
             request_add_article,
-            $groupname, $artnum, $arrived, $expires, $token, ${$overview}
+            $groupname, $artnum, $arrived, $expires, $token, ${$overview},
         );
         $self->receive_response($buf, $code, $errmsg);
         $add_article_out->(
             $errmsg,
-            @_
+            @_,
         );
         $code;
     }
@@ -791,14 +791,14 @@ BEGIN {
 
         $get_artinfo_in->(
             $groupname, $artnum,
-            @_
+            @_,
         );
         $namelen = length($groupname);
         $namelen > 0 && $namelen < 0x10000
           or croak "Bad group name length";
         $self->send_request(
             "C S/a Q",
-            request_get_artinfo, $groupname, $artnum
+            request_get_artinfo, $groupname, $artnum,
         );
         $self->receive_response($buf, $code, $errmsg);
         if ($code == response_artinfo) {
@@ -808,7 +808,7 @@ BEGIN {
         }
         $get_artinfo_out->(
             $errmsg, $token,
-            @_
+            @_,
         );
         $code;
     }
@@ -827,7 +827,7 @@ BEGIN {
         [
             {
                 name => "errmsg",
-            },
+            }
         ],
     );
 
@@ -839,19 +839,19 @@ BEGIN {
 
         $delete_article_in->(
             $groupname, $artnum,
-            @_
+            @_,
         );
         $namelen = length($groupname);
         $namelen > 0 && $namelen < 0x10000
           or croak "Bad group name length";
         $self->send_request(
             "C S/a Q",
-            request_delete_article, $groupname, $artnum
+            request_delete_article, $groupname, $artnum,
         );
         $self->receive_response($buf, $code, $errmsg);
         $delete_article_out->(
             $errmsg,
-            @_
+            @_,
         );
         $code;
     }
@@ -897,7 +897,7 @@ BEGIN {
 
         $search_group_in->(
             $groupname, $low, $high, $cols, $readsize,
-            @_
+            @_,
         );
         $namelen = length($groupname);
         $namelen > 0 && $namelen < 0x10000
@@ -911,7 +911,7 @@ BEGIN {
                 $cols,
                 $groupname,
                 $low,
-                $high
+                $high,
             );
         } else {
             $self->send_request(
@@ -921,7 +921,7 @@ BEGIN {
                 0x00,
                 $cols,
                 $groupname,
-                $low
+                $low,
             );
         }
         $self->receive_response($buf, $code, $errmsg);
@@ -966,7 +966,7 @@ BEGIN {
         }
         $search_group_out->(
             $errmsg, $articles,
-            @_
+            @_,
         );
         $code;
     }
@@ -1000,7 +1000,7 @@ BEGIN {
         [
             {
                 name => "errmsg",
-            },
+            }
         ],
     );
 
@@ -1011,7 +1011,7 @@ BEGIN {
 
         $search_group_all_in->(
             $callback, $groupname, $low, $high, $cols, $readsize,
-            @_
+            @_,
         );
         $keep_on = 1;
         while ($keep_on) {
@@ -1022,7 +1022,7 @@ BEGIN {
                 cols      => $cols,
                 readsize  => $readsize,
                 articles  => $articles,
-                errmsg    => $errmsg
+                errmsg    => $errmsg,
             );
             $code == response_artlist || $code == response_artlist_done
               or last;
@@ -1039,7 +1039,7 @@ BEGIN {
         }
         $search_group_all_out->(
             $errmsg,
-            @_
+            @_,
         );
         defined($died)
           and croak $died;
@@ -1051,12 +1051,12 @@ BEGIN {
             {
                 name     => "groupname",
                 required => 1,
-            },
+            }
         ],
         [
             {
                 name => "errmsg",
-            },
+            }
         ],
     );
 
@@ -1068,19 +1068,19 @@ BEGIN {
 
         $start_expire_group_in->(
             $groupname,
-            @_
+            @_,
         );
         $namelen = length($groupname);
         $namelen > 0 && $namelen < 0x10000
           or croak "Bad group name length";
         $self->send_request(
             "C S/a",
-            request_start_expire_group, $groupname
+            request_start_expire_group, $groupname,
         );
         $self->receive_response($buf, $code, $errmsg);
         $start_expire_group_out->(
             $errmsg,
-            @_
+            @_,
         );
         $code;
     }
@@ -1099,7 +1099,7 @@ BEGIN {
         [
             {
                 name => "errmsg",
-            },
+            }
         ],
     );
 
@@ -1111,7 +1111,7 @@ BEGIN {
 
         $expire_group_in->(
             $groupname, $artnums,
-            @_
+            @_,
         );
         eval {
             exists($artnums->[0]);
@@ -1122,12 +1122,12 @@ BEGIN {
           or croak "Bad group name length";
         $self->send_request(
             "C S/a L/Q",
-            request_expire_group, $groupname, @{$artnums}
+            request_expire_group, $groupname, @{$artnums},
         );
         $self->receive_response($buf, $code, $errmsg);
         $expire_group_out->(
             $errmsg,
-            @_
+            @_,
         );
         $code;
     }
@@ -1137,7 +1137,7 @@ BEGIN {
         [
             {
                 name => "errmsg",
-            },
+            }
         ],
     );
 
@@ -1149,12 +1149,12 @@ BEGIN {
         $finish_expire_in->(@_);
         $self->send_request(
             "C",
-            request_finish_expire
+            request_finish_expire,
         );
         $self->receive_response($buf, $code, $errmsg);
         $finish_expire_out->(
             $errmsg,
-            @_
+            @_,
         );
         $code;
     }
@@ -1164,12 +1164,12 @@ BEGIN {
             {
                 name     => "callback",
                 required => 1,
-            },
+            }
         ],
         [
             {
                 name => "errmsg",
-            },
+            }
         ],
     );
 
@@ -1180,7 +1180,7 @@ BEGIN {
 
         $finish_expire_all_in->(
             $callback,
-            @_
+            @_,
         );
         $keep_on = 1;
         while ($keep_on) {
@@ -1201,7 +1201,7 @@ BEGIN {
         }
         $finish_expire_all_out->(
             $errmsg,
-            @_
+            @_,
         );
         defined($died)
           and croak $died;
@@ -1238,7 +1238,7 @@ INN::ovsqlite_client - Talk to ovsqlite-server from Perl
                 print $article->{overview};
             }
             1;
-        }
+        },
     );
 
     defined($errmsg)

@@ -80,7 +80,7 @@ my $server = IO::Socket::INET->new(
     LocalPort => 11119,
     Proto     => "tcp",
     Listen    => 1,
-    ReuseAddr => 1
+    ReuseAddr => 1,
 ) or die "Cannot create socket: $!\n";
 $SIG{TERM} = sub { close $server; exit };
 open(PID, '> pid') or die "Cannot create pid: $!\n";

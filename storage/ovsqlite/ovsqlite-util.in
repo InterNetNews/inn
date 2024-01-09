@@ -101,7 +101,7 @@ my @pack_length_bias = (
 # Enabling RaiseError permits not checking every return error codes.
 my $dbh = DBI->connect(
     $datasource, '', '',
-    { PrintError => 0, RaiseError => 1, AutoCommit => 0 }
+    { PrintError => 0, RaiseError => 1, AutoCommit => 0 },
 ) or die "Can't connect to database: $DBI::errstr";
 
 # To process multiple SQL statements in a do() handle.
@@ -369,7 +369,7 @@ insert into repairs
     if ($result > 0) {
         printf STDERR (
             "%d groupinfo record%s incoherent\n", $result,
-            ($result > 1) ? "s" : ""
+            ($result > 1) ? "s" : "",
         );
 
         # Show incoherent records (L, H and C are for Low, High, Count).
@@ -402,7 +402,7 @@ insert or replace into groupinfo
 
             printf STDERR (
                 "%d groupinfo record%s fixed\n", $result,
-                ($result > 1) ? "s" : ""
+                ($result > 1) ? "s" : "",
             );
         }
 

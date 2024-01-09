@@ -42,12 +42,12 @@ sub dump_articles {
                     "a",
                     @{$article}{qw(artnum arrived expires)},
                     '@' . unpack("H*", $article->{token}) . '@',
-                    $article->{overview}
+                    $article->{overview},
                 );
                 $count++;
             }
             1;
-        }
+        },
     );
     defined($errmsg)
       and die "search_group_all: $errmsg";
@@ -70,14 +70,14 @@ sub dump_groups {
                     join(
                         "\t",
                         "g",
-                        @{$group}{qw(groupname low high count flag_alias)}
+                        @{$group}{qw(groupname low high count flag_alias)},
                     ),
-                    "\n"
+                    "\n",
                 );
                 dump_articles($sock, $dst, $group->{groupname});
             }
             1;
-        }
+        },
     );
     defined($errmsg)
       and die "list_groups_all: $errmsg";
@@ -95,7 +95,7 @@ sub server_connect {
         if (-e $path) {
             return INN::ovsqlite_client::->new(
                 path => $path,
-                mode => $mode
+                mode => $mode,
             );
         }
     }

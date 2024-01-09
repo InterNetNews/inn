@@ -220,7 +220,7 @@ while (<STDIN>) {
     my $charset_to = ctlperm(
         $progname, $sender, $progparams[0],
         $token, $article, \@charset_from,
-        \@maxchanges, \@matches
+        \@maxchanges, \@matches,
     );
 
     foreach my $i (0 .. $#matches) {
@@ -249,7 +249,7 @@ while (<STDIN>) {
             if ($logname) {
                 logger(
                     $logname, "Unknown control message by $sender",
-                    $article
+                    $article,
                 );
             } else {
                 logmsg("Unknown \"$progname\" control by $sender");
@@ -272,7 +272,7 @@ while (<STDIN>) {
                 \@progparams, $sender, $replyto,
                 $sitepath, $action, $logname, $approved, $article,
                 \@charset_from, $charset_to, $exclusionpats, $droppats,
-                \@maxchanges
+                \@maxchanges,
             );
 
             $exclusionpats .= '|' if $exclusionpats;
@@ -390,7 +390,7 @@ sub readctlfile {
 sub ctlperm {
     my (
         $type, $sender, $newsgroup, $token, $article, $charset_from,
-        $maxchanges, $matches
+        $maxchanges, $matches,
     ) = @_;
 
     my %keyresults = ();
@@ -595,11 +595,11 @@ sub pgpverify {
     if ($token =~ /^\@.+\@$/) {
         open(PGPCHECK,
             "$INN::Config::newsbin/sm -q $token "
-              . "| $INN::Config::newsbin/pgpverify --findid='$keyid' |"
+              . "| $INN::Config::newsbin/pgpverify --findid='$keyid' |",
         ) or goto ERROR;
     } else {
         open(PGPCHECK,
-            "$INN::Config::newsbin/pgpverify --findid='$keyid' < $token |"
+            "$INN::Config::newsbin/pgpverify --findid='$keyid' < $token |",
         ) or goto ERROR;
     }
     my $pgpresult = <PGPCHECK>;

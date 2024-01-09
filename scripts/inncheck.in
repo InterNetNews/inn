@@ -219,7 +219,7 @@ sub parse_config {
     my $group = {
         'type' => '<global scope>',
         'line' => 0,
-        'name' => '<global scope>'
+        'name' => '<global scope>',
     };
     my $parse_error = 0;    # stop printing errors when we've seen
                             # unknown text, until re-sync
@@ -443,7 +443,7 @@ sub control_ctl {
 sub expire_ctl {
     my (
         $rem, $v, $def, $class, $pat, $flag, $keep, $default, $purge,
-        $groupbaseexpiry
+        $groupbaseexpiry,
     );
 
     $groupbaseexpiry = $INN::Config::groupbaseexpiry;
@@ -1052,7 +1052,7 @@ sub storage_conf {
                 'expires'    => 'mintime[,maxtime] definition',
                 'options'    => 'string',
                 'exactmatch' => 'boolean',
-            },
+            }
         }
     );
     # allowed method names include: cnfs timecaf timehash tradspool trash
@@ -1151,19 +1151,19 @@ sub intersect {
 my @directories = (
     'archive', 'badnews', 'batchdir', 'ctlprogs', 'most_logs', 'newsbin',
     'newsetc', 'newslib', 'oldlogs', 'rnewsprogs', 'spooltemp', 'spool',
-    'spoolnews'
+    'spoolnews',
 );
 my @rnews_programs = ('bunbatch', 'c7unbatch', 'decode', 'encode', 'gunbatch');
 my @newsbin_public = (
     'archive', 'batcher', 'buffchan', 'convdate', 'cvtbatch',
     'getlist', 'grephistory', 'innconfval', 'innxmit',
     'nntpget', 'nntpsend', 'sendxbatches', 'send-ihave', 'send-uucp',
-    'shlock', 'shrinkfile'
+    'shlock', 'shrinkfile',
 );
 my @newsbin_private = (
     'ctlinnd', 'expire', 'expirerm', 'inncheck', 'innstat', 'innwatch',
     'makehistory', 'news.daily', 'overchan', 'prunehistory', 'scanlogs',
-    'tally.control', 'writelog'
+    'tally.control', 'writelog',
 );
 
 ##  The modes (min and max) for the various programs.
@@ -1186,7 +1186,7 @@ sub check_all_perms {
     checkperm($paths{'innddir'}, [0750, 0775]);
     checkperm(
         $paths{'innbind'}, [04500, 04550], 'root',
-        $INN::Config::runasgroup
+        $INN::Config::runasgroup,
     );
     foreach (keys %prog_modes) {
         checkperm($paths{$_}, $prog_modes{$_});

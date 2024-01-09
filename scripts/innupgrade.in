@@ -48,7 +48,7 @@ $0 =~ s@.*/@@;
     'incoming.conf' => \&fix_incoming_conf,
     'inn.conf'      => \&fix_inn_conf,
     'newsfeeds'     => \&fix_newsfeeds,
-    'readers.conf'  => \&fix_readers_conf
+    'readers.conf'  => \&fix_readers_conf,
 );
 
 # The mappings of obsolete file names to rename.
@@ -248,7 +248,7 @@ sub fix_inn_conf {
             push(
                 @$output,
                 "extraoverviewadvertised: [ "
-                  . join(" ", @extraoverview) . " ]\n"
+                  . join(" ", @extraoverview) . " ]\n",
             );
         }
     }
@@ -434,7 +434,7 @@ my $usage = "Usage:\n  $0 <directory>\n";
 Getopt::Long::config('bundling');
 GetOptions(
     'file|f=s' => \$file,
-    'type|t=s' => \$type
+    'type|t=s' => \$type,
 ) or die $usage;
 if ($file) {
     my ($dirname, $basename);

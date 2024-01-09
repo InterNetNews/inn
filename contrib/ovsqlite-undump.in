@@ -36,7 +36,7 @@ sub undump_all {
                 low        => $low,
                 high       => $high,
                 flag_alias => $flag_alias,
-                errmsg     => $errmsg
+                errmsg     => $errmsg,
             );
             defined($errmsg)
               and die "add_group($groupname): $errmsg";
@@ -63,7 +63,7 @@ sub undump_all {
                 arrived   => $arrived,
                 expires   => $expires,
                 overview  => $overview,
-                errmsg    => $errmsg
+                errmsg    => $errmsg,
             );
             defined($errmsg)
               and die "add_article($lastname,$artnum): $errmsg";
@@ -87,7 +87,7 @@ sub server_connect {
         if (-e $path) {
             return INN::ovsqlite_client::->new(
                 path => $path,
-                mode => $mode
+                mode => $mode,
             );
         }
     }

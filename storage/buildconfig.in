@@ -229,7 +229,7 @@ sub write_makefile {
     for (0 .. $#filelistnames) {
         print MAKE makefile_var(
             $filelistnames[$_],
-            @{ $makefile->{filelists}->[$_] }
+            @{ $makefile->{filelists}->[$_] },
         );
     }
     for (@{ $makefile->{makefiles} }) {

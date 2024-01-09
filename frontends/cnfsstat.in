@@ -60,7 +60,7 @@ Getopt::Long::config('no_ignore_case');
 GetOptions(
     \%opt,
     "-a", "-c=s", "-h", "-i=i", "-l:i", "-m=s",
-    "-p", "-P", "-s", "-v"
+    "-p", "-P", "-s", "-v",
 ) || die $usage;
 
 help() if defined($opt{'h'});
@@ -175,12 +175,12 @@ if ($oclass) {
                     $logline = sprintf(
                         "Class %s for groups matching \"%s\" "
                           . "article size min/max: %d/%d",
-                        $oclass, $gr, $min, $max
+                        $oclass, $gr, $min, $max,
                     );
                 } else {
                     $logline = sprintf(
                         "Class %s for groups matching \"%s\"",
-                        $oclass, $gr
+                        $oclass, $gr,
                     );
                 }
             } else {
@@ -221,7 +221,7 @@ if ($oclass) {
                 $logline = sprintf(
                     "Class %s for groups matching \"%s\" "
                       . "article size min/max: %d/%d",
-                    $c, $gr, $min, $max
+                    $c, $gr, $min, $max,
                 );
             } else {
                 $logline
@@ -337,7 +337,7 @@ sub read_storageconf {
         # defaults
         my %key = (
             "NEWSGROUPS" => "*",
-            "SIZE"       => "0,0"
+            "SIZE"       => "0,0",
         );
 
         if (/method\s+cnfs\s+\{/) {
@@ -384,7 +384,7 @@ sub print_cycbuff_head {
             $logline, $name, Math::BigFloat->new($len) / (1024 * 1024),
             Math::BigFloat->new($free) / (1024 * 1024),
             100 * Math::BigFloat->new($free) / Math::BigFloat->new($len),
-            $cyclenum
+            $cyclenum,
         ) if $cyclenum >= 0;
         return 0;
     }
@@ -425,8 +425,8 @@ sub make_time {
         @ret,
         sprintf(
             "%04d-%02d-%02d %2d:%02d:%02d",
-            $year + 1900, $mon + 1, $mday, $hour, $min, $sec
-        )
+            $year + 1900, $mon + 1, $mday, $hour, $min, $sec,
+        ),
     );
     $t = time - $t;
 
@@ -441,8 +441,8 @@ sub make_time {
         @ret,
         sprintf(
             "%4d days, %2d:%02d:%02d",
-            $mday, $hour, $min, $t
-        )
+            $mday, $hour, $min, $t,
+        ),
     );
     return @ret;
 }
@@ -571,7 +571,7 @@ sub get_cycbuff_info {
 
     my (
         $magic, $name, $path, $lena, $freea, $updatea, $cyclenuma, $metaname,
-        $orderinmeta, $currentbuff, $blksza
+        $orderinmeta, $currentbuff, $blksza,
     ) = unpack("a8 a16 a64 a16 a16 a16 a16 a16 a16 a8 a16", $buff);
 
     if (!$magic) {

@@ -36,7 +36,7 @@ my ($opt_a, $opt_f, $opt_h, $opt_i, $opt_m, $opt_n, $opt_r, $opt_t);
 GetOptions(
     "-a=s" => \$opt_a, "-f" => \$opt_f, "-h"   => \$opt_h,
     "-i=s" => \$opt_i, "-m" => \$opt_m, "-n=s" => \$opt_n, "-r" => \$opt_r,
-    "-t=i" => \$opt_t
+    "-t=i" => \$opt_t,
 ) || die $usage;
 
 $ignorecase = 0;
