@@ -18,7 +18,7 @@ use strict;
 sub control_newgroup {
     my (
         $par, $sender, $replyto, $site, $action, $log, $approved,
-        $article, $charset_from, $charset_to
+        $article, $charset_from, $charset_to,
     ) = @_;
     my ($groupname, $modflag) = @$par;
 
@@ -166,7 +166,7 @@ sub control_newgroup {
         if ($log) {
             logger(
                 $log, "skipping newgroup $groupname $modcmd"
-                  . " $sender (would $status): $errmsg", $article
+                  . " $sender (would $status): $errmsg", $article,
             );
         } else {
             logmsg("skipping newgroup $groupname $modcmd $sender"
@@ -198,7 +198,7 @@ END
         if ($log) {
             logger(
                 $log, "skipping newgroup $groupname $modcmd"
-                  . " $sender (would $status)", $article
+                  . " $sender (would $status)", $article,
             );
         } else {
             logmsg("skipping newgroup $groupname $modcmd $sender"
@@ -217,7 +217,7 @@ END
         if ($log) {
             logger(
                 $log, "newgroup $groupname $modcmd $status $sender",
-                $article
+                $article,
             ) if ($log ne 'mail' or $status ne 'not change');
         }
     }

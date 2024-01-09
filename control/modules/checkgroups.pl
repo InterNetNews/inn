@@ -19,7 +19,7 @@ sub control_checkgroups {
     my (
         $par, $sender, $replyto, $site, $action, $log, $approved,
         $article, $charset_from, $charset_to, $exclusionpats,
-        $droppats, $maxchanges
+        $droppats, $maxchanges,
     ) = @_;
     my ($newsgrouppats) = @$par;
     my $head = $article->head;
@@ -94,12 +94,12 @@ END
         if (defined &local_docheckgroups) {
             local_docheckgroups(
                 \@newbody, $newsgrouppats, $exclusionpats,
-                $maxchanges, $log, $sender
+                $maxchanges, $log, $sender,
             );
         } else {
             docheckgroups(
                 \@newbody, $newsgrouppats, $exclusionpats,
-                $maxchanges, $log, $sender
+                $maxchanges, $log, $sender,
             );
         }
     }
@@ -121,7 +121,7 @@ sub docheckgroups {
     open(STDOUT, ">$tempfile") or die $!;
     my $st = system(
         "$INN::Config::pathbin/docheckgroups", "-u",
-        $newsgrouppats, $exclusionpats
+        $newsgrouppats, $exclusionpats,
     );
     logdie('Cannot run docheckgroups: ' . $!) if $st == -1;
     logdie('docheckgroups returned status ' . ($st & 255)) if $st > 0;
@@ -175,42 +175,42 @@ sub docheckgroups {
                 unshift(
                     @output,
                     '##################################'
-                      . '####################################'
+                      . '####################################',
                 );
                 unshift(
                     @output,
                     '# This script has already been '
-                      . 'successfully executed by controlchan. #'
+                      . 'successfully executed by controlchan. #',
                 );
                 unshift(
                     @output,
                     '##################################'
-                      . '####################################'
+                      . '####################################',
                 );
                 logger(
                     $log,
                     "checkgroups by $sender processed (changes applied)",
-                    \@output
+                    \@output,
                 );
             }
         } else {
             unshift(@output, '');
             unshift(
                 @output,
-                '################################################'
+                '################################################',
             );
             unshift(
                 @output,
-                '# This script was NOT executed by controlchan. #'
+                '# This script was NOT executed by controlchan. #',
             );
             unshift(
                 @output,
-                '################################################'
+                '################################################',
             );
             logger(
                 $log || 'mail',
                 "checkgroups by $sender *not* processed (too many changes)",
-                \@output
+                \@output,
             );
         }
     } else {

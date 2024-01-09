@@ -546,7 +546,7 @@ if (not $rnews) {
         warn sprintf(
             " failed to authorize: %s %s\n",
             $localcxn->code(),
-            join('//', split(/\r?\n/, $localcxn->message()))
+            join('//', split(/\r?\n/, $localcxn->message())),
         );
     }
 }
@@ -645,7 +645,7 @@ foreach my $server (@servers) {
         warn sprintf(
             "can't use STARTTLS: %s %s\n",
             $upstream->code(),
-            join('//', split(/\r?\n/, $upstream->message()))
+            join('//', split(/\r?\n/, $upstream->message())),
         );
         next;
     }
@@ -654,7 +654,7 @@ foreach my $server (@servers) {
         warn sprintf(
             "failed to authorize: %s %s\n",
             $upstream->code(),
-            join('//', split(/\r?\n/, $upstream->message()))
+            join('//', split(/\r?\n/, $upstream->message())),
         );
         next;
     }
@@ -847,7 +847,7 @@ sub crossFeedGroup {
         warn sprintf(
             "Group command failed for $group: %s %s\n",
             $fromServer->code() || 'NO_CODE',
-            join('//', split(/\r?\n/, $fromServer->message()))
+            join('//', split(/\r?\n/, $fromServer->message())),
         );
         return 0;
     }
@@ -924,7 +924,7 @@ sub crossFeedGroup {
                     $i,
                     $i + $progressWidth - 1 > $last
                     ? $last
-                    : $i + $progressWidth - 1
+                    : $i + $progressWidth - 1,
                 );
                 $overview = $fromServer->xover(\@range);
             }
@@ -1183,7 +1183,7 @@ sub crossFeedGroup {
             if (not $skip_due_to_hdrs and ref $hashfeed) {
                 my $hash_val = unpack(
                     'N',
-                    substr(md5($msgid), 12 - $hashfeed->{'offset'}, 4)
+                    substr(md5($msgid), 12 - $hashfeed->{'offset'}, 4),
                 ) % $hashfeed->{'modulus'} + 1;
                 $skip_due_to_hdrs = 3
                   if $hash_val < $hashfeed->{'low'}
@@ -1343,7 +1343,7 @@ sub crossFeedGroup {
             printf LOG (
                 "\tDEBUGGING $i\t-- article unavailable %s %s\n",
                 $fromServer->code(),
-                join('//', split(/\r?\n/, $fromServer->message()))
+                join('//', split(/\r?\n/, $fromServer->message())),
             ) if $debug >= 1;
         }
         saveConfig() if $checkPoint and ($art_total_count % $checkPoint) == 0;

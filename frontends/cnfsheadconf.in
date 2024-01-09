@@ -181,7 +181,7 @@ sub read_storageconf {
         # defaults
         my %key = (
             "NEWSGROUPS" => "*",
-            "SIZE"       => "0,0"
+            "SIZE"       => "0,0",
         );
 
         if (/method\s+cnfs\s+\{/) {
@@ -242,8 +242,8 @@ sub make_time {
         @ret,
         sprintf(
             "%04d-%02d-%02d %2d:%02d:%02d",
-            $year + 1900, $mon + 1, $mday, $hour, $min, $sec
-        )
+            $year + 1900, $mon + 1, $mday, $hour, $min, $sec,
+        ),
     );
     $t = time - $t;
 
@@ -258,8 +258,8 @@ sub make_time {
         @ret,
         sprintf(
             "%4d days, %2d:%02d:%02d",
-            $mday, $hour, $min, $t
-        )
+            $mday, $hour, $min, $t,
+        ),
     );
     return @ret;
 }
@@ -295,7 +295,7 @@ sub print_cycbuff_head {
 
     my (
         $magic, $name, $path, $lena, $freea, $updatea, $cyclenuma, $metaname,
-        $orderinmetaa, $currentbuff, $blksza
+        $orderinmetaa, $currentbuff, $blksza,
     ) = unpack("a8 a16 a64 a16 a16 a16 a16 a16 a16 a8 a16", $buff);
 
     if (!$magic) {
@@ -376,7 +376,7 @@ sub print_cycbuff_head {
         $buff = pack(
             "a8 a16 a64 a16 a16 a16 a16 a16 a16 a8", $magic, $name,
             $path, $lena, $freea, $updatea, $cyclenuma, $metaname,
-            $orderinmetaa, $currentbuff
+            $orderinmetaa, $currentbuff,
         );
         $buff .= pack("a16", $blksza) if ($magic =~ m/^CBuf4/);
         seek $BUFF, 0, 0;

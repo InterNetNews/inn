@@ -122,7 +122,7 @@ sub do_nocem {
     logmsg(
         sprintf(
             "processed notice %s by %s (%d ids, %.5f s, %.1f/s)",
-            $nid, $issuer, $nr, $diff, $nr / $diff
+            $nid, $issuer, $nr, $diff, $nr / $diff,
         )
     );
 }
@@ -193,7 +193,7 @@ sub read_nocem {
     if (not want_nocem(\%hdrs)) {
         logmsg(
             "Article $msgid: unwanted ($hdrs{issuer}/$hdrs{type})",
-            'debug'
+            'debug',
         );
         return;
     }
@@ -274,14 +274,14 @@ sub supported_nocem {
     if ($hdrs->{version} !~ /^0\.9[0-9]?$/) {
         logmsg(
             "Article $msgid: version $hdrs->{version} not supported",
-            'debug'
+            'debug',
         );
         return 0;
     }
     if ($hdrs->{action} ne 'hide') {
         logmsg(
             "Article $msgid: action $hdrs->{action} not supported",
-            'debug'
+            'debug',
         );
         return 0;
     }
@@ -301,13 +301,15 @@ sub pgp_check {
     if ($pid == 0) {
         open(STDERR, '>&STDOUT');
         if ($INN::Config::gpg) {
-            exec($INN::Config::gpg, '--status-fd=1',
+            exec(
+                $INN::Config::gpg, '--status-fd=1',
                 '--verify', '--allow-weak-digest-algos',
-                $keyring ? '--keyring=' . $keyring : '', $art
+                $keyring ? '--keyring=' . $keyring : '', $art,
             );
         } else {
-            exec($INN::Config::gpgv, '--status-fd=1',
-                $keyring ? '--keyring=' . $keyring : '', $art
+            exec(
+                $INN::Config::gpgv, '--status-fd=1',
+                $keyring ? '--keyring=' . $keyring : '', $art,
             );
         }
         exit 126;
@@ -355,13 +357,13 @@ sub pgp_check {
             logmsg(
                 "Article $msgid: $INN::Config::gpg exited "
                   . (($status == 126) ? "($_)" : "with status $status"),
-                'err'
+                'err',
             );
         } else {
             logmsg(
                 "Article $msgid: $INN::Config::gpgv exited "
                   . (($status == 126) ? "($_)" : "with status $status"),
-                'err'
+                'err',
             );
         }
     }
@@ -407,9 +409,9 @@ sub cancel_ctlinnd {
                   'cancel', $msgid;
                 exit 126;
             }
-            #            logmsg("cancelled: $msgid [$i/$max]", 'debug');
+            # logmsg("cancelled: $msgid [$i/$max]", 'debug');
         }
-        #    Now wait for all children.
+        # Now wait for all children.
         while ((my $pid = wait) > 0) {
             next unless $?;
             if ($? >> 8) {
@@ -493,7 +495,7 @@ sub read_ctlfile {
             logmsg(
                 "Cannot parse nocem.ctl line <<$_>>; "
                   . "syntax is <<issuer:type>>.",
-                'err'
+                'err',
             );
             next;
         }

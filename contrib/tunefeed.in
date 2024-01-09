@@ -289,7 +289,7 @@ GetOptions(
     'help|h'        => \$help,
     'days|d=i'      => \$days,
     'threshold|t=i' => \$threshold,
-    'version|v'     => \$print_version
+    'version|v'     => \$print_version,
 ) or die $usage;
 
 # Set a default for the minimum threshold traffic required to retain an

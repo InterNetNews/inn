@@ -167,7 +167,7 @@ my @old_argv = @ARGV;
     my $i;
     foreach $i (
         \$HTML, \$GRAPH, \$ARCHIVE, \$WANT_UNKNOWN,
-        \$CASE_SENSITIVE, \$NOT_DAILY
+        \$CASE_SENSITIVE, \$NOT_DAILY,
     ) {
         $$i = $$i eq 'DO' ? 1 : 0;
     }
@@ -194,7 +194,7 @@ GetOptions(
       -casesensitive!
       -notdaily!
       -v
-    )
+    ),
 ) || Usage(1);
 
 &Version if $ref{'v'};
@@ -464,7 +464,7 @@ while (!eof()) {
                 if ("$timezone" eq "+0000") {
                     $t = Time::Piece->strptime(
                         "$1 " . $local_timezone,
-                        "%Y-%m-%dT%T %z"
+                        "%Y-%m-%dT%T %z",
                     );
                 } else {
                     $t = Time::Piece->strptime("$1", "%Y-%m-%dT%T");
@@ -668,7 +668,7 @@ if ($HTML) {
 if ($HTML && $index) {
     &Make_Index(
         $HTML_dir, $index,
-        'news-notice' . $suffix . $HTML_EXTENSION, \%output
+        'news-notice' . $suffix . $HTML_EXTENSION, \%output,
     );
 }
 
@@ -1211,7 +1211,7 @@ sub Make_Index($$$$) {
             &Chrono(
                 "$IMG_dir/$filename", $title, $color_bg, $xmax, $ymax,
                 \%in, \%out, \%dates, $label_in, $label_out,
-                $color_in, $color_out, $unit
+                $color_in, $color_out, $unit,
             );
             $result .= "<img width=\"$xmax\" height=\"$ymax\" ";
             $result .= "src=\"$IMG_pth$filename\" alt=\"Graph\"/>\n";
@@ -1360,17 +1360,17 @@ sub Graph3d {
         $col[$i][0] = $image->colorAllocate(
             $$colors[$i][0],
             $$colors[$i][1],
-            $$colors[$i][2]
+            $$colors[$i][2],
         );
         $col[$i][1] = $image->colorAllocate(
             $$colors[$i][0] * 3 / 4,
             $$colors[$i][1] * 3 / 4,
-            $$colors[$i][2] * 3 / 4
+            $$colors[$i][2] * 3 / 4,
         );
         $col[$i][2] = $image->colorAllocate(
             $$colors[$i][0] * 2 / 3,
             $$colors[$i][1] * 2 / 3,
-            $$colors[$i][2] * 2 / 3
+            $$colors[$i][2] * 2 / 3,
         );
     }
 
@@ -1381,15 +1381,15 @@ sub Graph3d {
     for $i (0 .. $n - 1) {
         $image->string(
             gdSmallFont(), $i * $xmax / $n + $mt - 10 + $rx,
-            ($mt - gdSmallFont()->height) / 2, "$$labels[$i]", $black
+            ($mt - gdSmallFont()->height) / 2, "$$labels[$i]", $black,
         );
         $image->filledRectangle(
             $i * $xmax / $n + 10, 8 + $ry / 2,
-            $i * $xmax / $n + $mt - 10, $mt - 12, $col[$i][0]
+            $i * $xmax / $n + $mt - 10, $mt - 12, $col[$i][0],
         );
         $image->rectangle(
             $i * $xmax / $n + 10, 8 + $ry / 2,
-            $i * $xmax / $n + $mt - 10, $mt - 12, $black
+            $i * $xmax / $n + $mt - 10, $mt - 12, $black,
         );
         {
             my $poly = new GD::Polygon;
@@ -1408,7 +1408,7 @@ sub Graph3d {
             $poly->addPt($i * $xmax / $n + $mt - 10, $mt - 12);
             $poly->addPt(
                 $i * $xmax / $n + $mt - 10 + $rx / 2,
-                $mt - 12 - $ry / 2
+                $mt - 12 - $ry / 2,
             );
 
             $image->filledPolygon($poly, $col[$i][2]);
@@ -1419,7 +1419,7 @@ sub Graph3d {
     $image->string(
         gdMediumBoldFont(), ($xmax - gdMediumBoldFont()->width
               * length($title)) / 2, $ymax - gdMediumBoldFont()->height - 7,
-        "$title", $black
+        "$title", $black,
     );
 
     my $e = $mt - $h + $d;
@@ -1429,22 +1429,22 @@ sub Graph3d {
     $image->line($ml + $rx, $mt, $ml + $rx, $size * $d + $mt - $ry, $black);
     $image->line(
         $ml + $rx + $max * $r, $mt, $ml + $rx + $max * $r,
-        $size * $d + $mt - $ry, $black
+        $size * $d + $mt - $ry, $black,
     );
     $image->line($ml, $mt + $ry, $ml, $size * $d + $mt, $black);
     # Axe Ox
     $image->line(
         $ml + $rx, $size * $d + $mt - $ry,
-        $ml + $rx - 2 * $rx, $size * $d + $mt + $ry, $black
+        $ml + $rx - 2 * $rx, $size * $d + $mt + $ry, $black,
     );
     # Axe Oy
     $image->line(
         $ml + $rx, $size * $d + $mt - $ry,
-        $xmax - $mr / 2, $size * $d + $mt - $ry, $black
+        $xmax - $mr / 2, $size * $d + $mt - $ry, $black,
     );
     $image->line(
         $ml, $size * $d + $mt,
-        $xmax - $mr - $rx, $size * $d + $mt, $black
+        $xmax - $mr - $rx, $size * $d + $mt, $black,
     );
 
     # Graduations.
@@ -1453,26 +1453,26 @@ sub Graph3d {
         $image->dashedLine(
             $ml + $rx + $k * ($xmax - $ml - $mr - $rx) / $nn,
             $mt + 10, $ml + $rx + $k * ($xmax - $ml - $mr - $rx) / $nn,
-            $size * $d + $mt - $ry, $black
+            $size * $d + $mt - $ry, $black,
         );
         $image->dashedLine(
             $ml + $rx + $k * ($xmax - $ml - $mr - $rx) / $nn,
             $size * $d + $mt - $ry,
             $ml + $k * ($xmax - $ml - $mr - $rx) / $nn,
-            $size * $d + $mt, $black
+            $size * $d + $mt, $black,
         );
         $image->line(
             $ml + $k * ($xmax - $ml - $mr - $rx) / $nn,
             $size * $d + $mt,
             $ml + $k * ($xmax - $ml - $mr - $rx) / $nn,
-            $size * $d + $mt + 5, $black
+            $size * $d + $mt + 5, $black,
         );
         my $t = sprintf "%d%%", $k * 10;
         $image->string(
             gdSmallFont(), $ml
               + $k * ($xmax - $ml - $mr - $rx) / $nn
               - length($t) * gdSmallFont()->width / 2,
-            $size * $d + $mt + 6, "$t", $black
+            $size * $d + $mt + 6, "$t", $black,
         );
     }
     {
@@ -1480,21 +1480,21 @@ sub Graph3d {
         $image->line($ml, $size * $d + $mt, $ml, $size * $d + $mt + 5, $black);
         $image->string(
             gdSmallFont(), $ml - length($t) * gdSmallFont()->width / 2,
-            $size * $d + $mt + 6, "$t", $black
+            $size * $d + $mt + 6, "$t", $black,
         );
         $image->line(
             $xmax - $mr, $size * $d + $mt - $ry,
-            $xmax - $mr - $rx, $size * $d + $mt, $black
+            $xmax - $mr - $rx, $size * $d + $mt, $black,
         );
         $image->line(
             $xmax - $mr - $rx, $size * $d + $mt,
-            $xmax - $mr - $rx, $size * $d + $mt + 5, $black
+            $xmax - $mr - $rx, $size * $d + $mt + 5, $black,
         );
         $t = sprintf "%d%%", 100;
         $image->string(
             gdSmallFont(), $xmax - $mr - $rx
               - length($t) * gdSmallFont()->width / 2,
-            $size * $d + $mt + 6, "$t", $black
+            $size * $d + $mt + 6, "$t", $black,
         );
     }
     foreach $k (
@@ -1503,13 +1503,13 @@ sub Graph3d {
     ) {
         $image->string(
             gdSmallFont(), $ml - length($k) * gdSmallFont()->width - 3,
-            $e + $h / 2 - gdSmallFont()->height / 2, "$k", $black
+            $e + $h / 2 - gdSmallFont()->height / 2, "$k", $black,
         );
         my $t = 0;
         $image->line(
             $ml + ($t + ${ $val[0] }{$k}) * $r + $rx - $rx, $e + $h,
             $ml + ($t + ${ $val[0] }{$k}) * $r + $rx, $e - $ry + $h,
-            $black
+            $black,
         );
         for $i (0 .. $n - 1) {
             next unless defined ${ $val[$i] }{$k};
@@ -1519,7 +1519,7 @@ sub Graph3d {
                 $poly->addPt($ml + $t * $r + $rx, $e - $ry);
                 $poly->addPt(
                     $ml + ($t + ${ $val[$i] }{$k}) * $r + $rx,
-                    $e - $ry
+                    $e - $ry,
                 );
                 $poly->addPt($ml + ($t + ${ $val[$i] }{$k}) * $r, $e);
 
@@ -1530,19 +1530,19 @@ sub Graph3d {
                 my $poly = new GD::Polygon;
                 $poly->addPt(
                     $ml + ($t + ${ $val[$i] }{$k}) * $r + $rx,
-                    $e - $ry
+                    $e - $ry,
                 );
                 $poly->addPt(
                     $ml + ($t + ${ $val[$i] }{$k}) * $r + $rx - $rx,
-                    $e
+                    $e,
                 );
                 $poly->addPt(
                     $ml + ($t + ${ $val[$i] }{$k}) * $r + $rx - $rx,
-                    $e + $h
+                    $e + $h,
                 );
                 $poly->addPt(
                     $ml + ($t + ${ $val[$i] }{$k}) * $r + $rx,
-                    $e - $ry + $h
+                    $e - $ry + $h,
                 );
 
                 $image->filledPolygon($poly, $col[$i][2]);
@@ -1551,11 +1551,11 @@ sub Graph3d {
             $image->filledRectangle(
                 $ml + $t * $r, $e,
                 $ml + ($t + ${ $val[$i] }{$k}) * $r, $e + $h,
-                $col[$i][0]
+                $col[$i][0],
             );
             $image->rectangle(
                 $ml + $t * $r, $e, $ml + ($t + ${ $val[$i] }{$k}) * $r,
-                $e + $h, $black
+                $e + $h, $black,
             );
             $t += ${ $val[$i] }{$k};
         }
@@ -1564,11 +1564,11 @@ sub Graph3d {
             $ml + $t * $r + $rx + 3,
             $e - 2 - gdSmallFont()->height / 2,
             $ml + $t * $r + $rx + 4 + gdSmallFont()->width * length $t,
-            $e - 6 + gdSmallFont()->height / 2, $white
+            $e - 6 + gdSmallFont()->height / 2, $white,
         );
         $image->string(
             gdSmallFont(), $ml + $t * $r + $rx + 5,
-            $e - 3 - gdSmallFont()->height / 2, "$t", $black
+            $e - 3 - gdSmallFont()->height / 2, "$t", $black,
         );
         # first value (accepted)
         $image->filledRectangle(
@@ -1576,11 +1576,11 @@ sub Graph3d {
             $e - 4 + gdSmallFont()->height / 2,
             $ml + $t * $r + $rx + 4
               + gdSmallFont()->width * length(${ $val[0] }{$k}),
-            $e - 2 + gdSmallFont()->height, $white
+            $e - 2 + gdSmallFont()->height, $white,
         );
         $image->string(
             gdSmallFont(), $ml + $t * $r + $rx + 5,
-            $e - 5 + gdSmallFont()->height / 2, ${ $val[0] }{$k}, $black
+            $e - 5 + gdSmallFont()->height / 2, ${ $val[0] }{$k}, $black,
         );
         $e += $d;
     }
@@ -1597,7 +1597,7 @@ sub Graph3d {
 sub Histo($$$$$$$$) {
     my (
         $filename, $title, $xmax, $factor,
-        $labelx, $labely, $val1, $labels1
+        $labelx, $labely, $val1, $labels1,
     ) = @_;
 
     use strict;
@@ -1693,19 +1693,19 @@ sub Histo($$$$$$$$) {
         gdMediumBoldFont(),
         ($xmax - length($title) * gdMediumBoldFont()->width) / 2,
         ($margint - $shy - gdMediumBoldFont()->height) / 2,
-        $title, $coltxt
+        $title, $coltxt,
     );
 
     # Labels
     $image->string(
         gdSmallFont(), $marginl / 2, $margint / 2, $labely,
-        $coltxt
+        $coltxt,
     );
     $image->string(
         gdSmallFont(), $xmax
           - $marginr / 2
           - $FontWidth * length($labelx), $ymax - $marginb / 2,
-        $labelx, $coltxt
+        $labelx, $coltxt,
     );
 
     # Max
@@ -1715,7 +1715,7 @@ sub Histo($$$$$$$$) {
           - $old_max * ($ymax - $marginb - $margint - $shy) / $max,
         $xmax - $marginr, $ymax
           - $marginb - $shy
-          - $old_max * ($ymax - $marginb - $margint - $shy) / $max, $red
+          - $old_max * ($ymax - $marginb - $margint - $shy) / $max, $red,
     );
     $image->line(
         $marginl, $ymax
@@ -1723,56 +1723,56 @@ sub Histo($$$$$$$$) {
           - $old_max * ($ymax - $marginb - $margint - $shy) / $max,
         $marginl - $shx, $ymax
           - $marginb
-          - $old_max * ($ymax - $marginb - $margint - $shy) / $max, $red
+          - $old_max * ($ymax - $marginb - $margint - $shy) / $max, $red,
     );
 
     # Left
     $image->line(
         $marginl - $shx, $margint + $shy,
-        $marginl - $shx, $ymax - $marginb, $coltxt
+        $marginl - $shx, $ymax - $marginb, $coltxt,
     );
     $image->line(
         $marginl, $margint,
-        $marginl, $ymax - $marginb - $shy, $coltxt
+        $marginl, $ymax - $marginb - $shy, $coltxt,
     );
     $image->line(
         $marginl, $margint,
-        $marginl - $shx, $margint + $shy, $coltxt
+        $marginl - $shx, $margint + $shy, $coltxt,
     );
     $image->line(
         $marginl - $shx, $ymax - $marginb,
-        $marginl, $ymax - $marginb - $shy, $coltxt
+        $marginl, $ymax - $marginb - $shy, $coltxt,
     );
 
     # Right
     $image->line(
         $xmax - $marginr, $margint,
-        $xmax - $marginr, $ymax - $marginb - $shy, $coltxt
+        $xmax - $marginr, $ymax - $marginb - $shy, $coltxt,
     );
     $image->line(
         $xmax - $marginr - $shx, $ymax - $marginb,
-        $xmax - $marginr, $ymax - $marginb - $shy, $coltxt
+        $xmax - $marginr, $ymax - $marginb - $shy, $coltxt,
     );
 
     # Bottom
     $image->line(
         $marginl - $shx, $ymax - $marginb,
-        $xmax - $marginr - $shx, $ymax - $marginb, $coltxt
+        $xmax - $marginr - $shx, $ymax - $marginb, $coltxt,
     );
     $image->line(
         $marginl, $ymax - $marginb - $shy,
-        $xmax - $marginr, $ymax - $marginb - $shy, $coltxt
+        $xmax - $marginr, $ymax - $marginb - $shy, $coltxt,
     );
     $image->fill($xmax / 2, $ymax - $marginb - $shy / 2, $gray);
 
     # Top
     $image->line(
         $marginl, $margint,
-        $xmax - $marginr, $margint, $coltxt
+        $xmax - $marginr, $margint, $coltxt,
     );
     $image->setStyle(
         $coltxt, $coltxt, &GD::gdTransparent,
-        &GD::gdTransparent, &GD::gdTransparent
+        &GD::gdTransparent, &GD::gdTransparent,
     );
     # Graduations
     for ($i = 0; $i <= $part; $i++) {
@@ -1789,7 +1789,7 @@ sub Histo($$$$$$$$) {
               - $i * ($ymax - $marginb - $margint - $shy) / $part,
             $marginl - $shx, $ymax
               - $marginb
-              - $i * ($ymax - $marginb - $margint - $shy) / $part, $coltxt
+              - $i * ($ymax - $marginb - $margint - $shy) / $part, $coltxt,
         );
         $image->line(
             $marginl - $shx, $ymax
@@ -1797,7 +1797,7 @@ sub Histo($$$$$$$$) {
               - $i * ($ymax - $marginb - $margint - $shy) / $part,
             $marginl, $ymax
               - $marginb - $shy
-              - $i * ($ymax - $marginb - $margint - $shy) / $part, gdStyled()
+              - $i * ($ymax - $marginb - $margint - $shy) / $part, gdStyled(),
         );
         $image->line(
             $marginl, $ymax
@@ -1805,21 +1805,21 @@ sub Histo($$$$$$$$) {
               - $i * ($ymax - $marginb - $margint - $shy) / $part,
             $xmax - $marginr, $ymax
               - $marginb - $shy
-              - $i * ($ymax - $marginb - $margint - $shy) / $part, gdStyled()
+              - $i * ($ymax - $marginb - $margint - $shy) / $part, gdStyled(),
         );
         $image->string(
             gdSmallFont(),
             $marginl - $shx - $FontWidth * length("$j") - 7,
             $ymax - $marginb
               - ($i) * ($ymax - $marginb - $margint - $shy) / ($part)
-              - $FontHeight / 2, "$j", $coltxt
+              - $FontHeight / 2, "$j", $coltxt,
         );
     }
 
     # Graduation (right bottom corner)
     $image->line(
         $xmax - $marginr - $shx, $ymax - $marginb,
-        $xmax - $marginr - $shx, $ymax - $marginb + 3, $coltxt
+        $xmax - $marginr - $shx, $ymax - $marginb + 3, $coltxt,
     );
     # Bars
     $i = 0;
@@ -1833,7 +1833,7 @@ sub Histo($$$$$$$$) {
             $image->line(
                 $marginl + ($i - 1) * $w - $shx, $ymax - $marginb,
                 $marginl + ($i - 1) * $w - $shx, $ymax - $marginb + 3,
-                $coltxt
+                $coltxt,
             );
             my $ii = sprintf "%d", $i / $MAX;
             $image->string(
@@ -1842,7 +1842,7 @@ sub Histo($$$$$$$$) {
                   + ($i - 0.5) * $w + 1
                   - ($FontWidth * length($$labels[$i - 1])) / 2
                   - $shx,
-                $ymax - $marginb + 3, $$labels[$i - 1], $coltxt
+                $ymax - $marginb + 3, $$labels[$i - 1], $coltxt,
               )
               unless ($w < $FontWidth * length($$labels[$i - 1]))
               && ($i != $MAX * $ii);
@@ -1852,14 +1852,14 @@ sub Histo($$$$$$$$) {
             $poly->addPt(
                 $marginl + ($i) * $w - $k,
                 $ymax - $marginb - $shy
-                  - $j / $factor * ($ymax - $marginb - $margint - $shy) / $max
+                  - $j / $factor * ($ymax - $marginb - $margint - $shy) / $max,
             );
             $poly->addPt($marginl + ($i) * $w - $k, $ymax - $marginb - $shy);
             $poly->addPt($marginl + ($i) * $w - $k - $shx, $ymax - $marginb);
             $poly->addPt(
                 $marginl + ($i) * $w - $k - $shx,
                 $ymax - $marginb
-                  - $j / $factor * ($ymax - $marginb - $margint - $shy) / $max
+                  - $j / $factor * ($ymax - $marginb - $margint - $shy) / $max,
             );
 
             $image->filledPolygon($poly, $red3);
@@ -1871,36 +1871,36 @@ sub Histo($$$$$$$$) {
                 $ymax - $marginb
                   - $j / $factor * ($ymax - $marginb - $margint - $shy) / $max,
                 $marginl + ($i) * $w - $k - $shx,
-                $ymax - $marginb, $red
+                $ymax - $marginb, $red,
             );
             $image->rectangle(
                 $marginl + ($i - 1) * $w + $k - $shx,
                 $ymax - $marginb
                   - $j / $factor * ($ymax - $marginb - $margint - $shy) / $max,
                 $marginl + ($i) * $w - $k - $shx,
-                $ymax - $marginb, $coltxt
+                $ymax - $marginb, $coltxt,
             );
             # Top
             my $poly2 = new GD::Polygon;
             $poly2->addPt(
                 $marginl + ($i - 1) * $w + $k,
                 $ymax - $marginb - $shy
-                  - $j / $factor * ($ymax - $marginb - $margint - $shy) / $max
+                  - $j / $factor * ($ymax - $marginb - $margint - $shy) / $max,
             );
             $poly2->addPt(
                 $marginl + ($i) * $w - $k,
                 $ymax - $marginb - $shy
-                  - $j / $factor * ($ymax - $marginb - $margint - $shy) / $max
+                  - $j / $factor * ($ymax - $marginb - $margint - $shy) / $max,
             );
             $poly2->addPt(
                 $marginl + ($i) * $w - $k - $shx,
                 $ymax - $marginb
-                  - $j / $factor * ($ymax - $marginb - $margint - $shy) / $max
+                  - $j / $factor * ($ymax - $marginb - $margint - $shy) / $max,
             );
             $poly2->addPt(
                 $marginl + ($i - 1) * $w + $k - $shx,
                 $ymax - $marginb
-                  - $j / $factor * ($ymax - $marginb - $margint - $shy) / $max
+                  - $j / $factor * ($ymax - $marginb - $margint - $shy) / $max,
             );
 
             $image->rectangle(0, 0, $xmax - 1, $ymax - 1, $coltxt);
@@ -2068,7 +2068,7 @@ sub Chrono {
 
     $image->filledRectangle(
         $marginl, $margint,
-        $xmax - $marginr, $ymax - $marginb, $bg
+        $xmax - $marginr, $ymax - $marginb, $bg,
     );
     my $brush = new GD::Image(1, 2);
     my $b_col = $brush->colorAllocate(@col_out);
@@ -2093,7 +2093,7 @@ sub Chrono {
             $marginl + ($key - $x_min) * $xratio,
             $ymax - $marginb - $tt_in,
             $marginl + ($$dates{$key} - $x_min) * $xratio,
-            $ymax - $marginb, $col_in
+            $ymax - $marginb, $col_in,
         );
         if (defined $old_x) {
             $old_x = $new_x if $old_x > $new_x;
@@ -2108,11 +2108,11 @@ sub Chrono {
             $marginl + ($key - $x_min) * $xratio,
             $ymax - $marginb - $tt_out,
             $marginl + ($$dates{$key} - $x_min) * $xratio,
-            $ymax - $marginb - $tt_out, &GD::gdBrushed
+            $ymax - $marginb - $tt_out, &GD::gdBrushed,
         );
         $image->line(
             $old_x, $old_y_out, $new_x,
-            $ymax - $marginb - $tt_out, $col_out
+            $ymax - $marginb - $tt_out, $col_out,
         ) if defined $old_x;
         $old_x = $marginl + ($$dates{$key} - $x_min) * $xratio;
         $old_y_in = $ymax - $marginb - $tt_in;
@@ -2123,7 +2123,7 @@ sub Chrono {
     # main frame
     $image->rectangle(
         $marginl, $margint,
-        $xmax - $marginr, $ymax - $marginb, $black
+        $xmax - $marginr, $ymax - $marginb, $black,
     );
     # graduations
     my $i;
@@ -2132,27 +2132,27 @@ sub Chrono {
         $image->line(
             $marginl, $ymax - $marginb - $i / 100 * $t,
             $xmax - $marginr, $ymax - $marginb - $i / 100 * $t,
-            gdStyled()
+            gdStyled(),
         );
         $image->line(
             $xmax - $marginr, $ymax - $marginb - $i / 100 * $t,
             $xmax - $marginr + 3, $ymax - $marginb - $i / 100 * $t,
-            $black
+            $black,
         );
         $image->line(
             $marginl - 3, $ymax - $marginb - $i / 100 * $t,
             $marginl, $ymax - $marginb - $i / 100 * $t,
-            $black
+            $black,
         );
         $image->string(
             gdSmallFont(), $xmax - $marginr + 8, -$FontHeight / 2
               + $ymax - $marginb
-              - $i / 100 * $t, "$i%", $black
+              - $i / 100 * $t, "$i%", $black,
         );
         my $s = sprintf "%d", $y_max * $i / 100 * $factor;
         $image->string(
             gdSmallFont(), $marginl - 5 - $FontWidth * length $s,
-            -$FontHeight / 2 + $ymax - $marginb - $i / 100 * $t, $s, $black
+            -$FontHeight / 2 + $ymax - $marginb - $i / 100 * $t, $s, $black,
         );
     }
     ##
@@ -2173,12 +2173,12 @@ sub Chrono {
                 $image->line($t, $margint, $t, $ymax - $marginb, gdStyled());
                 $image->line(
                     $t, $ymax - $marginb, $t, $ymax - $marginb + 2,
-                    $black
+                    $black,
                 );
             }
             $image->string(
                 gdSmallFont(), $FontWidth * 7 / 2 + $t,
-                $ymax - $marginb + 4, (sprintf "Week %02d", $f), $black
+                $ymax - $marginb + 4, (sprintf "Week %02d", $f), $black,
             ) if ($n + $w / 2 > $x_min) && ($n + $w / 2 < $x_max);
             $f++;
             $n += $w;
@@ -2217,7 +2217,7 @@ sub Chrono {
         my $t = $n * $y + int(($n - 2) / 4) * 24 * 3600;
         my @m = (
             "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-            "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+            "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
         );
         my $d = 86400;    # 1 day
         my $i = 0;
@@ -2228,7 +2228,7 @@ sub Chrono {
                 $image->line($x, $margint, $x, $ymax - $marginb, gdStyled());
                 $image->line(
                     $x, $ymax - $marginb, $x,
-                    $ymax - $marginb + 2, $black
+                    $ymax - $marginb + 2, $black,
                 );
                 $image->line($x, $margint, $x, $ymax - $marginb, $red)
                   unless $i;
@@ -2237,7 +2237,7 @@ sub Chrono {
                 gdSmallFont(),
                 $mm * $xratio / 2 - $FontWidth * 3 / 2 + $x,
                 $ymax - $marginb + 4, (sprintf "%s", $m[$i]),
-                $black
+                $black,
             ) if ($t + 2 * $w > $x_min) && ($x_max > 2 * $w + $t);
             $t += $mm;
             $t += $d
@@ -2268,7 +2268,7 @@ sub Chrono {
     $image->string(
         gdMediumBoldFont(),
         $xmax / 2 - $FontWidth * length($title) / 2, 4,
-        $title, $black
+        $title, $black,
     );
 
     # Legend
@@ -2276,30 +2276,30 @@ sub Chrono {
     $image->string(gdSmallFont(), $marginl, $y_in, $legend_in, $col_in);
     $image->string(
         gdSmallFont(), $xmax / 4, $y_in,
-        (sprintf "Min: %5.1f $unit", $min_in * $factor), $black
+        (sprintf "Min: %5.1f $unit", $min_in * $factor), $black,
     );
     $image->string(
         gdSmallFont(), $xmax / 2, $y_in,
-        (sprintf "Avg: %5.1f $unit", $s_in / $t_in * $factor), $black
+        (sprintf "Avg: %5.1f $unit", $s_in / $t_in * $factor), $black,
     );
     $image->string(
         gdSmallFont(), 3 * $xmax / 4, $y_in,
-        (sprintf "Max: %5.1f $unit", $max_in * $factor), $black
+        (sprintf "Max: %5.1f $unit", $max_in * $factor), $black,
     );
 
     my $y_out = $ymax - $size + 5;
     $image->string(gdSmallFont(), $marginl, $y_out, $legend_out, $col_out);
     $image->string(
         gdSmallFont(), $xmax / 4, $y_out,
-        (sprintf "Min: %5.1f $unit", $min_out * $factor), $black
+        (sprintf "Min: %5.1f $unit", $min_out * $factor), $black,
     );
     $image->string(
         gdSmallFont(), $xmax / 2, $y_out,
-        (sprintf "Avg: %5.1f $unit", $s_out / $t_out * $factor), $black
+        (sprintf "Avg: %5.1f $unit", $s_out / $t_out * $factor), $black,
     );
     $image->string(
         gdSmallFont(), 3 * $xmax / 4, $y_out,
-        (sprintf "Max: %5.1f $unit", $max_out * $factor), $black
+        (sprintf "Max: %5.1f $unit", $max_out * $factor), $black,
     );
 
     open(IMG, "> $filename") || die "Error: Can't open \"$filename\": $!\n";
@@ -2849,7 +2849,7 @@ sub Write_Results {
                     close HTML;
                     my $y = &Graph3d(
                         "$IMG_dir/$report$s.$GD_FORMAT",
-                        $title, $xmax, $num, @values, \@colors, \@labels
+                        $title, $xmax, $num, @values, \@colors, \@labels,
                     );
                     open(HTML, ">> $HTML_output")
                       || die "Error: cant open $HTML_output\n";
@@ -2908,7 +2908,7 @@ sub Write_Results {
                         my %values = %$r_values;
                         $r = &Histo(
                             "$IMG_dir/$report$s.$GD_FORMAT", $title, $xmax,
-                            $factor, $labelx, $labely, \%values, $r_labels
+                            $factor, $labelx, $labely, \%values, $r_labels,
                         );
                         open(HTML, ">> $HTML_output")
                           || die "Error: cant open $HTML_output\n";
@@ -2971,7 +2971,7 @@ sub PrepareEval($;$) {
             'time_ms' => '&ms2time(',
             'time'    => '&second2time(',
             'total%'  =>
-              ($double ? '&ComputeTotalDouble(\\%' : '&ComputeTotal(\\%')
+              ($double ? '&ComputeTotalDouble(\\%' : '&ComputeTotal(\\%'),
         );
 
         my $i = 0;
@@ -3051,7 +3051,7 @@ sub NiceByte(;$) {
       $size / 1024 / 1024 / 1024
       : (
           $size / 1024 / 1024 > 1 ? sprintf "%.1f MB", $size / 1024 / 1024
-          : sprintf "%.1f KB", $size / 1024
+          : sprintf "%.1f KB", $size / 1024,
       );
     return $t;
 }

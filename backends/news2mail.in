@@ -113,7 +113,7 @@ sub mailto {
     $sendmail =~ s!(^|\s+)-oem!!;
     my @command = (
         split(' ', $sendmail), '-oee', '-odq', "-f$s",
-        "-pNNTP:$INN::Config::pathhost", @a
+        "-pNNTP:$INN::Config::pathhost", @a,
     );
 
     syslog('debug', join(' ', @command)) if ($use_syslog);

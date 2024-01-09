@@ -18,7 +18,7 @@ use strict;
 sub control_rmgroup {
     my (
         $par, $sender, $replyto, $site, $action, $log, $approved,
-        $article
+        $article,
     ) = @_;
     my ($groupname) = @$par;
 
@@ -68,7 +68,7 @@ END
         if ($log) {
             logger(
                 $log, "skipping rmgroup $groupname"
-                  . " $sender (would $status)", $article
+                  . " $sender (would $status)", $article,
             );
         } else {
             logmsg("skipping rmgroup $groupname $sender (would $status)");

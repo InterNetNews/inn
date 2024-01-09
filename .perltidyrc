@@ -1,12 +1,12 @@
 # Configuration for proper Perl code automated reformatting.  -*- conf -*-
 #
-# This configuration requires perltidy 20230309 or later.
+# This configuration requires perltidy 20230701 or later.
 
 -b              # modify the file in place
 -bext='/'       # ...without backuping the file (Git permits restoring it)
 -w              # report warning messages as errors
--bbao           # put line breaks before any operator
 -bal=1          # put line breaks after a label
+-bbao           # put line breaks before any operator
 -bfvt=2         # no newline before "or" after closing brace
 -nbbc           # don't force blank lines before comments (bad for else blocks)
 -boc            # do not re-break lists, since perltidy is awful at this
@@ -14,11 +14,17 @@
 -ce             # cuddle braces around else
 -l=79           # default is 80 but INN coding style is 79 for all languages
 -nlop           # disable vertical alignment of logical and ternary expressions
+-vil='=>'       # enable vertical alignment for hash definitions
 -pt=2           # don't add extra whitespace around parentheses
 -sbt=2          # ...or square brackets
 -nsfs           # no space before semicolon in for
 -xci            # improve indentation of nested structures
--vil='=>'       # enable vertical alignment for hashes definitions
+-drc            # delete repeated commas in a list
+-wtc=m          # add trailing commas to all multi-line lists
+-atc            # add trailing commas where needed
+-dtc            # delete trailing commas where needed
+-dwic           # remove commas interfering with welds
+-viu            # align trailing unless with if
 
 # Uncomment to generate .LOG files.
 #-log           # keep the log (containing information like outdented lines)

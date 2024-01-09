@@ -71,7 +71,7 @@ my %timer_names = (
     overv    => 'overview write',
     perl     => 'perl filter',
     python   => 'python filter',
-    datamove => 'data move'
+    datamove => 'data move',
 );
 
 my %innfeed_timer_names = (
@@ -649,7 +649,7 @@ sub collect($$$$$$) {
         ) {
             my (
                 $server, $status, $seconds, $accepted, $refused, $rejected,
-                $duplicate, $accptsize, $dupsize, $rjctsize
+                $duplicate, $accptsize, $dupsize, $rjctsize,
             ) = ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);
             $server = lc $server unless $CASE_SENSITIVE;
 
@@ -973,7 +973,7 @@ sub collect($$$$$$) {
         ) {
             my (
                 $server, $seconds, $offered, $accepted, $refused, $rejected,
-                $missing, $accepted_size, $rejected_size, $spooled
+                $missing, $accepted_size, $rejected_size, $spooled,
             ) = ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);
             $server = lc $server unless $CASE_SENSITIVE;
             $innfeed_seconds{$server} += $seconds;
@@ -991,7 +991,7 @@ sub collect($$$$$$) {
         ) {
             my (
                 $server, $seconds, $offered, $accepted, $refused, $rejected,
-                $missing, $spooled
+                $missing, $spooled,
             ) = ($1, $2, $3, $4, $5, $6, $7, $8);
             $server = lc $server unless $CASE_SENSITIVE;
             $innfeed_seconds{$server} += $seconds;
@@ -1167,7 +1167,7 @@ sub collect($$$$$$) {
         ) {
             my (
                 $server, $offered, $accepted, $refused, $rejected, $accbytes,
-                $rejbytes
+                $rejbytes,
             ) = ($1, $2, $3, $4, $5, $6, $7);
             $server = lc $server unless $CASE_SENSITIVE;
             $innxbatch_offered{$server} += $offered;
@@ -1315,7 +1315,7 @@ sub collect($$$$$$) {
         ) {
             my (
                 $server, $offered, $accepted, $refused, $rejected, $missing,
-                $accbytes, $rejbytes
+                $accbytes, $rejbytes,
             ) = ($1, $2, $3, $4, $5, $6, $7, $8);
             $server = lc $server unless $CASE_SENSITIVE;
             $innxmit_offered{$server} += $offered;
@@ -2443,7 +2443,7 @@ sub adjust($$) {
             my ($r, $h) = $day =~ /^(.*) (\d+)$/;
             my $d = index(
                 "JanFebMarAprMayJunJulAugSepOctNovDec",
-                substr($r, 0, 3)
+                substr($r, 0, 3),
             ) / 3 * 31 + substr($r, 4, 2);
             $prev_h = $h if ($prev_h == -1);
             if ($prev_d == -1) {
