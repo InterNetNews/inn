@@ -11,21 +11,44 @@
 use strict;
 use warnings;
 
-my $delay = shift || die "usage: $0 delay prog-n-args\n";
+use Getopt::Long;
+use Storable;
+
+(@ARGV >= 2) || die "usage: $0 delay prog-n-args\n";
+
+my $delay = 60;
+my $buffered = 1;
+my $store;
+
+if ($ARGV[0] =~ /^[0-9]+$/) {
+    # Legacy calling convention
+    $delay = shift;
+} else {
+    GetOptions(
+        'delay=i'   => \$delay,
+        'buffered!' => \$buffered,
+        'store=s'   => \$store,
+    ) or die('Usage!');
+}
 
 my $timeout = $delay;
 
 open(OUT, "|-", @ARGV) || die "open |prog-n-args: $!\n";
+if (!$buffered) {
+    select(OUT);
+    $| = 1;
+    select(STDOUT);
+}
 
-#select(OUT);
-#$| = 1;
-#select(STDOUT);
+my @queue;
+if ($store) {
+    eval { @queue = @{ retrieve($store) } };
+    unlink($store);
+}
 
 my $rin = '';
 my $rout;
 vec($rin, fileno(STDIN), 1) = 1;
-
-my @queue;
 
 while (1) {
     my ($nfound, $timeleft) = select($rout = $rin, undef, undef, $timeout);
@@ -35,12 +58,16 @@ while (1) {
     if (vec($rout, fileno(STDIN), 1)) {
         my $line = <STDIN>;
         if (!defined $line) {    # exit NOW!
-            foreach (@queue) {
-                s/^[^:]+://g;
-                print OUT;
+            if ($store) {
+                eval { store(\@queue, $store); };
+            } else {
+                foreach (@queue) {
+                    s/^[^:]+://g;
+                    print OUT;
+                }
+                close(OUT);
+                sleep(1);
             }
-            close(OUT);
-            sleep(1);
             exit;
         }
         push(@queue, "$exp:$line");
@@ -68,13 +95,18 @@ delayer - A pipe to delay line-based input by a given time
 
 =head1 SYNOPSIS
 
-I<some-program> | B<delayer> I<seconds> I<some-other-program>
+I<some-program> | B<delayer> [B<-->[B<no->]B<buffered>] [B<--delay>
+I<seconds>] [B<--store> I<filename>] B<--> I<some-other-program> [I<args> ...]
+
+Legacy calling convention:
+
+I<some-program> | B<delayer> I<seconds> I<some-other-program> [I<args> ...]
 
 =head1 DESCRIPTION
 
 The B<delayer> program implements a delaying pipe.  Lines sent to the standard
 input of the process are spooled, and only printed to the standard input of
-I<some-other-program> after the given delay time I<seconds> has passed.
+I<some-other-program> after a certain delay time has passed.
 
 The main use case is for a news feed that deliberately should not distribute
 articles as soon as possible.  One reason is giving cancel control articles
@@ -127,7 +159,7 @@ Add a new entry to F<newsfeeds> in I<pathetc> like:
 
     innfeed-delayed!\
         :!*\
-        :Tc,Wnm*,S16384:<pathbin>/delayer 120 \
+        :Tc,Wnm*,S16384:<pathbin>/delayer --delay 120 -- \
             <pathbin>/innfeed -c innfeed-delayed.conf
 
 This will delay articles via that feed for 120 seconds.
@@ -162,14 +194,63 @@ Reload the F<newsfeeds> configuration file:
 
 =back
 
+=head1 OPTIONS
+
+=over 4
+
+=item B<--buffered>, B<--no-buffered>
+
+By default, output is buffered.  This increases the time until an article is
+actually sent if the number of articles is small.  Disable buffering to have
+a more accurate delay, at a price of a (possibly neglectable) performance
+overhead.
+
+=item B<--delay> I<seconds>
+
+Delay articles by the given amount of seconds.  Default is C<60>.
+
+=item B<--store> I<filename>
+
+By default, all buffered lines are written out if the input is closed, even if
+the configured delay has not been reached yet.
+
+When this flag is used, these lines will be written to the given file instead,
+to be used upon next startup.  Using an absolute path name is recommended.
+
+=item B<--> I<some-other-program> [I<args> ...]
+
+B<--> separates the options to B<delayer> from the program the output is
+written to: I<some-other-program> is the full path to the program, optionally
+followed with some I<args> parameters.
+
+=back
+
+=head1 LEGACY OPTIONS
+
+This interface is considered legacy and will be removed some day.
+
+=over 4
+
+=item I<delay>
+
+Delay articles by the given amount of seconds.
+
+=item I<some-other-program> [I<args> ...]
+
+The full path to the program the output is written to, optionally followed
+with some I<args> parameters.
+
+=back
+
 =head1 BUGS
 
-If the feed is closed, all lines in the store are printed immediately,
-breaking the contract of delaying them.
+If the standard input is closed (when for instance the feed is closed), all
+lines in the store are printed immediately, breaking the contract of delaying
+them, unless the B<--store> option is used.
 
 If the number of articles in that feed is rather low (just a few articles per
 delay time or less), some effects of buffering will delay the transmission
-even further.
+even further.  See the B<--no-buffering> option to alleviate this.
 
 =head1 HISTORY
 
