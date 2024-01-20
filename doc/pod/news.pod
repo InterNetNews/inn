@@ -27,6 +27,15 @@ how to use the module.
 
 =item *
 
+The B<delayer> program, which previously was in the F<contrib> directory, is
+now installed by default.  It notably permits generating a delayed feed, for
+instance to give cancel control articles and NoCeM notices time to arrive, and
+therefore actually cancel articles before they are locally stored and spread
+to other peers.  Thanks to Christoph Biedl for the documentation, testing, and
+addition of several useful flags to B<delayer>.
+
+=item *
+
 B<innreport> now supports high-precision timestamps like
 C<2023-07-29T04:15:01.889064+02:00> that syslog can be parameterized to use;
 daily Usenet reports otherwise indicated all these logs as unknown entries,
