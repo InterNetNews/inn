@@ -1,20 +1,12 @@
-#!/usr/bin/perl
-# -*- perl -*-
-#
-# delay lines for N seconds.
-#
-# primarily meant to be used with INN to generate a delayed feed with innfeed.
-#
-# put it into your newsfeeds file like
-#
-# innfeed-delayed!\
-#        :!*\
-#        :Tc,Wnm*,S16384:/usr/local/news/bin/delayer 60 \
-#            /usr/local/news/bin/innfeed -c innfeed-delayed.conf
-#
-# done by christian mock <cm@tahina.priv.at> sometime in july 1998,
-# and put into the public domain.
-#
+#! /usr/bin/perl -w
+
+##  Delay lines for a certain number of seconds.
+##
+##  Primarily meant to be used to generate a delayed feed with innfeed.
+##  See the delayer(1) manual page for more details, and how to set it.
+##
+##  Initial version written by Christian Mock <cm@tahina.priv.at> in July 1998,
+##  and put into the public domain.
 
 use strict;
 use warnings;
@@ -67,3 +59,126 @@ while (1) {
     }
     $timeout = $first - $now;
 }
+
+__END__
+
+=head1 NAME
+
+delayer - A pipe to delay line-based input by a given time
+
+=head1 SYNOPSIS
+
+I<some-program> | B<delayer> I<seconds> I<some-other-program>
+
+=head1 DESCRIPTION
+
+The B<delayer> program implements a delaying pipe.  Lines sent to the standard
+input of the process are spooled, and only printed to the standard input of
+I<some-other-program> after the given delay time I<seconds> has passed.
+
+The main use case is for a news feed that deliberately should not distribute
+articles as soon as possible.  One reason is giving cancel control articles
+and NoCeM notices time to arrive so that B<innd> remembers the Message-IDs of
+those cancelled articles before they actually arrive.  It permits cancelling
+articles before they are locally stored and spread to other peers.  The delay
+can be set up for outgoing feeds wanting that or, even better for not slowing
+the propagation of articles, internally between a frontend instance of B<innd>
+receiving the articles from all your peers and another local instance of
+B<innd> fed by your frontend with a delay except for cancels and NoCeM
+articles.
+
+Another use case is using a link only as a backup.
+
+=head1 CONFIGURATION
+
+The steps to set up a delayed feed using B<delayer> and B<innfeed> are:
+
+=over 4
+
+=item *
+
+Choose a name for that feed, e.g. C<innfeed-delayed>.
+
+=item *
+
+In I<pathetc>, copy F<innfeed.conf> to F<innfeed-delayed.conf>.
+
+=item *
+
+Edit F<innfeed-delayed.conf> in I<pathetc>, and change the occurrences of
+C<innfeed> to C<innfeed-delayed>, typically in the I<backlog-directory>,
+I<log-file>, I<pid-file> and I<status-file> parameters.  If these parameters
+are not set, you should explicitly set them in F<innfeed-delayed.conf> so that
+their default values do not conflict with a running instance in parallel of a
+real-time feed using B<innfeed>.
+
+=item *
+
+Possibly limit I<max-connections> to C<1>.
+
+=item *
+
+Only keep in F<innfeed-delayed.conf> the configuration of the peers which
+should receive a delayed feed.
+
+=item *
+
+Add a new entry to F<newsfeeds> in I<pathetc> like:
+
+    innfeed-delayed!\
+        :!*\
+        :Tc,Wnm*,S16384:<pathbin>/delayer 120 \
+            <pathbin>/innfeed -c innfeed-delayed.conf
+
+This will delay articles via that feed for 120 seconds.
+
+=item *
+
+Use C<innfeed-delayed!> instead of C<innfeed!> in the F<newsfeeds> entries for
+peers which should receive a delayed feed.  If you wish, you can also set up
+two entries for each peer, keeping a real-time feed through C<innfeed!> for
+control articles and the C<news.lists.filters> newsgroup (for NoCeM notices),
+and delaying the feed of other newsgroups through C<innfeed-delayed!>.
+
+    news.uu.net/uunet\
+        :!*,control,control.*,news.lists.filters\
+        :Tm:innfeed!
+
+    news.uu.net-delayed/uunet\
+        :*,!control,!control.*,@news.lists.filters\
+        :Tm:innfeed-delayed!
+
+In that case, be sure to use the C<news.uu.net-delayed> peer name in
+F<innfeed-delayed.conf>.  You should only configure a delayed feed for
+a remote peer if its news administrator agrees with that (he may want a
+real-time feed, or already have locally implemented a delay on his incoming
+feeds).
+
+=item *
+
+Reload the F<newsfeeds> configuration file:
+
+    ctlinnd reload newsfeeds 'setting delayed feeds'
+
+=back
+
+=head1 BUGS
+
+If the feed is closed, all lines in the store are printed immediately,
+breaking the contract of delaying them.
+
+If the number of articles in that feed is rather low (just a few articles per
+delay time or less), some effects of buffering will delay the transmission
+even further.
+
+=head1 HISTORY
+
+Initial version written in July 1998 by Christian Mock <cm@tahina.priv.at>.
+
+Improved and documented by Christoph Biedl in January 2024.
+
+=head1 SEE ALSO
+
+delay(1), innfeed.conf(5), newsfeeds(5).
+
+=cut

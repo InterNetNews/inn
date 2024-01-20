@@ -9,7 +9,7 @@ ALL           = actmerge actsync actsyncd archive batcher buffchan \
 		send-uucp sendinpaths sendxbatches shlock \
 		shrinkfile
 
-MAN	      = ../doc/man/send-uucp.8
+MAN	      = ../doc/man/delayer.1 ../doc/man/send-uucp.8
 
 SOURCES       = actsync.c archive.c batcher.c buffchan.c cvtbatch.c \
 		innbind.c inndf.c innxbatch.c innxmit.c \
@@ -109,6 +109,9 @@ sendxbatches:	sendxbatches.in  $(FIXSCRIPT)	; $(FIX) sendxbatches.in
 $(LIBINN):	; (cd ../lib ; $(MAKE))
 $(LIBSTORAGE):	; (cd ../storage ; $(MAKE) library)
 $(LIBHIST):	; (cd ../history ; $(MAKE))
+
+../doc/man/delayer.1: delayer.in
+	$(POD2MAN) -s 1 -n "DELAYER" $? > $@
 
 ../doc/man/send-uucp.8: send-uucp.in
 	$(POD2MAN) -s 8 -n "SEND-UUCP" $? > $@
