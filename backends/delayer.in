@@ -73,18 +73,16 @@ while (1) {
         push(@queue, "$exp:$line");
     }
 
-    if ($#queue < 0) {
-        undef $timeout;
-        next;
-    }
-
-    my ($first, $line) = split(/:/, $queue[0], 2);
-    while ($#queue >= 0 && $first <= $now) {
+    undef $timeout;
+    while (@queue) {
+        my ($first, $line) = split(/:/, $queue[0], 2);
+        if ($first > $now) {
+            $timeout = $first - $now;
+            last;
+        }
         print OUT $line;
         shift(@queue);
-        ($first, $line) = split(/:/, $queue[0], 2);
     }
-    $timeout = $first - $now;
 }
 
 __END__
@@ -244,9 +242,9 @@ with some I<args> parameters.
 
 =head1 BUGS
 
-If the standard input is closed (when for instance the feed is closed), all
-lines in the store are printed immediately, breaking the contract of delaying
-them, unless the B<--store> option is used.
+If the standard input is closed (when for instance the feed is closed or
+restarted), all lines in the store are printed immediately, breaking the
+contract of delaying them, unless the B<--store> option is used.
 
 If the number of articles in that feed is rather low (just a few articles per
 delay time or less), some effects of buffering will delay the transmission
