@@ -16,7 +16,7 @@
 ##      notice, this list of conditions and the following disclaimer in the
 ##      documentation and/or other materials provided with the distribution.
 ##
-##  Give this program its own newsfeed.  Make sure that you've created
+##  Give this program its own news feed.  Make sure that you've created
 ##  the newsgroup control.cancel so that you don't have to scan through
 ##  cancels, which this program won't process anyway.
 ##

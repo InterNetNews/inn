@@ -85,7 +85,7 @@ must be the same text given to the C<reject> command, or the empty string
 =item begin I<site>
 
 Begin feeding I<site>.  The server will rescan the F<newsfeeds> file to
-find the specified site and set up a newsfeed for it.  If the site already
+find the specified site and set up a news feed for it.  If the site already
 existed, a C<drop> for that site is done first.  This command is
 forwarded; see L<"NOTES"> below.
 
