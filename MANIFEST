@@ -143,6 +143,7 @@ doc/man/convdate.1                    Manpage for convdate utility
 doc/man/ctlinnd.8                     Manpage for ctlinnd frontend
 doc/man/cvtbatch.8                    Manpage for cvtbatch utility
 doc/man/cycbuff.conf.5                Manpage for cycbuff.conf config file
+doc/man/delayer.1                     Manpage for delayer
 doc/man/distrib.pats.5                Manpage for distrib.pats config file
 doc/man/distributions.5               Manpage for distributions config file
 doc/man/docheckgroups.8               Manpage for docheckgroups
