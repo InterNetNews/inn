@@ -29,6 +29,7 @@
 /backends/batcher
 /backends/buffchan
 /backends/cvtbatch
+/backends/delayer
 /backends/innbind
 /backends/inndf
 /backends/innxbatch
@@ -53,7 +54,6 @@
 /contrib/backlogstat
 /contrib/cleannewsgroups
 /contrib/count_overview
-/contrib/delayer
 /contrib/expirectl
 /contrib/findreadgroups
 /contrib/fixhist
