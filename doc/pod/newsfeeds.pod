@@ -58,6 +58,9 @@ which programs should be run (and what information should be sent to
 them), and then this information is used by programs like innxmit(8) and
 innfeed(8) to feed articles to remote sites.
 
+Used in conjunction with delayer(1) in the configuration of the related funnel
+feed, B<innfeed> can even send a delayed feed to remote peers.
+
 The F<newsfeeds> file isn't used solely to set up feeding accepted
 articles to remote sites but also to pass them (or bits of information
 about them) to any local programs or files that want that data.  For
@@ -888,7 +891,7 @@ and rewritten in POD by Russ Allbery <eagle@eyrie.org>.
 
 =head1 SEE ALSO
 
-active(5), buffchan(8), controlchan(8), ctlinnd(8), inn.conf(5), innd(8),
-innfeed(8), innxmit(8), libinn_uwildmat(3), nntpsend(8).
+active(5), buffchan(8), controlchan(8), ctlinnd(8), delayer(1), inn.conf(5),
+innd(8), innfeed(8), innxmit(8), libinn_uwildmat(3), nntpsend(8).
 
 =cut
