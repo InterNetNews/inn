@@ -73,6 +73,12 @@ controlchan!\
 #    :!*\
 #    :Tc,Wnm*:@bindir@/innfeed
 
+# If need be, a funnel for delayed feeds.  See delayer(1) for more details.
+#innfeed-delayed!\
+#    :!*\
+#    :Tc,Wnm*,S16384:@bindir@/delayer 120 \
+#        @bindir@/innfeed -c innfeed-delayed.conf
+
 ##  Only uncomment this feed if both enableoverview and useoverchan are
 ##  set to true in inn.conf.  By default, innd will write out overview
 ##  internally and doesn't need or want this feed, but useoverchan can
