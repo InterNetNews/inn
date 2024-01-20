@@ -35,6 +35,7 @@ backends/archive.c                    Simple article archiver
 backends/batcher.c                    Make news batches
 backends/buffchan.c                   Buffered funnel to file splitter
 backends/cvtbatch.c                   Add fields to simple batchfile
+backends/delayer.in                   Delay data in a pipe, notably for innfeed
 backends/innbind.c                    Bind to low-numbered network ports
 backends/inndf.c                      df used for innwatch
 backends/innxbatch.c                  Send batches using XBATCH to remote
@@ -70,7 +71,6 @@ contrib/authmysql.in                  Authenticator using MySQL table
 contrib/backlogstat.in                Analyze innfeed's backlog status
 contrib/cleannewsgroups.in            Script to clean newsgroups file
 contrib/count_overview.in             Count overview entries
-contrib/delayer.in                    Delay data in a pipe, for innfeed
 contrib/expirectl.c                   Generate expire.ctl from template
 contrib/findreadgroups.in             Track which groups are being read
 contrib/fixhist.in                    Script to clean history

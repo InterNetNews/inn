@@ -4,7 +4,7 @@ top	      = ..
 CFLAGS        = $(GCFLAGS)
 
 ALL           = actmerge actsync actsyncd archive batcher buffchan \
-		cvtbatch innbind inndf innxmit innxbatch mod-active \
+		cvtbatch delayer innbind inndf innxmit innxbatch mod-active \
 		news2mail ninpaths nntpget nntpsend overchan send-ihave \
 		send-uucp sendinpaths sendxbatches shlock \
 		shrinkfile
@@ -21,7 +21,7 @@ warnings:
 	$(MAKE) COPT="$(COPT) $(WARNINGS)" all
 
 install: all
-	for F in actmerge actsyncd news2mail nntpsend send-ihave \
+	for F in actmerge actsyncd delayer news2mail nntpsend send-ihave \
 	         send-uucp sendinpaths sendxbatches ; do \
 	    $(CP_XPUB) $$F $D$(PATHBIN)/$$F ; \
 	done
@@ -97,6 +97,7 @@ buffchan:	buffchan.o $(LIBINN)
 
 actmerge:	actmerge.in      $(FIXSCRIPT)	; $(FIX) actmerge.in
 actsyncd:	actsyncd.in      $(FIXSCRIPT)	; $(FIX) actsyncd.in
+delayer:	delayer.in       $(FIXSCRIPT)	; $(FIX) -i delayer.in
 mod-active:	mod-active.in    $(FIXSCRIPT)	; $(FIX) mod-active.in
 news2mail:	news2mail.in     $(FIXSCRIPT)	; $(FIX) news2mail.in
 nntpsend:	nntpsend.in      $(FIXSCRIPT)	; $(FIX) nntpsend.in

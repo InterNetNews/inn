@@ -58,13 +58,6 @@ count_overview
 
     Counts the groups in a bunch of Xref records.
 
-delayer
-
-    Sits in a data stream and delays it by some constant period of time.
-    Mostly useful for delaying innfeed feeds to allow cancels a chance to
-    remove articles before innfeed sends them to your peers.  See the
-    beginning of the file for an example of how to use it.
-
 expirectl
 
     Automatically builds expire.ctl based on current available disk space
