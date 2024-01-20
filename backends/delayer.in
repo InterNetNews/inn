@@ -15,31 +15,33 @@
 # done by christian mock <cm@tahina.priv.at> sometime in july 1998,
 # and put into the public domain.
 #
-$delay = shift || die "usage: $0 delay prog-n-args\n";
 
-$timeout = $delay;
-$eof = 0;
+use strict;
+use warnings;
 
-open(OUT, "|" . join(" ", @ARGV)) || die "open |prog-n-args: $!\n";
+my $delay = shift || die "usage: $0 delay prog-n-args\n";
+
+my $timeout = $delay;
+
+open(OUT, "|-", @ARGV) || die "open |prog-n-args: $!\n";
 
 #select(OUT);
 #$| = 1;
 #select(STDOUT);
 
-$rin = '';
+my $rin = '';
+my $rout;
 vec($rin, fileno(STDIN), 1) = 1;
 
-while (!$eof || $#queue >= 0) {
-    if (!$eof) {
-        ($nfound, $timeleft) = select($rout = $rin, undef, undef, $timeout);
-    } else {
-        sleep($timeout);
-    }
-    $now = time();
-    $exp = $now + $delay;
+my @queue;
 
-    if (!$eof && vec($rout, fileno(STDIN), 1)) {
-        $line = <STDIN>;
+while (1) {
+    my ($nfound, $timeleft) = select($rout = $rin, undef, undef, $timeout);
+    my $now = time();
+    my $exp = $now + $delay;
+
+    if (vec($rout, fileno(STDIN), 1)) {
+        my $line = <STDIN>;
         if (!defined $line) {    # exit NOW!
             foreach (@queue) {
                 s/^[^:]+://g;
@@ -57,13 +59,11 @@ while (!$eof || $#queue >= 0) {
         next;
     }
 
-    ($first, $line) = split(/:/, $queue[0], 2);
+    my ($first, $line) = split(/:/, $queue[0], 2);
     while ($#queue >= 0 && $first <= $now) {
         print OUT $line;
         shift(@queue);
         ($first, $line) = split(/:/, $queue[0], 2);
     }
     $timeout = $first - $now;
-
 }
-
