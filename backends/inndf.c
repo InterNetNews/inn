@@ -100,6 +100,15 @@
 #    error "Platform not supported.  Neither statvfs nor statfs available."
 #endif
 
+/* Pick the longest available integer type. */
+#if HAVE_LONG_LONG_INT
+typedef unsigned long long long_int_type;
+#    define LLFORMAT "llu"
+#else
+typedef unsigned long long_int_type;
+#    define LLFORMAT "lu"
+#endif
+
 static const char usage[] = "\
 Usage: inndf [-i] [-f filename] [-F] <directory> [<directory> ...]\n\
        inndf -n\n\
@@ -125,7 +134,7 @@ static void
 printspace(const char *path, bool inode, bool fancy)
 {
     df_declare(info);
-    unsigned long amount;
+    long_int_type amount;
     double percent;
 
     if (df_stat(path, &info)) {
@@ -136,7 +145,7 @@ printspace(const char *path, bool inode, bool fancy)
                shells can't cope with anything larger than the maximum value
                of a signed long.  ReiserFS returns 2^32 - 1, however, since it
                has no concept of inodes.  So cap the returned value at the max
-               value of a signed long. */
+               value of a 32-bit signed long. */
             if (amount > (1UL << 31) - 1)
                 amount = (1UL << 31) - 1;
 
@@ -145,15 +154,14 @@ printspace(const char *path, bool inode, bool fancy)
                 amount = (1UL << 31) - 1;
         } else {
             /* Do the multiplication in floating point to try to retain
-               accuracy if the free space in bytes would overflow an
-               unsigned long.  This should be safe until file systems larger
-               than 4TB (which may not be much longer -- we should use long
-               long instead if we have it).
+               accuracy if the free space in bytes would overflow a 32-bit
+               unsigned long.  This should be safe for file systems smaller
+               than 4TB (that's why we use long long, if we have it).
 
                Be very careful about the order of casts here; it's too
                easy to cast back into an unsigned long a value that
                overflows, and one then gets silently wrong results. */
-            amount = (unsigned long) (((double) df_avail(info)
+            amount = (long_int_type) (((double) df_avail(info)
                                        * (double) df_scale(info))
                                       / 1024.0);
         }
@@ -161,7 +169,7 @@ printspace(const char *path, bool inode, bool fancy)
         /* On error, free space is zero. */
         amount = 0;
     }
-    printf(fancy ? "%10lu" : "%lu", amount);
+    printf(fancy ? "%10" LLFORMAT : "%" LLFORMAT, amount);
     if (fancy) {
         printf(inode ? " inodes available " : " Kbytes available ");
         if (inode)
