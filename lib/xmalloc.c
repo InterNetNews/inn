@@ -63,7 +63,7 @@
  * which can be found at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
  *
  * Written by Russ Allbery <eagle@eyrie.org>
- * Copyright 2015 Russ Allbery <eagle@eyrie.org>
+ * Copyright 2015, 2023 Russ Allbery <eagle@eyrie.org>
  * Copyright 2012-2014
  *     The Board of Trustees of the Leland Stanford Junior University
  * Copyright 2004-2006 Internet Systems Consortium, Inc. ("ISC")
@@ -121,7 +121,7 @@ x_malloc(size_t size, const char *file, int line)
     real_size = (size > 0) ? size : 1;
     p = malloc(real_size);
     while (p == NULL) {
-        (*xmalloc_error_handler)("malloc", size, file, line);
+        xmalloc_error_handler("malloc", size, file, line);
         p = malloc(real_size);
     }
     return p;
@@ -137,7 +137,7 @@ x_calloc(size_t n, size_t size, const char *file, int line)
     size = (size > 0) ? size : 1;
     p = calloc(n, size);
     while (p == NULL) {
-        (*xmalloc_error_handler)("calloc", n *size, file, line);
+        xmalloc_error_handler("calloc", n * size, file, line);
         p = calloc(n, size);
     }
     return p;
@@ -150,11 +150,27 @@ x_realloc(void *p, size_t size, const char *file, int line)
     void *newp;
 
     newp = realloc(p, size);
-    while (newp == NULL && size > 0) {
-        (*xmalloc_error_handler)("realloc", size, file, line);
+    if (size == 0)
+        return newp;
+
+        /*
+         * GCC 13.2.0 (and some earlier versions) misdiagnose this error
+         * handling as a use-after-free of p, but the C standard guarantees
+         * that if realloc fails (which is true in every case when it returns
+         * NULL when size > 0), p is unchanged and still valid.
+         */
+#if __GNUC__ >= 12 && !defined(__clang__)
+#    pragma GCC diagnostic push
+#    pragma GCC diagnostic ignored "-Wuse-after-free"
+#endif
+    while (newp == NULL) {
+        xmalloc_error_handler("realloc", size, file, line);
         newp = realloc(p, size);
     }
     return newp;
+#if __GNUC__ >= 12 && !defined(__clang__)
+#    pragma GCC diagnostic pop
+#endif
 }
 
 
@@ -164,10 +180,27 @@ x_reallocarray(void *p, size_t n, size_t size, const char *file, int line)
     void *newp;
 
     newp = reallocarray(p, n, size);
-    while (newp == NULL && size > 0 && n > 0) {
-        (*xmalloc_error_handler)("reallocarray", n *size, file, line);
+    if (size == 0 || n == 0)
+        return newp;
+
+        /*
+         * GCC 13.2.0 (and some earlier versions) misdiagnose this error
+         * handling as a use-after-free of p, but the documentation of
+         * reallocarray guarantees that if reallocarray fails (which is true in
+         * every case when it returns NULL when size > 0 and n > 0), p is
+         * unchanged and still valid.
+         */
+#if __GNUC__ >= 12 && !defined(__clang__)
+#    pragma GCC diagnostic push
+#    pragma GCC diagnostic ignored "-Wuse-after-free"
+#endif
+    while (newp == NULL) {
+        xmalloc_error_handler("reallocarray", n * size, file, line);
         newp = reallocarray(p, n, size);
     }
+#if __GNUC__ >= 12 && !defined(__clang__)
+#    pragma GCC diagnostic pop
+#endif
     return newp;
 }
 
@@ -181,7 +214,7 @@ x_strdup(const char *s, const char *file, int line)
     len = strlen(s) + 1;
     p = malloc(len);
     while (p == NULL) {
-        (*xmalloc_error_handler)("strdup", len, file, line);
+        xmalloc_error_handler("strdup", len, file, line);
         p = malloc(len);
     }
     memcpy(p, s, len);
@@ -207,7 +240,7 @@ x_strndup(const char *s, size_t size, const char *file, int line)
     length = p - s;
     copy = malloc(length + 1);
     while (copy == NULL) {
-        (*xmalloc_error_handler)("strndup", length + 1, file, line);
+        xmalloc_error_handler("strndup", length + 1, file, line);
         copy = malloc(length + 1);
     }
     memcpy(copy, s, length);
@@ -231,7 +264,7 @@ x_vasprintf(char **strp, const char *fmt, va_list args, const char *file,
         status = vsnprintf(NULL, 0, fmt, args_copy);
         va_end(args_copy);
         status = (status < 0) ? 0 : status + 1;
-        (*xmalloc_error_handler)("vasprintf", status, file, line);
+        xmalloc_error_handler("vasprintf", status, file, line);
         va_copy(args_copy, args);
         status = vasprintf(strp, fmt, args_copy);
         va_end(args_copy);
@@ -255,7 +288,7 @@ x_asprintf(char **strp, const char *file, int line, const char *fmt, ...)
         status = vsnprintf(NULL, 0, fmt, args_copy);
         va_end(args_copy);
         status = (status < 0) ? 0 : status + 1;
-        (*xmalloc_error_handler)("asprintf", status, file, line);
+        xmalloc_error_handler("asprintf", status, file, line);
         va_copy(args_copy, args);
         status = vasprintf(strp, fmt, args_copy);
         va_end(args_copy);
@@ -278,7 +311,7 @@ x_asprintf(char **strp, const char *fmt, ...)
         status = vsnprintf(NULL, 0, fmt, args_copy);
         va_end(args_copy);
         status = (status < 0) ? 0 : status + 1;
-        (*xmalloc_error_handler)("asprintf", status, __FILE__, __LINE__);
+        xmalloc_error_handler("asprintf", status, __FILE__, __LINE__);
         va_copy(args_copy, args);
         status = vasprintf(strp, fmt, args_copy);
         va_end(args_copy);
