@@ -308,8 +308,8 @@ error_unexpected_token(struct config_file *file, const char *expecting)
     /* If the bad token type is a string, param, or quoted string, free the
        string associated with the token to avoid a memory leak. */
     if (file->token.type != TOKEN_ERROR) {
-        switch (file->token.type) {
         /* clang-format off */
+        switch (file->token.type) {
         case TOKEN_STRING:      name = "string";        string = true; break;
         case TOKEN_QSTRING:     name = "quoted string"; string = true; break;
         case TOKEN_PARAM:       name = "parameter";     string = true; break;

@@ -874,8 +874,8 @@ main(int ac, char *av[])
         case 'p':
             port = atoi(optarg);
             break;
+            /* clang-format off */
         /* Header fields that can be specified on the command line. */
-        /* clang-format off */
         case 'a':   HDR(_approved) = optarg;       break;
         case 'c':   HDR(_control) = optarg;        break;
         case 'd':   HDR(_distribution) = optarg;   break;
@@ -888,8 +888,8 @@ main(int ac, char *av[])
         case 'F':   HDR(_references) = optarg;     break;
         case 'o':   HDR(_organization) = optarg;   break;
         case 'w':   HDR(_followupto) = optarg;     break;
+            /* clang-format on */
         }
-        /* clang-format on */
     }
     ac -= optind;
     av += optind;

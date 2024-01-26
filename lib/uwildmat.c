@@ -69,7 +69,7 @@
 #define ABORT     -1
 
 /* Whether or not an octet looks like the start of a UTF-8 character. */
-#define ISUTF8(c) (((c) &0xc0) == 0xc0)
+#define ISUTF8(c) (((c) & 0xc0) == 0xc0)
 
 
 /*
