@@ -125,6 +125,11 @@ flag) which had not the expected native LF line termination.
 
 =item *
 
+Fixed B<inndf> on 32-bit architectures with large file support (previously,
+B<inndf> could not count more than 2^32 bytes or inodes).
+
+=item *
+
 Fixed an issue preventing articles from expiring when using the ovsqlite
 method, in a very rare case.  When an article had more than 100,000 bytes
 of overview data (for instance with a Subject header field of that length),
