@@ -262,7 +262,7 @@ CheckTOCCache(time_t timestamp, STORAGECLASS tokenclass)
     if (l1 == NULL)
         return NULL;
 
-    tmp = (timestamp) &0xff;
+    tmp = (timestamp) & 0xff;
     cent = l1->entries[tmp];
 
     ++TOCCacheHits;
@@ -305,7 +305,7 @@ AddTOCCache(time_t timestamp, CAFTOCENT *toc, CAFHEADER head,
             l1->entries[i] = NULL;
     }
 
-    tmp = (timestamp) &0xff;
+    tmp = (timestamp) & 0xff;
     cent = xmalloc(sizeof(CAFTOCCACHEENT));
     l1->entries[tmp] = cent;
 
