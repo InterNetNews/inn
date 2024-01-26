@@ -136,10 +136,10 @@ static int dbzversion = 6; /* for validating .dir file format */
 #    define BIAS(o)        ((o) + 1) /* make any valid of_t non-VACANT */
 #    define UNBIAS(o)      ((o) -1)  /* reverse BIAS() effect */
 
-#    define HASTAG(o)      ((o) &taghere)
-#    define TAG(o)         ((o) &tagbits)
+#    define HASTAG(o)      ((o) & taghere)
+#    define TAG(o)         ((o) & tagbits)
 #    define NOTAG(o)       ((o) & ~tagboth)
-#    define CANTAG(o)      (((o) &tagboth) == 0)
+#    define CANTAG(o)      (((o) & tagboth) == 0)
 #    define MKTAG(v)       (((v) << conf.tagshift) & tagbits)
 
 #    ifndef NOTAGS
@@ -225,7 +225,7 @@ static dbzoptions options = {
 #ifdef HAVE_MMAP
     INCORE_MMAP, /* exists mmap'ed. ignored in tagged hash mode */
 #else
-    INCORE_NO,            /* exists from disk. ignored in tagged hash mode */
+    INCORE_NO, /* exists from disk. ignored in tagged hash mode */
 #endif
     true /* non-blocking writes */
 };

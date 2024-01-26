@@ -2270,9 +2270,7 @@ lmtp_writeCB(EndPoint e UNUSED, IoStatus i UNUSED, Buffer *b, void *d)
 
     case LMTP_WRITING_STARTAUTH:
     case LMTP_WRITING_STEPAUTH:
-
         cxn->lmtp_state = LMTP_READING_STEPAUTH;
-
         break;
 
     case LMTP_WRITING_UPTODATA:

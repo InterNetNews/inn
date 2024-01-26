@@ -171,7 +171,7 @@ static HashEntry chronList;  /* chronologically ordered. Points at newest */
 
 #define TABLE_SIZE        2048 /* MUST be a power of 2 */
 #define HASH_MASK         (TABLE_SIZE - 1)
-#define TABLE_ENTRY(hash) ((hash) &HASH_MASK)
+#define TABLE_ENTRY(hash) ((hash) & HASH_MASK)
 
 
 /*******************************************************************/
