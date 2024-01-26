@@ -36,6 +36,7 @@ static unsigned int typetoindex[256];
 int SMerrno;
 char *SMerrorstr = NULL;
 static bool Initialized = false;
+static bool filteredKeyUsed = false;
 bool SMopenmode = false;
 bool SMpreopen = false;
 
@@ -261,6 +262,7 @@ ParseTime(char *tmbuf)
 #define SMexpire     14
 #define SMoptions    15
 #define SMexactmatch 16
+#define SMfiltered   17
 
 static CONFTOKEN smtoks[] = {
     {SMlbrace,     (char *) "{"          },
@@ -272,6 +274,7 @@ static CONFTOKEN smtoks[] = {
     {SMexpire,     (char *) "expires:"   },
     {SMoptions,    (char *) "options:"   },
     {SMexactmatch, (char *) "exactmatch:"},
+    {SMfiltered,   (char *) "filtered:"  },
     {0,            NULL                  }
 };
 
@@ -298,6 +301,7 @@ SMreadconfig(void)
     char *options = 0;
     int inbrace;
     bool exactmatch = false;
+    bool filtered = false;
 
     /* if innconf isn't already read in, do so. */
     if (innconf == NULL) {
@@ -321,6 +325,7 @@ SMreadconfig(void)
     }
     free(path);
 
+    filteredKeyUsed = false;
     inbrace = 0;
     while ((tok = CONFgettoken(smtoks, f)) != NULL) {
         if (!inbrace) {
@@ -351,6 +356,7 @@ SMreadconfig(void)
             minexpire = 0;
             maxexpire = 0;
             exactmatch = false;
+            filtered = false;
 
         } else {
             type = tok->type;
@@ -403,6 +409,13 @@ SMreadconfig(void)
                         || strcasecmp(p, "on") == 0)
                         exactmatch = true;
                     break;
+                case SMfiltered:
+                    if (strcasecmp(p, "true") == 0 || strcasecmp(p, "yes") == 0
+                        || strcasecmp(p, "on") == 0) {
+                        filtered = true;
+                        filteredKeyUsed = true;
+                    }
+                    break;
                 default:
                     SMseterror(SMERR_CONFIG,
                                "Unknown keyword in method declaration");
@@ -448,6 +461,7 @@ SMreadconfig(void)
             sub->minexpire = minexpire;
             sub->maxexpire = maxexpire;
             sub->exactmatch = exactmatch;
+            sub->filtered = filtered;
 
             free(method);
             method = 0;
@@ -643,6 +657,7 @@ SMgetsub(const ARTHANDLE article)
             && (!sub->maxsize || (article.len <= sub->maxsize))
             && (!sub->minexpire || article.expires >= sub->minexpire)
             && (!sub->maxexpire || (article.expires <= sub->maxexpire))
+            && (!filteredKeyUsed || article.filtered == sub->filtered)
             && MatchGroups(article.groups, article.groupslen, sub->pattern,
                            sub->exactmatch)) {
             if (InitMethod(typetoindex[sub->type]))

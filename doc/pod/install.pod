@@ -1319,6 +1319,7 @@ A storage class definition looks like this:
         expires: <mintime>[,<maxtime>]
         options: <options>
         exactmatch: <bool>
+        filtered: <bool>
     }
 
 <methodname> is the name of the storage method to use to store articles in

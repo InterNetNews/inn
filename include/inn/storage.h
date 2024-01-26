@@ -50,15 +50,16 @@ typedef struct {
     void *private;            /* A pointer to method specific data */
     time_t arrived;           /* The time when the article arrived */
     time_t expires;           /* The time when the article will be expired */
+    bool filtered;            /* Article was marked by a filter */
     char *groups;             /* Where Newsgroups header field body starts */
     int groupslen;            /* Length of Newsgroups header field body */
     TOKEN *token;             /* A pointer to the article's TOKEN */
 } ARTHANDLE;
 
 /* Initializer for the ARTHANDLE structure. */
-#define ARTHANDLE_INITIALIZER              \
-    {                                      \
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 \
+#define ARTHANDLE_INITIALIZER                 \
+    {                                         \
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 \
     }
 
 #define SMERR_NOERROR    0
