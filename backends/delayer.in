@@ -136,11 +136,19 @@ In I<pathetc>, copy F<innfeed.conf> to F<innfeed-delayed.conf>.
 =item *
 
 Edit F<innfeed-delayed.conf> in I<pathetc>, and change the occurrences of
-C<innfeed> to C<innfeed-delayed>, typically in the I<backlog-directory>,
-I<log-file>, I<pid-file> and I<status-file> parameters.  If these parameters
-are not set, you should explicitly set them in F<innfeed-delayed.conf> so that
-their default values do not conflict with a running instance in parallel of a
-real-time feed using B<innfeed>.
+C<innfeed> to C<innfeed-delayed>, typically in the I<log-file>, I<pid-file>
+and I<status-file> parameters.  If these parameters are not set, you should
+explicitly set them in F<innfeed-delayed.conf> so that their default values
+do not conflict with a running instance in parallel of a real-time feed using
+B<innfeed>.  For instance:
+
+    log-file:    innfeed-delayed.log
+    pid-file:    innfeed-delayed.pid
+    status-file: innfeed-delayed.status
+
+Using the same value for I<backlog-directory> in both F<innfeed.conf> and
+F<innfeed-delayed.conf> is fine because the site names in F<newsfeeds> are
+unique (see below with C<news.uu.net> and C<news.uu.net-delayed>).
 
 =item *
 
@@ -167,8 +175,8 @@ This will delay articles via that feed for 120 seconds.
 Use C<innfeed-delayed!> instead of C<innfeed!> in the F<newsfeeds> entries for
 peers which should receive a delayed feed.  If you wish, you can also set up
 two entries for each peer, keeping a real-time feed through C<innfeed!> for
-control articles and the C<news.lists.filters> newsgroup (for NoCeM notices),
-and delaying the feed of other newsgroups through C<innfeed-delayed!>.
+control articles and NoCeM notices, and delaying the feed of other articles
+through C<innfeed-delayed!>.
 
     news.uu.net/uunet\
         :!*,control,control.*,news.lists.filters\
@@ -178,9 +186,9 @@ and delaying the feed of other newsgroups through C<innfeed-delayed!>.
         :*,!control,!control.*,@news.lists.filters\
         :Tm:innfeed-delayed!
 
-In that case, be sure to use the C<news.uu.net-delayed> peer name in
-F<innfeed-delayed.conf>.  You should only configure a delayed feed for
-a remote peer if its news administrator agrees with that (he may want a
+In that case, be sure to use the same C<news.uu.net-delayed> peer name in
+F<innfeed-delayed.conf>.  Note that you should only configure a delayed feed
+for a remote peer if its news administrator agrees with that (he may want a
 real-time feed, or already have locally implemented a delay on his incoming
 feeds).
 
