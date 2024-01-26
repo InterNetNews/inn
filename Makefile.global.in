@@ -30,8 +30,7 @@ abs_builddir	= @abs_builddir@
 
 ##  Basic compiler settings.  COPT is the variable to override on the make
 ##  command line to change the optimization or add warning flags (such as
-##  -Wall).  LFS_* is for large file support.  All of INN is built with the
-##  large file support flags if provided.
+##  -Wall).  All of INN is built with the large file support flags if provided.
 
 CC		= @CC@
 COPT		= @CFLAGS@

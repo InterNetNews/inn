@@ -21,8 +21,7 @@
 /* following code lifted from inndf.c */
 
 #ifdef HAVE_STATVFS
-#    include <sys/statvfs.h> /* specific includes */
-/* XXX is there a 'fstatvfs'? I don't have such a system to check--rmtodd*/
+#    include <sys/statvfs.h>   /* specific includes */
 #    define STATFUNCT fstatvfs /* function call */
 #    define STATSTRUC statvfs  /* structure name */
 #    define STATAVAIL f_bavail /* blocks available */
