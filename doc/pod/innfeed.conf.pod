@@ -213,7 +213,7 @@ to the B<-M> command-line option.
 
 This key requires a pathname value and defaults to F<innfeed.log>.
 It specifies where any logging messages that could not be sent via syslog(3)
-should go (such as those generated when a positive value for I<debug-value>
+should go (such as those generated when a positive value for I<debug-level>
 is used).  This corresponds to the B<-l> command-line option.
 
 This pathname is relative to I<pathlog> in F<inn.conf>.
