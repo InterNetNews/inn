@@ -1046,8 +1046,8 @@ sub storage_conf {
     my %groups = parse_config(
         {
             'method' => {
-                'class'      => 'number',
                 'newsgroups' => 'string',    # uwildmat_poison
+                'class'      => 'number',
                 'size'       => 'minsize[,maxsize] definition',
                 'expires'    => 'mintime[,maxtime] definition',
                 'options'    => 'string',
@@ -1155,24 +1155,31 @@ my @directories = (
 );
 my @rnews_programs = ('bunbatch', 'c7unbatch', 'decode', 'encode', 'gunbatch');
 my @newsbin_public = (
-    'archive', 'batcher', 'buffchan', 'convdate', 'cvtbatch',
-    'getlist', 'grephistory', 'innconfval', 'innxmit',
-    'nntpget', 'nntpsend', 'sendxbatches', 'send-ihave', 'send-uucp',
-    'shlock', 'shrinkfile',
+    'actmerge', 'actsync', 'actsyncd', 'archive', 'batcher', 'buffchan',
+    'cnfsstat', 'controlbatch', 'controlchan', 'convdate', 'cvtbatch',
+    'delayer', 'docheckgroups', 'fastrm',
+    'getlist', 'grephistory', 'innconfval', 'inndf', 'innmail', 'innreport',
+    'innxbatch', 'innxmit', 'mailpost', 'news2mail', 'ninpaths',
+    'nntpget', 'nntpsend', 'perl-nocem', 'pgpverify', 'pullnews',
+    'scanspool', 'send-ihave', 'sendinpaths', 'send-uucp', 'sendxbatches',
+    'shlock', 'shrinkfile', 'simpleftp', 'sm', 'tinyleaf',
 );
 my @newsbin_private = (
-    'ctlinnd', 'expire', 'expirerm', 'inncheck', 'innstat', 'innwatch',
-    'makehistory', 'news.daily', 'overchan', 'prunehistory', 'scanlogs',
-    'tally.control', 'writelog',
+    'buffindexed_d', 'cnfsheadconf', 'ctlinnd', 'expire', 'expireover',
+    'expirerm', 'gencancel', 'imapfeed', 'inncheck', 'innfeed', 'innstat',
+    'innupgrade', 'innwatch', 'makedbz',
+    'makehistory', 'mod-active', 'news.daily', 'ovdb_init', 'ovdb_monitor',
+    'ovdb_server', 'ovdb_stat', 'overchan', 'ovsqlite-server',
+    'ovsqlite-util', 'procbatch', 'prunehistory', 'rc.news', 'scanlogs',
+    'tally.control', 'tdx-util', 'writelog',
 );
 
 ##  The modes (min and max) for the various programs.
 my %prog_modes = (
-    'inews'    => [0500, $INN::Config::inewsmode],
-    'innd'     => [0500, 0550],
-    'newsboot' => [0500, 0550],
-    'nnrpd'    => [0500, 0555],
-    'rnews'    => [0500, $INN::Config::rnewsmode],
+    'inews' => [0500, $INN::Config::inewsmode],
+    'innd'  => [0500, 0550],
+    'nnrpd' => [0500, 0555],
+    'rnews' => [0500, $INN::Config::rnewsmode],
 );
 
 ##  Check the permissions of nearly every file in an INN installation.
