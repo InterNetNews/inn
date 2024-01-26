@@ -159,28 +159,30 @@ if ($lastconftime < $maxtime) {
 
 my $logline;
 my $header_printed = 0;
-my ($gr, $cl, $min, $max);
+my ($gr, $cl, $min, $max, $filtered);
 if ($oclass) {
     if ($class{$oclass}) {
         if (!$header_printed) {
             if ($stor{$oclass}) {
-                ($gr, $cl, $min, $max) = split(/:/, $stor{$oclass});
+                ($gr, $cl, $min, $max, undef, $filtered)
+                  = split(/:/, $stor{$oclass});
             } else {
-                ($gr, $cl, $min, $max) = ('', $oclass, 0, 0);
+                ($gr, $cl, $min, $max, $filtered) = ('', $oclass, 0, 0, 0);
             }
             # Remove leading and trailing double quotes, if present.
+            my $filtered_s = $filtered ? ", filtered only" : "";
             $gr =~ s/"?([^"]*)"?/$1/g;
             if ($use_syslog) {
                 if ($min || $max) {
                     $logline = sprintf(
                         "Class %s for groups matching \"%s\" "
-                          . "article size min/max: %d/%d",
-                        $oclass, $gr, $min, $max,
+                          . "article size min/max: %d/%d%s",
+                        $oclass, $gr, $min, $max, $filtered_s,
                     );
                 } else {
                     $logline = sprintf(
-                        "Class %s for groups matching \"%s\"",
-                        $oclass, $gr,
+                        "Class %s for groups matching \"%s\"%s",
+                        $oclass, $gr, $filtered_s,
                     );
                 }
             } else {
@@ -188,6 +190,9 @@ if ($oclass) {
                 print STDOUT " for groups matching \"$gr\"";
                 if ($min || $max) {
                     print STDOUT ", article size min/max: $min/$max";
+                }
+                if ($filtered) {
+                    print STDOUT ", filtered articles only";
                 }
                 print STDOUT "\n";
             }
@@ -213,25 +218,31 @@ if ($oclass) {
 } else {    # Print all Classes
     my %buffDone;
     foreach my $c (@storsort) {
-        ($gr, $cl, $min, $max) = split(/:/, $stor{$c});
+        ($gr, $cl, $min, $max, undef, $filtered) = split(/:/, $stor{$c});
+        my $filtered_s = $filtered ? ", filtered only" : "";
         # Remove leading and trailing double quotes, if present.
         $gr =~ s/"?([^"]*)"?/$1/g;
         if ($use_syslog) {
             if ($min || $max) {
                 $logline = sprintf(
                     "Class %s for groups matching \"%s\" "
-                      . "article size min/max: %d/%d",
-                    $c, $gr, $min, $max,
+                      . "article size min/max: %d/%d%s",
+                    $c, $gr, $min, $max, $filtered_s,
                 );
             } else {
-                $logline
-                  = sprintf("Class %s for groups matching \"%s\"", $c, $gr);
+                $logline = sprintf(
+                    "Class %s for groups matching \"%s\"%s", $c, $gr,
+                    $filtered_s,
+                );
             }
         } else {
             print STDOUT "Class $c";
             print STDOUT " for groups matching \"$gr\"";
             if ($min || $max) {
                 print STDOUT ", article size min/max: $min/$max";
+            }
+            if ($filtered) {
+                print STDOUT ", filtered articles only";
             }
             print STDOUT "\n";
         }
@@ -357,10 +368,16 @@ sub read_storageconf {
 
             $key{'SIZE'} .= ",0" unless $key{'SIZE'} =~ /,/;
             $key{'SIZE'} =~ s/,/:/;
+            $key{'FILTERED'}
+              = defined $key{'FILTERED'}
+              ? $key{'FILTERED'} =~ /^(true|yes|on)$/
+                  ? 1
+                  : 0
+              : 0;
 
             if (!defined $stor{ $key{'OPTIONS'} }) {
                 $stor{ $key{'OPTIONS'} } = "$key{'NEWSGROUPS'}:$key{'CLASS'}:"
-                  . "$key{'SIZE'}:$key{'OPTIONS'}";
+                  . "$key{'SIZE'}:$key{'OPTIONS'}:$key{'FILTERED'}";
                 push(@storsort, $key{'OPTIONS'});
             }
         }

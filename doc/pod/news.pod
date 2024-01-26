@@ -52,6 +52,13 @@ how to use the module.
 
 =item *
 
+Added a new I<filtered> option in F<storage.conf> to store articles which have
+been rejected by a Perl or Python filter for B<innd> in a separate storage
+class, when I<dontrejectfiltered> is set to true in F<inn.conf>.  Thanks to
+Christoph Biedl for the feature.
+
+=item *
+
 The B<delayer> program, which previously was in the F<contrib> directory, is
 now installed by default.  It notably permits generating a delayed feed, for
 instance to give cancel control articles and NoCeM notices time to arrive, and

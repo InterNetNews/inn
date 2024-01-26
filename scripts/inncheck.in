@@ -1052,6 +1052,7 @@ sub storage_conf {
                 'expires'    => 'mintime[,maxtime] definition',
                 'options'    => 'string',
                 'exactmatch' => 'boolean',
+                'filtered'   => 'boolean',
             }
         }
     );

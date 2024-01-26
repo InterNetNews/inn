@@ -435,7 +435,7 @@ ARTheaderpcmp(const void *p1, const void *p2)
 /* Write an article using the storage api.  Put it together in memory and
    call out to the api. */
 static TOKEN
-ARTstore(CHANNEL *cp)
+ARTstore(CHANNEL *cp, bool filtered)
 {
     struct buffer *Article = &cp->In;
     ARTDATA *data = &cp->Data;
@@ -557,6 +557,7 @@ ARTstore(CHANNEL *cp)
     arth.arrived = (time_t) 0;
     arth.token = (TOKEN *) NULL;
     arth.expires = data->Expires;
+    arth.filtered = filtered;
     if (innconf->storeonxref) {
         arth.groups = data->Replic;
         arth.groupslen = data->ReplicLength;
@@ -1694,7 +1695,7 @@ HashFeedMatch(HASHFEEDLIST *hf, char *MessageID)
 */
 static void
 ARTpropagate(ARTDATA *data, const char **hops, int hopcount, char **list,
-             bool ControlStore, bool OverviewCreated, bool Filtered)
+             bool ControlStore, bool OverviewCreated, bool filtered)
 {
     HDRCONTENT *hc = data->HdrContent;
     SITE *sp, *funnel;
@@ -1815,7 +1816,7 @@ ARTpropagate(ARTDATA *data, const char **hops, int hopcount, char **list,
         }
 
         /* Handle dontrejectfiltered. */
-        if (Filtered && sp->DropFiltered)
+        if (filtered && sp->DropFiltered)
             continue;
 
         /* Write that the site is getting it, and flag to send it. */
@@ -2576,7 +2577,7 @@ ARTpost(CHANNEL *cp)
     for (i = 0; (ngp = GroupPointers[i]) != NULL; i++)
         ngp->PostCount = 0;
 
-    token = ARTstore(cp);
+    token = ARTstore(cp, Filtered);
     /* Change trailing '\r\n' to '\0\n' of all system header fields. */
     for (i = 0; i < MAX_ARTHEADER; i++) {
         if (HDR_FOUND(i)) {

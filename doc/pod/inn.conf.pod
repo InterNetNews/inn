@@ -299,6 +299,10 @@ will be accepted on the local machine, but articles rejected by the
 filter will I<not> be fed to any peers specified in F<newsfeeds> with
 the C<Af> flag.  The default value is false.
 
+If this parameter is set, you may also use the I<filtered> key of storage
+method entries in F<storage.conf> to store filtered articles in dedicated
+storage classes.
+
 =item I<hiscachesize>
 
 If set to a value other than C<0>, a hash of recently received Message-IDs

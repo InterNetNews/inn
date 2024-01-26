@@ -35,6 +35,7 @@ entries, the first one will be used.  Each entry is formatted as follows:
         expires: <mintime>[,<maxtime>]
         options: <options>
         exactmatch: <bool>
+        filtered: <bool>
     }
 
 If spaces or tabs are included in a value, that value must be enclosed in
@@ -136,6 +137,21 @@ newsgroups is sufficient, provided no newsgroup matches a poison
 wildmat as described above.)  This is a boolean value; C<true>, C<yes>
 and C<on> are usable to enable this key.  The case of these values is
 not significant.  The default is false.
+
+=item I<filtered>: <bool>
+
+If this key is set to true, the article must have been rejected by any
+enabled article filters (Perl or Python) for B<innd>.  This also requires that
+I<dontrejectfiltered> is set to true in F<inn.conf>.  Filtered articles are
+usually stored in a small CNFS buffer, or another storage method with a rather
+tight expiration policy.  This is a boolean value; C<true>, C<yes> and C<on>
+are usable to enable this key.  The case of these values is not significant.
+The default is false.
+
+If all the storage classes have this key set to false, filtered articles are
+stored in the same storage class as accepted articles.  It is only when at
+least one storage class has this key set to true than filtered articles and
+accepted articles are no longer stored mixed together in any storage class.
 
 =back
 
