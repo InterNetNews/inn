@@ -41,7 +41,7 @@ SafeFlush(FILE *F)
 }
 
 
-static void
+__attribute__((__noreturn__)) static void
 SendQuit(int x)
 {
     char buff[BUFSIZ];
