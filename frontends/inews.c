@@ -821,7 +821,7 @@ main(int ac, char *av[])
      *
      * The flags are compatible with the original inews (C News) and the
      * improved inews-xt from Olaf Titz.
-     * Also keep compatibility with tinews (shipped with tin). */
+     * Also keep compatibility with tinews.pl (shipped with tin). */
     while ((i = getopt(ac, av,
                        "a:Ac:d:De:Ef:F:hHi:ILm:n:No:Op:Pr:Rs:St:vVw:Wx:XY"))
            != EOF) {
@@ -845,7 +845,7 @@ main(int ac, char *av[])
         case 'I': /* Don't add Injection-Date. */
         case 'L': /* Don't add Cancel-Key. */
         case 'v': /* Verbose mode. */
-            /* Ignore tinews options. */
+            /* Ignore tinews.pl options. */
             break;
         case 'E':
             DiscardEmpty = true;

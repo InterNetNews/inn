@@ -81,7 +81,8 @@ Accepted for compatibility with C News.  These options have no affect.
 
 =item B<-i>, B<-I>, B<-L>, B<-s>, B<-v>, B<-X>
 
-Accepted for compatibility with tinews(1).  These options have no effect.
+Accepted for compatibility with B<tinews.pl>, shipped with the news reader
+tin.  These options have no effect.
 
 =item B<-D>, B<-N>
 
@@ -189,11 +190,13 @@ checks that are not dependent on the user running B<inews> should probably
 be removed in favor of letting the news server handle them.
 
 Since INN's B<inews> uses F<inn.conf> and some other corners of an INN
-installation, it's not very appropriate as a general stand-alone B<inews>
+installation, it's not very appropriate as a general standalone B<inews>
 program for general use on a system that's not running a news server.  Other,
-more suitable versions of B<inews> are available as part of various Unix news
-clients or by themselves.  We try to keep compatibility with the flags other
-implementations use (like C News, inews-xt and tinews(1)).
+more suitable versions of B<inews> are available as part of various Unix
+news clients or by themselves.  We try to keep compatibility with the flags
+other implementations use (like C News, inews-xt, and the still actively
+maintained B<tinews.pl> shipped with the news reader tin or downloadable from
+L<http://bzr.tin.org/tools/tinews.pl> for a standalone use).
 
 =head1 HISTORY
 
