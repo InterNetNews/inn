@@ -29,8 +29,8 @@ that storage method; if an article matches multiple storage method
 entries, the first one will be used.  Each entry is formatted as follows:
 
     method <methodname> {
-        class: <storage_class>
         newsgroups: <wildmat>
+        class: <storage_class>
         size: <minsize>[,<maxsize>]
         expires: <mintime>[,<maxtime>]
         options: <options>
@@ -59,17 +59,6 @@ The meanings of the keys in each storage method entry are as follows:
 
 =over 4
 
-=item I<class>: <storage_class>
-
-An identifier for this storage method entry.  <storage_class> should be a
-number between 0 and 255.  It should be unique across all of the entries
-in this file.  It is mainly used for specifying expiration times by storage
-class as described in expire.ctl(5); C<timehash> and C<timecaf> will also set
-the top-level directory in which articles accepted by this storage class are
-stored.  The assignment of a particular number to a storage class is arbitrary
-but permanent (since it is used in storage tokens).  Storage classes can be
-for instance numbered sequentially in F<storage.conf>.
-
 =item I<newsgroups>: <wildmat>
 
 What newsgroups are stored using this storage method.  <wildmat> is a
@@ -86,6 +75,27 @@ is matched in order.
 
 There is no default newsgroups pattern; if an entry should match all
 newsgroups, use an explicit C<newsgroups: *>.
+
+=item I<class>: <storage_class>
+
+An identifier for this storage method entry.  <storage_class> should be a
+number between 0 and 255.  It should be unique across all of the entries in
+this file.  It is mainly used for specifying expiration times by storage
+class as described in expire.ctl(5); C<timehash> and C<timecaf> will also
+set the top-level directory in which articles accepted by this storage class
+are stored.  Storage classes can be for instance numbered sequentially in
+F<storage.conf>.
+
+The assignment of a particular number to a storage class is arbitrary
+but permanent (since it is used in storage tokens).  As a matter of fact,
+an article is assigned a storage class depending on the storage rules in
+effect at the time of its arrival.  This identifier will not change even
+if F<storage.conf> is modified afterwards and the same article would have
+been assigned another storage class, had it been received after that change.
+The article is still perfectly valid and retrievable.  The only difference
+will be for expiration with I<groupbaseexpiry> set to false in F<inn.conf>:
+the rules in F<expire.ctl> apply to the storage class assigned to articles at
+their arrival.
 
 =item I<size>: <minsize>[,<maxsize>]
 
