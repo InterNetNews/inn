@@ -130,20 +130,24 @@ AC_DEFUN([INN_LIB_PYTHON],
         print(" -L".join(sysconfig.get_config_vars("LIBDIR")))'`
      py_ldlibrary=`$PYTHON -c 'import sysconfig; \
         print(sysconfig.get_config_vars("LDLIBRARY")@<:@0@:>@)'`
-     py_linkage=`$PYTHON -c 'import sysconfig;                     \
-        print(" ".join(sysconfig.get_config_vars(                  \
-            "LIBS", "LIBC", "LIBM", "LOCALMODLIBS", "BASEMODLIBS", \
-            "LINKFORSHARED", "LDFLAGS")))'`],
+     AS_IF([test -x "${PYTHON}-config"],
+        [py_linkage=`${PYTHON}-config --libs 2>/dev/null`],
+        [py_linkage=`$PYTHON -c 'import sysconfig;     \
+            print(" ".join(sysconfig.get_config_vars(  \
+                "LIBS", "LIBC", "LIBM", "BASEMODLIBS", \
+                "LINKFORSHARED", "LDFLAGS")))'`])],
     [py_include=`$PYTHON -c 'import distutils.sysconfig; \
         print(distutils.sysconfig.get_python_inc())'`
      py_libdir=`$PYTHON -c 'import distutils.sysconfig; \
         print(" -L".join(distutils.sysconfig.get_config_vars("LIBDIR")))'`
      py_ldlibrary=`$PYTHON -c 'import distutils.sysconfig; \
         print(distutils.sysconfig.get_config_vars("LDLIBRARY")@<:@0@:>@)'`
-     py_linkage=`$PYTHON -c 'import distutils.sysconfig;           \
-        print(" ".join(distutils.sysconfig.get_config_vars(        \
-            "LIBS", "LIBC", "LIBM", "LOCALMODLIBS", "BASEMODLIBS", \
-            "LINKFORSHARED", "LDFLAGS")))'`])
+     AS_IF([test -x "${PYTHON}-config"],
+        [py_linkage=`${PYTHON}-config --libs 2>/dev/null`],
+        [py_linkage=`$PYTHON -c 'import distutils.sysconfig;    \
+            print(" ".join(distutils.sysconfig.get_config_vars( \
+                "LIBS", "LIBC", "LIBM", "BASEMODLIBS",          \
+                "LINKFORSHARED", "LDFLAGS")))'`])])
  PYTHON_CPPFLAGS="-I$py_include"
  py_libpython=`AS_ECHO(["$py_ldlibrary"]) \
     | sed -e 's/^lib//' -e 's/\.@<:@a-z@:>@*$//'`
