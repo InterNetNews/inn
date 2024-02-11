@@ -254,6 +254,10 @@ news user or the news group can read these directories and files
 F</etc/letsencrypt/archive/news.server.com> where the real keys are located,
 and the private key should not be world-readable).
 
+If you prefer to point to files outside the directory of S<Let's Encrypt>, you
+may add a post-renewal hook for S<Let's Encrypt> to copy the generated files
+to another location, and give them the expected rights.
+
 There are two common ways for a news client to negotiate a TLS
 connection: either via the use of a dedicated port (usually 563)
 on which TLS is immediately negotiated upon connection, or via the
