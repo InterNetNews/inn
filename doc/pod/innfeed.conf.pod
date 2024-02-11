@@ -46,11 +46,12 @@ integers, floating-point numbers, characters, booleans, and strings.
 
 Integer and floating-point numbers are as to be expected, except that
 exponents in floating-point numbers are not supported.  A boolean value
-is either C<true> or C<false> (case is not significant).  A character
-value is a single-quoted character as defined by the C-language.  A string
-value is any other sequence of characters.  If the string needs to contain
-whitespace, then it must be quoted with double quotes, and uses the same
-format for embedding non-printing characters as normal C-language string.
+is either C<true>, C<yes>, C<on>, C<false>, C<no> or C<off> (case is not
+significant).  A character value is a single-quoted character as defined by
+the C-language.  A string value is any other sequence of characters.  If the
+string needs to contain whitespace, then it must be quoted with double quotes,
+and uses the same format for embedding non-printing characters as normal
+C-language string.
 
 Peer entries look like:
 

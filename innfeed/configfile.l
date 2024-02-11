@@ -251,9 +251,13 @@ ID	[a-zA-Z][-a-zA-Z0-9._/]+
 
 [^#:\'\" \t\n]+	{
     yylval.name = xstrdup(yytext);
-    if (strcasecmp(yylval.name,"false") == 0)
+    if (strcasecmp(yylval.name, "false") == 0
+        || strcasecmp(yylval.name, "no") == 0
+        || strcasecmp(yylval.name, "off") == 0)
         return (FALSEBVAL);
-    else if (strcasecmp(yylval.name,"true") == 0)
+    else if (strcasecmp(yylval.name, "true") == 0
+             || strcasecmp(yylval.name, "yes") == 0
+             || strcasecmp(yylval.name, "on") == 0)
         return (TRUEBVAL);
     else
         return (WORD);

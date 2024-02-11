@@ -1120,9 +1120,12 @@ RCreadfile(REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
             if ((word = RCreaddata(&linecount, F, &toolong)) == NULL) {
                 break;
             }
-            if (!strcmp(word, "true"))
+            if (strcasecmp(word, "true") == 0 || strcasecmp(word, "yes") == 0
+                || strcasecmp(word, "on") == 0)
                 flag = true;
-            else if (!strcmp(word, "false"))
+            else if (strcasecmp(word, "false") == 0
+                     || strcasecmp(word, "no") == 0
+                     || strcasecmp(word, "off") == 0)
                 flag = false;
             else {
                 syslog(L_ERROR, MUST_BE_BOOL, LogName, filename, linecount);
@@ -1150,9 +1153,12 @@ RCreadfile(REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
             if ((word = RCreaddata(&linecount, F, &toolong)) == NULL) {
                 break;
             }
-            if (!strcmp(word, "true"))
+            if (strcasecmp(word, "true") == 0 || strcasecmp(word, "yes") == 0
+                || strcasecmp(word, "on") == 0)
                 flag = true;
-            else if (!strcmp(word, "false"))
+            else if (strcasecmp(word, "false") == 0
+                     || strcasecmp(word, "no") == 0
+                     || strcasecmp(word, "off") == 0)
                 flag = false;
             else {
                 syslog(L_ERROR, MUST_BE_BOOL, LogName, filename, linecount);
@@ -1180,9 +1186,12 @@ RCreadfile(REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
             if ((word = RCreaddata(&linecount, F, &toolong)) == NULL) {
                 break;
             }
-            if (!strcmp(word, "true"))
+            if (strcasecmp(word, "true") == 0 || strcasecmp(word, "yes") == 0
+                || strcasecmp(word, "on") == 0)
                 flag = true;
-            else if (!strcmp(word, "false"))
+            else if (strcasecmp(word, "false") == 0
+                     || strcasecmp(word, "no") == 0
+                     || strcasecmp(word, "off") == 0)
                 flag = false;
             else {
                 syslog(L_ERROR, MUST_BE_BOOL, LogName, filename, linecount);
@@ -1210,9 +1219,12 @@ RCreadfile(REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
             if ((word = RCreaddata(&linecount, F, &toolong)) == NULL) {
                 break;
             }
-            if (!strcmp(word, "true"))
+            if (strcasecmp(word, "true") == 0 || strcasecmp(word, "yes") == 0
+                || strcasecmp(word, "on") == 0)
                 flag = true;
-            else if (!strcmp(word, "false"))
+            else if (strcasecmp(word, "false") == 0
+                     || strcasecmp(word, "no") == 0
+                     || strcasecmp(word, "off") == 0)
                 flag = false;
             else {
                 syslog(L_ERROR, MUST_BE_BOOL, LogName, filename, linecount);
@@ -1240,9 +1252,12 @@ RCreadfile(REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
             if ((word = RCreaddata(&linecount, F, &toolong)) == NULL) {
                 break;
             }
-            if (!strcmp(word, "true"))
+            if (strcasecmp(word, "true") == 0 || strcasecmp(word, "yes") == 0
+                || strcasecmp(word, "on") == 0)
                 flag = true;
-            else if (!strcmp(word, "false"))
+            else if (strcasecmp(word, "false") == 0
+                     || strcasecmp(word, "no") == 0
+                     || strcasecmp(word, "off") == 0)
                 flag = false;
             else {
                 syslog(L_ERROR, MUST_BE_BOOL, LogName, filename, linecount);
@@ -1270,9 +1285,12 @@ RCreadfile(REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
             if ((word = RCreaddata(&linecount, F, &toolong)) == NULL) {
                 break;
             }
-            if (!strcmp(word, "true"))
+            if (strcasecmp(word, "true") == 0 || strcasecmp(word, "yes") == 0
+                || strcasecmp(word, "on") == 0)
                 flag = true;
-            else if (!strcmp(word, "false"))
+            else if (strcasecmp(word, "false") == 0
+                     || strcasecmp(word, "no") == 0
+                     || strcasecmp(word, "off") == 0)
                 flag = false;
             else {
                 syslog(L_ERROR, MUST_BE_BOOL, LogName, filename, linecount);

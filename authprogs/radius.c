@@ -180,9 +180,13 @@ read_config(char *authfile, rad_config_t *radconf)
                     radconfig->suffix = xstrdup(iter);
                     break;
                 case RADsource:
-                    if (!strcasecmp(iter, "true"))
+                    if (strcasecmp(iter, "true") == 0
+                        || strcasecmp(iter, "yes") == 0
+                        || strcasecmp(iter, "on") == 0)
                         radconfig->ignore_source = 1;
-                    else if (!strcasecmp(iter, "false"))
+                    else if (strcasecmp(iter, "false") == 0
+                             || strcasecmp(iter, "no") == 0
+                             || strcasecmp(iter, "off") == 0)
                         radconfig->ignore_source = 0;
                     else
                         die("expected true or false after ignore-source on "
