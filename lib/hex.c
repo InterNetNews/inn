@@ -52,14 +52,13 @@ inn_encode_hex(const unsigned char *data, size_t length, char *buffer,
 void
 inn_decode_hex(const char *data, unsigned char *buffer, size_t buflen)
 {
-    const char *p;
     unsigned int i;
     unsigned char part;
 
     if (buflen == 0)
         return;
     memset(buffer, 0, buflen);
-    for (p = data, i = 0; (i / 2) < buflen; p++, i++) {
+    for (i = 0; (i / 2) < buflen; i++) {
         if (data[i] >= '0' && data[i] <= '9')
             part = data[i] - '0';
         else if (data[i] >= 'A' && data[i] <= 'F')
