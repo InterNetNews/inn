@@ -100,9 +100,9 @@ print_value(int i, void *p, struct datatab *tab, const char *sep)
         memcpy(&b, cp + tab[i].b, sizeof(b));
         if (tab[i].c != -1) {
             memcpy(&c, cp + tab[i].c, sizeof(c));
-            printf("%16d%s", a - b - c, sep);
+            printf("%16u%s", a - b - c, sep);
         } else {
-            printf("%16d%s", a - b, sep);
+            printf("%16u%s", a - b, sep);
         }
         break;
     case PCT32: /* 100 * 'a' / ('a' + 'b') */
@@ -145,7 +145,7 @@ print_value(int i, void *p, struct datatab *tab, const char *sep)
         break;
     case MODE: /* 'a' points to int, printed as octal mode */
         memcpy(&mode, cp + tab[i].a, sizeof(mode));
-        printf("        %04o%s", mode, sep);
+        printf("        %04o%s", (unsigned int) mode, sep);
         break;
     case TIME: /* 'a' points to time_t, printed as date/time */
         memcpy(&tm, cp + tab[i].a, sizeof(tm));
@@ -873,10 +873,10 @@ Usage:\n\
                     if (signalled)
                         goto out;
                     if (html)
-                        printf("<td>%ld<td>%ld<td>%d", low, high, count);
+                        printf("<td>%lu<td>%lu<td>%d", low, high, count);
                     else
                         printf(
-                            "%s:    counted: low: %ld, high: %ld, count: %d\n",
+                            "%s:    counted: low: %lu, high: %lu, count: %d\n",
                             argv[o], low, high, count);
                 }
             }
@@ -896,9 +896,9 @@ Usage:\n\
                            (gi.status & GROUPINFO_EXPIRING) ? "E " : "",
                            (gi.status & GROUPINFO_MOVING) ? "M" : "",
                            (gi.status == 0) ? "&nbsp;" : "");
-                    printf("<td>%d<td>ov%05d", gi.current_gid, gi.current_db);
+                    printf("<td>%u<td>ov%05d", gi.current_gid, gi.current_db);
                     if (gi.status & GROUPINFO_MOVING)
-                        printf("<td>%d<td>ov%05d", gi.new_gid, gi.new_db);
+                        printf("<td>%u<td>ov%05d", gi.new_gid, gi.new_db);
                     else
                         printf("<td>&nbsp;<td>&nbsp;");
                     if (gi.expired)
@@ -914,10 +914,10 @@ Usage:\n\
                            (gi.status & GROUPINFO_MOVING) ? "MOVING" : "",
                            (gi.status == 0) ? "none" : "");
 
-                    printf("%s: gid: %d;  Stored in: ov%05d\n", argv[o],
+                    printf("%s: gid: %u;  Stored in: ov%05d\n", argv[o],
                            gi.current_gid, gi.current_db);
                     if (gi.status & GROUPINFO_MOVING)
-                        printf("%s: pending gid: %d;  pending db: ov%05d\n",
+                        printf("%s: pending gid: %u;  pending db: ov%05d\n",
                                argv[o], gi.new_gid, gi.new_db);
                     if (gi.expired) {
                         printf("%s: last expired: %s\n", argv[o],

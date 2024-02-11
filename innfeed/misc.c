@@ -384,7 +384,7 @@ lockFile(const char *fileName)
             /* now send a null signal to the process named inside to see if
                it's still alive. */
             if (kill(pid, 0) == 0) {
-                warn("ME lock in-use already: %s by pid %ld", realName,
+                warn("ME lock in-use already: %s by pid %lu", realName,
                      (unsigned long) pid);
                 unlink(tmpName);
                 return false; /* process is still alive */

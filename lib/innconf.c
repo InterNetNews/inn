@@ -923,7 +923,7 @@ innconf_compare(struct innconf *conf1, struct innconf *conf2)
             }
             break;
         default:
-            die("internal error: invalid type in row %d of config table", i);
+            die("internal error: invalid type in row %u of config table", i);
         }
     return okay;
 }

@@ -86,7 +86,7 @@
 struct stbufs {                      /* for each article we are procesing */
     char st_fname[SPOOLNAMEBUFF];    /* file name */
     char st_id[NNTP_MAXLEN_COMMAND]; /* Message-ID */
-    int st_retry;                    /* retry count (0 for the first try) */
+    unsigned int st_retry;           /* retry count (0 for the first try) */
     ARTHANDLE *st_art;               /* arthandle to read article contents */
     int st_hash;                     /* hash value to speed searches */
     long st_size;                    /* article size */
@@ -101,7 +101,7 @@ static int CanStream = false; /* Result of stream negotation */
 static int DoCheck = true;    /* Should check before takethis? */
 static char modestream[] = "MODE STREAM";
 static char modeheadfeed[] = "MODE HEADFEED";
-static long retries = 0;
+static unsigned int retries = 0;
 static int logRejects = false; /* syslog the 437 responses. */
 
 
@@ -250,7 +250,7 @@ stidhash(char *MessageID)
 **/
 static int
 stalloc(const char *Article, const char *MessageID, ARTHANDLE *art, int hash,
-        int retry)
+        unsigned int retry)
 {
     int i;
 
@@ -360,7 +360,7 @@ ExitWithStats(int x)
            STATrejected, STATmissing, STATacceptedsize, STATrejectedsize);
     syslog(L_NOTICE, STAT2, REMhost, usertime, systime, STATend - STATbegin);
     if (retries)
-        syslog(L_NOTICE, "%s %lu Streaming retries", REMhost, retries);
+        syslog(L_NOTICE, "%s %u Streaming retries", REMhost, retries);
 
     if (BATCHfp != NULL && unlink(BATCHtemp) < 0 && errno != ENOENT)
         syswarn("cannot remove %s", BATCHtemp);
@@ -795,7 +795,7 @@ check(int i)
     STAToffered++;
     if (Debug) {
         if (stbuf[i].st_retry)
-            fprintf(stderr, "> %s (retry %d)\n", buff, stbuf[i].st_retry);
+            fprintf(stderr, "> %s (retry %u)\n", buff, stbuf[i].st_retry);
         else
             fprintf(stderr, "> %s\n", buff);
     }

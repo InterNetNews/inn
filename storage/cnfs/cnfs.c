@@ -1444,7 +1444,7 @@ cnfs_retrieve(const TOKEN token, const RETRTYPE amount)
         SMseterror(SMERR_NOENT, NULL);
         if (!nomessage) {
             warn("CNFS: cnfs_retrieve: token %s: bogus cycbuff name:"
-                 " %s:0x%s:%d",
+                 " %s:0x%s:%u",
                  TokenToText(token), cycbuffname, CNFSofft2hex(block, false),
                  cycnum);
             nomessage = true;
@@ -1486,7 +1486,7 @@ cnfs_retrieve(const TOKEN token, const RETRTYPE amount)
     */
     if (pread(cycbuff->fd, &cah, sizeof(cah), offset) != sizeof(cah)) {
         SMseterror(SMERR_UNDEFINED, "read failed");
-        syswarn("CNFS: could not read token %s %s:0x%s:%d", TokenToText(token),
+        syswarn("CNFS: could not read token %s %s:0x%s:%u", TokenToText(token),
                 cycbuffname, CNFSofft2hex(offset, false), cycnum);
         free(art);
         if (!SMpreopen)
@@ -1520,7 +1520,7 @@ cnfs_retrieve(const TOKEN token, const RETRTYPE amount)
     if (offset > cycbuff->len - cycbuff->blksz - (off_t) ntohl(cah.size) - 1) {
         if (!SMpreopen) {
             SMseterror(SMERR_UNDEFINED, "CNFSARTHEADER size overflow");
-            warn("CNFS: could not match article size token %s %s:0x%s:%d: %ld",
+            warn("CNFS: could not match article size token %s %s:0x%s:%u: %ld",
                  TokenToText(token), cycbuffname, CNFSofft2hex(offset, false),
                  cycnum, (long) ntohl(cah.size));
             free(art);
@@ -1531,7 +1531,7 @@ cnfs_retrieve(const TOKEN token, const RETRTYPE amount)
         if (offset
             > cycbuff->len - cycbuff->blksz - (off_t) ntohl(cah.size) - 1) {
             SMseterror(SMERR_UNDEFINED, "CNFSARTHEADER size overflow");
-            warn("CNFS: could not match article size token %s %s:0x%s:%d: %ld",
+            warn("CNFS: could not match article size token %s %s:0x%s:%u: %ld",
                  TokenToText(token), cycbuffname, CNFSofft2hex(offset, false),
                  cycnum, (long) ntohl(cah.size));
             free(art);
@@ -1565,7 +1565,7 @@ cnfs_retrieve(const TOKEN token, const RETRTYPE amount)
                                   cycbuff->fd, mmapoffset))
             == MAP_FAILED) {
             SMseterror(SMERR_UNDEFINED, "mmap failed");
-            syswarn("CNFS: could not mmap token %s %s:0x%s:%d",
+            syswarn("CNFS: could not mmap token %s %s:0x%s:%u",
                     TokenToText(token), cycbuffname,
                     CNFSofft2hex(offset, false), cycnum);
             free(art->private);
@@ -1584,7 +1584,7 @@ cnfs_retrieve(const TOKEN token, const RETRTYPE amount)
         pagefudge = 0;
         if (pread(cycbuff->fd, private->base, ntohl(cah.size), offset) < 0) {
             SMseterror(SMERR_UNDEFINED, "read failed");
-            syswarn("CNFS: could not read token %s %s:0x%s:%d",
+            syswarn("CNFS: could not read token %s %s:0x%s:%u",
                     TokenToText(token), cycbuffname,
                     CNFSofft2hex(offset, false), cycnum);
             free(private->base);

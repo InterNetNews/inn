@@ -590,7 +590,7 @@ CMDstarttls(int ac UNUSED, char *av[] UNUSED)
         free(GRPcur);
         GRPcur = NULL;
         if (ARTcount) {
-            syslog(L_NOTICE, "%s exit for STARTTLS articles %ld groups %ld",
+            syslog(L_NOTICE, "%s exit for STARTTLS articles %lu groups %ld",
                    Client.host, ARTcount, GRPcount);
         }
         GRPcount = 0;

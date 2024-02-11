@@ -184,7 +184,7 @@ AddNG(char *ng, unsigned long number)
                         /* Error, same number is already in NGtree (shouldn't
                            happen!) */
                         warn("tradspool: AddNG: duplicate newsgroup number in"
-                             " NGtree: %ld (%s)",
+                             " NGtree: %lu (%s)",
                              number, p);
                         return;
                     }

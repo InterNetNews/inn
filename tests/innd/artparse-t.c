@@ -133,7 +133,7 @@ ok_article(int n, const char *path, const char *error, bool slow, bool shift)
             if (i < wirelen - 1 && cp->State != CSeatarticle)
                 if (cp->State != CSgetheader && cp->State != CSgetbody) {
                     okay = false;
-                    warn("Bad state %d at %ld", cp->State, (long) i);
+                    warn("Bad state %u at %ld", cp->State, (long) i);
                     break;
                 }
         }

@@ -294,7 +294,7 @@ CMDnewnews(int ac, char *av[])
     if (innconf->nicenewnews != 0) {
         errno = 0;
         if (nice(innconf->nicenewnews) < 0 && errno != 0)
-            syswarn("%s can't nice to %ld for NEWNEWS", Client.host,
+            syswarn("%s can't nice to %lu for NEWNEWS", Client.host,
                     innconf->nicenewnews);
         innconf->nicenewnews = 0;
     }

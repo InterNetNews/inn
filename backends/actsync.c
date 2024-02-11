@@ -2690,7 +2690,7 @@ exec_cmd(int mode, const char *cmd, char *grp, char *type, const char *who)
         if (!WIFEXITED(status)) {
             warn("    %s %s %s%s%s%s%s returned unknown wait status: 0x%x",
                  CTLINND_NAME, cmd, grp, (type ? "" : " "), (type ? type : ""),
-                 (who ? "" : " "), (who ? who : ""), status);
+                 (who ? "" : " "), (who ? who : ""), (unsigned int) status);
             /* assume no work was done */
             return 0;
         }

@@ -285,7 +285,7 @@ SASLauth(int ac, char *av[])
                 GRPcur = NULL;
                 if (ARTcount) {
                     syslog(L_NOTICE,
-                           "%s exit for AUTHINFO SASL articles %ld groups %ld",
+                           "%s exit for AUTHINFO SASL articles %lu groups %ld",
                            Client.host, ARTcount, GRPcount);
                 }
                 GRPcount = 0;

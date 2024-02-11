@@ -289,7 +289,7 @@ readdump(FILE *f)
 #ifdef DEBUG
     {
         time_t st_time = st;
-        fprintf(stderr, " dumped start %s   total=%ld atimes=%ld (%ld)\n",
+        fprintf(stderr, " dumped start %s   total=%ld atimes=%lu (%lu)\n",
                 ctime(&st_time), tot, at, at - st);
     }
 #endif

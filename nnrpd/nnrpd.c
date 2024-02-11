@@ -214,7 +214,7 @@ ExitWithStats(int x, bool readconf)
 
     GRPreport();
     if (ARTcount)
-        syslog(L_NOTICE, "%s exit articles %ld groups %ld", Client.host,
+        syslog(L_NOTICE, "%s exit articles %lu groups %ld", Client.host,
                ARTcount, GRPcount);
     if (POSTreceived || POSTrejected)
         syslog(L_NOTICE, "%s posts received %ld rejected %ld", Client.host,
@@ -1102,7 +1102,7 @@ main(int argc, char *argv[])
     if (innconf->nicennrpd != 0) {
         errno = 0;
         if (nice(innconf->nicennrpd) < 0 && errno != 0)
-            syswarn("could not nice to %ld", innconf->nicennrpd);
+            syswarn("could not nice to %lu", innconf->nicennrpd);
     }
 
     HISTORY = concatpath(innconf->pathdb, INN_PATH_HISTORY);
@@ -1507,7 +1507,7 @@ main(int argc, char *argv[])
             r = line_read(&NNTPline, timeout, &p, &len, &lenstripped);
             switch (r) {
             default:
-                syslog(L_ERROR, "%s internal %d in main", Client.host, r);
+                syslog(L_ERROR, "%s internal %u in main", Client.host, r);
                 goto fallthroughRTtimeout;
             case RTtimeout:
             fallthroughRTtimeout:

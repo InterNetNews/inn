@@ -161,7 +161,7 @@ CCcurrmode(void)
     /* Server's mode. */
     switch (Mode) {
     default:
-        snprintf(buff, sizeof(buff), "Unknown %d", Mode);
+        snprintf(buff, sizeof(buff), "Unknown %u", Mode);
         return buff;
     case OMrunning:
         return "running";
@@ -187,7 +187,7 @@ CCsdnotify(void)
     /* Server's mode. */
     switch (Mode) {
     default:
-        buffer_append_sprintf(&CCreply, "Unknown %d", Mode);
+        buffer_append_sprintf(&CCreply, "Unknown %u", Mode);
         break;
     case OMrunning:
         buffer_append_sprintf(&CCreply, "running");
@@ -884,7 +884,7 @@ CCmode(char *unused[] UNUSED)
     /* Server's mode. */
     switch (Mode) {
     default:
-        buffer_append_sprintf(&CCreply, "Unknown %d\n", Mode);
+        buffer_append_sprintf(&CCreply, "Unknown %u\n", Mode);
         break;
     case OMrunning:
         buffer_append_sprintf(&CCreply, "running\n");

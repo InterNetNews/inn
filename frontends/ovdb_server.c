@@ -179,7 +179,7 @@ do_opensrch(struct reader *r)
     char *group = (char *) (r->buf) + sizeof(struct rs_cmd);
     reply = xmalloc(sizeof(struct rs_opensrch));
 
-    debug("OVDB: rs: do_opensrch '%s' %d %d", group, cmd->artlo, cmd->arthi);
+    debug("OVDB: rs: do_opensrch '%s' %u %u", group, cmd->artlo, cmd->arthi);
 
     if (r->currentsearch != NULL) {
         /* can only open one search at a time */
@@ -252,7 +252,7 @@ do_artinfo(struct reader *r)
     char *group = (char *) (r->buf) + sizeof(struct rs_cmd);
     TOKEN token;
 
-    debug("OVDB: rs: do_artinfo: '%s' %d", group, cmd->artlo);
+    debug("OVDB: rs: do_artinfo: '%s' %u", group, cmd->artlo);
     if (ovdb_getartinfo(group, cmd->artlo, &token)) {
         reply = xmalloc(sizeof(struct rs_artinfo));
         reply->status = CMD_ARTINFO;

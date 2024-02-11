@@ -68,12 +68,12 @@ HandleHeaders(char *article)
     int rc;
     char *p, *q;
     static char buf[256];
-    int i;
+    size_t i;
     size_t len;
     char *s, *t;
     HE *scan;
     SV *modswitch;
-    int OtherSize;
+    size_t OtherSize;
     char *argv[] = {NULL};
     bool failure;
     SV *errsv;
@@ -116,7 +116,7 @@ HandleHeaders(char *article)
     for (i = 0; i < OtherCount; i++) {
         p = OtherHeaders[i];
         if (p == NULL) {
-            syslog(L_ERROR, "Null header number %d copying headers for Perl",
+            syslog(L_ERROR, "Null header number %lu copying headers for Perl",
                    i);
             continue;
         }
@@ -454,7 +454,7 @@ void
 dumpTable(const char *msg)
 {
     HEADER *hp;
-    int i;
+    size_t i;
 
     fprintf(flog, "===BEGIN TABLE DUMP: %s\n", msg);
 
@@ -469,7 +469,7 @@ dumpTable(const char *msg)
     }
 
     for (i = 0; i < OtherCount; i++) {
-        fprintf(flog, "Extra[%02d]: %s\n", i, OtherHeaders[i]);
+        fprintf(flog, "Extra[%02lu]: %s\n", i, OtherHeaders[i]);
     }
     fprintf(flog, "===END TABLE DUMP: %s\n", msg);
 }

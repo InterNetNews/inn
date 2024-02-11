@@ -1424,7 +1424,7 @@ tdx_index_audit(bool fix)
     count = index_entry_count(st.st_size);
     expected = index_file_size(count);
     if (expected != st.st_size) {
-        syswarn("tradindexed: %ld bytes of trailing trash in %s",
+        syswarn("tradindexed: %lu bytes of trailing trash in %s",
                 (unsigned long) (st.st_size - expected), index->path);
         if (fix)
             if (ftruncate(index->fd, expected) < 0)

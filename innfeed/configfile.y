@@ -483,7 +483,7 @@ printValue(FILE *fp, value *v, int indent)
             if (isprint((unsigned char) v->v.char_val))
                 fprintf(fp, "%c", v->v.char_val);
             else
-                fprintf(fp, "\\%03o", v->v.char_val);
+                fprintf(fp, "\\%03o", (unsigned int) v->v.char_val);
         }
         fprintf(fp, "%c # CHARACTER\n", 047);
         break;
@@ -506,7 +506,7 @@ printValue(FILE *fp, value *v, int indent)
         break;
 
     default:
-        fprintf(fp, "UNKNOWN value type: %d\n", v->type);
+        fprintf(fp, "UNKNOWN value type: %u\n", v->type);
         exit(1);
     }
 }

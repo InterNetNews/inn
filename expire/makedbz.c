@@ -108,7 +108,7 @@ Rebuild(off_t size, bool IgnoreOld, bool Overwrite)
         size = Countlines();
         size += (size / 10);
         if (size > 0)
-            warn("no size specified, using %ld", (unsigned long) size);
+            warn("no size specified, using %lu", (unsigned long) size);
     }
 
     /* Open the text file. */
