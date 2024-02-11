@@ -244,6 +244,13 @@ end_table(void)
         puts("</table><p>");
 }
 
+/* Substracting (char *) 0 for alignment purpose is supported by compilers
+ * like GCC or Clang, but is undefined behaviour by the C Standard as it is
+ * unknown whether all hardware platforms can actually process such pointer
+ * arithmetic (many, if not all, can anyway). */
+#    if LLVM_VERSION_MAJOR > 12
+#        pragma GCC diagnostic ignored "-Wnull-pointer-subtraction"
+#    endif
 #    define OFFSETOF(type, f) ((char *) &(((type *) 0)->f) - (char *) 0)
 
 #    define F(f)              OFFSETOF(DB_LOCK_STAT, f)
