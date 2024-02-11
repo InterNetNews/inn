@@ -370,7 +370,7 @@ sub read_storageconf {
             $key{'SIZE'} =~ s/,/:/;
             $key{'FILTERED'}
               = defined $key{'FILTERED'}
-              ? $key{'FILTERED'} =~ /^(true|yes|on)$/
+              ? $key{'FILTERED'} =~ /^(true|yes|on)$/i
                   ? 1
                   : 0
               : 0;
