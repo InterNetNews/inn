@@ -140,7 +140,7 @@ extern int CAFStatArticle(char *path, ARTNUM art, struct stat *st);
 */
 extern int CAFOpenReadTOC(char *cfpath, CAFHEADER *ch, CAFTOCENT **tocpp);
 extern int CAFReadHeader(int fd, CAFHEADER *h);
-extern off_t CAFRoundOffsetUp(off_t offt, unsigned int bsize);
+extern off_t CAFRoundOffsetUp(off_t offt, unsigned long int bsize);
 extern CAFBITMAP *CAFReadFreeBM(int fd, CAFHEADER *h);
 extern void CAFDisposeBitmap(CAFBITMAP *cbm);
 
