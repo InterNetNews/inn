@@ -380,7 +380,7 @@ overview_get_standard_header(const struct cvector *vector,
     /* vector ends with an additional pointer beyond the end of the final
        component.  It therefore has a count of elements increased by 1. */
     if ((element + 1) >= vector->count || element > max) {
-        warn("request for invalid standard overview field %d", element);
+        warn("request for invalid standard overview field %u", element);
         return NULL;
     }
 

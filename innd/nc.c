@@ -280,8 +280,8 @@ NCpostit(CHANNEL *cp)
     cp->Reported++;
     if (cp->Reported >= innconf->incominglogfrequency) {
         syslog(L_NOTICE,
-               "%s checkpoint seconds %ld accepted %ld refused %ld rejected "
-               "%ld duplicate %ld"
+               "%s checkpoint seconds %ld accepted %lu refused %lu rejected "
+               "%lu duplicate %lu"
                " accepted size %.0f duplicate size %.0f rejected size %.0f",
                CHANname(cp), (long) (Now.tv_sec - cp->Started_checkpoint),
                cp->Received - cp->Received_checkpoint,
@@ -316,7 +316,7 @@ NCwritedone(CHANNEL *cp)
 {
     switch (cp->State) {
     default:
-        syslog(L_ERROR, "%s internal NCwritedone state %d", CHANname(cp),
+        syslog(L_ERROR, "%s internal NCwritedone state %u", CHANname(cp),
                cp->State);
         break;
 
@@ -1127,12 +1127,12 @@ NCproc(CHANNEL *cp)
                    CHANname(cp), (unsigned long) cp->Start,
                    (unsigned long) cp->Next, (unsigned long) bp->used);
             if (bp->used > 15)
-                syslog(L_TRACE, "%s NCproc state=%d next \"%.15s\"",
+                syslog(L_TRACE, "%s NCproc state=%u next \"%.15s\"",
                        CHANname(cp), cp->State, &bp->data[cp->Next]);
         }
         switch (cp->State) {
         default:
-            syslog(L_ERROR, "%s internal NCproc state %d", CHANname(cp),
+            syslog(L_ERROR, "%s internal NCproc state %u", CHANname(cp),
                    cp->State);
             movedata = false;
             readmore = true;
@@ -1657,7 +1657,7 @@ NCproc(CHANNEL *cp)
         if (cp->State == CSwritegoodbye || cp->Type == CTfree)
             break;
         if (Tracing || cp->Tracing)
-            syslog(L_TRACE, "%s NCproc state=%d Start=%lu Next=%lu Used=%lu",
+            syslog(L_TRACE, "%s NCproc state=%u Start=%lu Next=%lu Used=%lu",
                    CHANname(cp), cp->State, (unsigned long) cp->Start,
                    (unsigned long) cp->Next, (unsigned long) bp->used);
 

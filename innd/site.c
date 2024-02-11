@@ -503,7 +503,7 @@ SITEsend(SITE *sp, ARTDATA *Data)
 
     switch (sp->Type) {
     default:
-        syslog(L_ERROR, "%s internal SITEsend type %d", sp->Name, sp->Type);
+        syslog(L_ERROR, "%s internal SITEsend type %u", sp->Name, sp->Type);
         break;
     case FTlogonly:
         break;
@@ -721,7 +721,7 @@ SITEsetup(SITE *sp)
 
     switch (sp->Type) {
     default:
-        syslog(L_ERROR, "%s internal SITEsetup %d", sp->Name, sp->Type);
+        syslog(L_ERROR, "%s internal SITEsetup %u", sp->Name, sp->Type);
         return false;
     case FTfunnel:
     case FTlogonly:
@@ -848,7 +848,7 @@ SITEflush(SITE *sp, const bool Restart)
 
     switch (sp->Type) {
     default:
-        syslog(L_ERROR, "%s internal SITEflush %d", sp->Name, sp->Type);
+        syslog(L_ERROR, "%s internal SITEflush %u", sp->Name, sp->Type);
         return;
 
     case FTlogonly:
@@ -1189,7 +1189,7 @@ SITEinfo(struct buffer *bp, SITE *sp, const bool Verbose)
 
     switch (sp->Type) {
     default:
-        buffer_append_sprintf(bp, "unknown feed type %d", sp->Type);
+        buffer_append_sprintf(bp, "unknown feed type %u", sp->Type);
         break;
     case FTerror:
     case FTfile:

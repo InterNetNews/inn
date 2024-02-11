@@ -361,7 +361,7 @@ ovparse_part_line(char *l)
     memset(ovbuff->path, '\0', OVBUFFPASIZ);
     strlcpy(ovbuff->path, l, OVBUFFPASIZ);
     if (stat(ovbuff->path, &sb) < 0) {
-        warn("buffindexed: file '%s' does not exist, ignoring '%d'",
+        warn("buffindexed: file '%s' does not exist, ignoring '%u'",
              ovbuff->path, ovbuff->index);
         free(ovbuff);
         return false;
@@ -382,13 +382,13 @@ ovparse_part_line(char *l)
     if (S_ISREG(sb.st_mode)
         && (len != sb.st_size || ovbuff->base > sb.st_size)) {
         if (len != sb.st_size)
-            notice("buffindexed: length mismatch '%lu' for index '%d' (%lu "
-                   "bytes)",
+            notice("buffindexed: length mismatch '%lu' for index '%u'"
+                   " (%lu bytes)",
                    (unsigned long) len, ovbuff->index,
                    (unsigned long) sb.st_size);
         if (ovbuff->base > sb.st_size)
-            notice("buffindexed: length must be at least '%lu' for index '%d' "
-                   "(%lu bytes)",
+            notice("buffindexed: length must be at least '%lu' for index '%u'"
+                   " (%lu bytes)",
                    (unsigned long) ovbuff->base, ovbuff->index,
                    (unsigned long) sb.st_size);
         free(ovbuff);
@@ -694,7 +694,7 @@ ovbuffinit_disks(void)
             buf[OVBUFFLASIZ] = '\0';
             i = hex2offt(buf);
             if (i != ovbuff->index) {
-                warn("buffindexed: Mismatch: index '%d' for buffindexed %s", i,
+                warn("buffindexed: Mismatch: index '%u' for buffindexed %s", i,
                      ovbuff->path);
                 ovlock(ovbuff, INN_LOCK_UNLOCK);
                 return false;
@@ -765,7 +765,7 @@ ovbuffinit_disks(void)
             ovbuff->updated = 0;
             /* Force a flush. */
             ovbuff->dirty = OVBUFF_SYNC_COUNT + 1;
-            notice("buffindexed: no magic cookie found for ovbuff %d, "
+            notice("buffindexed: no magic cookie found for ovbuff %u, "
                    "initializing",
                    ovbuff->index);
             ovflushhead(ovbuff);
@@ -957,7 +957,7 @@ retry:
 
 #ifndef OV_DEBUG
     if (ovusedblock(ovbuff, ovbuff->freeblk, false, true)) {
-        notice("buffindexed: fixing invalid free block(%d, %d).",
+        notice("buffindexed: fixing invalid free block(%u, %u).",
                ovbuff->index, ovbuff->freeblk);
     } else
         done = true;
@@ -1031,7 +1031,7 @@ ovblockfree(OV ov)
 
 #ifndef OV_DEBUG
     if (!ovusedblock(ovbuff, ov.blocknum, false, false)) {
-        notice("buffindexed: trying to free block(%d, %d), but already freed.",
+        notice("buffindexed: trying to free block(%d, %u), but already freed.",
                ov.index, ov.blocknum);
     }
 #endif
@@ -1440,8 +1440,8 @@ ovsetcurindexblock(GROUPENTRY *ge)
         return false;
     }
     if ((ovbuff = getovbuff(ov)) == NULL) {
-        warn("buffindexed: ovsetcurindexblock could not get ovbuff block for "
-             "new, %d, %d",
+        warn("buffindexed: ovsetcurindexblock could not get ovbuff block for"
+             " new, %d, %u",
              ov.index, ov.blocknum);
         return false;
     }
@@ -1451,10 +1451,9 @@ ovsetcurindexblock(GROUPENTRY *ge)
     if (PWRITE(ovbuff->fd, &ovindexhead, sizeof(OVINDEXHEAD),
                ovbuff->base + OV_OFFSET(ov.blocknum))
         != sizeof(OVINDEXHEAD)) {
-        syswarn(
-            "buffindexed: could not write index record index '%d', blocknum"
-            " '%d'",
-            ge->curindex.index, ge->curindex.blocknum);
+        syswarn("buffindexed: could not write index record index '%d',"
+                " blocknum '%u'",
+                ge->curindex.index, ge->curindex.blocknum);
         return true;
     }
     if (ge->baseindex.index == NULLINDEX) {
@@ -1463,7 +1462,7 @@ ovsetcurindexblock(GROUPENTRY *ge)
         if ((ovbuff = getovbuff(ge->curindex)) == NULL)
             return false;
         if (!ovusedblock(ovbuff, ge->curindex.blocknum, false, false)) {
-            warn("buffindexed: block(%d, %d) not occupied (index)",
+            warn("buffindexed: block(%u, %u) not occupied (index)",
                  ovbuff->index, ge->curindex.blocknum);
 #ifdef OV_DEBUG
             abort();
@@ -1478,9 +1477,8 @@ ovsetcurindexblock(GROUPENTRY *ge)
         if (PWRITE(ovbuff->fd, &ovindexhead, sizeof(OVINDEXHEAD),
                    ovbuff->base + OV_OFFSET(ge->curindex.blocknum))
             != sizeof(OVINDEXHEAD)) {
-            syswarn("buffindexed: could not write index record index '%d', "
-                    "blocknum"
-                    " '%d'",
+            syswarn("buffindexed: could not write index record index '%d',"
+                    " blocknum '%u'",
                     ge->curindex.index, ge->curindex.blocknum);
             return false;
         }
@@ -1527,8 +1525,8 @@ ovaddrec(GROUPENTRY *ge, ARTNUM artnum, TOKEN token, char *data, int len,
             return false;
         }
         if ((ovbuff = getovbuff(ov)) == NULL) {
-            warn("buffindexed: ovaddrec could not get ovbuff block for new, "
-                 "%d, %d, %ld",
+            warn("buffindexed: ovaddrec could not get ovbuff block for"
+                 " new, %d, %u, %lu",
                  ov.index, ov.blocknum, artnum);
             return false;
         }
@@ -1549,7 +1547,7 @@ ovaddrec(GROUPENTRY *ge, ARTNUM artnum, TOKEN token, char *data, int len,
         }
         if ((ovbuff = getovbuff(ov)) == NULL) {
             warn("buffindexed: ovaddrec could not get ovbuff block for new, "
-                 "%d, %d, %ld",
+                 "%d, %u, %lu",
                  ov.index, ov.blocknum, artnum);
             return false;
         }
@@ -1557,7 +1555,7 @@ ovaddrec(GROUPENTRY *ge, ARTNUM artnum, TOKEN token, char *data, int len,
         ge->curoffset = 0;
     }
     if (!ovusedblock(ovbuff, ge->curdata.blocknum, false, false)) {
-        warn("buffindexed: block(%d, %d) not occupied", ovbuff->index,
+        warn("buffindexed: block(%u, %u) not occupied", ovbuff->index,
              ge->curdata.blocknum);
 #ifdef OV_DEBUG
         buffindexed_close();
@@ -1572,7 +1570,7 @@ ovaddrec(GROUPENTRY *ge, ARTNUM artnum, TOKEN token, char *data, int len,
                ovbuff->base + OV_OFFSET(ge->curdata.blocknum) + ge->curoffset)
         != len) {
         syswarn("buffindexed: could not append overview record index '%d',"
-                " blocknum '%d'",
+                " blocknum '%u'",
                 ge->curdata.index, ge->curdata.blocknum);
         return false;
     }
@@ -1599,7 +1597,7 @@ ovaddrec(GROUPENTRY *ge, ARTNUM artnum, TOKEN token, char *data, int len,
     if ((ovbuff = getovbuff(ge->curindex)) == NULL)
         return false;
     if (!ovusedblock(ovbuff, ge->curindex.blocknum, false, false)) {
-        warn("buffindexed: block(%d, %d) not occupied (index)", ovbuff->index,
+        warn("buffindexed: block(%u, %u) not occupied (index)", ovbuff->index,
              ge->curindex.blocknum);
 #ifdef OV_DEBUG
         buffindexed_close();
@@ -1615,7 +1613,7 @@ ovaddrec(GROUPENTRY *ge, ARTNUM artnum, TOKEN token, char *data, int len,
         != sizeof(ie)) {
         syswarn(
             "buffindexed: could not write index record index '%d', blocknum"
-            " '%d'",
+            " '%u'",
             ge->curindex.index, ge->curindex.blocknum);
         return true;
     }
@@ -1635,8 +1633,7 @@ ovaddrec(GROUPENTRY *ge, ARTNUM artnum, TOKEN token, char *data, int len,
                    ovbuff->base + OV_OFFSET(ge->curindex.blocknum))
             != sizeof(OVINDEXHEAD)) {
             syswarn("buffindexed: could not write index record index '%d', "
-                    "blocknum"
-                    " '%d'",
+                    "blocknum '%u'",
                     ge->curindex.index, ge->curindex.blocknum);
             return true;
         }
@@ -1814,7 +1811,7 @@ ovgroupmmap(GROUPENTRY *ge, ARTNUM low, ARTNUM high, bool needov)
         ovbuff = getovbuff(ov);
         if (ovbuff == NULL) {
             warn("buffindexed: ovgroupmmap ovbuff is null(ovindex is %d, "
-                 "ovblock is %d",
+                 "ovblock is %u",
                  ov.index, ov.blocknum);
             ovgroupunmap();
             return false;
@@ -1892,8 +1889,8 @@ ovgroupmmap(GROUPENTRY *ge, ARTNUM low, ARTNUM high, bool needov)
             ov = gdb->datablk;
             ovbuff = getovbuff(ov);
             if (ovbuff == NULL) {
-                warn("buffindexed: ovgroupmmap could not get ovbuff block for "
-                     "new, %d, %d",
+                warn("buffindexed: ovgroupmmap could not get ovbuff block for"
+                     " new, %d, %u",
                      ov.index, ov.blocknum);
                 free(gdb);
                 ovgroupunmap();
@@ -2043,8 +2040,8 @@ ovsearch(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *token,
                         search->gdb.datablk.index = srchov.index;
                         ovbuff = getovbuff(srchov);
                         if (ovbuff == NULL) {
-                            warn("buffindexed: ovsearch could not get ovbuff "
-                                 "block for new, %d, %d",
+                            warn("buffindexed: ovsearch could not get ovbuff"
+                                 " block for new, %d, %u",
                                  srchov.index, srchov.blocknum);
                             return false;
                         }
@@ -2611,7 +2608,8 @@ main(int argc, char **argv)
         exit(1);
     }
     fprintf(stdout, "GROUPheader->freelist.recno is %d(0x%08x)\n",
-            GROUPheader->freelist.recno, GROUPheader->freelist.recno);
+            GROUPheader->freelist.recno,
+            (unsigned int) GROUPheader->freelist.recno);
     group = argv[1];
     if (isdigit((unsigned char) *group)) {
         gloc.recno = atoi(group);
@@ -2632,7 +2630,7 @@ main(int argc, char **argv)
         fprintf(stdout, "%d index block(s)\n", i);
         fprintf(stdout, "%d data block(s)\n", countgdb());
         for (giblist = Giblist; giblist != NULL; giblist = giblist->next) {
-            fprintf(stdout, "  % 8d(% 5d)\n", giblist->ov.blocknum,
+            fprintf(stdout, "  % 8d(% 5d)\n", (int) giblist->ov.blocknum,
                     giblist->ov.index);
         }
         for (i = 0; i < Gibcount; i++) {
@@ -2656,7 +2654,7 @@ main(int argc, char **argv)
     }
     GROUPlock(gloc, INN_LOCK_READ);
     ge = &GROUPentries[gloc.recno];
-    fprintf(stdout, "base %d(%d), cur %d(%d), expired at %s\n",
+    fprintf(stdout, "base %u(%d), cur %u(%d), expired at %s\n",
             ge->baseindex.blocknum, ge->baseindex.index, ge->curindex.blocknum,
             ge->curindex.index,
             ge->expired == 0 ? "none\n" : ctime(&ge->expired));
@@ -2673,14 +2671,14 @@ main(int argc, char **argv)
         exit(1);
     }
     fprintf(stdout, "  gloc is %d(0x%08x)\n", search->gloc.recno,
-            search->gloc.recno);
+            (unsigned int) search->gloc.recno);
     for (giblist = Giblist, i = 0; giblist != NULL;
          giblist = giblist->next, i++)
         ;
     fprintf(stdout, "%d index block(s)\n", i);
     fprintf(stdout, "%d data block(s)\n", countgdb());
     for (giblist = Giblist; giblist != NULL; giblist = giblist->next) {
-        fprintf(stdout, "  % 8d(% 5d)\n", giblist->ov.blocknum,
+        fprintf(stdout, "  % 8d(% 5d)\n", (int) giblist->ov.blocknum,
                 giblist->ov.index);
     }
     for (i = 0; i < Gibcount; i++) {

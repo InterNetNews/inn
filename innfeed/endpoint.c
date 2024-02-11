@@ -174,7 +174,7 @@ newEndPoint(int fd)
             if (close(fd) != 0)
                 syswarn("ME oserr close (%d)", fd);
         } else {
-            d_printf(1, "Couldn't dup fd %d to above %d\n", fd, stdioFdMax);
+            d_printf(1, "Couldn't dup fd %d to above %u\n", fd, stdioFdMax);
             newfd = fd;
         }
 

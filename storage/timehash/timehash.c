@@ -79,7 +79,7 @@ timehash_explaintoken(const TOKEN token)
 }
 
 static TOKEN
-MakeToken(time_t now, int seqnum, STORAGECLASS class, TOKEN *oldtoken)
+MakeToken(time_t now, unsigned int seqnum, STORAGECLASS class, TOKEN *oldtoken)
 {
     TOKEN token;
     uint32_t i;
@@ -99,7 +99,7 @@ MakeToken(time_t now, int seqnum, STORAGECLASS class, TOKEN *oldtoken)
 }
 
 static void
-BreakToken(TOKEN token, time_t *now, int *seqnum)
+BreakToken(TOKEN token, time_t *now, unsigned int *seqnum)
 {
     uint32_t i;
     uint16_t s = 0;
@@ -107,11 +107,11 @@ BreakToken(TOKEN token, time_t *now, int *seqnum)
     memcpy(&i, token.token, sizeof(i));
     memcpy(&s, &token.token[sizeof(i)], sizeof(s));
     *now = ntohl(i);
-    *seqnum = (int) ntohs(s);
+    *seqnum = (unsigned int) ntohs(s);
 }
 
 static char *
-MakePath(time_t now, int seqnum, const STORAGECLASS class)
+MakePath(time_t now, unsigned int seqnum, const STORAGECLASS class)
 {
     char *path;
     size_t length;
@@ -358,7 +358,7 @@ ARTHANDLE *
 timehash_retrieve(const TOKEN token, const RETRTYPE amount)
 {
     time_t now;
-    int seqnum;
+    unsigned int seqnum;
     char *path;
     ARTHANDLE *art;
     static TOKEN ret_token;
@@ -410,7 +410,7 @@ bool
 timehash_cancel(TOKEN token)
 {
     time_t now;
-    int seqnum;
+    unsigned int seqnum;
     char *path;
     int result;
 
@@ -469,7 +469,7 @@ timehash_next(ARTHANDLE *article, const RETRTYPE amount)
     char *path;
     struct dirent *de;
     ARTHANDLE *art;
-    int seqnum;
+    unsigned int seqnum;
     size_t length;
     TOKEN *nexttoken;
 
@@ -616,7 +616,7 @@ timehash_printfiles(FILE *file, TOKEN token, char **xref UNUSED,
                     int ngroups UNUSED)
 {
     time_t now;
-    int seqnum;
+    unsigned int seqnum;
     char *path;
 
     BreakToken(token, &now, &seqnum);

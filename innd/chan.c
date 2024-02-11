@@ -314,12 +314,12 @@ CHANclose_nntp(CHANNEL *cp, const char *name)
     WIPprecomfree(cp);
     NCclearwip(cp);
     if (cp->State == CScancel)
-        notice("%s closed seconds %ld cancels %ld", name,
+        notice("%s closed seconds %ld cancels %lu", name,
                (long) (Now.tv_sec - cp->Started), cp->Received);
     else {
         notice(
-            "%s checkpoint seconds %ld accepted %ld refused %ld rejected %ld"
-            " duplicate %ld accepted size %.0f duplicate size %.0f"
+            "%s checkpoint seconds %ld accepted %lu refused %lu rejected %lu"
+            " duplicate %lu accepted size %.0f duplicate size %.0f"
             " rejected size %.0f",
             name, (long) (Now.tv_sec - cp->Started_checkpoint),
             cp->Received - cp->Received_checkpoint,
@@ -329,8 +329,8 @@ CHANclose_nntp(CHANNEL *cp, const char *name)
             (double) (cp->Size - cp->Size_checkpoint),
             (double) (cp->DuplicateSize - cp->DuplicateSize_checkpoint),
             (double) (cp->RejectSize - cp->RejectSize_checkpoint));
-        notice("%s closed seconds %ld accepted %ld refused %ld rejected %ld"
-               " duplicate %ld accepted size %.0f duplicate size %.0f"
+        notice("%s closed seconds %ld accepted %lu refused %lu rejected %lu"
+               " duplicate %lu accepted size %.0f duplicate size %.0f"
                " rejected size %.0f",
                name, (long) (Now.tv_sec - cp->Started), cp->Received,
                cp->Refused, cp->Rejected, cp->Duplicate, (double) cp->Size,
@@ -419,10 +419,10 @@ CHANclose(CHANNEL *cp, const char *name)
     else {
         if (cp->Type == CTnntp)
             CHANclose_nntp(cp, name);
-        else if (cp->Type == CTreject)
-            notice("%s %ld", name,
-                   cp->Rejected); /* Use cp->Rejected for the response code. */
-        else if (cp->Out.left)
+        else if (cp->Type == CTreject) {
+            /* Use cp->Rejected for the response code. */
+            notice("%s %lu", name, cp->Rejected);
+        } else if (cp->Out.left)
             warn("%s closed lost %lu", name, (unsigned long) cp->Out.left);
         else
             notice("%s closed", name);
@@ -496,7 +496,7 @@ CHANname(CHANNEL *cp)
 
     switch (cp->Type) {
     default:
-        snprintf(cp->Name, sizeof(cp->Name), "?%d(#%d@%ld)?", cp->Type, cp->fd,
+        snprintf(cp->Name, sizeof(cp->Name), "?%u(#%d@%ld)?", cp->Type, cp->fd,
                  (long) (cp - channels.table));
         break;
     case CTany:
@@ -1360,7 +1360,7 @@ CHANreadloop(void)
                 name = CHANname(cp);
                 silence = Now.tv_sec - cp->LastActive;
                 cp->NextLog += innconf->chaninacttime;
-                notice("%s inactive %ld", name, silence / 60L);
+                notice("%s inactive %lu", name, silence / 60L);
                 if (silence > innconf->peertimeout) {
                     notice("%s timeout", name);
                     CHANclose(cp, name);

@@ -739,7 +739,7 @@ QueueForgetAbout(connection_t *cxn, article_queue_t *item,
 
     default:
         d_printf(0,
-                 "%s:%d QueueForgetAbout(): "
+                 "%s:%u QueueForgetAbout(): "
                  "Unknown type to forget about\n",
                  hostPeerName(cxn->myHost), cxn->ident);
         break;
@@ -763,7 +763,7 @@ QueueForgetAbout(connection_t *cxn, article_queue_t *item,
             hostArticleIsMissing(cxn->myHost, cxn, art);
             break;
         default:
-            d_printf(0, "%s:%d QueueForgetAbout(): failure type unknown\n",
+            d_printf(0, "%s:%u QueueForgetAbout(): failure type unknown\n",
                      hostPeerName(cxn->myHost), cxn->ident);
             break;
         }
@@ -1057,7 +1057,7 @@ addCancelItem(connection_t *cxn, char *folder, int folderlen, char *msgid,
                         (art != NULL), must);
     if (result != RET_OK) {
         d_printf(1,
-                 "%s:%d addCancelItem(): "
+                 "%s:%u addCancelItem(): "
                  "I thought we had in space in [imap] queue "
                  "but apparently not\n",
                  hostPeerName(cxn->myHost), cxn->ident);
@@ -1085,7 +1085,7 @@ AddControlMsg(connection_t *cxn, Article art, Buffer *bufs,
     /* make sure contents ok; this also should load it into memory */
     if (!artContentsOk(art)) {
         d_printf(0,
-                 "%s:%d AddControlMsg(): "
+                 "%s:%u AddControlMsg(): "
                  "artContentsOk() said article was bad\n",
                  hostPeerName(cxn->myHost), cxn->ident);
         hostArticleIsMissing(cxn->myHost, cxn, art);
@@ -1118,7 +1118,7 @@ AddControlMsg(connection_t *cxn, Article art, Buffer *bufs,
         memcpy(tmp, control_header, clen);
         tmp[clen] = '\0';
 
-        d_printf(0, "%s:%d Don't understand Control header field [%s]\n",
+        d_printf(0, "%s:%u Don't understand Control header field [%s]\n",
                  hostPeerName(cxn->myHost), cxn->ident, tmp);
         return RET_FAIL;
     }
@@ -1141,7 +1141,7 @@ AddControlMsg(connection_t *cxn, Article art, Buffer *bufs,
 
         if (control_header >= control_header_end) {
             d_printf(0,
-                     "%s:%d addControlMsg(): "
+                     "%s:%u addControlMsg(): "
                      "newgroup/rmgroup Control header field has no group "
                      "specified\n",
                      hostPeerName(cxn->myHost), cxn->ident);
@@ -1161,7 +1161,7 @@ AddControlMsg(connection_t *cxn, Article art, Buffer *bufs,
         if (AddToQueue(&(cxn->imap_controlMsg_q), item, t, 1, must)
             != RET_OK) {
             d_printf(1,
-                     "%s:%d addCancelItem(): "
+                     "%s:%u addCancelItem(): "
                      "I thought we had in space in [imap] queue"
                      " but apparently not\n",
                      hostPeerName(cxn->myHost), cxn->ident);
@@ -1183,7 +1183,7 @@ AddControlMsg(connection_t *cxn, Article art, Buffer *bufs,
 
         if (control_header == control_header_end) {
             d_printf(0,
-                     "%s:%d Control header field contains cancel "
+                     "%s:%u Control header field contains cancel "
                      "with no msgid specified\n",
                      hostPeerName(cxn->myHost), cxn->ident);
             return RET_FAIL;
@@ -1192,7 +1192,7 @@ AddControlMsg(connection_t *cxn, Article art, Buffer *bufs,
         if (FindHeader(bufs, "Newsgroups", &rcpt_list, &rcpt_list_end)
             != RET_OK) {
             d_printf(0,
-                     "%s:%d Cancel message contains no Newsgroups header "
+                     "%s:%u Cancel message contains no Newsgroups header "
                      "field\n",
                      hostPeerName(cxn->myHost), cxn->ident);
             return RET_FAIL;
@@ -1232,7 +1232,7 @@ AddControlMsg(connection_t *cxn, Article art, Buffer *bufs,
     }
     default:
         /* huh?!? */
-        d_printf(0, "%s:%d internal error in addControlMsg()\n",
+        d_printf(0, "%s:%u internal error in addControlMsg()\n",
                  hostPeerName(cxn->myHost), cxn->ident);
     }
     return RET_FAIL;
@@ -1245,7 +1245,7 @@ AddControlMsg(connection_t *cxn, Article art, Buffer *bufs,
 static void
 show_stats(connection_t *cxn)
 {
-    d_printf(0, "%s:%d\n", hostPeerName(cxn->myHost), cxn->ident);
+    d_printf(0, "%s:%u\n", hostPeerName(cxn->myHost), cxn->ident);
     d_printf(0, "  imap queue = %d lmtp queue = %d\n",
              QueueItems(&(cxn->imap_controlMsg_q)),
              QueueItems(&(cxn->lmtp_todeliver_q)));
@@ -1448,7 +1448,7 @@ Initialize(connection_t *cxn, int respTimeout)
     conn_ret saslresult;
 #endif /* HAVE_SASL */
 
-    d_printf(1, "%s:%d initializing....\n", hostPeerName(cxn->myHost),
+    d_printf(1, "%s:%u initializing....\n", hostPeerName(cxn->myHost),
              cxn->ident);
 
 #ifdef HAVE_SASL
@@ -1459,7 +1459,7 @@ Initialize(connection_t *cxn, int respTimeout)
 
         if (saslresult != SASL_OK) {
             d_printf(0,
-                     "%s:%d Error initializing SASL (sasl_client_init) (%s)\n",
+                     "%s:%u Error initializing SASL (sasl_client_init) (%s)\n",
                      hostPeerName(cxn->myHost), cxn->ident,
                      sasl_errstring(saslresult, NULL, NULL));
             return RET_FAIL;
@@ -1471,7 +1471,7 @@ Initialize(connection_t *cxn, int respTimeout)
 
     cxn->lmtp_rBuffer = newBuffer(4096);
     if (cxn->lmtp_rBuffer == NULL) {
-        d_printf(0, "%s:%d Failure allocating buffer for lmtp_rBuffer\n",
+        d_printf(0, "%s:%u Failure allocating buffer for lmtp_rBuffer\n",
                  hostPeerName(cxn->myHost), cxn->ident);
         return RET_FAIL;
     }
@@ -1480,7 +1480,7 @@ Initialize(connection_t *cxn, int respTimeout)
 
     cxn->imap_rBuffer = newBuffer(4096);
     if (cxn->imap_rBuffer == NULL) {
-        d_printf(0, "%s:%d Failure allocating buffer for imap_rBuffer \n",
+        d_printf(0, "%s:%u Failure allocating buffer for imap_rBuffer \n",
                  hostPeerName(cxn->myHost), cxn->ident);
         return RET_FAIL;
     }
@@ -1552,7 +1552,7 @@ SetupLMTPConnection(connection_t *cxn, char *serverName, int port)
     cxn->lmtp_port = port;
 
     if (serverName == NULL) {
-        d_printf(0, "%s:%d serverName is null\n", hostPeerName(cxn->myHost),
+        d_printf(0, "%s:%u serverName is null\n", hostPeerName(cxn->myHost),
                  cxn->ident);
         return RET_FAIL;
     }
@@ -1569,7 +1569,7 @@ SetupLMTPConnection(connection_t *cxn, char *serverName, int port)
 
     if (saslresult != SASL_OK) {
 
-        d_printf(0, "%s:%d:LMTP Error creating a new SASL connection (%s)\n",
+        d_printf(0, "%s:%u:LMTP Error creating a new SASL connection (%s)\n",
                  hostPeerName(cxn->myHost), cxn->ident,
                  sasl_errstring(saslresult, NULL, NULL));
         return RET_FAIL;
@@ -1581,7 +1581,7 @@ SetupLMTPConnection(connection_t *cxn, char *serverName, int port)
                       &(cxn->sockfd_lmtp));
 
     if (result != RET_OK) {
-        d_printf(0, "%s:%d unable to connect to lmtp host\n",
+        d_printf(0, "%s:%u unable to connect to lmtp host\n",
                  hostPeerName(cxn->myHost), cxn->ident);
         return RET_FAIL;
     }
@@ -1599,7 +1599,7 @@ SetupLMTPConnection(connection_t *cxn, char *serverName, int port)
 
     cxn->lmtp_endpoint = newEndPoint(cxn->sockfd_lmtp);
     if (cxn->lmtp_endpoint == NULL) {
-        d_printf(0, "%s:%d:LMTP failure creating endpoint\n",
+        d_printf(0, "%s:%u:LMTP failure creating endpoint\n",
                  hostPeerName(cxn->myHost), cxn->ident);
         return RET_FAIL;
     }
@@ -1609,7 +1609,7 @@ SetupLMTPConnection(connection_t *cxn, char *serverName, int port)
     result = SetSASLProperties(cxn->saslconn_lmtp, cxn->sockfd_lmtp, 0, 0);
 
     if (result != RET_OK) {
-        d_printf(0, "%s:%d:LMTP error setting SASL properties\n",
+        d_printf(0, "%s:%u:LMTP error setting SASL properties\n",
                  hostPeerName(cxn->myHost), cxn->ident);
         return RET_FAIL;
     }
@@ -1630,7 +1630,7 @@ SetupIMAPConnection(connection_t *cxn, char *serverName, int port)
     cxn->imap_port = port;
 
     if (serverName == NULL) {
-        d_printf(0, "%s:%d:IMAP Servername is null", hostPeerName(cxn->myHost),
+        d_printf(0, "%s:%u:IMAP Servername is null", hostPeerName(cxn->myHost),
                  cxn->ident);
         return RET_FAIL;
     }
@@ -1646,7 +1646,7 @@ SetupIMAPConnection(connection_t *cxn, char *serverName, int port)
                                  &cxn->imap_saslconn);
 
     if (saslresult != SASL_OK) {
-        d_printf(0, "%s:%d:IMAP Error creating a new SASL connection (%s)",
+        d_printf(0, "%s:%u:IMAP Error creating a new SASL connection (%s)",
                  hostPeerName(cxn->myHost), cxn->ident,
                  sasl_errstring(saslresult, NULL, NULL));
         return RET_FAIL;
@@ -1657,7 +1657,7 @@ SetupIMAPConnection(connection_t *cxn, char *serverName, int port)
     result = init_net(serverName, port, &(cxn->imap_sockfd));
 
     if (result != RET_OK) {
-        d_printf(0, "%s:%d:IMAP Unable to start network connection for IMAP",
+        d_printf(0, "%s:%u:IMAP Unable to start network connection for IMAP",
                  hostPeerName(cxn->myHost), cxn->ident);
         return RET_FAIL;
     }
@@ -1675,7 +1675,7 @@ SetupIMAPConnection(connection_t *cxn, char *serverName, int port)
 
     cxn->imap_endpoint = newEndPoint(cxn->imap_sockfd);
     if (cxn->imap_endpoint == NULL) {
-        d_printf(0, "%s:%d:IMAP Failure creating imap endpoint\n",
+        d_printf(0, "%s:%u:IMAP Failure creating imap endpoint\n",
                  hostPeerName(cxn->myHost), cxn->ident);
         return RET_FAIL;
     }
@@ -1684,7 +1684,7 @@ SetupIMAPConnection(connection_t *cxn, char *serverName, int port)
     /* Set the SASL properties */
     result = SetSASLProperties(cxn->imap_saslconn, cxn->imap_sockfd, 0, 0);
     if (result != RET_OK) {
-        d_printf(0, "%s:%d:IMAP Error setting sasl properties",
+        d_printf(0, "%s:%u:IMAP Error setting sasl properties",
                  hostPeerName(cxn->myHost), cxn->ident);
         return result;
     }
@@ -1814,8 +1814,8 @@ imap_readTimeoutCbk(TimeoutId id, void *data)
 
     peerName = hostPeerName(cxn->myHost);
 
-    warn("%s:%d cxnsleep non-responsive connection", peerName, cxn->ident);
-    d_printf(0, "%s:%d shutting down non-responsive IMAP connection (%s)\n",
+    warn("%s:%u cxnsleep non-responsive connection", peerName, cxn->ident);
+    d_printf(0, "%s:%u shutting down non-responsive IMAP connection (%s)\n",
              hostPeerName(cxn->myHost), cxn->ident,
              imap_stateToString(cxn->imap_state));
 
@@ -1843,11 +1843,11 @@ imap_reopenTimeoutCbk(TimeoutId id, void *data)
     cxn->imap_sleepTimerId = 0;
 
     d_printf(1,
-             "%s:%d:IMAP Reopen timer rang. Try to make new connection now\n",
+             "%s:%u:IMAP Reopen timer rang. Try to make new connection now\n",
              hostPeerName(cxn->myHost), cxn->ident);
 
     if (cxn->imap_state != IMAP_DISCONNECTED) {
-        warn("%s:%d cxnsleep connection in bad state: %s",
+        warn("%s:%u cxnsleep connection in bad state: %s",
              hostPeerName(cxn->myHost), cxn->ident,
              imap_stateToString(cxn->imap_state));
     } else {
@@ -1946,11 +1946,11 @@ lmtp_reopenTimeoutCbk(TimeoutId id, void *data)
     cxn->lmtp_sleepTimerId = 0;
 
     d_printf(1,
-             "%s:%d:LMTP Reopen timer rang. Try to make new connection now\n",
+             "%s:%u:LMTP Reopen timer rang. Try to make new connection now\n",
              hostPeerName(cxn->myHost), cxn->ident);
 
     if (cxn->lmtp_state != LMTP_DISCONNECTED) {
-        warn("%s:%d cxnsleep connection in bad state: %s",
+        warn("%s:%u cxnsleep connection in bad state: %s",
              hostPeerName(cxn->myHost), cxn->ident,
              lmtp_stateToString(cxn->lmtp_state));
     } else {
@@ -1976,16 +1976,16 @@ prepareReopenCbk(Connection cxn, int type)
         cxn->imap_sleepTimerId =
             prepareSleep(imap_reopenTimeoutCbk, cxn->imap_sleepTimeout, cxn);
         d_printf(1,
-                 "%s:%d IMAP connection error\n"
-                 "  will try to reconnect in %d seconds\n",
+                 "%s:%u IMAP connection error\n"
+                 "  will try to reconnect in %u seconds\n",
                  hostPeerName(cxn->myHost), cxn->ident,
                  cxn->imap_sleepTimeout);
     } else {
         cxn->lmtp_sleepTimerId =
             prepareSleep(lmtp_reopenTimeoutCbk, cxn->lmtp_sleepTimeout, cxn);
         d_printf(1,
-                 "%s:%d:LMTP connection error\n"
-                 "will try to reconnect in %d seconds\n",
+                 "%s:%u:LMTP connection error\n"
+                 "will try to reconnect in %u seconds\n",
                  hostPeerName(cxn->myHost), cxn->ident,
                  cxn->lmtp_sleepTimeout);
     }
@@ -2017,8 +2017,8 @@ lmtp_readTimeoutCbk(TimeoutId id, void *data)
 
     peerName = hostPeerName(cxn->myHost);
 
-    warn("%s:%d cxnsleep non-responsive connection", peerName, cxn->ident);
-    d_printf(0, "%s:%d shutting down non-responsive LMTP connection (%s)\n",
+    warn("%s:%u cxnsleep non-responsive connection", peerName, cxn->ident);
+    d_printf(0, "%s:%u shutting down non-responsive LMTP connection (%s)\n",
              hostPeerName(cxn->myHost), cxn->ident,
              lmtp_stateToString(cxn->lmtp_state));
 
@@ -2047,7 +2047,7 @@ lmtp_writeTimeoutCbk(TimeoutId id UNUSED, void *data)
     peerName = hostPeerName(cxn->myHost);
 
     syslog(LOG_WARNING, "timeout for %s", peerName);
-    d_printf(0, "%s:%d shutting down non-responsive LMTP connection (%s)\n",
+    d_printf(0, "%s:%u shutting down non-responsive LMTP connection (%s)\n",
              hostPeerName(cxn->myHost), cxn->ident,
              lmtp_stateToString(cxn->lmtp_state));
 
@@ -2146,7 +2146,7 @@ lmtp_authenticate(connection_t *cxn)
 
     if ((saslresult != SASL_OK) && (saslresult != SASL_CONTINUE)) {
 
-        d_printf(0, "%s:%d:LMTP Error calling sasl_client_start (%s)\n",
+        d_printf(0, "%s:%u:LMTP Error calling sasl_client_start (%s)\n",
                  hostPeerName(cxn->myHost), cxn->ident,
                  sasl_errstring(saslresult, NULL, NULL));
         return RET_FAIL;
@@ -2154,7 +2154,7 @@ lmtp_authenticate(connection_t *cxn)
 
     d_printf(
         1,
-        "%s:%d:LMTP Decided to try to authenticate with SASL mechanism=%s\n",
+        "%s:%u:LMTP Decided to try to authenticate with SASL mechanism=%s\n",
         hostPeerName(cxn->myHost), cxn->ident, mechusing);
 
     if (!out) {
@@ -2181,7 +2181,7 @@ lmtp_authenticate(connection_t *cxn)
 
     result = WriteToWire_lmtpstr(cxn, p, strlen(p));
     if (result != RET_OK) {
-        d_printf(0, "%s:%d:LMTP WriteToWire() failure during AUTH\n",
+        d_printf(0, "%s:%u:LMTP WriteToWire() failure during AUTH\n",
                  hostPeerName(cxn->myHost), cxn->ident);
         /* Disconnection is handled in the calling function. */
         return result;
@@ -2296,7 +2296,7 @@ lmtp_writeCB(EndPoint e UNUSED, IoStatus i UNUSED, Buffer *b, void *d)
 
     default:
 
-        d_printf(0, "%s:%d:LMTP Unknown state. Internal error\n",
+        d_printf(0, "%s:%u:LMTP Unknown state. Internal error\n",
                  hostPeerName(cxn->myHost), cxn->ident);
 
         break;
@@ -2377,7 +2377,7 @@ imap_writeCB(EndPoint e UNUSED, IoStatus i UNUSED, Buffer *b, void *d)
         break;
 
     default:
-        d_printf(0, "%s:%d:IMAP invalid connection state\n",
+        d_printf(0, "%s:%u:IMAP invalid connection state\n",
                  hostPeerName(cxn->myHost), cxn->ident);
         imap_Disconnect(cxn);
         break;
@@ -2416,7 +2416,7 @@ imap_sendAuthStep(connection_t *cxn, char *str)
 
     saslresult = sasl_decode64(str, strlen(str), in, strlen(str) + 1, &inlen);
     if (saslresult != SASL_OK) {
-        d_printf(0, "%s:%d:IMAP base64 decoding error\n",
+        d_printf(0, "%s:%u:IMAP base64 decoding error\n",
                  hostPeerName(cxn->myHost), cxn->ident);
         return RET_FAIL;
     }
@@ -2427,7 +2427,7 @@ imap_sendAuthStep(connection_t *cxn, char *str)
     /* check if sasl succeeded */
     if (saslresult != SASL_OK && saslresult != SASL_CONTINUE) {
 
-        d_printf(0, "%s:%d:IMAP sasl_client_step failed with %s\n",
+        d_printf(0, "%s:%u:IMAP sasl_client_step failed with %s\n",
                  hostPeerName(cxn->myHost), cxn->ident,
                  sasl_errstring(saslresult, NULL, NULL));
         cxn->imap_state = IMAP_CONNECTED_NOTAUTH;
@@ -2488,12 +2488,12 @@ imap_sendAuthenticate(connection_t *cxn)
     { /* always do login */
 
 #endif /* HAVE_SASL */
-        d_printf(1, "%s:%d:IMAP No mechanism found. Trying login method\n",
+        d_printf(1, "%s:%u:IMAP No mechanism found. Trying login method\n",
                  hostPeerName(cxn->myHost), cxn->ident);
 
         if (cxn->imap_capabilities->logindisabled == 1) {
             d_printf(0,
-                     "%s:%d:IMAP Login command w/o security layer not allowed "
+                     "%s:%u:IMAP Login command w/o security layer not allowed "
                      "on this server\n",
                      hostPeerName(cxn->myHost), cxn->ident);
             return RET_FAIL;
@@ -2502,7 +2502,7 @@ imap_sendAuthenticate(connection_t *cxn)
         if (deliver_authname == NULL) {
             d_printf(
                 0,
-                "%s:%d:IMAP Unable to log in because can't find a authname\n",
+                "%s:%u:IMAP Unable to log in because can't find a authname\n",
                 hostPeerName(cxn->myHost), cxn->ident);
             return RET_FAIL;
         }
@@ -2510,7 +2510,7 @@ imap_sendAuthenticate(connection_t *cxn)
         if (deliver_password == NULL) {
             d_printf(
                 0,
-                "%s:%d:IMAP Unable to log in because can't find a password\n",
+                "%s:%u:IMAP Unable to log in because can't find a password\n",
                 hostPeerName(cxn->myHost), cxn->ident);
             return RET_FAIL;
         }
@@ -2534,14 +2534,14 @@ imap_sendAuthenticate(connection_t *cxn)
 
         d_printf(
             0,
-            "%s:%d:IMAP Error calling sasl_client_start (%s) mechusing = %s\n",
+            "%s:%u:IMAP Error calling sasl_client_start (%s) mechusing = %s\n",
             hostPeerName(cxn->myHost), cxn->ident,
             sasl_errstring(saslresult, NULL, NULL), mechusing);
         return RET_FAIL;
     }
 
     d_printf(1,
-             "%s:%d:IMAP Trying to authenticate to imap with %s mechanism\n",
+             "%s:%u:IMAP Trying to authenticate to imap with %s mechanism\n",
              hostPeerName(cxn->myHost), cxn->ident, mechusing);
 
     imap_GetTag(cxn);
@@ -2564,7 +2564,7 @@ imap_CreateGroup(connection_t *cxn, char *bboard)
     conn_ret result;
     char *tosend;
 
-    d_printf(1, "%s:%d:IMAP Ok creating group [%s]\n",
+    d_printf(1, "%s:%u:IMAP Ok creating group [%s]\n",
              hostPeerName(cxn->myHost), cxn->ident, bboard);
 
     imap_GetTag(cxn);
@@ -2587,7 +2587,7 @@ imap_DeleteGroup(connection_t *cxn, char *bboard)
     conn_ret result;
     char *tosend;
 
-    d_printf(1, "%s:%d:IMAP Ok removing bboard [%s]\n",
+    d_printf(1, "%s:%u:IMAP Ok removing bboard [%s]\n",
              hostPeerName(cxn->myHost), cxn->ident, bboard);
 
     imap_GetTag(cxn);
@@ -2658,7 +2658,7 @@ imap_sendKill(connection_t *cxn, unsigned uid)
 
     imap_GetTag(cxn);
 
-    xasprintf(&tosend, "%s UID STORE %d +FLAGS.SILENT (\\Deleted)\r\n",
+    xasprintf(&tosend, "%s UID STORE %u +FLAGS.SILENT (\\Deleted)\r\n",
               cxn->imap_currentTag, uid);
 
     result = WriteToWire_imapstr(cxn, tosend, -1);
@@ -2802,7 +2802,7 @@ imap_readCB(EndPoint e, IoStatus i, Buffer *b, void *d)
     if (i != IoDone) {
         errno = endPointErrno(e);
 
-        syslog(LOG_ERR, "%s:%d IMAP i/o failed: %m", hostPeerName(cxn->myHost),
+        syslog(LOG_ERR, "%s:%u IMAP i/o failed: %m", hostPeerName(cxn->myHost),
                cxn->ident);
         freeBufferArray(b);
         imap_Disconnect(cxn);
@@ -2813,7 +2813,7 @@ imap_readCB(EndPoint e, IoStatus i, Buffer *b, void *d)
         /* partial read. expand buffer and retry */
 
         if (expandBuffer(b[0], BUFFER_EXPAND_AMOUNT) == false) {
-            d_printf(0, "%s:%d:IMAP expanding buffer returned false\n",
+            d_printf(0, "%s:%u:IMAP expanding buffer returned false\n",
                      hostPeerName(cxn->myHost), cxn->ident);
 
             imap_Disconnect(cxn);
@@ -2880,7 +2880,7 @@ reset:
 
                 cxn->current_control->data.control->uid = atoi(str);
 
-                d_printf(1, "%s:%d:IMAP i think the UID = %ld\n",
+                d_printf(1, "%s:%u:IMAP i think the UID = %lu\n",
                          hostPeerName(cxn->myHost), cxn->ident,
                          cxn->current_control->data.control->uid);
             } else {
@@ -2916,7 +2916,7 @@ reset:
 #else
             d_printf(
                 0,
-                "%s:%d:IMAP got a '+ ...' without SASL. Something's wrong\n",
+                "%s:%u:IMAP got a '+ ...' without SASL. Something's wrong\n",
                 hostPeerName(cxn->myHost), cxn->ident);
             imap_Disconnect(cxn);
 #endif /* HAVE_SASL */
@@ -2924,7 +2924,7 @@ reset:
             return;
         } else {
             d_printf(0,
-                     "%s:%d:IMAP got a '+ ...' in state where not expected\n",
+                     "%s:%u:IMAP got a '+ ...' in state where not expected\n",
                      hostPeerName(cxn->myHost), cxn->ident);
             imap_Disconnect(cxn);
             return;
@@ -2936,7 +2936,7 @@ reset:
 
         if (str[0] != ' ') {
             d_printf(0,
-                     "%s:%d:IMAP Parse error: tag with no space afterward\n",
+                     "%s:%u:IMAP Parse error: tag with no space afterward\n",
                      hostPeerName(cxn->myHost), cxn->ident);
             imap_Disconnect(cxn);
             return;
@@ -2955,13 +2955,13 @@ reset:
 
             if (okno == 1) {
                 if (imap_sendAuthenticate(cxn) != RET_OK) {
-                    d_printf(0, "%s:%d:IMAP sendauthenticate failed\n",
+                    d_printf(0, "%s:%u:IMAP sendauthenticate failed\n",
                              hostPeerName(cxn->myHost), cxn->ident);
                     imap_Disconnect(cxn);
                 }
                 return;
             } else {
-                d_printf(0, "%s:%d:IMAP CAPABILITY gave a NO response\n",
+                d_printf(0, "%s:%u:IMAP CAPABILITY gave a NO response\n",
                          hostPeerName(cxn->myHost), cxn->ident);
                 imap_Disconnect(cxn);
             }
@@ -2977,7 +2977,7 @@ reset:
                 cxn->imap_timeCon = theTime();
                 cxn->timeCon = theTime();
 
-                d_printf(0, "%s:%d IMAP authentication succeeded\n",
+                d_printf(0, "%s:%u IMAP authentication succeeded\n",
                          hostPeerName(cxn->myHost), cxn->ident);
 
                 cxn->imap_disconnects = 0;
@@ -2987,7 +2987,7 @@ reset:
                 /* try to send a message if we have one */
                 imap_ProcessQueue(cxn);
             } else {
-                d_printf(0, "%s:%d:IMAP Authentication failed with [%s]\n",
+                d_printf(0, "%s:%u:IMAP Authentication failed with [%s]\n",
                          hostPeerName(cxn->myHost), cxn->ident, str);
                 imap_Disconnect(cxn);
             }
@@ -2999,14 +2999,14 @@ reset:
 
             if (okno == 1) {
 
-                d_printf(1, "%s:%d:IMAP Create of bboard successful\n",
+                d_printf(1, "%s:%u:IMAP Create of bboard successful\n",
                          hostPeerName(cxn->myHost), cxn->ident);
                 cxn->create_succeeded++;
 
                 /* we can delete article now */
                 QueueForgetAbout(cxn, cxn->current_control, MSG_SUCCESS);
             } else {
-                d_printf(1, "%s:%d:IMAP Create failed with [%s] for %s\n",
+                d_printf(1, "%s:%u:IMAP Create failed with [%s] for %s\n",
                          hostPeerName(cxn->myHost), cxn->ident, str,
                          cxn->current_control->data.control->folder);
 
@@ -3021,7 +3021,7 @@ reset:
         case IMAP_READING_DELETE:
 
             if (okno == 1) {
-                d_printf(1, "%s:%d:IMAP Delete successful\n",
+                d_printf(1, "%s:%u:IMAP Delete successful\n",
                          hostPeerName(cxn->myHost), cxn->ident);
                 cxn->remove_succeeded++;
 
@@ -3029,7 +3029,7 @@ reset:
                 QueueForgetAbout(cxn, cxn->current_control, MSG_SUCCESS);
             } else {
                 d_printf(1,
-                         "%s:%d:IMAP Delete mailbox failed with [%s] for %s\n",
+                         "%s:%u:IMAP Delete mailbox failed with [%s] for %s\n",
                          hostPeerName(cxn->myHost), cxn->ident, str,
                          cxn->current_control->data.control->folder);
 
@@ -3049,7 +3049,7 @@ reset:
                 return;
 
             } else {
-                d_printf(1, "%s:%d:IMAP Select failed with [%s] for %s\n",
+                d_printf(1, "%s:%u:IMAP Select failed with [%s] for %s\n",
                          hostPeerName(cxn->myHost), cxn->ident, str,
                          cxn->current_control->data.control->folder);
 
@@ -3066,7 +3066,7 @@ reset:
             /* if no message let's forget about it */
             if (cxn->current_control->data.control->uid
                 == (unsigned long) -1) {
-                d_printf(2, "%s:%d:IMAP Search didn't find the message\n",
+                d_printf(2, "%s:%u:IMAP Search didn't find the message\n",
                          hostPeerName(cxn->myHost), cxn->ident);
                 QueueForgetAbout(cxn, cxn->current_control, MSG_FAIL_DELIVER);
                 if (imap_sendClose(cxn) != RET_OK)
@@ -3081,7 +3081,7 @@ reset:
                     imap_Disconnect(cxn);
                 return;
             } else {
-                d_printf(0, "%s:%d IMAP Received NO response to SEARCH\n",
+                d_printf(0, "%s:%u IMAP Received NO response to SEARCH\n",
                          hostPeerName(cxn->myHost), cxn->ident);
                 ReQueue(cxn, &(cxn->imap_controlMsg_q), cxn->current_control);
 
@@ -3095,7 +3095,7 @@ reset:
 
             if (okno == 1) {
 
-                d_printf(1, "%s:%d:IMAP Processed a Cancel fully\n",
+                d_printf(1, "%s:%u:IMAP Processed a Cancel fully\n",
                          hostPeerName(cxn->myHost), cxn->ident);
 
                 /* we can delete article now */
@@ -3109,7 +3109,7 @@ reset:
 
             } else {
 
-                d_printf(1, "%s:%d:IMAP Store failed\n",
+                d_printf(1, "%s:%u:IMAP Store failed\n",
                          hostPeerName(cxn->myHost), cxn->ident);
                 ReQueue(cxn, &(cxn->imap_controlMsg_q), cxn->current_control);
 
@@ -3127,7 +3127,7 @@ reset:
         case IMAP_READING_CLOSE:
             if (!okno) {
                 /* we can't do anything about it */
-                d_printf(1, "%s:%d:IMAP Close failed\n",
+                d_printf(1, "%s:%u:IMAP Close failed\n",
                          hostPeerName(cxn->myHost), cxn->ident);
             }
 
@@ -3142,7 +3142,7 @@ reset:
             /* we don't care if the server said OK or NO just
                that it said something */
 
-            d_printf(1, "%s:%d:IMAP Read quit response\n",
+            d_printf(1, "%s:%u:IMAP Read quit response\n",
                      hostPeerName(cxn->myHost), cxn->ident);
 
             cxn->imap_state = IMAP_DISCONNECTED;
@@ -3151,7 +3151,7 @@ reset:
             break;
 
         default:
-            d_printf(0, "%s:%d:IMAP I don't understand state %d [%s]\n",
+            d_printf(0, "%s:%u:IMAP I don't understand state %u [%s]\n",
                      hostPeerName(cxn->myHost), cxn->ident, cxn->imap_state,
                      str);
             imap_Disconnect(cxn);
@@ -3159,7 +3159,7 @@ reset:
 
     } else {
         d_printf(0,
-                 "%s:%d:IMAP tag (%s) doesn't match what we gave (%s). What's "
+                 "%s:%u:IMAP tag (%s) doesn't match what we gave (%s). What's "
                  "up with that??\n",
                  hostPeerName(cxn->myHost), cxn->ident, str,
                  cxn->imap_currentTag);
@@ -3200,7 +3200,7 @@ lmtp_readCB(EndPoint e, IoStatus i, Buffer *b, void *d)
 
     if (i != IoDone) {
         errno = endPointErrno(e);
-        syslog(LOG_ERR, "%s:%d LMTP i/o failed: %m", hostPeerName(cxn->myHost),
+        syslog(LOG_ERR, "%s:%u LMTP i/o failed: %m", hostPeerName(cxn->myHost),
                cxn->ident);
 
         freeBufferArray(b);
@@ -3211,7 +3211,7 @@ lmtp_readCB(EndPoint e, IoStatus i, Buffer *b, void *d)
     if (strchr(p, '\n') == NULL) {
         /* partial read. expand buffer and retry */
 
-        d_printf(0, "%s:%d:LMTP Partial. retry\n", hostPeerName(cxn->myHost),
+        d_printf(0, "%s:%u:LMTP Partial. retry\n", hostPeerName(cxn->myHost),
                  cxn->ident);
         expandBuffer(b[0], BUFFER_EXPAND_AMOUNT);
         readBuffers = makeBufferArray(bufferTakeRef(b[0]), NULL);
@@ -3241,7 +3241,7 @@ reset:
     if (ret != RET_OK) {
         if (ret != RET_NO_FULLLINE) {
             /* was a more serious error */
-            d_printf(0, "%s:%d:LMTP Internal error getting line from server\n",
+            d_printf(0, "%s:%u:LMTP Internal error getting line from server\n",
                      hostPeerName(cxn->myHost), cxn->ident);
             lmtp_Disconnect(cxn);
             return;
@@ -3259,7 +3259,7 @@ reset:
 
         if (ask_code(str) != 220) {
             d_printf(0,
-                     "%s:%d:LMTP Initial server msg does not start with 220 "
+                     "%s:%u:LMTP Initial server msg does not start with 220 "
                      "(began with %d)\n",
                      hostPeerName(cxn->myHost), cxn->ident, ask_code(str));
             lmtp_Disconnect(cxn);
@@ -3275,7 +3275,7 @@ reset:
         result = lmtp_getcapabilities(cxn);
 
         if (result != RET_OK) {
-            d_printf(0, "%s:%d:LMTP lmtp_getcapabilities() failure\n",
+            d_printf(0, "%s:%u:LMTP lmtp_getcapabilities() failure\n",
                      hostPeerName(cxn->myHost), cxn->ident);
             lmtp_Disconnect(cxn);
             return;
@@ -3289,7 +3289,7 @@ reset:
 
         if (response_code != 250) /* was none */
         {
-            d_printf(0, "%s:%d:LMTP Response code unexpected (%d)\n",
+            d_printf(0, "%s:%u:LMTP Response code unexpected (%d)\n",
                      hostPeerName(cxn->myHost), cxn->ident, response_code);
             lmtp_Disconnect(cxn);
             return;
@@ -3317,7 +3317,7 @@ reset:
         } else {
             /* we require a few capabilities */
             if (!cxn->lmtp_capabilities->pipelining) {
-                d_printf(0, "%s:%d:LMTP We require PIPELINING\n",
+                d_printf(0, "%s:%u:LMTP We require PIPELINING\n",
                          hostPeerName(cxn->myHost), cxn->ident);
 
                 lmtp_Disconnect(cxn);
@@ -3329,7 +3329,7 @@ reset:
                 result = lmtp_authenticate(cxn);
 
                 if (result != RET_OK) {
-                    d_printf(0, "%s:%d:LMTP lmtp_authenticate() error\n",
+                    d_printf(0, "%s:%u:LMTP lmtp_authenticate() error\n",
                              hostPeerName(cxn->myHost), cxn->ident);
                     lmtp_Disconnect(cxn);
                     return;
@@ -3343,7 +3343,7 @@ reset:
                    doesn't support it */
                 cxn->lmtp_state = LMTP_AUTHED_IDLE;
                 d_printf(1,
-                         "%s:%d:LMTP Even though we can't authenticate"
+                         "%s:%u:LMTP Even though we can't authenticate"
                          " we're going to try to feed anyway\n",
                          hostPeerName(cxn->myHost), cxn->ident);
                 /* We just assume we don't need to authenticate
@@ -3377,7 +3377,7 @@ reset:
 
             /* check if sasl succeeded */
             if (saslresult != SASL_OK && saslresult != SASL_CONTINUE) {
-                d_printf(0, "%s:%d:LMTP sasl_client_step(): %s\n",
+                d_printf(0, "%s:%u:LMTP sasl_client_step(): %s\n",
                          hostPeerName(cxn->myHost), cxn->ident,
                          sasl_errstring(saslresult, NULL, NULL));
 
@@ -3397,7 +3397,7 @@ reset:
                                        (unsigned *) &inbase64len);
 
             if (saslresult != SASL_OK) {
-                d_printf(0, "%s:%d:LMTP sasl_encode64(): %s\n",
+                d_printf(0, "%s:%u:LMTP sasl_encode64(): %s\n",
                          hostPeerName(cxn->myHost), cxn->ident,
                          sasl_errstring(saslresult, NULL, NULL));
 
@@ -3413,7 +3413,7 @@ reset:
             /* Send to server. */
             result = WriteToWire_lmtpstr(cxn, inbase64, inbase64len);
             if (result != RET_OK) {
-                d_printf(0, "%s:%d:LMTP WriteToWire() failure\n",
+                d_printf(0, "%s:%u:LMTP WriteToWire() failure\n",
                          hostPeerName(cxn->myHost), cxn->ident);
                 lmtp_Disconnect(cxn);
                 return;
@@ -3425,7 +3425,7 @@ reset:
         case STAT_OK:
             cxn->lmtp_sleepTimeout = init_reconnect_period;
 
-            d_printf(0, "%s:%d LMTP authentication succeeded\n",
+            d_printf(0, "%s:%u LMTP authentication succeeded\n",
                      hostPeerName(cxn->myHost), cxn->ident);
 
             cxn->lmtp_disconnects = 0;
@@ -3443,7 +3443,7 @@ reset:
             return;
 
         default:
-            d_printf(0, "%s:%d:LMTP failed authentication\n",
+            d_printf(0, "%s:%u:LMTP failed authentication\n",
                      hostPeerName(cxn->myHost), cxn->ident);
             lmtp_Disconnect(cxn);
             return;
@@ -3456,7 +3456,7 @@ reset:
             goto reset;
         }
         if (ask_code(str) != 250) {
-            d_printf(0, "%s:%d:LMTP RSET failed with (%d)\n",
+            d_printf(0, "%s:%u:LMTP RSET failed with (%d)\n",
                      hostPeerName(cxn->myHost), cxn->ident, ask_code(str));
             lmtp_Disconnect(cxn);
             return;
@@ -3471,7 +3471,7 @@ reset:
             goto reset;
         }
         if (ask_code(str) != 250) {
-            d_printf(0, "%s:%d:LMTP MAILFROM failed with (%d)\n",
+            d_printf(0, "%s:%u:LMTP MAILFROM failed with (%d)\n",
                      hostPeerName(cxn->myHost), cxn->ident, ask_code(str));
             lmtp_Disconnect(cxn);
             return;
@@ -3487,7 +3487,7 @@ reset:
             goto reset;
         }
         if (ask_code(str) != 250) {
-            d_printf(1, "%s:%d:LMTP RCPT TO failed with (%d) %s\n",
+            d_printf(1, "%s:%u:LMTP RCPT TO failed with (%d) %s\n",
                      hostPeerName(cxn->myHost), cxn->ident, ask_code(str),
                      str);
 
@@ -3515,7 +3515,7 @@ reset:
         if (cxn->current_rcpts_issued == 0) {
             if (cxn->current_article->trys < 100) {
                 d_printf(1,
-                         "%s:%d:LMTP None of the rcpts "
+                         "%s:%u:LMTP None of the rcpts "
                          "were accepted for this message. Re-queueing\n",
                          hostPeerName(cxn->myHost), cxn->ident);
             }
@@ -3526,7 +3526,7 @@ reset:
             lmtp_sendmessage(cxn, NULL);
         } else {
             if (WriteArticle(cxn, cxn->current_bufs) != RET_OK) {
-                d_printf(0, "%s:%d:LMTP Error writing article\n",
+                d_printf(0, "%s:%u:LMTP Error writing article\n",
                          hostPeerName(cxn->myHost), cxn->ident);
                 lmtp_Disconnect(cxn);
                 return;
@@ -3546,7 +3546,7 @@ reset:
         cxn->current_rcpts_issued--;
 
         if (ask_code(str) != 250) {
-            d_printf(1, "%s:%d:LMTP DATA failed with %d (%s)\n",
+            d_printf(1, "%s:%u:LMTP DATA failed with %d (%s)\n",
                      hostPeerName(cxn->myHost), cxn->ident, ask_code(str),
                      str);
             cxn->current_rcpts_okayed--;
@@ -3565,7 +3565,7 @@ reset:
         } else {
             cxn->lmtp_state = LMTP_AUTHED_IDLE;
             cxn->lmtp_succeeded++;
-            d_printf(1, "%s:%d:LMTP Woohoo! message accepted\n",
+            d_printf(1, "%s:%u:LMTP Woohoo! message accepted\n",
                      hostPeerName(cxn->myHost), cxn->ident);
         }
 
@@ -3589,7 +3589,7 @@ reset:
         break;
 
     case LMTP_READING_QUIT:
-        d_printf(1, "%s:%d:LMTP read quit\n", hostPeerName(cxn->myHost),
+        d_printf(1, "%s:%u:LMTP read quit\n", hostPeerName(cxn->myHost),
                  cxn->ident);
 
         cxn->lmtp_state = LMTP_DISCONNECTED;
@@ -3599,7 +3599,7 @@ reset:
 
     default:
 
-        d_printf(0, "%s:%d:LMTP Bad state in lmtp_readCB %d\n",
+        d_printf(0, "%s:%u:LMTP Bad state in lmtp_readCB %u\n",
                  hostPeerName(cxn->myHost), cxn->ident, cxn->lmtp_state);
         lmtp_Disconnect(cxn);
         return;
@@ -3902,7 +3902,7 @@ retry:
            article to send. */
 
         /* make sure imap has space too */
-        d_printf(1, "%s:%d stalled waiting for articles\n",
+        d_printf(1, "%s:%u stalled waiting for articles\n",
                  hostPeerName(cxn->myHost), cxn->ident);
         if ((QueueItems(&(cxn->lmtp_todeliver_q)) == 0)
             && (QueueItems(&(cxn->imap_controlMsg_q)) == 0)) {
@@ -3940,7 +3940,7 @@ retry:
         result = AddControlMsg(cxn, item->data.article, bufs, control_header,
                                control_header_end, 1);
         if (result != RET_OK) {
-            d_printf(1, "%s:%d Error adding to [imap] control queue\n",
+            d_printf(1, "%s:%u Error adding to [imap] control queue\n",
                      hostPeerName(cxn->myHost), cxn->ident);
             ReQueue(cxn, &(cxn->lmtp_todeliver_q), item);
             return;
@@ -3990,7 +3990,7 @@ retry:
                         &rcpt_list_end);
 
     if ((result != RET_OK) || (rcpt_list == NULL)) {
-        d_printf(1, "%s:%d Didn't find Newsgroups header field\n",
+        d_printf(1, "%s:%u Didn't find Newsgroups header field\n",
                  hostPeerName(cxn->myHost), cxn->ident);
         QueueForgetAbout(cxn, cxn->current_article, MSG_FAIL_DELIVER);
         goto retry;
@@ -4010,7 +4010,7 @@ retry:
     cxn->lmtp_state = LMTP_WRITING_UPTODATA;
     result = WriteToWire_lmtpstr(cxn, p, strlen(p));
     if (result != RET_OK) {
-        d_printf(0, "%s:%d failed trying to write\n",
+        d_printf(0, "%s:%u failed trying to write\n",
                  hostPeerName(cxn->myHost), cxn->ident);
         lmtp_Disconnect(cxn);
         return;
@@ -4115,7 +4115,7 @@ DeferAllArticles(connection_t *cxn, Q_t *q)
             QueueForgetAbout(cxn, cur, MSG_GIVE_BACK);
         } else {
             d_printf(0,
-                     "%s:%d Error emptying queue (deffering all articles)\n",
+                     "%s:%u Error emptying queue (deffering all articles)\n",
                      hostPeerName(cxn->myHost), cxn->ident);
             return;
         }
@@ -4134,7 +4134,7 @@ delConnection(Connection cxn)
     if (cxn == NULL)
         return;
 
-    d_printf(1, "Deleting connection: %s:%d\n", hostPeerName(cxn->myHost),
+    d_printf(1, "Deleting connection: %s:%u\n", hostPeerName(cxn->myHost),
              cxn->ident);
 
     for (c = gCxnList, q = NULL; c != NULL; q = c, c = c->next)
@@ -4349,7 +4349,7 @@ cxnFlush(Connection cxn)
 void
 cxnClose(Connection cxn)
 {
-    d_printf(0, "%s:%d Closing cxn\n", hostPeerName(cxn->myHost), cxn->ident);
+    d_printf(0, "%s:%u Closing cxn\n", hostPeerName(cxn->myHost), cxn->ident);
     cxn->issue_quit = 3;
 
     QuitIfIdle(cxn);
@@ -4362,7 +4362,7 @@ cxnClose(Connection cxn)
 void
 cxnTerminate(Connection cxn)
 {
-    d_printf(0, "%s:%d Terminate\n", hostPeerName(cxn->myHost), cxn->ident);
+    d_printf(0, "%s:%u Terminate\n", hostPeerName(cxn->myHost), cxn->ident);
 
     cxn->issue_quit = 3;
 
@@ -4377,7 +4377,7 @@ cxnTerminate(Connection cxn)
 void
 cxnNuke(Connection cxn)
 {
-    d_printf(0, "%s:%d Nuking connection\n", cxn->ServerName, cxn->ident);
+    d_printf(0, "%s:%u Nuking connection\n", cxn->ServerName, cxn->ident);
 
     cxn->issue_quit = 4;
 
@@ -4419,7 +4419,7 @@ ProcessArticle(Connection cxn, Article art, bool must)
     }
 
     if (result != RET_OK) {
-        d_printf(0, "%s:%d Error adding to delivery queue\n",
+        d_printf(0, "%s:%u Error adding to delivery queue\n",
                  hostPeerName(cxn->myHost), cxn->ident);
         return must;
     }
@@ -4490,7 +4490,7 @@ cxnLogStats(Connection cxn, bool final)
     bad += cxn->create_failed;
     bad += cxn->remove_failed;
 
-    notice("%s:%d %s seconds %ld accepted %d refused %d rejected %d", peerName,
+    notice("%s:%u %s seconds %ld accepted %d refused %d rejected %d", peerName,
            cxn->ident, (final ? "final" : "checkpoint"),
            (long) (now - cxn->timeCon), total, 0, bad);
     show_stats(cxn);
@@ -4526,9 +4526,9 @@ cxnQueueSpace(Connection cxn)
     if (imapsize >= 1)
         imapsize--;
 
-    d_printf(1, "%s:%d Q Space lmtp size = %d state = %d\n",
+    d_printf(1, "%s:%u Q Space lmtp size = %d state = %u\n",
              hostPeerName(cxn->myHost), cxn->ident, lmtpsize, cxn->lmtp_state);
-    d_printf(1, "%s:%d Q Space imap size = %d state = %d\n",
+    d_printf(1, "%s:%u Q Space imap size = %d state = %u\n",
              hostPeerName(cxn->myHost), cxn->ident, imapsize, cxn->imap_state);
 
     /* return the smaller of our 2 queues */
@@ -4543,7 +4543,7 @@ void
 cxnSetCheckThresholds(Connection cxn, double lowFilter UNUSED,
                       double highFilter UNUSED, double lowPassFilter UNUSED)
 {
-    d_printf(1, "%s:%d Threshold change. This means nothing to me\n",
+    d_printf(1, "%s:%u Threshold change. This means nothing to me\n",
              hostPeerName(cxn->myHost), cxn->ident);
 }
 
@@ -4683,7 +4683,7 @@ cxnConfigLoadCbk(void *data UNUSED)
 bool
 cxnCheckstate(Connection cxn)
 {
-    d_printf(5, "%s:%d Being asked to check state\n",
+    d_printf(5, "%s:%u Being asked to check state\n",
              hostPeerName(cxn->myHost), cxn->ident);
 
     /* return false if either connection is doing something */

@@ -757,7 +757,7 @@ CMDpost(int ac, char *av[])
                       NULL);
         switch (r) {
         default:
-            warn("%s internal %d in post", Client.host, r);
+            warn("%s internal %u in post", Client.host, r);
             goto fallthrough;
         case RTtimeout:
         fallthrough:

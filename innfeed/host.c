@@ -1630,7 +1630,7 @@ hostChkCxns(TimeoutId tid UNUSED, void *data)
         newMaxCxns = MAXCONLIMIT(host->params->absMaxConnections);
 
     if (newMaxCxns != host->maxConnections) {
-        notice("%s hostChkCxns - maxConnections was %d now %d",
+        notice("%s hostChkCxns - maxConnections was %u now %u",
                host->params->peerName, host->maxConnections, newMaxCxns);
 
         host->backlogFilter = ((host->params->dynBacklogLowWaterMark
@@ -1650,7 +1650,7 @@ hostChkCxns(TimeoutId tid UNUSED, void *data)
         host->nextCxnTimeChk *= 2;
     else
         host->nextCxnTimeChk = 300;
-    d_printf(1, "prepareSleep hostChkCxns, %d\n", host->nextCxnTimeChk);
+    d_printf(1, "prepareSleep hostChkCxns, %u\n", host->nextCxnTimeChk);
     host->ChkCxnsId = prepareSleep(hostChkCxns, host->nextCxnTimeChk, host);
 }
 
@@ -1697,7 +1697,7 @@ hostSendArticle(Host host, Article article)
                                 return;
                             } else
                                 d_printf(1,
-                                         "%s Inactive connection %d refused "
+                                         "%s Inactive connection %u refused "
                                          "an article\n",
                                          host->params->peerName, idx);
                         }
@@ -1756,7 +1756,7 @@ hostSendArticle(Host host, Article article)
                     } else
                         d_printf(
                             1,
-                            "%s Inactive connection %d refused an article\n",
+                            "%s Inactive connection %u refused an article\n",
                             host->params->peerName, idx);
                 }
         }
@@ -2000,7 +2000,7 @@ hostCxnGone(Host host, Connection cxn)
     for (i = 0; i < host->maxConnections; i++)
         if (host->connections[i] == cxn) {
             if (!amClosing(host)) {
-                warn("%s:%d connection vanishing", host->params->peerName, i);
+                warn("%s:%u connection vanishing", host->params->peerName, i);
             }
             host->connections[i] = NULL;
             if (host->cxnActive[i]) {
@@ -2021,8 +2021,8 @@ hostCxnGone(Host host, Connection cxn)
         if (host->firstConnectTime > 0) {
             snprintf(msgstr, sizeof(msgstr), "accsize %.0f rejsize %.0f",
                      host->gArtsSizeAccepted, host->gArtsSizeRejected);
-            notice("%s global seconds %ld offered %d accepted %d refused %d"
-                   " rejected %d missing %d %s spooled %d unspooled %d",
+            notice("%s global seconds %ld offered %u accepted %u refused %u"
+                   " rejected %u missing %u %s spooled %u unspooled %u",
                    host->params->peerName,
                    (long) (now - host->firstConnectTime), host->gArtsOffered,
                    host->gArtsAccepted, host->gArtsNotWanted,
@@ -2488,8 +2488,8 @@ gHostStats(void)
         if (h->firstConnectTime > 0) {
             snprintf(msgstr, sizeof(msgstr), "accsize %.0f rejsize %.0f",
                      h->gArtsSizeAccepted, h->gArtsSizeRejected);
-            notice("%s global seconds %ld offered %d accepted %d refused %d"
-                   " rejected %d missing %d %s spooled %d unspooled %d",
+            notice("%s global seconds %ld offered %u accepted %u refused %u"
+                   " rejected %u missing %u %s spooled %u unspooled %u",
                    h->params->peerName, (long) (now - h->firstConnectTime),
                    h->gArtsOffered, h->gArtsAccepted, h->gArtsNotWanted,
                    h->gArtsRejected, h->gArtsMissing, msgstr, h->gArtsToTape,
@@ -2883,7 +2883,7 @@ hostLogStats(Host host, bool final)
 
     if (host->spoolTime != 0) {
         /* Log a checkpoint in any case. */
-        notice("%s checkpoint seconds %ld spooled %d on_close %d sleeping %d",
+        notice("%s checkpoint seconds %ld spooled %u on_close %u sleeping %u",
                host->params->peerName,
                (long) (now - host->spoolTime_checkpoint),
                host->artsToTape - host->artsToTape_checkpoint,
@@ -2896,7 +2896,7 @@ hostLogStats(Host host, bool final)
         host->artsHostSleep_checkpoint = host->artsHostSleep;
 
         if (final) {
-            notice("%s final seconds %ld spooled %d on_close %d sleeping %d",
+            notice("%s final seconds %ld spooled %u on_close %u sleeping %u",
                    host->params->peerName, (long) (now - host->spoolTime),
                    host->artsToTape, host->artsHostClose, host->artsHostSleep);
         }
@@ -2906,12 +2906,10 @@ hostLogStats(Host host, bool final)
          * Note that deferred and queue values are cumulative
          * (and not treated by innreport). */
         notice(
-            "%s checkpoint seconds %ld offered %d accepted %d refused %d "
-            "rejected %d"
-            " missing %d accsize %.0f rejsize %.0f spooled %d on_close %d "
-            "unspooled %d"
-            " deferred %d/%.1f requeued %d"
-            " queue %.1f/%d:%.0f,%.0f,%.0f,%.0f,%.0f,%.0f",
+            "%s checkpoint seconds %ld offered %u accepted %u refused %u"
+            " rejected %u missing %u accsize %.0f rejsize %.0f spooled %u"
+            " on_close %u unspooled %u deferred %u/%.1f requeued %u"
+            " queue %.1f/%u:%.0f,%.0f,%.0f,%.0f,%.0f,%.0f",
             host->params->peerName,
             (long) (now - host->connectTime_checkpoint),
             host->artsOffered - host->artsOffered_checkpoint,
@@ -2948,12 +2946,10 @@ hostLogStats(Host host, bool final)
         host->artsCxnDrop_checkpoint = host->artsCxnDrop;
 
         if (final) {
-            notice("%s final seconds %ld offered %d accepted %d refused %d "
-                   "rejected %d"
-                   " missing %d accsize %.0f rejsize %.0f spooled %d on_close "
-                   "%d unspooled %d"
-                   " deferred %d/%.1f requeued %d"
-                   " queue %.1f/%d:%.0f,%.0f,%.0f,%.0f,%.0f,%.0f",
+            notice("%s final seconds %ld offered %u accepted %u refused %u"
+                   " rejected %u missing %u accsize %.0f rejsize %.0f"
+                   " spooled %u on_close %u unspooled %u deferred %u/%.1f"
+                   " requeued %u queue %.1f/%u:%.0f,%.0f,%.0f,%.0f,%.0f,%.0f",
                    host->params->peerName, (long) (now - host->connectTime),
                    host->artsOffered, host->artsAccepted, host->artsNotWanted,
                    host->artsRejected, host->artsMissing,

@@ -425,7 +425,7 @@ timecaf_store(const ARTHANDLE article, const STORAGECLASS class)
                     *p = '/';
                     fd = CAFOpenArtWrite(path, &art, true, article.len);
                     if (fd < 0) {
-                        warn("timecaf: could not OpenArtWrite %s/%ld: %s",
+                        warn("timecaf: could not OpenArtWrite %s/%lu: %s",
                              path, art, CAFErrorStr());
                         SMseterror(SMERR_UNDEFINED, NULL);
                         free(path);
@@ -434,7 +434,7 @@ timecaf_store(const ARTHANDLE article, const STORAGECLASS class)
                     }
                 }
             } else {
-                warn("timecaf: could not OpenArtWrite %s/%ld: %s", path, art,
+                warn("timecaf: could not OpenArtWrite %s/%lu: %s", path, art,
                      CAFErrorStr());
                 SMseterror(SMERR_UNDEFINED, NULL);
                 free(path);
@@ -451,7 +451,7 @@ timecaf_store(const ARTHANDLE article, const STORAGECLASS class)
         path = WritingFile.path;
 
         if (CAFStartWriteFd(fd, &art, article.len) < 0) {
-            warn("timecaf: could not OpenArtWriteFd %s/%ld: %s", path, art,
+            warn("timecaf: could not OpenArtWriteFd %s/%lu: %s", path, art,
                  CAFErrorStr());
             SMseterror(SMERR_UNDEFINED, NULL);
             free(path);

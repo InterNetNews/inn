@@ -622,10 +622,10 @@ sigusr(int sig)
 {
     if (sig == SIGUSR1) {
         loggingLevel++;
-        notice("ME increasing logging level to %d", loggingLevel);
+        notice("ME increasing logging level to %u", loggingLevel);
     } else if (sig == SIGUSR2 && loggingLevel > 0) {
         loggingLevel--;
-        notice("ME decreasing logging level to %d", loggingLevel);
+        notice("ME decreasing logging level to %u", loggingLevel);
     }
 }
 

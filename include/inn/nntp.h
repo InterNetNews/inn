@@ -176,7 +176,7 @@ enum nntp_code {
 **  than that.
 */
 
-#define NNTP_MAXARTNUM      2147483647L
+#define NNTP_MAXARTNUM      2147483647UL
 
 /* Forward declaration. */
 struct cvector;

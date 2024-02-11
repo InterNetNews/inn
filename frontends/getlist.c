@@ -35,7 +35,7 @@ die_nntp_code(enum nntp_code code, const char *line)
     if (code == 0)
         die("unexpected server response: %s", line);
     else
-        die("unexpected server response: %03d %s", code, line);
+        die("unexpected server response: %03u %s", code, line);
 }
 
 

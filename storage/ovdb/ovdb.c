@@ -781,7 +781,7 @@ groupid_new(group_id_t *gno, DB_TXN *tid)
     }
 
     if (val.size % sizeof(group_id_t)) {
-        warn("OVDB: invalid size (%d) for !groupid_freelist", val.size);
+        warn("OVDB: invalid size (%u) for !groupid_freelist", val.size);
         return EINVAL;
     }
 
@@ -830,7 +830,7 @@ groupid_free(group_id_t gno, DB_TXN *tid)
     }
 
     if (val.size % sizeof(group_id_t)) {
-        warn("OVDB: invalid size (%d) for !groupid_freelist", val.size);
+        warn("OVDB: invalid size (%u) for !groupid_freelist", val.size);
         return EINVAL;
     }
 
@@ -1478,7 +1478,7 @@ check_version(void)
         memcpy(&dv, val.data, sizeof dv);
 
     if (dv > DATA_VERSION_COMPRESS) {
-        warn("OVDB: can't open database: unknown version %d", dv);
+        warn("OVDB: can't open database: unknown version %u", dv);
         vdb->close(vdb, 0);
         return EINVAL;
     }
@@ -2437,7 +2437,7 @@ ovdb_search(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *token,
         memcpy(&sz, dp, sizeof(uint32_t));
         sz = ntohl(sz);
         if (sz > MAX_UNZIP_SZ) { /* sanity check */
-            warn("OVDB: search: bogus sz: %d", sz);
+            warn("OVDB: search: bogus sz: %u", sz);
             sz = 0;
         }
     }

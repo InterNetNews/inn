@@ -310,7 +310,7 @@ main(int ac, char *av[])
     /* Make sure there are no separators in the parameters. */
     for (i = 0; (p = av[i++]) != NULL;)
         if (strchr(p, SC_SEP) != NULL)
-            die("illegal character \\%03o in %s", SC_SEP, p);
+            die("illegal character \\%03o in %s", (unsigned int) SC_SEP, p);
 
     /* Do the real work. */
     if (ICCopen() < 0)

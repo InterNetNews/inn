@@ -544,8 +544,8 @@ logArticleStats(TimeoutId id, void *data UNUSED)
 {
     ASSERT(id == articleStatsId);
 
-    notice("ME articles active %d bytes %d", articlesInUse, bytesInUse);
-    notice("ME articles total %d bytes %d", articleTotal, byteTotal);
+    notice("ME articles active %u bytes %u", articlesInUse, bytesInUse);
+    notice("ME articles total %u bytes %u", articleTotal, byteTotal);
 
     byteTotal = 0;
     articleTotal = 0;
@@ -704,7 +704,7 @@ fillContents(Article article)
         if ((amtToRead + bytesInUse) > maxBytesInUse
             && maxLimitNotified == false) {
             maxLimitNotified = true;
-            notice("ME exceeding maximum article byte limit: %d (max),"
+            notice("ME exceeding maximum article byte limit: %u (max),"
                    " %lu (cur)",
                    maxBytesInUse, (unsigned long) (amtToRead + bytesInUse));
         }
@@ -754,7 +754,7 @@ fillContents(Article article)
                     if (((unsigned int) UINT_MAX) - diff <= preparedBytes) {
                         d_printf(2, "Newline ratio so far: %02.2f\n",
                                  ((double) preparedBytes / preparedNewlines));
-                        notice("ME newline to file size ratio: %0.2f (%d/%d)",
+                        notice("ME newline to file size ratio: %0.2f (%u/%u)",
                                ((double) preparedBytes) / preparedNewlines,
                                preparedBytes, preparedNewlines);
                         preparedBytes = 0;

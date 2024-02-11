@@ -433,7 +433,7 @@ ovsqlite_add(const char *group, ARTNUM artnum, TOKEN token, char *data,
     r_expires = expires;
 
     if (overview_len > MAX_OVDATA_SIZE) {
-        warn("Too large overview data of %d bytes (most certainly spam)",
+        warn("Too large overview data of %u bytes (most certainly spam)",
              overview_len);
         return false;
     }

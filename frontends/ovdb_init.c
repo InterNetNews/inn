@@ -292,7 +292,7 @@ check_upgrade(int do_upgrade)
     }
 
     if (dv > DATA_VERSION_COMPRESS) {
-        warn("cannot open database: unknown version %d", dv);
+        warn("cannot open database: unknown version %u", dv);
         return EINVAL;
     }
     if (dv < DATA_VERSION) {

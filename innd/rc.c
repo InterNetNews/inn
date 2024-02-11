@@ -365,7 +365,7 @@ RCrejectwritedone(CHANNEL *cp)
 {
     switch (cp->State) {
     default:
-        syslog(L_ERROR, "%s internal RCrejectwritedone state %d", CHANname(cp),
+        syslog(L_ERROR, "%s internal RCrejectwritedone state %u", CHANname(cp),
                cp->State);
         break;
     case CSwritegoodbye:
@@ -405,7 +405,7 @@ RChandoff(int fd, HANDOFF h)
         syslog(L_ERROR, "%s cant nonblock %d in RChandoff %m", LogName, fd);
     switch (h) {
     default:
-        syslog(L_ERROR, "%s internal RChandoff %d type %d", LogName, fd, h);
+        syslog(L_ERROR, "%s internal RChandoff %d type %u", LogName, fd, h);
         goto fallthroughHOnnrpd;
     case HOnnrpd:
     fallthroughHOnnrpd:
@@ -1858,7 +1858,7 @@ RCsetup(void)
         if (fds[i] < 0)
             continue;
         if (!isvalidfd(fds[i])) {
-            syswarn("SERVER cant listen to socket: file descriptor %u too "
+            syswarn("SERVER cant listen to socket: file descriptor %d too "
                     "high (see rlimitnofile in inn.conf)",
                     fds[i]);
             continue;

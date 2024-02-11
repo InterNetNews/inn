@@ -336,7 +336,7 @@ tls_dump(const char *s, int len)
         buf[0] = '\0'; /* Start with empty string. */
         ss = buf;
 
-        snprintf(ss, sizeof(buf), "%04x ", i * DUMP_WIDTH);
+        snprintf(ss, sizeof(buf), "%04x ", (unsigned int) (i * DUMP_WIDTH));
         ss += strlen(ss);
         for (j = 0; j < DUMP_WIDTH; j++) {
             if (((i * DUMP_WIDTH) + j) >= len) {
