@@ -778,7 +778,7 @@ dnl Some may be worth looking at again once a released version of gcc doesn't
 dnl warn on system headers.  The warnings below are in the same order as
 dnl they're listed in the gcc manual.
 dnl
-dnl Last checked against gcc 10.2.1 (2021-11-21).
+dnl Last checked against gcc 13.2 (2024-01-26).
 dnl
 dnl Add -g because when building with warnings, one generally also wants the
 dnl debugging information, and add -O3 because gcc won't find some warnings
@@ -791,25 +791,30 @@ dnl checking, which catches a few more issues.
 dnl
 dnl For Clang, try -Weverything but disable some of the warnings:
 dnl
-dnl   -Wcast-qual                     Some casts are unavoidable.
+dnl   -Wcast-qual                     Some structs require casting away const.
 dnl   -Wcovered-switch-default        Does not do harm to have default cases.
 dnl   -Wdisabled-macro-expansion      Not an actual problem.
 dnl   -Wextra-semi-stmt               Useful for readability.
 dnl   -Wpacked                        Not an actual problem.
 dnl   -Wpadded                        Not an actual problem.
-dnl   -Wreserved-id-macros            Autoconf sets several of these normally.
+dnl   -Wreserved-id-macro             Autoconf sets several of these normally.
+dnl   -Wreserved-identifier           False positives with FD_ZERO.
 dnl   -Wsign-conversion               Too many fiddly changes for the benefit.
 dnl   -Wswitch-enum                   Useless noise.
 dnl   -Wtautological-pointer-compare  False positives with for loops.
 dnl   -Wundef                         Conflicts with Autoconf probe results.
 dnl   -Wunreachable-code              Happens with optional compilation.
 dnl   -Wunreachable-code-return       Other compilers get confused.
+dnl   -Wunsafe-buffer-usage           Intended for C++, not applicable to C.
 dnl   -Wunused-macros                 Conflicts with flex macros.
 dnl   -Wused-but-marked-unused        Happens a lot with conditional code.
 dnl
 dnl It would be worthwhile trying to enforce the following checks:
 dnl "-Wconversion -Wno-sign-conversion" (for gcc)
+dnl -Wstack-protector (for gcc, but many false positives from small buffers)
 dnl -Wimplicit-int-conversion, -Wshorten-64-to-32 (for Clang)
+dnl -fstrict-overflow (for Clang, but -fwrapv used by embedded Perl causes an
+dnl error of "argument unused during compilation" in clang-11)
 dnl
 dnl First, we add -Wunknown-warning-option to CFLAGS so that Clang properly
 dnl reports probes for unknown flags as errors.
@@ -817,12 +822,14 @@ INN_PROG_CC_FLAG([-Werror=unknown-warning-option],
                  [CFLAGS="$CFLAGS -Werror=unknown-warning-option"], [])
 m4_foreach_w(
     [flag],
-    [-g -O3 -DDEBUG=1 -Werror -Wall -Wextra -Wdouble-promotion -Wformat=2
-     -Wformat-overflow=2 -Wformat-truncation=1 -Wnull-dereference -Winit-self
+    [-fstrict-aliasing -fstrict-flex-arrays=3
+     -g -O3 -DDEBUG=1 -Werror -Wall -Wextra -Wdouble-promotion -Wformat=2
+     -Wformat-overflow=2 -Wformat-signedness -Wformat-truncation=1
+     -Wnull-dereference -Winit-self
      -Wmissing-include-dirs -Wshift-overflow=2
      -Wsync-nand -Wstringop-overflow=4 -Wstringop-truncation
      -Wmissing-format-attribute
-     -Walloc-zero -Walloca -Warith-conversion -Warray-bounds=2
+     -Walloc-zero -Walloca -Warith-conversion -Warray-bounds=3
      -Wattribute-alias=2 -Wduplicated-branches -Wduplicated-cond
      -Wtrampolines -Wfloat-equal -Wdeclaration-after-statement -Wshadow
      -Wpointer-arith -Wc99-c11-compat
@@ -832,13 +839,14 @@ m4_foreach_w(
      -Wold-style-definition
      -Wmissing-prototypes -Wmissing-declarations
      -Wnormalized=nfc -Wredundant-decls -Wrestrict -Wnested-externs -Winline
-     -Winvalid-pch -Wvla -Wno-unused-function
+     -Winvalid-pch -Wvla -Wuse-after-free=3 -Wno-unused-function
      -Weverything -Wno-cast-qual -Wno-covered-switch-default
      -Wno-disabled-macro-expansion -Wno-extra-semi-stmt
      -Wno-implicit-int-conversion -Wno-packed -Wno-padded
-     -Wno-reserved-id-macro -Wno-shorten-64-to-32 -Wno-sign-conversion
-     -Wno-switch-enum -Wno-tautological-pointer-compare -Wno-undef
-     -Wno-unreachable-code -Wno-unreachable-code-return
+     -Wno-reserved-id-macro -Wno-reserved-identifier -Wno-shorten-64-to-32
+     -Wno-sign-conversion -Wno-switch-enum -Wno-tautological-pointer-compare
+     -Wno-undef -Wno-unreachable-code -Wno-unreachable-code-return
+     -Wno-unsafe-buffer-usage
      -Wno-unused-macros -Wno-used-but-marked-unused],
     [INN_PROG_CC_FLAG(flag, [CC_WARNINGS="${CC_WARNINGS} flag"], [])])
 AC_SUBST([CC_WARNINGS])
