@@ -2226,6 +2226,7 @@ sub collect($$$$$$) {
         if (
             $left =~ m|^Class\ (\S+)\ for\ groups\ matching\ \S+
                     (\ article\ size\ min/max:\ \d+/\d+)?
+                    (?:,\ filtered\ only)?
                     \ Buffer\ (\S+),
                     \ len:\ ([\d.]+)\s+Mbytes,
                     \ used:\ ([\d.]+)\ Mbytes\ \(\s*[\d.]+%\)
