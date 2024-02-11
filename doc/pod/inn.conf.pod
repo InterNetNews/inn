@@ -663,6 +663,10 @@ if it runs out of open file descriptors, it may throttle and stop accepting
 new news.  The default value is C<128> (which is probably still too low if
 you have a large number of file descriptors available).
 
+Please have a look at the documentation of the I<rlimitnofile> parameter,
+as increasing the default value may lead to an exhaustion of usable file
+descriptors.
+
 This setting is ignored unless I<ovmethod> is set to C<tradindexed>.
 
 =item I<ovgrouppat>
@@ -1643,17 +1647,18 @@ innd closes it.  The default value is C<3600> (an hour).
 
 =item I<rlimitnofile>
 
-The maximum number of file descriptors that innd(8) or innfeed(8) can have
-open at once.  If innd(8) or innfeed(8) attempts to open more file
+The maximum number of file descriptors that innd(8) or innfeed(8) can
+have open at once.  If innd(8) or innfeed(8) attempts to open more file
 descriptors than this value, it is possible the program may throttle or
 otherwise malfunction or suffer reduced functionality.  The number of open
 file descriptors is roughly the maximum number of incoming feeds and outgoing
-batches for innd(8) and the number of outgoing streams for innfeed(8).  If
-this parameter is set to a negative value, the default limit of the
-operating system will be used; this will normally be adequate on systems
-other than Solaris.  Nearly all operating systems have some hard maximum
-limit beyond which this value cannot be raised, usually either 256, 1024,
-or 65536.  The default value of this parameter is C<-1>.
+batches for innd(8) added to the number of outgoing streams for innfeed(8)
+and, if you are using the tradindexed overview method, the value of the
+I<overcachesize> parameter.  If I<rlimitnofile> is set to a negative value,
+the default limit of the operating system will be used; this will normally be
+adequate on systems other than Solaris.  Nearly all operating systems have
+some hard maximum limit beyond which this value cannot be raised, usually
+either 256, 1024, or 65536.  The default value of this parameter is C<-1>.
 
 Setting this parameter to C<256> on Solaris systems is
 highly recommended for 32-bit Solaris versions or 32-bit
