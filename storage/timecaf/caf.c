@@ -44,6 +44,15 @@
 #    define STATMULTI f_bsize
 #endif /* HAVE_STATFS */
 
+/* Pick the longest available integer type. */
+#if HAVE_LONG_LONG_INT
+typedef unsigned long long long_int_type;
+#    define LLFORMAT "llu"
+#else
+typedef unsigned long long_int_type;
+#    define LLFORMAT "lu"
+#endif
+
 int CAFClean(char *path, int verbose, double PercentFreeThreshold);
 
 int caf_error = 0;
@@ -176,11 +185,11 @@ CAFGetTOCEnt(int fd, CAFHEADER *head, ARTNUM art, CAFTOCENT *tocp)
 }
 
 /*
-** Round an offset up to the next highest block boundary. Needs the CAFHEADER
+** Round an offset up to the next highest block boundary.  Needs the CAFHEADER
 ** to find out what the blocksize is.
 */
 off_t
-CAFRoundOffsetUp(off_t off, unsigned int blocksize)
+CAFRoundOffsetUp(off_t off, unsigned long int blocksize)
 {
     off_t off2;
 
@@ -1425,7 +1434,7 @@ CAFClean(char *path, int verbose, double PercentFreeThreshold)
 
 #ifdef STATFUNCT
     struct STATSTRUC fsinfo;
-    unsigned long num_diskblocks_needed;
+    long_int_type num_diskblocks_needed;
 #endif
 
     /* allocate buffer for newpath */
@@ -1655,11 +1664,12 @@ CAFClean(char *path, int verbose, double PercentFreeThreshold)
         num_diskblocks_needed =
             RoundIt((head.High - head.Low + 1) * sizeof(CAFTOCENT))
             + RoundIt(datasize - head.Free) + RoundIt(head.BlockSize);
-        if (num_diskblocks_needed > (unsigned long) fsinfo.STATAVAIL) {
+        if (num_diskblocks_needed > (long_int_type) fsinfo.STATAVAIL) {
             if (verbose) {
-                printf("CANNOT clean %s: needs %lu blocks, only %lu avail.\n",
+                printf("CANNOT clean %s: needs %" LLFORMAT " blocks, "
+                       "only %" LLFORMAT " avail.\n",
                        path, num_diskblocks_needed,
-                       (unsigned long) fsinfo.f_bavail);
+                       (long_int_type) fsinfo.STATAVAIL);
             }
             fclose(infile);
             free(tocarray);

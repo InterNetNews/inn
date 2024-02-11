@@ -71,6 +71,13 @@
 #    error "Platform not supported.  Neither statvfs nor statfs available."
 #endif
 
+/* Pick the longest available integer type. */
+#if HAVE_LONG_LONG_INT
+typedef unsigned long long long_int_type;
+#else
+typedef unsigned long long_int_type;
+#endif
+
 #define EXPIRE_CTL_DIR "/home/news"
 
 #define EXPIRE_DAYS    EXPIRE_CTL_DIR "/expire.days"
@@ -82,7 +89,7 @@ main(int ac, char **av)
 {
     df_declare(sfs);
     long minFree = 100 * 1024 * 1024;
-    long minIFree = 20 * 1024;
+    long_int_type minIFree = 20 * 1024;
     long expireDays = 2;
     time_t expireIncTime = time(NULL) - 24 * 60 * 60;
     int modified = 0;
@@ -188,7 +195,7 @@ main(int ac, char **av)
 
     {
         double bytes;
-        long inodes;
+        long_int_type inodes;
 
         bytes = (double) df_scale(sfs) * (double) df_avail(sfs);
         inodes = df_favail(sfs);
