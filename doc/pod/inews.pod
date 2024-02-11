@@ -1,6 +1,6 @@
 =head1 NAME
 
-inews - Post a Usenet article to the local news server
+inews - Post an article to a news server
 
 =head1 SYNOPSIS
 
@@ -13,7 +13,12 @@ B<inews> reads a Usenet news article, perhaps with headers, from I<file> or
 standard input if no file is given.  It adds some header fields and performs
 some consistency checks.  If the article does not meet those checks, the
 article is rejected.  If it passes the checks, B<inews> sends the article to
-the local news server as specified in the I<server> parameter in F<inn.conf>.
+the news server specified in the I<server> parameter in F<inn.conf>
+or overridden by the C<NNTPSERVER> environment variable when running B<inews>.
+
+B<inews> submits articles via POST and is suitable for posting articles that
+have not already been injecting into Usenet.  Submitting articles received
+from other sources should generally use rnews(1) instead.
 
 By default, if a file named F<.signature> exists in the home directory of
 the posting user, it is appended to the post, preceded by a line that
@@ -146,6 +151,30 @@ allowed.  Using this flag leads B<inews> to always authenticate, even if not
 asked to.
 
 =back
+
+=head1 EXAMPLES
+
+The following examples show how to post an article with headers and body,
+separated by a blank line, written in a file named F<article>.
+
+To post it to the news server set in the I<server> parameter of F<inn.conf>
+(which can be C<localhost> if it is the local server), without adding a Sender
+header field:
+
+    inews -h -P < article
+
+To force C<news.uu.net> as the server to send the article to:
+
+   NNTPSERVER=news.uu.net inews -h -P < article
+
+For testing purpose, to see the article that will be posted, without actually
+sending it but only writing it to the standard output:
+
+    inews -h -P -D < article
+
+If F<article> only contains a message without headers, you may use:
+
+    inews -t 'Hello' -n misc.test -f 'Bob <bob@uu.net>' -P < article
 
 =head1 NOTES
 
