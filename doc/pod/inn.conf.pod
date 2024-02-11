@@ -1252,6 +1252,10 @@ news user or the news group can read these directories and files
 F</etc/letsencrypt/archive/news.server.com> where the real keys are located,
 and the private key should not be world-readable).
 
+If you prefer to point to files outside the directory of S<Let's Encrypt>, you
+may add a post-renewal hook for S<Let's Encrypt> to copy the generated files
+to another location, and give them the expected rights.
+
 =item I<tlskeyfile>
 
 The path to a file containing the encryption key for the server
