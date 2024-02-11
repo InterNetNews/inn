@@ -182,7 +182,8 @@ my $hostblockRE
   = "(?:$hostname_wildmat|$ipv4_cidr|$ipv4_wildmat"
   . "|$ipv6|$ipv6_cidr|$ipv6_wildmat)";
 my %type_regex = (
-    'boolean' => '^(?:true|false)$',    # innfeed.conf doesn't allow other
+    'boolean' => '^(?:[tT][rR][uU][eE]|[fF][aA][lL][sS][eE]'
+      . '|[oO][nN]|[oO][fF][fF]|[yY][eE][sS]|[nN][oO])$',
     'floating-point number'             => '^\d+\.\d+$',    # no exponents
     'floating-point number (0.0-100.0)' =>
       '^(?:100\.0+|\d{1,2}\.\d+)$',                         # no exponents

@@ -71,12 +71,12 @@ appended.
 
 =item I<ignore-source>
 
-Can be set to C<true> or C<false>.  If set to false, the RADIUS
-authenticator will check to ensure that the response it receives is from
-the same IP address as it sent the request to (for some added security).
-If set to true, it will skip this verification check (if your RADIUS
-server has multiple IP addresses or if other odd things are going on, it
-may be perfectly normal for the response to come from a different IP
+Can be set to C<true>, C<yes>, C<on>, C<false>, C<no> or C<off>.  If set
+to false, the RADIUS authenticator will check to ensure that the response
+it receives is from the same IP address as it sent the request to (for some
+added security).  If set to true, it will skip this verification check (if
+your RADIUS server has multiple IP addresses or if other odd things are going
+on, it may be perfectly normal for the response to come from a different IP
 address).
 
 =back
