@@ -1,6 +1,6 @@
 =head1 NAME
 
-rnews - Inject individual articles and UUCP batches into INN
+rnews - Inject individual articles and UUCP batches
 
 =head1 SYNOPSIS
 
@@ -9,11 +9,11 @@ B<rnews> [B<-abdNUv>] [B<-h> I<host>] [B<-P> I<port>] [B<-rS> I<server>]
 
 =head1 DESCRIPTION
 
-B<rnews> injects either individual articles or UUCP-style article batches
-into an INN server.  It submits articles via IHAVE and is suitable for
-injecting articles received from other sources; local postings should
-generally use inews(1) instead.  It is also used to process spooled
-messages created by, for example, B<nnrpd> while B<innd> is not available.
+B<rnews> injects either individual articles or UUCP-style article batches into
+a local or remote news server.  It submits articles via IHAVE and is suitable
+for injecting articles received from other sources; local postings should
+generally use inews(1) instead.  It is also used to process spooled messages
+created by, for example, B<nnrpd> while B<innd> is not available.
 
 If authentication credentials are present for the remote server in
 the F<passwd.nntp> file in I<pathetc>, then B<rnews> will use them to
@@ -160,7 +160,7 @@ POD by Russ Allbery <eagle@eyrie.org>.
 
 =head1 SEE ALSO
 
-bzip2(1), compress(1), gzip(1), inn.conf(5), innd(8), nnrpd(8),
+bzip2(1), compress(1), gzip(1), inews(1), inn.conf(5), innd(8), nnrpd(8),
 passwd.nntp(5).
 
 =cut
