@@ -253,10 +253,14 @@ main(int ac, char *av[])
 
     sites = ReadSys(sys);
     ReadActive(act);
-    if (mkdir(dir, 0777) < 0 && errno != EEXIST)
-        perror(dir), exit(1);
-    if (chdir(dir) < 0)
-        perror("chdir"), exit(1);
+    if (mkdir(dir, 0777) < 0 && errno != EEXIST) {
+        perror(dir);
+        exit(1);
+    }
+    if (chdir(dir) < 0) {
+        perror("chdir");
+        exit(1);
+    }
     for (;;) {
         /* Get next non-comment ilne. */
         if ((p = *sites++) == NULL)
@@ -309,16 +313,24 @@ main(int ac, char *av[])
         *q = '\0';
 
         /* Append temp file to site file. */
-        if ((F = fopen(TEMPFILE, "r")) == NULL)
-            perror(TEMPFILE), exit(1);
-        if ((out = xfopena(p)) == NULL)
-            perror(p), exit(1);
+        if ((F = fopen(TEMPFILE, "r")) == NULL) {
+            perror(TEMPFILE);
+            exit(1);
+        }
+        if ((out = xfopena(p)) == NULL) {
+            perror(p);
+            exit(1);
+        }
         while ((j = fread(buff, 1, sizeof buff, F)) > 0)
-            if (fwrite(buff, 1, j, out) != j)
-                perror(p), exit(1);
+            if (fwrite(buff, 1, j, out) != j) {
+                perror(p);
+                exit(1);
+            }
         fclose(F);
-        if (fclose(out) == EOF)
-            perror(p), exit(1);
+        if (fclose(out) == EOF) {
+            perror(p);
+            exit(1);
+        }
 
         if (unlink(TEMPFILE) < 0)
             perror("can't unlink temp file");
