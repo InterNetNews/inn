@@ -16,6 +16,11 @@ A common entry to allow C<news.server.com> as an incoming peer is:
 The port used for incoming feeds is the one B<innd> is listening on (usually
 port 119 or 433).
 
+Peer entries are read in the order they appear in the configuration file.
+The first peer entry with a I<hostname> value matching the incoming connection
+will be used to grant access to the remote peer.  Subsequent entries will be
+discarded.
+
 After any changes, run C<inncheck> to perform basic syntax checks, and reload
 this configuration file with the following command:
 
