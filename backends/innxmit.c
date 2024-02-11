@@ -951,6 +951,7 @@ strlisten(void)
             if (st.st_retry < STNRETRY) {
                 /* fast retry */
                 st.st_retry++;
+                retries++;
                 submit = check;
             } else { /* requeue to disk for later */
                 Requeue(st.st_fname, st.st_id);
