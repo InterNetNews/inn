@@ -1329,7 +1329,7 @@ getsecret(sasl_conn_t *conn, void *context UNUSED, int id,
     return SASL_OK;
 }
 
-#    if __GNUC__ > 7
+#    if __GNUC__ > 7 || LLVM_VERSION_MAJOR > 12
 #        pragma GCC diagnostic ignored "-Wcast-function-type"
 #    endif
 
@@ -1342,7 +1342,7 @@ static sasl_callback_t saslcallbacks[] = {
     {SASL_CB_LIST_END, NULL,                          NULL}
 };
 
-#    if __GNUC__ > 7
+#    if __GNUC__ > 7 || LLVM_VERSION_MAJOR > 12
 #        pragma GCC diagnostic warning "-Wcast-function-type"
 #    endif
 
