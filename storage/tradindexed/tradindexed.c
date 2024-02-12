@@ -217,6 +217,7 @@ tradindexed_cancel(const char *group, ARTNUM artnum)
 {
     struct group_entry *entry;
     struct group_data *data;
+    bool cancelled;
 
     if (tradindexed == NULL || tradindexed->index == NULL) {
         warn("tradindexed: overview method not initialized");
@@ -233,7 +234,15 @@ tradindexed_cancel(const char *group, ARTNUM artnum)
         if (data == NULL)
             return false;
     }
-    return tdx_data_cancel(data, artnum);
+    cancelled = tdx_data_cancel(data, artnum);
+    if (cancelled) {
+        /* Reopen the data files to make the data inaccessible (it otherwise
+         * still shows up on some systems like OpenBSD). */
+        data = data_cache_reopen(tradindexed, group, entry);
+        if (data == NULL)
+            return false;
+    }
+    return cancelled;
 }
 
 
