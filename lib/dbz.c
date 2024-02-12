@@ -359,7 +359,7 @@ config_by_text_size(dbzconfig *c, of_t basesize)
 
     m = (c->tagmask | c->tagenb) << c->tagshift;
     if (m & (basesize >> c->dropbits)) {
-        fprintf(stderr, "m 0x%lx size 0x%lx\n", m, basesize);
+        fprintf(stderr, "m 0x%lx size 0x%lx\n", m, (unsigned long) basesize);
         exit(1);
     }
 }
@@ -951,7 +951,7 @@ dbzfetch(const HASH key, off_t *value)
     nb2r = sizeof(buffer) - 1;
 
     while ((offset = search(&srch)) != NOTFOUND) {
-        debug("got 0x%lx", offset);
+        debug("got 0x%lx", (unsigned long) offset);
 
         /* fetch the key */
         offset <<= conf.dropbits;
@@ -1078,7 +1078,8 @@ dbzstore(const HASH key, off_t data)
     debug("dbzstore: (%ld)", (long) value);
 
     if (!okayvalue(value)) {
-        warn("dbzstore: reserved bit or overflow in 0x%lx", value);
+        warn("dbzstore: reserved bit or overflow in 0x%lx",
+             (unsigned long) value);
         return DBZSTORE_ERROR;
     }
 
@@ -1147,7 +1148,8 @@ getconf(FILE *df, dbzconfig *cp)
         cp->dropbits = 0;
         cp->lenfuzzy = 0;
         debug("getconf: defaults (%ld, (0x%lx/0x%lx<<%d %d))", cp->tsize,
-              cp->tagenb, cp->tagmask, cp->tagshift, cp->dropbits);
+              (unsigned long) cp->tagenb, (unsigned long) cp->tagmask,
+              cp->tagshift, cp->dropbits);
         return true;
     }
 
@@ -1370,8 +1372,8 @@ start(searcher *sp, const HASH hash, searcher *osp)
         sp->shorthash = h;
         sp->tag = MKTAG(h / conf.tsize);
         sp->place = h % conf.tsize;
-        debug("hash %8.8lx tag %8.8lx place %ld", sp->shorthash, sp->tag,
-              sp->place);
+        debug("hash %8.8lx tag %8.8lx place %ld", sp->shorthash,
+              (unsigned long) sp->tag, sp->place);
         sp->tabno = 0;
         sp->run = -1;
         sp->aborted = 0;
@@ -1455,7 +1457,7 @@ search(searcher *sp)
 
         /* check the tag */
         value = UNBIAS(value);
-        debug("got 0x%lx", value);
+        debug("got 0x%lx", (unsigned long) value);
         if (!HASTAG(value)) {
             debug("tagless");
             return (value);
@@ -1463,7 +1465,7 @@ search(searcher *sp)
             debug("match");
             return (NOTAG(value));
         } else {
-            debug("mismatch 0x%lx", TAG(value));
+            debug("mismatch 0x%lx", (unsigned long) TAG(value));
         }
     }
     /* NOTREACHED */
@@ -1610,11 +1612,12 @@ set_pag(searcher *sp, of_t value)
             }
         }
     } else if (canttag_warned == 0) {
-        fprintf(stderr, "dbz.c(set): can't tag value 0x%lx", v);
-        fprintf(stderr, " tagboth = 0x%lx\n", tagboth);
+        fprintf(stderr, "dbz.c(set): can't tag value 0x%lx",
+                (unsigned long) v);
+        fprintf(stderr, " tagboth = 0x%lx\n", (unsigned long) tagboth);
         canttag_warned = 1;
     }
-    debug("tagged value is 0x%lx", value);
+    debug("tagged value is 0x%lx", (unsigned long) value);
     value = BIAS(value);
 
     return set(sp, &pagtab, &value);
