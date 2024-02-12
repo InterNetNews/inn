@@ -28,8 +28,10 @@ use strict;
 #     - are in a directory for which there is no newsgroup in the active file
 #     - are in a newsgroup to which they do not belong
 #
-# scanspool will also complain about directories with an all-digit component
-# as they may conflict with a possible file with the same name.
+# scanspool will also complain about directories with an all-digit component,
+# in case the parent directory is a newsgroup with a high water mark below that
+# all-digit component, as the name of such directories will conflict with a
+# future article file with the same name.
 #
 # scanspool understands aliased groups.  Thus, if an article is posted
 # to foo.old.name that is aliased to foo.bar, it will be expected to
@@ -379,19 +381,32 @@ sub check_spool {
           or $filename =~ /^time-\d\d\/..\/\d\d/
           or $filename =~ /^timecaf-\d\d\/\d\d/;
 
-        if (-d "$filename") {
-            problem(
-                "WARNING:",
-                "$filename: directory with an all-digit component",
-                "(may conflict with a possible file with the same name)",
-            );
-            next;
-        }
-
         # get the article's newsgroup name (based on its path from $spool)
         $artgrp = $filename;
         $artgrp =~ s#/\d+$##o;
         $artgrp =~ s#/#.#go;
+
+        # get the article number (based on its path from $spool)
+        $artnum = $filename;
+        $artnum =~ s#^.+/##o;
+
+        # warn if a directory with an all-digit component is found, and the
+        # parent directory ($artgrp) is an active newsgroup with a high water
+        # mark below that all-digit component
+        if (-d "$filename") {
+            if (defined $gname2type{$artgrp}
+                && $highart{$artgrp} > 1
+                && $highart{$artgrp} < $artnum)
+            {
+                problem(
+                    "WARNING:",
+                    "$filename: directory with an all-digit component",
+                    "(will conflict with a future article with the same name",
+                    "in $artgrp)",
+                );
+            }
+            next;
+        }
 
         # if verbose (-v), then note if our group changed
         if (defined $opt{'v'} && $artgrp ne $prevgrp) {
@@ -420,8 +435,6 @@ sub check_spool {
         }
 
         # check on the article number
-        $artnum = $filename;
-        $artnum =~ s#^.+/##o;
         if ($artnum =~ m/^0/o) {
             problem("$filename: article basename starts with a 0");
             rm_file($filename);

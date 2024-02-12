@@ -66,8 +66,10 @@ are in a newsgroup to which they do not belong.
 
 =back
 
-B<scanspool> will also complain about directories with an all-digit component
-as they may conflict with a possible file with the same name.
+B<scanspool> will also complain about directories with an all-digit component,
+in case the parent directory is a newsgroup with a high water mark below that
+all-digit component, as the name of such directories will conflict with a
+future article file with the same name.
 
 B<scanspool> understands aliased newsgroups.  Thus, if an article is posted
 to foo.old.name that is aliased to foo.bar, it will be expected to
