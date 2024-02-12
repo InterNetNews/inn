@@ -1605,9 +1605,10 @@ sub collect($$$$$$) {
         # error reading version from datafile
         return 1 if $left =~ /error reading version from datafile/;
     }
+
     ########
-    ## nnrpd
-    if ($prog =~ /^nnrpd(?:-ssl)?$/) {
+    ## nnrpd, nnrpd-ssl, nnrpd-tls
+    if ($prog =~ /^nnrpd(?:-[st]sl)?$/) {
         # bad_history at num for <ref>
         return 1 if $left =~ /bad_history at \d+ for /o;
         # timeout short
