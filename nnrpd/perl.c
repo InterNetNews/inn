@@ -117,7 +117,7 @@ HandleHeaders(char *article)
         p = OtherHeaders[i];
         if (p == NULL) {
             syslog(L_ERROR, "Null header number %lu copying headers for Perl",
-                   i);
+                   (unsigned long) i);
             continue;
         }
         s = strchr(p, ':');
