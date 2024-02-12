@@ -457,7 +457,7 @@ sub collect($$$$$$) {
             $inn_badart{$server}++;
             return 1;
         }
-        # Article accepted but includes "....."
+        # Article accepted but includes "..."
         if ($left =~ /(\S+) <[^>]+> Article accepted but includes/o) {
             my $server = $1;
             $server = lc $server unless $CASE_SENSITIVE;
@@ -941,6 +941,7 @@ sub collect($$$$$$) {
         # Using the stathist parameter
         return 1 if $left =~ /^logging hist stats to /o;
     }
+
     ########
     ## innfeed
     if ($prog eq "innfeed") {
@@ -1135,7 +1136,7 @@ sub collect($$$$$$) {
             return 1 if $left =~ m/ exception: getsockopt /o;
             # ME config aborting fopen (...) Permission denied
             return 1 if $left =~ m/ config aborting fopen /o;
-            # ME cant chmod innfeed.pid....
+            # ME cant chmod innfeed.pid...
             return 1 if $left =~ m/ cant chmod \S+\/innfeed.pid/o;
             return 1 if $left =~ m/ tape open failed /o;
             return 1 if $left =~ m/ oserr open checkpoint file:/o;
@@ -1158,7 +1159,7 @@ sub collect($$$$$$) {
         #return 1 if ($left =~ /ME /);
     }
 
-    #########
+    ########
     ## innxbatch
     if ($prog eq "innxbatch") {
         # stats
@@ -1414,11 +1415,11 @@ sub collect($$$$$$) {
         }
         # ihave failed
         return 1 if ($left =~ /\S+ ihave failed/o);
-        # requeued (....) 436 No space
+        # requeued (...) 436 No space
         return 1 if ($left =~ /\S+ requeued \S+ 436 No space/o);
-        # requeued (....) 400 No space
+        # requeued (...) 400 No space
         return 1 if ($left =~ /\S+ requeued \S+ 400 No space/o);
-        # requeued (....) 436 Can't write history
+        # requeued (...) 436 Can't write history
         return 1 if ($left =~ /\S+ requeued \S+ 436 Can\'t write history/o);
         # unexpected response code
         return 1 if ($left =~ /unexpected response code /o);
@@ -1525,14 +1526,14 @@ sub collect($$$$$$) {
             }
             return 1;
         }
-        # article .... failed(saved): 436 No space
+        # article ... failed(saved): 436 No space
         if ($left =~ /(\S+) .* failed\(saved\): 436 No space$/o) {
             my $server = $1;
             $server = lc $server unless $CASE_SENSITIVE;
             $nntplink_nospace{$server}++;
             return 1;
         }
-        # article .. 400 No space left on device writing article file
+        # article ... 400 No space left on device writing article file
         if ($left
             =~ /(\S+) .* 400 No space left on device writing article file -- throttling$/o
         ) {
@@ -1573,7 +1574,7 @@ sub collect($$$$$$) {
         }
         # xfer
         return 1 if $left =~ /\S+ xfer/o;
-        # Links down .. x hours
+        # Links down ... x hours
         if ($left =~ /(\S+) Links* down \S+ \d+/o) {
             # Collected but not used
             # my $server = $1;
@@ -1944,6 +1945,7 @@ sub collect($$$$$$) {
           if $left
           =~ /^starttls: \S+ with cipher \S+ \(\d+\/\d+ bits\) no authentication$/o;
     }
+
     ########
     ## overchan
     if ($prog eq "overchan") {
@@ -1954,6 +1956,7 @@ sub collect($$$$$$) {
             return 1;
         }
     }
+
     ########
     ## batcher
     if ($prog eq "batcher") {
@@ -1977,6 +1980,7 @@ sub collect($$$$$$) {
             return 1;
         }
     }
+
     ########
     ## rnews
     if ($prog eq "rnews") {
@@ -2049,7 +2053,7 @@ sub collect($$$$$$) {
             $rnews_no_colon_space++;
             return 1;
         }
-        # duplicate <msg-id> path..
+        # duplicate <msg-id> path...
         if ($left =~ /^duplicate /o) {
             $rnews_duplicate++;
             return 1;
@@ -2077,7 +2081,7 @@ sub collect($$$$$$) {
         return 1 if $left =~ m/cant unspool saving to/o;
     }
 
-    ###########
+    ########
     ## ncmspool
     if ($prog eq "ncmspool") {
         # <article> good signature from foo@bar.com
@@ -2157,7 +2161,7 @@ sub collect($$$$$$) {
         return 1;
     }
 
-    ###########
+    ########
     ## controlchan
     if ($prog eq "controlchan") {
         # loaded /x/y/z/foo.pl
@@ -2219,7 +2223,7 @@ sub collect($$$$$$) {
         return 1 if $left =~ /^checkgroups by \S+/o;
     }
 
-    ###########
+    ########
     ## cnfsstat
     if ($prog eq "cnfsstat") {
         # Class ALT for groups matching "alt.*" article size min/max: 0/1048576
@@ -2276,7 +2280,7 @@ sub collect($$$$$$) {
         }
     }
 
-    # Ignore following programs :
+    # Ignore following programs:
     return 1 if ($prog eq "uxfxn");
     return 1 if ($prog eq "beverage");
     return 1 if ($prog eq "newsx");
@@ -2286,8 +2290,8 @@ sub collect($$$$$$) {
     return 0;
 }
 
-#################################
-# Adjust some values..
+##########################################################################
+# Adjust some values.
 
 sub adjust($$) {
     my ($first_date, $last_date) = @_;
@@ -2477,7 +2481,7 @@ sub adjust($$) {
                 # well, we can forget them as it is supposed to be a tool
                 # launched daily.
 
-                # the beginning of the last day..
+                # the beginning of the last day.
                 for ($j = 0; $j < $h; $j++) {
                     my $t = sprintf "%02d", $j;
                     $inn_flow{"$r $t"} = 0;
@@ -2673,7 +2677,7 @@ sub report_unwanted_ng($) {
     unlink("${file}.old");
 }
 
-###########################################################################
+##########################################################################
 
 # Compare 2 dates (+hour), used with sort (arguments $a and $b)
 sub datecmp() {
