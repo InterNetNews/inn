@@ -1609,7 +1609,7 @@ sub collect($$$$$$) {
 
     ########
     ## nnrpd, nnrpd-ssl, nnrpd-tls
-    if ($prog =~ /^nnrpd(?:-[st]sl)?$/) {
+    if ($prog =~ /^nnrpd(?:-(?:ssl|tls))?$/) {
         # bad_history at num for <ref>
         return 1 if $left =~ /bad_history at \d+ for /o;
         # timeout short
