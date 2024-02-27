@@ -26,8 +26,6 @@ main(void)
     fd = open(".testout", O_RDWR | O_CREAT | O_TRUNC, 0644);
     if (fd < 0)
         sysdie("Can't create .testout");
-    if (unlink(".testout") < 0)
-        sysdie("Can't unlink .testout");
     if (xwrite(fd, buf, 256) < 0)
         sysdie("Can't write to .testout");
     if (lseek(fd, 0, SEEK_SET) == (off_t) -1)
@@ -47,10 +45,13 @@ main(void)
     position = lseek(fd, 0, SEEK_CUR);
     ok(5, position == 64);
 
-    close(20);
+    close(fd);
     errno = 0;
-    status = test_pread(20, result, 1, 0);
+    status = test_pread(fd, result, 1, 0);
     ok(6, (status == -1) && (errno == EBADF));
+
+    if (unlink(".testout") < 0)
+        sysdie("Can't unlink .testout");
 
     return 0;
 }
