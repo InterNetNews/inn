@@ -10,9 +10,13 @@
 
 #    include "config.h"
 
-/* Suppress the float-equal gcc warning because of SvTRUE that
-   compares floats to 0.0 in Perl core code. */
-#    pragma GCC diagnostic ignored "-Wfloat-equal"
+/* Suppress warnings triggered by Perl macros like PUSHMARK or POPp. */
+#    if defined(__llvm__) || defined(__clang__)
+#        if LLVM_VERSION_MAJOR > 11
+#            pragma GCC diagnostic ignored "-Wcompound-token-split-by-macro"
+#        endif
+#        pragma GCC diagnostic ignored "-Wgnu-statement-expression"
+#    endif
 
 BEGIN_DECLS
 

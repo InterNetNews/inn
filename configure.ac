@@ -308,10 +308,6 @@ dnl flags from inn_perl_core_flags; otherwise, innd/cc.c and lib/qio.c
 dnl disagree over the size of an off_t.  Since none of our calls into Perl
 dnl use variables of type off_t, this should be harmless; in any event, it's
 dnl going to be better than the innd/cc.c breakage.
-dnl
-dnl Also check to see if the compiler supports -Wno-extra and, if so, add it
-dnl to PERL_WARNINGS.  This has to be conditional since -Wno-extra is only
-dnl supported in gcc 4.0 and later.
 AS_IF([test x"$DO_PERL" = xDO],
     [INN_LIB_PERL
      inn_perl_core_flags=" $PERL_CPPFLAGS "
@@ -321,16 +317,11 @@ AS_IF([test x"$DO_PERL" = xDO],
          done])
      inn_perl_core_flags=`AS_ECHO(["$inn_perl_core_flags"]) | sed 's/^  *//'`
      inn_perl_core_flags=`AS_ECHO(["$inn_perl_core_flags"]) | sed 's/  *$//'`
-     PERL_CPPFLAGS="$inn_perl_core_flags"
-     INN_PROG_CC_FLAG([-Wno-extra], [PERL_WARNINGS=-Wno-extra],
-        [PERL_WARNINGS=''])
-     AC_SUBST([PERL_WARNINGS])],
+     PERL_CPPFLAGS="$inn_perl_core_flags"],
     [PERL_CPPFLAGS=''
      PERL_LIBS=''
-     PERL_WARNINGS=''
      AC_SUBST([PERL_CPPFLAGS])
-     AC_SUBST([PERL_LIBS])
-     AC_SUBST([PERL_WARNINGS])])
+     AC_SUBST([PERL_LIBS])])
 
 dnl Support for embedded Python.
 AC_ARG_WITH([python],
