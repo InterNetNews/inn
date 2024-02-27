@@ -1247,13 +1247,13 @@ sub Make_Index($$$$) {
         if ($CYCLE == 0 || $i < $CYCLE) {
             my @list = split /\|/, $data{$_};
             my $class = $i % 2 ? 'ir-oddRow' : 'ir-evenRow';
-            my $str = "<tr class=\"$class\"><td align=\"left\">";
+            my $str = "<tr class=\"$class\"><td style=\"text-align:left\">";
             $str .= "<a href=\"$_\">" if -e "$rep/$_";
             $str .= shift @list;
             $str .= "</a>" if -e "$rep/$_";
             $str .= "</td>";
             while (@list) {
-                $str .= "<td align=\"right\">";
+                $str .= "<td style=\"text-align:right\">";
                 my $t = shift @list;
                 $t =~ s/^\0+//o;    # remove garbage, if any.
                 $str .= "$t</td>";
@@ -2520,7 +2520,7 @@ sub Write_Results {
             $v1 =~ s/\%-?(?:\d+(?:\.\d+)?)?(\w)/\%$1/g;
             my $temp = $first ? "center" : "left";
             $temp .= "\" colspan=\"2" if $numbering && !$first;
-            $html .= sprintf "<th align=\"$temp\">$v1</th>", $v2;
+            $html .= sprintf "<th style=\"text-align:$temp\">$v1</th>", $v2;
         }
         $first++;
     }
@@ -2586,14 +2586,15 @@ sub Write_Results {
                                 $v1 =~ s/\%-?(?:\d+(?:\.\d+)?)?s/\%s/g;
                                 $html
                                   .= $numbering
-                                  ? "<th align=\"center\">$num_d</th>"
+                                  ? "<th style=\"text-align:center\">"
+                                  . "$num_d</th>"
                                   : '';
 
                                 # Hardcoded colspan=3 works for
                                 # "Miscellaneous innd statistics:".
                                 $html
                                   .= "<td class=\"ir-primaryKey\" "
-                                  . "align=\"left\" colspan=\"3\">";
+                                  . "style=\"text-align:left\" colspan=\"3\">";
                                 $html .= sprintf($v1, EscapeHTML($r));
                                 $html .= "</td></tr>\n<tr><td></td>";
                             }
@@ -2608,7 +2609,8 @@ sub Write_Results {
                               if $first == 1;
                             $v1 =~ s/\%-?(?:\d+(?:\.\d+)?)?s/\%s/g;
                             my $temp = $first > 1 ? "right" : "left";
-                            $html .= sprintf "<td align=\"%s\">$v1</td>",
+                            $html .= sprintf "<td style=\"text-align:%s\">"
+                              . "$v1</td>",
                               $temp, EscapeHTML($r);
                         }
                     }
@@ -2649,7 +2651,7 @@ sub Write_Results {
                     if ($HTML) {
                         my $temp
                           = $first > 1
-                          ? 'align="right"'
+                          ? 'style="text-align:right"'
                           : 'class="ir-totalColumn"';
                         $v1 =~ s/\%-?(?:\d+(?:\.\d+)?)?s/\%s/g;
                         $html .= sprintf "<td %s>$v1</td>", $temp,
@@ -2694,7 +2696,10 @@ sub Write_Results {
             }
             $s .= sprintf $v1 . " ", $r if $wtext && $first != 1;
             if ($HTML && $whtml) {
-                my $temp = $first ? 'align="right"' : 'class="ir-totalColumn"';
+                my $temp
+                  = $first
+                  ? 'style="text-align:right"'
+                  : 'class="ir-totalColumn"';
                 $temp .= ' colspan="2"' if $numbering && !$first;
                 $v1 =~ s/\%-?(?:\d+(?:\.\d+)?)?s/\%s/g;
                 $html
@@ -2753,10 +2758,10 @@ sub Write_Results {
                     # and precision) with a plain "%s"
                     $v1 =~ s/\%-?(?:\d+(?:\.\d+)?)?s/\%s/g;
 
-                    $html .= "<th align=\"center\">$num</th>"
+                    $html .= "<th style=\"text-align:center\">$num</th>"
                       if $numbering && !$first;
                     my $temp = $first ? "right" : "left";
-                    $html .= sprintf "<td align=\"$temp\">$v1</td>",
+                    $html .= sprintf "<td style=\"text-align:$temp\">$v1</td>",
                       EscapeHTML($r);
                 }
                 $first++;
@@ -2799,7 +2804,10 @@ sub Write_Results {
             $s .= sprintf $v1 . " ", $r if $wtext;
             if ($HTML && $whtml) {
                 $v1 =~ s/\%-?(?:\d+(?:\.\d+)?)?s/\%s/g;
-                my $temp = $first ? 'align="right"' : 'class="ir-totalColumn"';
+                my $temp
+                  = $first
+                  ? 'style="text-align:right"'
+                  : 'class="ir-totalColumn"';
                 $temp .= ' colspan="2"' if $numbering && !$first;
                 $html .= sprintf "<td $temp>$v1</td>", EscapeHTML($r);
             }
@@ -3070,7 +3078,7 @@ sub Decode_Config_File {
     my $linenum = 0;
     my $info;
     my @list;
-    open(FILE, "$file") || die "Can\'t open config file \"$file\".  Abort.\n";
+    open(FILE, "$file") || die "Can't open config file \"$file\".  Abort.\n";
     while (defined($line = <FILE>)) {
         $linenum++;
         last if eof(FILE);
