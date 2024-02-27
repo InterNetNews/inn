@@ -797,6 +797,7 @@ dnl   -Wdisabled-macro-expansion      Not an actual problem.
 dnl   -Wextra-semi-stmt               Useful for readability.
 dnl   -Wpacked                        Not an actual problem.
 dnl   -Wpadded                        Not an actual problem.
+dnl   -Wpoison-system-directories     Not an actual problem (e.g. Xcode).
 dnl   -Wreserved-id-macro             Autoconf sets several of these normally.
 dnl   -Wreserved-identifier           False positives with FD_ZERO.
 dnl   -Wsign-conversion               Too many fiddly changes for the benefit.
@@ -843,6 +844,7 @@ m4_foreach_w(
      -Weverything -Wno-cast-qual -Wno-covered-switch-default
      -Wno-disabled-macro-expansion -Wno-extra-semi-stmt
      -Wno-implicit-int-conversion -Wno-packed -Wno-padded
+     -Wno-poison-system-directories
      -Wno-reserved-id-macro -Wno-reserved-identifier -Wno-shorten-64-to-32
      -Wno-sign-conversion -Wno-switch-enum -Wno-tautological-pointer-compare
      -Wno-undef -Wno-unreachable-code -Wno-unreachable-code-return
