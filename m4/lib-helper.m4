@@ -12,7 +12,7 @@ dnl The canonical version of this file is maintained in the rra-c-util
 dnl package, available at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
 dnl
 dnl Written by Russ Allbery <eagle@eyrie.org>
-dnl Copyright 2018 Russ Allbery <eagle@eyrie.org>
+dnl Copyright 2018, 2024 Russ Allbery <eagle@eyrie.org>
 dnl Copyright 2011, 2013
 dnl     The Board of Trustees of the Leland Stanford Junior University
 dnl
@@ -55,10 +55,10 @@ AC_DEFUN([INN_LIB_HELPER_PATHS],
     [AS_IF([test x"$inn_$1[]_root" != x],
         [INN_SET_LDFLAGS([$1][_LDFLAGS], [${inn_$1[]_root}])])])
  AS_IF([test x"$inn_$1[]_includedir" != x],
-    [$1[]_CPPFLAGS="-I$inn_$1[]_includedir"],
+    [$1[]_CPPFLAGS="-isystem $inn_$1[]_includedir"],
     [AS_IF([test x"$inn_$1[]_root" != x],
         [AS_IF([test x"$inn_$1[]_root" != x/usr],
-            [$1[]_CPPFLAGS="-I${inn_$1[]_root}/include"])])])])
+            [$1[]_CPPFLAGS="-isystem ${inn_$1[]_root}/include"])])])])
 
 dnl Check whether a library works.  This is used as a sanity check on the
 dnl results of *-config shell scripts.  Takes four arguments; the first, if
