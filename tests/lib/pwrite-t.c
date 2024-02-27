@@ -24,8 +24,6 @@ main(void)
     fd = open(".testout", O_RDWR | O_CREAT | O_TRUNC, 0644);
     if (fd < 0)
         sysdie("Can't create .testout");
-    if (unlink(".testout") < 0)
-        sysdie("Can't unlink .testout");
     memset(result, 0, sizeof(result));
 
     test_init(6);
@@ -41,10 +39,13 @@ main(void)
     status = read(fd, result, 256);
     ok(5, (status == 256) && !memcmp(result, buf, 256));
 
-    close(20);
+    close(fd);
     errno = 0;
-    status = test_pwrite(20, result, 1, 0);
+    status = test_pwrite(fd, result, 1, 0);
     ok(6, (status == -1) && (errno == EBADF));
+
+    if (unlink(".testout") < 0)
+        sysdie("Can't unlink .testout");
 
     return 0;
 }

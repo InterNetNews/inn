@@ -75,8 +75,6 @@ main(void)
     ok(qio != NULL, "QIOpen works");
     ok(!QIOerror(qio), "...and there is no error state");
     ok(QIOfileno(qio) > 0, "...and QIOfileno returns something valid");
-    if (unlink(".testout") < 0)
-        sysbail("Can't unlink .testout");
     for (success = true, i = 0; i < count; i++) {
         result = QIOread(qio);
         success = (success && !QIOerror(qio) && (QIOlength(qio) == 255)
@@ -146,6 +144,9 @@ main(void)
     QIOclose(qio);
     ok(close(fd) < 0, "QIOclose closed the file descriptor");
     is_int(errno, EBADF, "...as confirmed by errno");
+
+    if (unlink(".testout") < 0)
+        sysbail("Can't unlink .testout");
 
     return 0;
 }

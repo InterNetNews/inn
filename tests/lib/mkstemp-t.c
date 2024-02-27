@@ -5,6 +5,7 @@
  * which can be found at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
  *
  * Written by Russ Allbery <eagle@eyrie.org>
+ * Copyright 2024 Russ Allbery <eagle@eyrie.org>
  * Copyright 2009, 2011
  *     The Board of Trustees of the Leland Stanford Junior University
  *
@@ -68,7 +69,18 @@ main(void)
     ok(stat(template, &st1) == 0, "...and stat of template works");
     ok(fstat(fd, &st2) == 0, "...and stat of open file descriptor works");
     ok(st1.st_ino == st2.st_ino, "...and they're the same file");
-    unlink(template);
+
+    /*
+     * It should be possible to unlink the file at this point and continue to
+     * read and write to it as an unlinked file.  However, this has been
+     * reported to fail on some systems with ESTALE, possibly because the home
+     * directory may have been mounted via NFS.  (NFS normally deals with this
+     * by renaming the file, but that may have been disabled.)  It's worrisome
+     * if one cannot continue to use a deleted file, but it's not testing
+     * anything in the mkstemp replacement, just UNIX open file semantics, so
+     * do not unlink the file early to avoid test failures that the user
+     * probably can't do anything about.
+     */
 
     /* Make sure the open mode is correct. */
     length = strlen(template);
@@ -78,6 +90,7 @@ main(void)
     buffer[length] = '\0';
     is_string(template, buffer, "...and matches what we wrote");
     close(fd);
+    unlink(template);
 
     return 0;
 }
