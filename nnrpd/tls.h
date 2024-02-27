@@ -11,17 +11,10 @@
 
 #ifdef HAVE_OPENSSL
 
-/* OpenSSL uses _Noreturn when C11 features are recognized. */
-#    if __GNUC__ > 4
-#        pragma GCC diagnostic ignored "-Wc99-c11-compat"
-#    endif
-#    include <openssl/lhash.h>
-#    if __GNUC__ > 4
-#        pragma GCC diagnostic warning "-Wc99-c11-compat"
-#    endif
 #    include <openssl/bn.h>
 #    include <openssl/dh.h>
 #    include <openssl/err.h>
+#    include <openssl/lhash.h>
 #    include <openssl/pem.h>
 #    include <openssl/rand.h>
 #    include <openssl/ssl.h>

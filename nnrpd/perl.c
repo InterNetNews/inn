@@ -24,25 +24,8 @@
 #ifdef DO_PERL
 
 #    include <EXTERN.h>
-#    pragma GCC diagnostic ignored "-Wcast-align"
-#    pragma GCC diagnostic ignored "-Wredundant-decls"
-#    pragma GCC diagnostic ignored "-Wshadow"
-#    if defined(__llvm__) || defined(__clang__)
-#        pragma GCC diagnostic ignored "-Wcomma"
-#        pragma GCC diagnostic ignored "-Wextra-semi-stmt"
-#        pragma GCC diagnostic ignored "-Wgnu-statement-expression"
-#        pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
-#    endif
 #    include <perl.h>
-/* Do not reactivate -Wcast-align because HePV() calls below trigger it. */
-#    pragma GCC diagnostic warning "-Wredundant-decls"
-#    pragma GCC diagnostic warning "-Wshadow"
-#    if defined(__llvm__) || defined(__clang__)
-#        pragma GCC diagnostic warning "-Wcomma"
-#        pragma GCC diagnostic warning "-Wextra-semi-stmt"
-/* Do not reactivate -Wgnu-statement-expression for the rest of the file. */
-#        pragma GCC diagnostic warning "-Wimplicit-fallthrough"
-#    endif
+
 #    include "ppport.h"
 #    include <XSUB.h>
 
@@ -157,8 +140,15 @@ HandleHeaders(char *article)
         hv_iterinit(hdr);
         while ((scan = hv_iternext(hdr)) != NULL) {
             /* Get the values.  We replace the known ones with these
-             * new values. */
+             * new values.  Also, silent a warning caused by the internal Perl
+             * SvFLAGS macro used by HePV(), which takes care of the cast. */
+#    if defined(__llvm__) || defined(__clang__)
+#        pragma GCC diagnostic ignored "-Wcast-align"
+#    endif
             p = HePV(scan, len);
+#    if defined(__llvm__) || defined(__clang__)
+#        pragma GCC diagnostic warning "-Wcast-align"
+#    endif
             s = SvPV(HeVAL(scan), PL_na);
 #    ifdef DEBUG_MODIFY
             fprintf(flog, "Hash iter: '%s','%s'\n", p, s);
