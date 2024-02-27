@@ -565,6 +565,8 @@ ARTstore(CHANNEL *cp, bool filtered)
         arth.groups = HDR(HDR__NEWSGROUPS);
         arth.groupslen = HDR_LEN(HDR__NEWSGROUPS);
     }
+    arth.path = HDR(HDR__PATH);
+    arth.pathlen = HDR_LEN(HDR__PATH);
 
     SMerrno = SMERR_NOERROR;
     result = SMstore(arth);

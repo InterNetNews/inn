@@ -36,6 +36,7 @@ entries, the first one will be used.  Each entry is formatted as follows:
         options: <options>
         exactmatch: <bool>
         filtered: <bool>
+        path: <wildmat>
     }
 
 If spaces or tabs are included in a value, that value must be enclosed in
@@ -162,6 +163,24 @@ If all the storage classes have this key set to false, filtered articles are
 stored in the same storage class as accepted articles.  It is only when at
 least one storage class has this key set to true than filtered articles and
 accepted articles are no longer stored mixed together in any storage class.
+
+=item I<path>: <wildmat>
+
+What articles by their Path header field are stored using this storage method.
+<wildmat> is a I<uwildmat> pattern which is matched against the Path header
+field body of articles, which corresponds to where articles have passed,
+or were posted at.  Poison wildmat expressions (expressions starting with
+C<@>) are allowed and can be used to exclude certain path patterns (in lieu
+of expressions starting with C<!> that are not considered negated because
+C<!> has a special meaning in Path header fields).  The <wildmat> pattern is
+matched in order.
+
+A typical use case might be to store articles from a spammy site in a small
+CNFS buffer to avoid overall retention impacts:
+
+    path: "*!spam-site.example.com!not-for-mail"
+
+The default is to match all articles.
 
 =back
 

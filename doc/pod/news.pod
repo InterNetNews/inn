@@ -52,10 +52,22 @@ how to use the module.
 
 =item *
 
-Added a new I<filtered> option in F<storage.conf> to store articles which have
-been rejected by a Perl or Python filter for B<innd> in a separate storage
-class, when I<dontrejectfiltered> is set to true in F<inn.conf>.  Thanks to
-Christoph Biedl for the feature.
+Added two new options in F<storage.conf>, contributed by Christoph Biedl:
+
+=over 2
+
+=item *
+
+a I<filtered> option to store articles which have been rejected by a
+Perl or Python filter for B<innd> in a separate storage class, when
+I<dontrejectfiltered> is set to true in F<inn.conf>;
+
+=item *
+
+a I<path> option to store articles by the contents of the Path header field,
+notably to filter spammy sites.
+
+=back
 
 =item *
 

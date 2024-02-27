@@ -1320,6 +1320,7 @@ A storage class definition looks like this:
         options: <options>
         exactmatch: <bool>
         filtered: <bool>
+        path: <wildmat>
     }
 
 <methodname> is the name of the storage method to use to store articles in
@@ -1361,6 +1362,10 @@ number of matching newsgroups is sufficient, provided no newsgroup
 matches a poison wildmat.  If it is set to true, all the newsgroups in
 the Newsgroups header field body of incoming articles will be examined
 to see if they match the newsgroups wildmat pattern.
+
+The seventh and eighth parameters are used to better filter spam articles and
+store them in dedicated storage classes.  See the storage.conf(5) manual page
+for more information.
 
 If you're using CNFS exclusively, just create one storage class for each
 metacycbuff that you have defined in F<cycbuff.conf> and set the

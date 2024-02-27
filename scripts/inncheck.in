@@ -1054,6 +1054,7 @@ sub storage_conf {
                 'options'    => 'string',
                 'exactmatch' => 'boolean',
                 'filtered'   => 'boolean',
+                'path'       => 'string',    # uwildmat_poison
             }
         }
     );
