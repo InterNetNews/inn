@@ -263,6 +263,7 @@ ParseTime(char *tmbuf)
 #define SMoptions    15
 #define SMexactmatch 16
 #define SMfiltered   17
+#define SMpath       18
 
 static CONFTOKEN smtoks[] = {
     {SMlbrace,     (char *) "{"          },
@@ -275,6 +276,7 @@ static CONFTOKEN smtoks[] = {
     {SMoptions,    (char *) "options:"   },
     {SMexactmatch, (char *) "exactmatch:"},
     {SMfiltered,   (char *) "filtered:"  },
+    {SMpath,       (char *) "path:"      },
     {0,            NULL                  }
 };
 
@@ -302,6 +304,7 @@ SMreadconfig(void)
     int inbrace;
     bool exactmatch = false;
     bool filtered = false;
+    char *path_pattern = NULL;
 
     /* if innconf isn't already read in, do so. */
     if (innconf == NULL) {
@@ -357,7 +360,7 @@ SMreadconfig(void)
             maxexpire = 0;
             exactmatch = false;
             filtered = false;
-
+            path_pattern = NULL;
         } else {
             type = tok->type;
             if (type == SMrbrace)
@@ -416,6 +419,16 @@ SMreadconfig(void)
                         filteredKeyUsed = true;
                     }
                     break;
+                case SMpath:
+                    if (path_pattern != NULL)
+                        free(path_pattern);
+                    path_pattern = xstrdup(tok->name);
+                    /* Transform "!" to "|". */
+                    for (q = path_pattern; *q != '\0'; q++) {
+                        if (*q == '!')
+                            *q = '|';
+                    }
+                    break;
                 default:
                     SMseterror(SMERR_CONFIG,
                                "Unknown keyword in method declaration");
@@ -462,6 +475,7 @@ SMreadconfig(void)
             sub->maxexpire = maxexpire;
             sub->exactmatch = exactmatch;
             sub->filtered = filtered;
+            sub->path_pattern = path_pattern;
 
             free(method);
             method = 0;
@@ -623,7 +637,8 @@ MatchGroups(const char *g, int len, const char *pattern, bool exactmatch)
         if (q != NULL)
             *q = '\0';
         matched = uwildmat_poison(group, pattern);
-        if (matched == UWILDMAT_POISON || (exactmatch && !matched)) {
+        if (matched == UWILDMAT_POISON
+            || (exactmatch && matched == UWILDMAT_FAIL)) {
             free(groups);
             return false;
         }
@@ -634,6 +649,26 @@ MatchGroups(const char *g, int len, const char *pattern, bool exactmatch)
 
     free(groups);
     return wanted;
+}
+
+static bool
+MatchPath(const char *p, int len, const char *pattern)
+{
+    char *path, *q;
+    enum uwildmat matched;
+
+    path = xmalloc(len + 1);
+    strncpy(path, p, len);
+    path[len] = '\0';
+    /* Transform "!" to "|", as "!" has a special meaning in wildmat
+     * expressions.  The transformation has already been done in pattern. */
+    for (q = path; *q != '\0'; q++) {
+        if (*q == '!')
+            *q = '|';
+    }
+    matched = uwildmat_poison(path, pattern);
+    free(path);
+    return (matched == UWILDMAT_MATCH);
 }
 
 STORAGE_SUB *
@@ -658,6 +693,8 @@ SMgetsub(const ARTHANDLE article)
             && (!sub->minexpire || article.expires >= sub->minexpire)
             && (!sub->maxexpire || (article.expires <= sub->maxexpire))
             && (!filteredKeyUsed || article.filtered == sub->filtered)
+            && (sub->path_pattern == NULL
+                || MatchPath(article.path, article.pathlen, sub->path_pattern))
             && MatchGroups(article.groups, article.groupslen, sub->pattern,
                            sub->exactmatch)) {
             if (InitMethod(typetoindex[sub->type]))
