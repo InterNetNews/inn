@@ -13,30 +13,18 @@ main(int argc, char *argv[])
     int fd;
     int i;
     char buf[512];
-#ifdef DO_LARGEFILES
-    struct stat64 st;
-#else
     struct stat st;
-#endif
     size_t j, numwr;
     bool status = true;
 
     memset(buf, 0, sizeof(buf));
     for (i = 1; i < argc; i++) {
-#ifdef DO_LARGEFILES
-        if ((fd = open(argv[i], O_LARGEFILE | O_RDWR, 0664)) < 0) {
-#else
         if ((fd = open(argv[i], O_RDWR, 0664)) < 0) {
-#endif
             fprintf(stderr, "Could not open file %s: %s\n", argv[i],
                     strerror(errno));
             status = false;
         } else {
-#ifdef DO_LARGEFILES
-            if (fstat64(fd, &st) < 0) {
-#else
             if (fstat(fd, &st) < 0) {
-#endif
                 fprintf(stderr, "Could not stat file %s: %s\n", argv[i],
                         strerror(errno));
                 status = false;
