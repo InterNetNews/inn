@@ -217,10 +217,11 @@ misc.o: misc.c ../include/portable/system.h ../include/config.h \
   ../include/inn/options.h ../include/inn/system.h \
   ../include/portable/stdbool.h ../include/portable/macros.h \
   ../include/portable/stdbool.h innfeed.h ../include/inn/timer.h \
-  ../include/inn/macros.h ../include/inn/libinn.h ../include/inn/concat.h \
-  ../include/inn/portable-stdbool.h ../include/inn/xmalloc.h \
-  ../include/inn/system.h ../include/inn/xwrite.h \
-  ../include/inn/messages.h endpoint.h misc.h tape.h
+  ../include/inn/macros.h ../include/inn/innconf.h \
+  ../include/inn/portable-stdbool.h ../include/inn/libinn.h \
+  ../include/inn/concat.h ../include/inn/xmalloc.h ../include/inn/system.h \
+  ../include/inn/xwrite.h ../include/inn/messages.h endpoint.h misc.h \
+  tape.h
 tape.o: tape.c ../include/portable/system.h ../include/config.h \
   ../include/inn/macros.h ../include/inn/portable-macros.h \
   ../include/inn/options.h ../include/inn/system.h \
