@@ -689,7 +689,5 @@ perl.o: perl.c ../include/portable/system.h ../include/config.h \
   ../include/portable/stdbool.h ../include/inn/libinn.h \
   ../include/inn/concat.h ../include/inn/macros.h \
   ../include/inn/portable-stdbool.h ../include/inn/xmalloc.h \
-  ../include/inn/system.h ../include/inn/xwrite.h \
-  ../include/ppport.h \
-  ../include/innperl.h \
-  ../include/config.h
+  ../include/inn/system.h ../include/inn/xwrite.h ../include/ppport.h \
+  ../include/innperl.h ../include/config.h
