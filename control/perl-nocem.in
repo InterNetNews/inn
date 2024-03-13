@@ -19,6 +19,9 @@
 require 5.00403;
 use strict;
 
+use POSIX qw(strftime);
+use Sys::Hostname;
+
 # Use high resolution timers when available.
 # To be effectively used, the time() function is imported by an evaluation
 # inside a BEGIN block.
@@ -51,6 +54,7 @@ my $log_open = 0;
 my $nntp_open = 0;
 my $last_cancel = 0;
 my $socket_timeout = int($INN::Config::peertimeout * 0.95);
+my ($hostname) = split(/\./, hostname());
 
 my $logfile = $INN::Config::pathlog . '/perl-nocem.log';
 
@@ -535,8 +539,9 @@ sub logmsg {
             select STDOUT;
         }
 
+        my $now = strftime("%Y-%m-%d %T %z", localtime());
         foreach my $logline (@logs) {
-            print LOG "$lvl: $msg\n";
+            print LOG "$now $hostname nocem[$$]: $logline\n";
         }
     } else {
         foreach my $logline (@logs) {

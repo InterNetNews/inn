@@ -456,6 +456,12 @@ while (!eof()) {
             # Convert a high-precision timestamp like
             #   2023-07-23T04:15:01.882775+02:00
             # to the low-precision timestamp used by innreport.
+            # Also accept timestamps with spaces like in
+            #   2023-07-23 04:15:01 +02:00
+            if ($_ =~ /^(\d+-\d+-\d+) (\d+:\d+:\d+)(\.\d+)? ([+-]\d+)(.*)$/) {
+                $_ = "$1T$2$3$4$5";
+            }
+
             if ($_ =~ /^(\d+-\d+-\d+T\d+:\d+:\d+)(\.\d+)?([+-]\d+):?(\d+)/) {
                 my $timezone = "$3$4";
                 my $t;
