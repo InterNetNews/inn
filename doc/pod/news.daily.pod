@@ -235,10 +235,11 @@ in order.
 =item B<procbatchdir>=I<path>
 
 B<news.daily> tries to find the backlog directory of B<innfeed> in
-F<innfeed.conf>.  In case several instances of B<innfeed> are running or when
-its configuration file is not the default one, the B<procbatchdir> keyword
-can be used to specify the path of the backlog directory.  This keyword can be
-used more than once in the command-line.
+F<innfeed.conf> and F<innfeed-delayed.conf>.  In case several instances of
+B<innfeed> are running or when its configuration file is not the default one,
+the B<procbatchdir> keyword can be used to specify the path of the backlog
+directory.  This keyword can be used more than once in the command-line,
+permitting specifying several backlog directories.
 
 =item B<tmpdir>=I<path>
 
