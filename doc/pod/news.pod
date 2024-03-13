@@ -70,6 +70,12 @@ new B<-r> flag).
 
 =item *
 
+B<perl-nocem> now correctly parses NoCeM issuers with special characters
+like C<+> in the configuration file.  They previously failed to be recognized
+without being escaped.
+
+=item *
+
 Fixed a hang when posting articles if COMPRESS DEFLATE is active but TLS
 is not.  Thanks to Enrik Berkhan for the patch for B<nnrpd>.
 
