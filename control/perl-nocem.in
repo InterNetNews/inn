@@ -114,7 +114,7 @@ sub do_nocem {
     # open the article and verify the notice
     my $artfh = open_article($token);
     return if not defined $artfh;
-    my ($msgid, $nid, $issuer, $nocems) = read_nocem($artfh);
+    my ($msgid, $nid, $issuer, $type, $nocems) = read_nocem($artfh);
     close $artfh;
     return unless $nocems;
 
@@ -124,8 +124,8 @@ sub do_nocem {
     my $nr = scalar @$nocems;
     logmsg(
         sprintf(
-            "processed notice %s by %s (%d ids, %.5f s, %.1f/s)",
-            $nid, $issuer, $nr, $diff, $nr / $diff,
+            "processed notice %s by %s for %s (%d ids, %.5f s, %.1f/s)",
+            $nid, $issuer, $type, $nr, $diff, $nr / $diff,
         )
     );
 }
@@ -247,7 +247,7 @@ sub read_nocem {
     unlink $tmpfile;
     return if not $e;
 
-    return ($msgid, $hdrs{'notice-id'}, $hdrs{issuer}, \@nocems);
+    return ($msgid, $hdrs{'notice-id'}, $hdrs{issuer}, $hdrs{type}, \@nocems);
 }
 
 # XXX not implemented: code to discard notices for groups we don't carry
