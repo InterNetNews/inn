@@ -227,10 +227,8 @@ perl.o: perl.c ../include/portable/system.h ../include/config.h \
   ../include/inn/concat.h ../include/inn/xmalloc.h ../include/inn/system.h \
   ../include/inn/xwrite.h ../include/inn/messages.h ../include/inn/nntp.h \
   ../include/inn/paths.h ../include/inn/storage.h ../include/inn/options.h \
-  ../include/inn/timer.h ../include/inn/vector.h \
-  ../include/ppport.h \
-  ../include/innperl.h \
-  ../include/config.h
+  ../include/inn/timer.h ../include/inn/vector.h ../include/ppport.h \
+  ../include/innperl.h ../include/config.h
 proc.o: proc.c ../include/portable/system.h ../include/config.h \
   ../include/inn/macros.h ../include/inn/portable-macros.h \
   ../include/inn/options.h ../include/inn/system.h \
@@ -248,16 +246,16 @@ python.o: python.c ../include/portable/system.h ../include/config.h \
   ../include/inn/macros.h ../include/inn/portable-macros.h \
   ../include/inn/options.h ../include/inn/system.h \
   ../include/portable/stdbool.h ../include/portable/macros.h \
-  ../include/portable/stdbool.h \
-  ../include/inn/innconf.h ../include/inn/macros.h \
-  ../include/inn/portable-stdbool.h ../include/inn/wire.h innd.h \
-  ../include/portable/sd-daemon.h ../include/portable/socket.h \
-  ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
-  ../include/inn/buffer.h ../include/inn/history.h ../include/inn/libinn.h \
-  ../include/inn/concat.h ../include/inn/xmalloc.h ../include/inn/system.h \
-  ../include/inn/xwrite.h ../include/inn/messages.h ../include/inn/nntp.h \
-  ../include/inn/paths.h ../include/inn/storage.h ../include/inn/options.h \
-  ../include/inn/timer.h ../include/inn/vector.h
+  ../include/portable/stdbool.h ../include/inn/innconf.h \
+  ../include/inn/macros.h ../include/inn/portable-stdbool.h \
+  ../include/inn/wire.h innd.h ../include/portable/sd-daemon.h \
+  ../include/portable/socket.h ../include/portable/getaddrinfo.h \
+  ../include/portable/getnameinfo.h ../include/inn/buffer.h \
+  ../include/inn/history.h ../include/inn/libinn.h ../include/inn/concat.h \
+  ../include/inn/xmalloc.h ../include/inn/system.h ../include/inn/xwrite.h \
+  ../include/inn/messages.h ../include/inn/nntp.h ../include/inn/paths.h \
+  ../include/inn/storage.h ../include/inn/options.h ../include/inn/timer.h \
+  ../include/inn/vector.h
 rc.o: rc.c ../include/portable/system.h ../include/config.h \
   ../include/inn/macros.h ../include/inn/portable-macros.h \
   ../include/inn/options.h ../include/inn/system.h \
