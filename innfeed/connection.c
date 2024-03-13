@@ -1478,6 +1478,7 @@ getAuthUserResponse(EndPoint e, IoStatus i, Buffer *b, void *d)
     Connection cxn = (Connection) d;
     int code;
     char *p = bufferBase(b[0]);
+    char *q;
     Buffer *buffers;
     const char *peerName;
 
@@ -1491,8 +1492,14 @@ getAuthUserResponse(EndPoint e, IoStatus i, Buffer *b, void *d)
 
     bufferAddNullByte(b[0]);
 
-    d_printf(1, "%s:%u Processing authinfo user response: %s", /* no NL */
+    if ((q = strrchr(p, '\r')) != NULL)
+        *q = '\0';
+
+    d_printf(1, "%s:%u Processing authinfo user response: %s\n",
              hostPeerName(cxn->myHost), cxn->ident, p);
+
+    if (q != NULL)
+        *q = '\r';
 
     if (i == IoDone && writeIsPending(cxn->myEp)) {
         /* badness. should never happen */
@@ -1554,6 +1561,7 @@ getAuthPassResponse(EndPoint e, IoStatus i, Buffer *b, void *d)
     Connection cxn = (Connection) d;
     int code;
     char *p = bufferBase(b[0]);
+    char *q;
     Buffer *buffers;
     const char *peerName;
 
@@ -1567,8 +1575,14 @@ getAuthPassResponse(EndPoint e, IoStatus i, Buffer *b, void *d)
 
     bufferAddNullByte(b[0]);
 
-    d_printf(1, "%s:%u Processing authinfo pass response: %s", /* no NL */
+    if ((q = strrchr(p, '\r')) != NULL)
+        *q = '\0';
+
+    d_printf(1, "%s:%u Processing authinfo pass response: %s\n",
              hostPeerName(cxn->myHost), cxn->ident, p);
+
+    if (q != NULL)
+        *q = '\r';
 
     if (i == IoDone && writeIsPending(cxn->myEp)) {
         /* badness. should never happen */
@@ -1632,6 +1646,7 @@ getModeResponse(EndPoint e, IoStatus i, Buffer *b, void *d)
     Connection cxn = (Connection) d;
     int code;
     char *p = bufferBase(b[0]);
+    char *q;
     Buffer *buffers;
     const char *peerName;
 
@@ -1645,8 +1660,14 @@ getModeResponse(EndPoint e, IoStatus i, Buffer *b, void *d)
 
     bufferAddNullByte(b[0]);
 
-    d_printf(1, "%s:%u Processing mode response: %s", /* no NL */
+    if ((q = strrchr(p, '\r')) != NULL)
+        *q = '\0';
+
+    d_printf(1, "%s:%u Processing mode response: %s\n",
              hostPeerName(cxn->myHost), cxn->ident, p);
+
+    if (q != NULL)
+        *q = '\r';
 
     if (i == IoDone
         && writeIsPending(cxn->myEp)) { /* badness. should never happen */
