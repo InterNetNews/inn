@@ -27,6 +27,7 @@
 #    define PATH_MAX 256
 #endif
 
+#include "inn/innconf.h"
 #include "inn/libinn.h"
 #include "inn/messages.h"
 
@@ -51,7 +52,7 @@ error_log_stderr_date(int len UNUSED, const char *fmt, va_list args, int err)
 
     now = time(NULL);
     tm = localtime(&now);
-    strftime(timebuff, sizeof(timebuff), "%Y-%m-%d %H:%M:%S", tm);
+    strftime(timebuff, sizeof(timebuff), "%Y-%m-%d %T %z", tm);
     fprintf(stderr, "%s %s: ", timebuff,
             (message_program_name ? message_program_name : "UNKNOWN"));
     vfprintf(stderr, fmt, args);
@@ -87,7 +88,9 @@ void
 d_printf(unsigned int level, const char *fmt, ...)
 {
     static pid_t myPid;
+    static char *hostname;
     char timeString[30];
+    char *q;
     time_t now;
     struct tm *tm;
     va_list ap;
@@ -95,15 +98,23 @@ d_printf(unsigned int level, const char *fmt, ...)
     if (myPid == 0)
         myPid = getpid();
 
+    if (hostname == NULL) {
+        hostname = inn_getfqdn(innconf->domain);
+        if (hostname == NULL)
+            hostname = xstrdup("unknown");
+        if ((q = strchr(hostname, '.')) != NULL)
+            *q = '\0';
+    }
+
     if (loggingLevel < level)
         return;
 
     now = theTime();
     tm = localtime(&now);
-    strftime(timeString, sizeof(timeString), "%b %d %H:%M:%S", tm);
+    strftime(timeString, sizeof(timeString), "%Y-%m-%d %T %z", tm);
 
     va_start(ap, fmt);
-    fprintf(stderr, "%s %s[%ld]: ", timeString,
+    fprintf(stderr, "%s %s %s[%ld]: ", timeString, hostname,
             (message_program_name ? message_program_name : "UNKNOWN"),
             (long) myPid);
     vfprintf(stderr, fmt, ap);
