@@ -59,7 +59,7 @@ behavior.
 
 =head1 EXAMPLES
 
-Most of these examples are taken, with modifications from the original man
+Most of these examples are taken, with modifications from the original manual
 page dating from 1991 and were run in the EST/EDT time zone.
 
     % convdate '10 Feb 1991 10:00:00 -0500'
@@ -81,10 +81,10 @@ ctime(3) results are in the local time zone.  Compare to:
     % convdate -dc 666198000
     Sun, 10 Feb 1991 15:00:00 -0000 (UTC)
 
-    % env TZ=PST8PDT convdate -dlc 666198000
+    % env TZ=America/Los_Angeles convdate -dlc 666198000
     Sun, 10 Feb 1991 07:00:00 -0800 (PST)
 
-    % env TZ=EST5EDT convdate -dlc 666198000
+    % env TZ=America/New_York convdate -dlc 666198000
     Sun, 10 Feb 1991 10:00:00 -0500 (EST)
 
 The system library functions generally use the environment variable TZ to
