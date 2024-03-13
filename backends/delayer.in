@@ -108,7 +108,7 @@ I<some-other-program> after a certain delay time has passed.
 
 The main use case is for a news feed that deliberately should not distribute
 articles as soon as possible.  One reason is giving cancel control articles
-and NoCeM notices time to arrive so that B<innd> remembers the Message-IDs of
+and NoCeM messages time to arrive so that B<innd> remembers the Message-IDs of
 those cancelled articles before they actually arrive.  It permits cancelling
 articles before they are locally stored and spread to other peers.  The delay
 can be set up for outgoing feeds wanting that or, even better for not slowing
@@ -175,7 +175,7 @@ This will delay articles via that feed for 120 seconds.
 Use C<innfeed-delayed!> instead of C<innfeed!> in the F<newsfeeds> entries for
 peers which should receive a delayed feed.  If you wish, you can also set up
 two entries for each peer, keeping a real-time feed through C<innfeed!> for
-control articles and NoCeM notices, and delaying the feed of other articles
+control articles and NoCeM messages, and delaying the feed of other articles
 through C<innfeed-delayed!>.
 
     news.uu.net/uunet\
