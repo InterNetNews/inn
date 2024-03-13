@@ -1822,8 +1822,8 @@ sub collect($$$$$$) {
             $nnrpd_timeout{$cust}++;
             return 1;
         }
-        # timeout in post
-        if ($left =~ /(\S+) timeout in post$/o) {
+        # timeout in post, timeout in AUTHINFO SASL
+        if ($left =~ /(\S+) timeout in (?:post|AUTHINFO SASL)$/o) {
             my $cust = $1;
             $cust = lc $cust unless $CASE_SENSITIVE;
             my $dom = &host2dom($cust);
@@ -1934,6 +1934,7 @@ sub collect($$$$$$) {
         return 1 if $left =~ /can\'t read: /o;
         # eof in post
         return 1 if $left =~ /^\S+ EOF in post$/o;
+        return 1 if $left =~ /^\S+ EOF in AUTHINFO SASL$/o;
         # ioctl: ...
         return 1 if $left =~ /^ioctl: /o;
         # other stats
