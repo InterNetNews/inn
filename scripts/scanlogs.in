@@ -23,21 +23,43 @@ MAXERRLINES=50
 ##  Where these programs, if used, write their logs.
 ##  We also have to find innfeed's log file.
 CONTROLBATCH=${MOST_LOGS}/controlbatch.log
-INNFEEDCONF=${PATHETC}/innfeed.conf
-if [ -f "${INNFEEDCONF}" ]; then
-    INNFEEDLOG=$(${AWK} '{gsub(/:|#/, " & ")} {if ($1 == "log-file" && $2 == ":") print $3}' ${INNFEEDCONF})
-    INNFEEDPIDFILE=$(${AWK} '{gsub(/:|#/, " & ")} {if ($1 == "pid-file" && $2 == ":") print $3}' ${INNFEEDCONF})
-fi
+INNFEEDCONF="${PATHETC}/innfeed.conf ${PATHETC}/innfeed-delayed.conf"
 INNFEED=
-for F in "${INNFEEDLOG}"; do
-    test -f "${MOST_LOGS}/${F}" && INNFEED="${INNFEED} ${MOST_LOGS}/${F}"
+if [ -f "${MOST_LOGS}/innfeed.log" ]; then
+    INNFEED="${MOST_LOGS}/innfeed.log"
+fi
+INNFEEDPIDFILES=
+if [ -f "${PATHRUN}/innfeed.pid" ]; then
+    INNFEEDPIDFILES="${PATHRUN}/innfeed.pid"
+fi
+for F in ${INNFEEDCONF}; do
+    if [ -f "${F}" ]; then
+        INNFEEDLOG=$(${AWK} '{gsub(/:|#/, " & ")} \
+                             {if ($1 == "log-file" && $2 == ":" \
+                                  && $3 != "innfeed.log") \
+                                  print $3}' ${F})
+        INNFEEDPID=$(${AWK} '{gsub(/:|#/, " & ")} \
+                             {if ($1 == "pid-file" && $2 == ":" \
+                                  && $3 != "innfeed.pid") \
+                                  print $3}' ${F})
+    fi
+    for L in ${INNFEEDLOG}; do
+        if [ -f "${MOST_LOGS}/${L}" ]; then
+            INNFEED="${INNFEED} ${MOST_LOGS}/${L}"
+        fi
+    done
+    for P in ${INNFEEDPID}; do
+        if [ -f "${PATHRUN}/${P}" ]; then
+            INNFEEDPIDFILES="${INNFEEDPIDFILES} ${PATHRUN}/${P}"
+        fi
+    done
 done
-test -z "${INNFEED}" && test -f "${MOST_LOGS}/innfeed.log" && INNFEED="${MOST_LOGS}/innfeed.log"
 NNTPSEND=${MOST_LOGS}/nntpsend.log
 PERLNOCEM=${MOST_LOGS}/perl-nocem.log
 SENDIHAVE=${MOST_LOGS}/send-ihave.log
 SENDUUCP=${MOST_LOGS}/send-uucp.log
-LIVEFILES="${CONTROLBATCH} ${INNFEED} ${NNTPSEND} ${PERLNOCEM} ${SENDIHAVE} ${SENDUUCP}"
+LIVEFILES="${CONTROLBATCH} ${INNFEED} ${NNTPSEND} ${PERLNOCEM} \
+    ${SENDIHAVE} ${SENDUUCP}"
 
 ##  Where news.daily places expire output, unless noexplog was used.
 EXPLOG=${MOST_LOGS}/expire.log
@@ -162,16 +184,14 @@ if ${ROTATE}; then
 
     ##  Find out the PID of innfeed now and not at the beginning of scanlogs
     ##  because it is restarted when running ctlinnd flushlogs.
-    INNFEEDPID=
-    for F in "${INNFEEDPIDFILE}"; do
-        test -f "${PATHRUN}/${F}" && INNFEEDPID=$(cat "${PATHRUN}/${F}")
+    for F in ${INNFEEDPIDFILES}; do
+        INNFEEDPID=
+        test -f "${F}" && INNFEEDPID=$(cat "${F}")
+        ##  Send a HUP signal to innfeed so that it reopens its log files.
+        if [ ! -z ${INNFEEDPID} ]; then
+            kill -HUP ${INNFEEDPID} >/dev/null 2>&1
+        fi
     done
-    test -z "${INNFEEDPID}" && test -f "${PATHRUN}/innfeed.pid" && INNFEEDPID=$(cat "${PATHRUN}/innfeed.pid")
-
-    ##  Send a HUP signal to innfeed so that it reopens its log files.
-    if [ ! -z ${INNFEEDPID} ]; then
-        kill -HUP ${INNFEEDPID} >/dev/null 2>&1
-    fi
 
     ${PAUSED} && ctlinnd -s go "Flushing log and syslog files" 2>&1
 
