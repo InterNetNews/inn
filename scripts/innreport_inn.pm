@@ -2150,12 +2150,12 @@ sub collect($$$$$$) {
             $nocem_lastid = $1;
             return 1;
         }
-        if ($left =~ /Article <[^>]*>: malformed signature/o) {
-            $nocem_badsigs{'N/A'}++;
-            $nocem_goodsigs{'N/A'} = 0 unless ($nocem_goodsigs{'N/A'});
-            $nocem_totalids{'N/A'} = 0 unless ($nocem_totalids{'N/A'});
+        if ($left =~ /Article <[^>]*>: malformed signature from (.*)/o) {
+            $nocem_badsigs{$1}++;
+            $nocem_goodsigs{$1} = 0 unless ($nocem_goodsigs{$1});
+            $nocem_totalids{$1} = 0 unless ($nocem_totalids{$1});
             $nocem_totalbad++;
-            $nocem_lastid = 'N/A';
+            $nocem_lastid = $1;
             return 1;
         }
 

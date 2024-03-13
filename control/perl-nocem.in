@@ -348,7 +348,7 @@ sub pgp_check {
     } elsif (/^\[GNUPG:\]\s+BADSIG\s+\S+\s+(.*)/m) {
         logmsg("Article $msgid: bad signature from $1");
     } elsif (/^\[GNUPG:\]\s+BADARMOR/m or /^\[GNUPG:\]\s+UNEXPECTED/m) {
-        logmsg("Article $msgid: malformed signature");
+        logmsg("Article $msgid: malformed signature from $issuer");
     } elsif (/^\[GNUPG:\]\s+ERRSIG\s+(\S+)/m) {
         # safety net: we get there if we don't know about some token
         logmsg("Article $msgid: unknown error (ID $1)");
