@@ -68,7 +68,7 @@ Though not mandatory for the build, the following packages should be installed
 if you plan on using the provided features (configure will properly sets their
 path in a few variables used by INN):
 - gnupg / gnupg2 (for the verification of the signatures of control articles
-  and NoCeM notices - GnuPG 1.x or 2.0.x preferred, as GnuPG 2.1.0 and above
+  and NoCeM messages - GnuPG 1.x or 2.0.x preferred, as GnuPG 2.1.0 and above
   cannot verify signatures made with old PGP keys still used for some
   hierarchies)
 - uucp / uucp (for the exchange of news articles with send-uucp)

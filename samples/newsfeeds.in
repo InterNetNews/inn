@@ -125,7 +125,7 @@ controlchan!\
 #source-archive!:!*,*sources*,!*wanted*,!*.d\
 #    :Tc,Wn:@bindir@/archive -f -i @SPOOLDIR@/archive/INDEX
 
-# Feed NoCeM notices to perl-nocem in order to process third-party,
+# Feed NoCeM messages to perl-nocem in order to process third-party,
 # PGP-signed article cancellation notices.  See perl-nocem(8) for more
 # details on how to set this up.
 #nocem!:!*,news.lists.filters\
