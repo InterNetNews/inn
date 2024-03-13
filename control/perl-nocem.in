@@ -101,7 +101,7 @@ while (<STDIN>) {
     hup_handler() if $got_sighup;
 }
 
-logmsg('exiting because of EOF', 'debug');
+logmsg('exiting', 'info');
 exit 0;
 
 ##############################################################################
@@ -168,11 +168,11 @@ sub read_nocem {
 
     # must be a PGP signed NoCeM.
     if (not $ispgp) {
-        logmsg("Article $msgid: not PGP signed", 'debug');
+        logmsg("Article $msgid: not PGP signed", 'info');
         return;
     }
     if (not $isncm) {
-        logmsg("Article $msgid: not a NoCeM", 'debug');
+        logmsg("Article $msgid: not a NoCeM", 'info');
         return;
     }
 
@@ -187,7 +187,7 @@ sub read_nocem {
     }
     foreach (qw(action issuer notice-id type version)) {
         next if $hdrs{$_};
-        logmsg("Article $msgid: missing $_ pseudo header", 'debug');
+        logmsg("Article $msgid: missing $_ pseudo header field", 'info');
         return;
     }
     return if not supported_nocem($msgid, \%hdrs);
@@ -196,7 +196,7 @@ sub read_nocem {
     if (not want_nocem(\%hdrs)) {
         logmsg(
             "Article $msgid: unwanted ($hdrs{issuer}/$hdrs{type})",
-            'debug',
+            'info',
         );
         return;
     }
@@ -277,14 +277,14 @@ sub supported_nocem {
     if ($hdrs->{version} !~ /^0\.9[0-9]?$/) {
         logmsg(
             "Article $msgid: version $hdrs->{version} not supported",
-            'debug',
+            'info',
         );
         return 0;
     }
     if ($hdrs->{action} ne 'hide') {
         logmsg(
             "Article $msgid: action $hdrs->{action} not supported",
-            'debug',
+            'info',
         );
         return 0;
     }
@@ -320,6 +320,10 @@ sub pgp_check {
 
     # Read the result and check status code.
     local $_ = join('', <PFD>);
+
+    logmsg("Command line was: " . join(' ', @command) . " $art", 'debug');
+    logmsg("Full PGP output: >>>$_<<<", 'debug');
+
     my $status = 0;
     if (not close PFD) {
         if ($? >> 8) {
@@ -335,9 +339,6 @@ sub pgp_check {
             return 0;
         }
     }
-    #logmsg("Command line was: $INN::Config::gpgv --status-fd=1"
-    #     . ($keyring ? ' --keyring=' . $keyring : '') . " $art", 'debug');
-    #logmsg("Full PGP output: >>>$_<<<", 'debug');
 
     if (/^\[GNUPG:\]\s+GOODSIG\s+\S+\s+(.*)/m) {
         return 1 if $1 =~ /\Q$issuer\E/;
@@ -412,7 +413,7 @@ sub cancel_ctlinnd {
                   'cancel', $msgid;
                 exit 126;
             }
-            # logmsg("cancelled: $msgid [$i/$max]", 'debug');
+            logmsg("Cancelling: $msgid [$i/$max]", 'debug');
         }
         # Now wait for all children.
         while ((my $pid = wait) > 0) {
@@ -431,7 +432,7 @@ sub cancel_nntp {
     my $r;
 
     if ($nntp_open and time - $socket_timeout > $last_cancel) {
-        logmsg('Close socket for timeout');
+        logmsg('Close socket for timeout', 'debug');
         close(NNTP);
         $nntp_open = 0;
     }
@@ -463,6 +464,7 @@ sub cancel_nntp {
         $nntp_open = 1;
     }
     foreach (@$ids) {
+        logmsg("Cancelling: $_", 'debug');
         print NNTP "$_\r\n";
         if (($r = <NNTP>) !~ /^289/) {
             $r =~ s/\r\n$//;
