@@ -1,16 +1,18 @@
 ##  Configuration file for perl-nocem(8).
-##  This file specifies the NoCeM issuers and notices you want to follow.
+##
+##  This file lists the NoCeM issuers and types of notices you want to process.
 ##
 ##  Based on Rosalind Hengeveld's NoCeM Registry:
-##
-##      <http://rosalind.home.xs4all.nl/nocemreg/nocemreg.html>
+##      <https://rosalind.home.xs4all.nl/nocemreg/nocemreg.html>
 ##
 ##  Format:
-##          issuer:notice1[,notice2...]
+##      issuer:type1[,type2...]
 ##
-##  You also have to properly configure your newsfeeds file and
-##  your keyring situated in <pathetc>/pgp/ncmring.gpg.
-##  You may wish to review and change the policy below.
+##  You also have to properly configure your newsfeeds file and add the PGP
+##  public keys of the issuers you trust to your keyring situated in
+##  <pathetc>/pgp/ncmring.gpg by default (a different location can be specified
+##  to perl-nocem with the -k flag).
+##  You are encouraged to review and change the policy below.
 ##
 ##  See the perl-nocem manual page for more information.
 
