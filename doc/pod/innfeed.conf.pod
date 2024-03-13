@@ -4,7 +4,7 @@ innfeed.conf - Configuration file for innfeed
 
 =head1 IN A NUTSHELL
 
-The I<innfeed.conf> file configures to which remote peers B<innfeed> sends
+The F<innfeed.conf> file configures to which remote peers B<innfeed> sends
 NNTP feeds.
 
 A common entry to parameterize C<news.server.com> as an outgoing feed is:

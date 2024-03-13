@@ -25,7 +25,8 @@ types of connections: an LMTP connection to deliver regular messages and
 an IMAP connection to handle control messages.
 
 Used in conjunction with delayer(1), B<innfeed> can send a delayed feed to
-remote peers.
+remote peers or to another local instance of B<innd>, notably to permit the
+rejection of spam before it actually arrives.
 
 =head1 MODES
 
@@ -332,11 +333,24 @@ file storage and retrieval, as well as for lock files.  If the path is
 relative, then it is relative to I<pathspool> as set in F<inn.conf>.
 The default is C<innfeed>.
 
+You are encouraged to use the I<backlog-directory> parameter in the
+configuration file to declare a specific directory, as otherwise B<news.daily>
+won't get it and some maintenance operations on the backlog directory won't
+be performed.
+
 =item B<-c> I<config-file>
 
 The B<-c> flag may be used to specify a different config file from the
 default value.  If the path is relative, then it is relative to I<pathetc>
 as set in F<inn.conf>.  The default is F<innfeed.conf>.
+
+Note that if you use a different name than the default one, and also change
+the default setting of I<log-file> or I<pid-file> in the configuration
+file, B<scanlogs> will not be able to rotate the debug log files (their
+names are searched in F<innfeed.conf> and F<innfeed-delayed.conf>).
+Other maintenance operations performed by B<news.daily> won't also be done if
+I<backlog-directory> is changed from its default in a configuration file named
+differently.
 
 =item B<-C>
 
@@ -368,6 +382,10 @@ As B<innd> starts B<innfeed> with stderr attached to /dev/null, using
 this option can be useful in catching any abnormal error messages, or any
 debugging messages (all "normal" errors messages go to syslog).
 
+You are encouraged to use the I<log-file> parameter in the configuration file
+to declare a specific file name, as otherwise B<scanlogs> won't get it and the
+log file won't be rotated.
+
 =item B<-m>
 
 The B<-m> flag is used to turn on logging of all missing articles.
@@ -390,6 +408,10 @@ B<innfeed> is supposed to keep in memory.  This does not work properly yet.
 The B<-p> flag is used to specify the file name to write the pid of
 the process into.  A relative path is relative to I<pathrun> as set in
 F<inn.conf>.  The default is F<innfeed.pid>.
+
+You are encouraged to use the I<pid-file> parameter in the configuration file
+to declare a specific file name, as otherwise B<scanlogs> won't get it and the
+log file won't be properly flushed before being rotated.
 
 =item B<-s> I<command>
 
