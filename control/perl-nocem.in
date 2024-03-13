@@ -519,6 +519,13 @@ sub read_ctlfile {
 sub logmsg {
     my ($msg, $lvl) = @_;
 
+    # Default is logging at notice level.
+    $lvl ||= 'notice';
+
+    # Write the message across several log lines.
+    $msg =~ s/\r/ /g;
+    my @logs = split('\n', $msg);
+
     if (not $use_syslog) {
         if ($log_open == 0) {
             open(LOG, ">>$logfile") or die "Cannot open log: $!";
@@ -527,11 +534,17 @@ sub logmsg {
             $| = 1;
             select STDOUT;
         }
-        $lvl ||= 'notice';
-        print LOG "$lvl: $msg\n";
-        return;
+
+        foreach my $logline (@logs) {
+            print LOG "$lvl: $msg\n";
+        }
+    } else {
+        foreach my $logline (@logs) {
+            syslog($lvl, '%s', $logline);
+        }
     }
-    syslog($lvl || 'notice', '%s', $msg);
+
+    return;
 }
 
 sub hup_handler {
