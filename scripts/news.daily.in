@@ -30,20 +30,30 @@
 
 EXPLOG=${MOST_LOGS}/expire.log
 INNSTAT=${PATHBIN}/innstat
-INNFEEDCONF=${PATHETC}/innfeed.conf
+INNFEEDCONF="${PATHETC}/innfeed.conf ${PATHETC}/innfeed-delayed.conf"
 HOSTNAME=$(hostname)
 DATE=$(date)
 TAGGEDHASH=${DO_DBZ_TAGGED_HASH}
 ADDHEADER="Auto-Submitted: auto-generated"
 
-##  Try to find the path to innfeed's spool.  The default is
-##  ${PATHSPOOL}/innfeed if not found.
+##  Try to find the path to innfeed's spool.
 PROCBATCHDIR=
-if [ -f "${INNFEEDCONF}" ]; then
-    INNFEEDSPOOL=$(${AWK} '{gsub(/:|#/, " & ")} {if ($1 == "backlog-directory" && $2 == ":") print $3}' ${INNFEEDCONF})
+if [ -d "${PATHSPOOL}/innfeed" ]; then
+    PROCBATCHDIR="${PATHSPOOL}/innfeed"
 fi
-test -z "${INNFEEDSPOOL}" && test -d "${PATHSPOOL}/innfeed" && INNFEEDSPOOL="innfeed"
-test -n "${INNFEEDSPOOL}" && PROCBATCHDIR="${PATHSPOOL}/${INNFEEDSPOOL}"
+for F in ${INNFEEDCONF}; do
+    if [ -f "${F}" ]; then
+        INNFEEDSPOOL=$(${AWK} '{gsub(/:|#/, " & ")} \
+                               {if ($1 == "backlog-directory" && $2 == ":" \
+                                    && $3 != "innfeed") \
+                                    print $3}' ${F})
+    fi
+    for DIR in ${INNFEEDSPOOL}; do
+        if [ -d "${PATHSPOOL}/${DIR}" ]; then
+            PROCBATCHDIR="${PROCBATCHDIR} ${PATHSPOOL}/${DIR}"
+        fi
+    done
+done
 
 ##  If your expire does not pause or throttle innd, enable this next line:
 #MESSAGE="Expiration script $$"
