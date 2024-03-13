@@ -267,7 +267,7 @@ sub want_nocem {
 
     foreach (@ncmperm) {
         my ($issuer, $type) = split(/\001/);
-        if ($hdrs->{issuer} =~ /$issuer/i) {
+        if ($hdrs->{issuer} =~ /\Q$issuer\E/i) {
             return 1 if '*' eq $type or lc $hdrs->{type} eq $type;
         }
     }
@@ -344,7 +344,7 @@ sub pgp_check {
     }
 
     if (/^\[GNUPG:\]\s+GOODSIG\s+\S+\s+(.*)/m) {
-        return 1 if $1 =~ /\Q$issuer\E/;
+        return 1 if $1 =~ /\Q$issuer\E/i;
         logmsg("Article $msgid: signed by $1 instead of $issuer");
     } elsif (/^\[GNUPG:\]\s+NO_PUBKEY\s+(\S+)/m) {
         logmsg("Article $msgid: $issuer (ID $1) not in keyring");
