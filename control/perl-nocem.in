@@ -19,9 +19,12 @@
 require 5.00403;
 use strict;
 
-# XXX FIXME I haven't been able to load it only when installed.
-# If nobody can't fix it just ship the program with this line commented.
-#use Time::HiRes qw(time);
+# Use high resolution timers when available.
+# To be effectively used, the time() function is imported by an evaluation
+# inside a BEGIN block.
+BEGIN {
+    eval "use Time::HiRes qw(time);";
+}
 
 my $keyring = $INN::Config::pathetc . '/pgp/ncmring.gpg';
 
