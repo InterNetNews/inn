@@ -201,12 +201,15 @@ if ${ROTATE}; then
         BASE=$(basename ${F})
         rm -f ${OLD}/${BASE}
         case ${F} in
-        ${SYSLOG_CRIT} | ${SYSLOG_ERR} | ${ERRLOG} | ${LOG} | ${SYSLOG_NOTICE})
+        ${SYSLOG_CRIT} | ${SYSLOG_ERR} | ${ERRLOG} | ${LOG} | \
+            ${SYSLOG_NOTICE} | ${PERLNOCEM})
             ##  Make a link that can be deleted (since if not rotating
             ##  we delete the copy that is made in ${TMPDIR}).
-            mv ${F}.old ${OLD}/${BASE}
-            rm -f ${OLD}/${BASE}.0
-            ln ${OLD}/${BASE} ${OLD}/${BASE}.0
+            if [ -f ${F}.old ]; then
+                mv ${F}.old ${OLD}/${BASE}
+                rm -f ${OLD}/${BASE}.0
+                ln ${OLD}/${BASE} ${OLD}/${BASE}.0
+            fi
             ;;
         ${ACTIVEFILE})
             mv ${BASE}.old ${OLD}/${BASE}
@@ -261,10 +264,11 @@ else
 
     ##  Make a snapshot of what we need for below.
     ctlinnd -s pause "Snapshot log and syslog files" 2>&1
-    for F in ${SYSLOG_CRIT} ${SYSLOG_ERR} ${ERRLOG} ${LOG} ${SYSLOG_NOTICE}; do
+    for F in ${SYSLOG_CRIT} ${SYSLOG_ERR} ${ERRLOG} ${LOG} ${SYSLOG_NOTICE} \
+        ${PERLNOCEM}; do
         BASE=$(basename ${F})
         rm -f ${OLD}/${BASE}.0
-        cp ${F} ${OLD}/${BASE}.0
+        test -f ${F} && cp ${F} ${OLD}/${BASE}.0
     done
     ctlinnd -s go "Snapshot log and syslog files" 2>&1
 fi
@@ -313,6 +317,15 @@ OLD_LOG=${OLD}/${BASE}.0
 ##  and summarize syslog information.
 BASE=$(basename ${SYSLOG_NOTICE})
 OLD_SYSLOG=${OLD}/${BASE}.0
+
+##  Also add possible logs from perl-nocem.log to the analysis.
+BASE=$(basename ${PERLNOCEM})
+OLD_PERLNOCEM=${OLD}/${BASE}.0
+if [ -f ${OLD_PERLNOCEM} ]; then
+    cat ${OLD_PERLNOCEM} >>${OLD_SYSLOG}
+fi
+rm -f ${OLD_PERLNOCEM}
+
 INNREPORT=${TMPDIR}/innreport$$
 if [ -s ${OLD_SYSLOG} -o -s ${OLD_LOG} ]; then
     ${PATHBIN}/innreport -f ${PATHETC}/innreport.conf ${OLD_SYSLOG} ${OLD_LOG} >${INNREPORT}
