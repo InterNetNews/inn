@@ -242,7 +242,10 @@ sub read_nocem {
     close OFD;
 
     # at this point we need to verify the PGP signature.
-    return if not @nocems;
+    if (not @nocems) {
+        unlink $tmpfile;
+        return;
+    }
     my $e = pgp_check($hdrs{issuer}, $msgid, $tmpfile);
     unlink $tmpfile;
     return if not $e;
