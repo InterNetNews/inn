@@ -2114,14 +2114,14 @@ sub collect($$$$$$) {
     ########
     ## nocem
     if ($prog eq "nocem") {
-        if ($left =~ /processed notice .* by (.*) \((\d+) ids,/o) {
-            $nocem_goodsigs{$1}++;
+        if ($left =~ /processed notice .* by (.*) for (.*) \((\d+) ids,/o) {
+            $nocem_lastid = "$1 ($2)";
+            $nocem_goodsigs{$nocem_lastid}++;
             $nocem_totalgood++;
-            $nocem_lastid = $1;
-            $nocem_newids += $2;
-            $nocem_newids{$nocem_lastid} += $2;
-            $nocem_totalids += $2;
-            $nocem_totalids{$nocem_lastid} += $2;
+            $nocem_newids += $3;
+            $nocem_newids{$nocem_lastid} += $3;
+            $nocem_totalids += $3;
+            $nocem_totalids{$nocem_lastid} += $3;
             return 1;
         }
         if ($left =~ /Article <[^>]*>: signed by .* instead of (.*)/o) {
