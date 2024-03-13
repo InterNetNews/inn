@@ -28,10 +28,10 @@ in I<pathlog> (see the F<control.log> entry of newslog(5) for more
 information about that).
 
 B<scanlogs> displays the first 50 lines of F<errlog>, F<news.err>
-and F<news.crit>, if non-empty, and runs B<innreport> to summarize
-the contents of F<news> and F<news.notice>, and to update the
-F<unwanted.log> file amongst other things (see more information about
-that in innreport(8)).
+and F<news.crit>, if non-empty, and runs B<innreport> to summarize the
+contents of F<news>, F<news.notice> and F<perl-nocem.log>, and to update the
+F<unwanted.log> file amongst other things (see more information about that in
+innreport(8)).
 
 =head1 OPTIONS
 
