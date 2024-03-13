@@ -59,7 +59,9 @@ them), and then this information is used by programs like innxmit(8) and
 innfeed(8) to feed articles to remote sites.
 
 Used in conjunction with delayer(1) in the configuration of the related funnel
-feed, B<innfeed> can even send a delayed feed to remote peers.
+feed, B<innfeed> can even send a delayed feed to remote peers or to another
+local instance of B<innd>, notably to permit the rejection of spam before it
+actually arrives.
 
 The F<newsfeeds> file isn't used solely to set up feeding accepted
 articles to remote sites but also to pass them (or bits of information
