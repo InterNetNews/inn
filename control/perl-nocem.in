@@ -7,18 +7,20 @@
 # Copyright 2001 by Marco d'Itri <md@linux.it>
 # This program is licensed under the terms of the GNU General Public License.
 #
-# List of changes:
+# List of changes since the original implementation:
 #
 # 2002: Patch by Steven M. Christey for untrusted printf input.
 # 2007: Patch by Christoph Biedl for checking a timeout.
 # Documentation improved by Jeffrey M. Vinocur (2002), Russ Allbery (2006)
-# and Julien Elie (2007).
-#
+# and Julien Élie (2007).
+# Various bug fixes, code and documentation improvements by Julien Élie
+# in 2007-2009, 2013, 2014, 2016, 2018, 2020-2024.
 ##############################################################################
 
 require 5.00403;
 use strict;
 
+use Getopt::Std;
 use POSIX qw(strftime);
 use Sys::Hostname;
 
@@ -29,40 +31,93 @@ BEGIN {
     eval "use Time::HiRes qw(time);";
 }
 
-my $keyring = $INN::Config::pathetc . '/pgp/ncmring.gpg';
+$0 =~ s!.*/!!;
 
-# XXX To be moved to a config file.
-#sub local_want_cancel_id {
-#    my ($group, $hdrs) = @_;
-#
-## Hippo has too many false positives to be useful outside of pr0n groups
-#    if ($hdrs->{issuer} =~ /(?:Ultra|Spam)Hippo/) {
-#        foreach (split(/,/, $group)) {
-#            return 1 if /^alt\.(?:binar|sex)/;
-#        }
-#        return 0;
-#    }
-#    return 1;
-#}
+my $usage = "Usage:
+  Usually called as a channel feed in newsfeeds.  A typical entry is:
 
-# no user serviceable parts below this line ###################################
+      nocem!\
+        :!*,news.lists.filters\
+        :Tc,Wf,Ap:$INN::Config::pathbin/$0 [-c filename] [-g command] \
+                  [-G command] [-i filename] [-k keyring] [-l] [-v level]
 
-# global variables
+  On command line, for testing purpose, a storage token or a file name is
+  expected on standard input:
+
+      grephistory '<Message-ID>' | $0 [options]
+      echo '/path/to/a/nocem/message' | $0 [options]
+
+
+Options:
+  -c filename     Use the specified configuration file (with an absolute path)
+                  instead of the default one ($INN::Config::pathetc/nocem.ctl).
+
+  -g command      Full command to run when invoking gpg.  By default,
+                  \"$INN::Config::gpg --status-fd=1 --verify
+                  --allow-weak-digest-algos\" is used.
+
+  -G command      Full command to run when invoking gpgv.  By default,
+                  \"$INN::Config::gpgv --status-fd=1\" is used.
+                  Note that gpg will be preferentially used over gpgv when
+                  both are available, unless -g is given an empty string.
+
+  -h              Print this message.
+
+  -i filename     Include an external Perl script (with an absolute path) to
+                  load functions defining local rules.
+
+  -k keyring      Use the specified keyring (with an absolute path) instead of
+                  the default one ($INN::Config::pathetc/pgp/ncmring.gpg).
+                  \"--keyring=\" is added with the keyring value to the gpg
+                  and gpgv commands unless keyring is an empty string.
+
+  -l              Send logs to perl-nocem.log in $INN::Config::pathlog
+                  instead of using syslog.
+
+  -v level        Increase log verbosity to that level (1 to 3).  Default is 1.
+";
+
+sub HELP_MESSAGE {
+    print $usage;
+    exit 0;
+}
+
+use vars qw($opt_c $opt_g $opt_G $opt_h $opt_i $opt_k $opt_l $opt_v);
+getopts("c:g:G:hi:k:lv:") || die $usage;
+
+HELP_MESSAGE() if defined($opt_h);
+
+my $defaultPermfile = $INN::Config::pathetc . '/nocem.ctl';
+my $permfile = $opt_c || $defaultPermfile;
+
+my $defaultKeyring = $INN::Config::pathetc . '/pgp/ncmring.gpg';
+my $keyring = defined($opt_k) ? $opt_k : $defaultKeyring;
+
+my $defaultLoglevel = 0;
+my $loglevel = $opt_v || $defaultLoglevel;
+
 my ($working, $got_sighup, $got_sigterm, @ncmperm, $cancel);
-my $use_syslog = 0;
+my $syslog_available = 0;
 my $log_open = 0;
 my $nntp_open = 0;
 my $last_cancel = 0;
 my $socket_timeout = int($INN::Config::peertimeout * 0.95);
 my ($hostname) = split(/\./, hostname());
 
+# Not configurable as innreport explicitly parses a file with that name.
 my $logfile = $INN::Config::pathlog . '/perl-nocem.log';
+
+my $gpg = defined($opt_g) ? $opt_g : $INN::Config::gpg;
+my $gpgv = defined($opt_G) ? $opt_G : $INN::Config::gpgv;
+my ($gpgbin, $gpgvbin) = ($gpg, $gpgv);
+$gpgbin =~ s/ .*//;
+$gpgvbin =~ s/ .*//;
 
 # initialization and main loop ###############################################
 
-eval { require Sys::Syslog; import Sys::Syslog; $use_syslog = 1; };
+eval { require Sys::Syslog; import Sys::Syslog; $syslog_available = 1; };
 
-if ($use_syslog) {
+if ($syslog_available and not $opt_l) {
     if ($Sys::Syslog::VERSION lt 0.15) {
         eval "sub Sys::Syslog::_PATH_LOG { '/dev/log' }" if $^O eq 'dec_osf';
         Sys::Syslog::setlogsock('unix')
@@ -71,10 +126,46 @@ if ($use_syslog) {
     openlog('nocem', '', $INN::Config::syslog_facility);
 }
 
-if (not $INN::Config::gpgv and not $INN::Config::gpg) {
-    logmsg('cannot find the gpgv or gpg binary', 'err');
-    sleep 5;
+if (not $gpgbin and not $gpgvbin) {
+    logmsg("paths to both gpg and gpgv binaries unset", 'err');
     exit 1;
+}
+
+if ($gpgbin and not -x $gpgbin) {
+    logmsg("gpg binary $gpgbin does not exist or is not executable", 'err');
+    exit 1;
+} elsif ($gpgvbin and not -x $gpgvbin) {
+    logmsg("gpgv binary $gpgvbin does not exist or is not executable", 'err');
+    exit 1;
+}
+
+if ($keyring and not -r $keyring) {
+    logmsg("keyring $keyring does not exist or is not readable", 'err');
+    exit 1;
+}
+
+if ($loglevel !~ m!^\d+$!) {
+    logmsg("-v value is not an integer: $opt_v", 'err');
+    exit 1;
+}
+
+if ($opt_i) {
+    if (not -r $opt_i) {
+        logmsg("file $opt_i does not exist or is not readable", 'err');
+        exit 1;
+    }
+    if (open(my $localfile_fh, '<', $opt_i)) {
+        my $lines = join('', <$localfile_fh>);
+        close($localfile_fh);
+        eval($lines);
+        if ($@) {
+            logmsg("cannot load $opt_i: $@", 'err');
+            exit 1;
+        }
+    } else {
+        logmsg("Cannot open local file: $!", 'err');
+        exit 1;
+    }
 }
 
 if ($INN::Config::version and not $INN::Config::version =~ /^INN 2\.[0123]\./)
@@ -92,7 +183,6 @@ $SIG{PIPE} = \&term_handler;
 logmsg('starting up');
 
 unless (read_ctlfile()) {
-    sleep 5;
     exit 1;
 }
 
@@ -110,7 +200,7 @@ exit 0;
 
 ##############################################################################
 
-# Process one NoCeM notice.
+# Process one NoCeM message.
 sub do_nocem {
     my $token = shift;
     my $start = time;
@@ -134,7 +224,7 @@ sub do_nocem {
     );
 }
 
-# - Check if it is a PGP signed NoCeM notice
+# - Check if it is a PGP-signed NoCeM message
 # - See if we want it
 # - Then check PGP signature
 sub read_nocem {
@@ -204,12 +294,6 @@ sub read_nocem {
         );
         return;
     }
-    # XXX want_hier() not implemented
-    #    if ($hdrs{hierarchies} and not want_hier($hdrs{hierarchies})) {
-    #        logmsg("Article $msgid: unwanted hierarchy ($hdrs{hierarchies})",
-    #            'debug');
-    #        return;
-    #    }
 
     # We do want it, so read the entire article.  Also copy it to
     # a temp file so that we can check the PGP signature when done.
@@ -234,15 +318,16 @@ sub read_nocem {
         my ($id, $grp) = /^(\S*)\s+(\S+)/;
         next if not $grp;
         if ($id) {
-            push @nocems, $lastid
-              if $lastid and want_cancel_id($lastgrp, \%hdrs);
+            push(@nocems, $lastid)
+              if $lastid and want_cancel_id($msgid, $lastid, $lastgrp, \%hdrs);
             $lastid = $id;
             $lastgrp = $grp;
         } else {
             $lastgrp .= ',' . $grp;
         }
     }
-    push @nocems, $lastid if $lastid and want_cancel_id($lastgrp, \%hdrs);
+    push(@nocems, $lastid)
+      if $lastid and want_cancel_id($msgid, $lastid, $lastgrp, \%hdrs);
     close OFD;
 
     # at this point we need to verify the PGP signature.
@@ -257,12 +342,23 @@ sub read_nocem {
     return ($msgid, $hdrs{'notice-id'}, $hdrs{issuer}, $hdrs{type}, \@nocems);
 }
 
-# XXX not implemented: code to discard notices for groups we don't carry
+# Code to discard notices we do not want to take into account.
+# It currently only calls a possible local function loaded with the -i flag.
+# Some general rules could be added (for instance not to actually cancel
+# articles in groups we do not carry).
 sub want_cancel_id {
-    my ($group, $hdrs) = @_;
+    my ($msgid, $artid, $groups, $hdrs) = @_;
+    my $accepted = 1;
 
-    return local_want_cancel_id(@_) if defined &local_want_cancel_id;
-    1;
+    $accepted = local_want_cancel_id(@_) if defined &local_want_cancel_id;
+
+    if (not $accepted) {
+        logmsg(
+            "Article $msgid: keeping $artid for $hdrs->{issuer}",
+            'info',
+        );
+    }
+    return $accepted;
 }
 
 # Do we actually want this NoCeM?
@@ -301,6 +397,27 @@ sub supported_nocem {
 # Check the PGP signature on an article.
 sub pgp_check {
     my ($issuer, $msgid, $art) = @_;
+    my @command;
+
+    if ($gpgbin) {
+        if ($opt_g) {
+            @command = split(/ /, $gpg);
+        } else {
+            @command = (
+                $INN::Config::gpg, '--status-fd=1',
+                '--verify', '--allow-weak-digest-algos',
+            );
+        }
+    } else {
+        if ($opt_G) {
+            @command = split(/ /, $gpgv);
+        } else {
+            @command = ($INN::Config::gpgv, '--status-fd=1');
+        }
+    }
+    if ($keyring) {
+        push(@command, '--keyring=' . $keyring);
+    }
 
     # fork and spawn a child
     my $pid = open(PFD, '-|');
@@ -310,18 +427,7 @@ sub pgp_check {
     }
     if ($pid == 0) {
         open(STDERR, '>&STDOUT');
-        if ($INN::Config::gpg) {
-            exec(
-                $INN::Config::gpg, '--status-fd=1',
-                '--verify', '--allow-weak-digest-algos',
-                $keyring ? '--keyring=' . $keyring : '', $art,
-            );
-        } else {
-            exec(
-                $INN::Config::gpgv, '--status-fd=1',
-                $keyring ? '--keyring=' . $keyring : '', $art,
-            );
-        }
+        exec(@command, $art);
         exit 126;
     }
 
@@ -336,13 +442,10 @@ sub pgp_check {
         if ($? >> 8) {
             $status = $? >> 8;
         } else {
-            if ($INN::Config::gpg) {
-                logmsg("Article $msgid: $INN::Config::gpg killed by signal "
-                      . ($? & 255));
-            } else {
-                logmsg("Article $msgid: $INN::Config::gpgv killed by signal "
-                      . ($? & 255));
-            }
+            logmsg("Article $msgid: "
+                  . ($gpgbin ? $gpgbin : $gpgvbin)
+                  . " killed by signal "
+                  . ($? & 255), 'err');
             return 0;
         }
     }
@@ -364,19 +467,13 @@ sub pgp_check {
         # 126 is returned by the child if exec fails.
         s/ at \S+ line \d+\.\n$//;
         s/\n/_/;
-        if ($INN::Config::gpg) {
-            logmsg(
-                "Article $msgid: $INN::Config::gpg exited "
-                  . (($status == 126) ? "($_)" : "with status $status"),
-                'err',
-            );
-        } else {
-            logmsg(
-                "Article $msgid: $INN::Config::gpgv exited "
-                  . (($status == 126) ? "($_)" : "with status $status"),
-                'err',
-            );
-        }
+        logmsg(
+            "Article $msgid: "
+              . ($gpgbin ? $gpgbin : $gpgvbin)
+              . " exited "
+              . (($status == 126) ? "($_)" : "with status $status"),
+            'err',
+        );
     }
     return 0;
 }
@@ -491,8 +588,6 @@ sub cancel_nntp {
 }
 
 sub read_ctlfile {
-    my $permfile = $INN::Config::pathetc . '/nocem.ctl';
-
     unless (open(CTLFILE, $permfile)) {
         logmsg("Cannot open $permfile: $!", 'err');
         return 0;
@@ -505,7 +600,7 @@ sub read_ctlfile {
         my ($issuer, $type) = split(/:/, lc $_);
         if (not(defined($issuer) and defined($type))) {
             logmsg(
-                "Cannot parse nocem.ctl line <<$_>>; "
+                "Cannot parse $permfile line <<$_>>; "
                   . "syntax is <<issuer:type>>.",
                 'err',
             );
@@ -530,7 +625,7 @@ sub logmsg {
     $msg =~ s/\r/ /g;
     my @logs = split('\n', $msg);
 
-    if (not $use_syslog) {
+    if ($opt_l or not $syslog_available) {
         if ($log_open == 0) {
             open(LOG, ">>$logfile") or die "Cannot open log: $!";
             $log_open = 1;
@@ -538,6 +633,9 @@ sub logmsg {
             $| = 1;
             select STDOUT;
         }
+        # Only log by default messages of level "err" or "notice".
+        return if ($lvl eq 'info' and $loglevel < 2);
+        return if ($lvl eq 'debug' and $loglevel < 3);
 
         my $now = strftime("%Y-%m-%d %T %z", localtime());
         foreach my $logline (@logs) {
@@ -574,7 +672,8 @@ perl-nocem - A NoCeM-on-spool implementation for INN 2.x
 
 =head1 SYNOPSIS
 
-B<perl-nocem>
+B<perl-nocem> [B<-hl>] [B<-c> I<filename>] [B<-g> I<command>] [B<-G>
+I<command>] [B<-i> I<filename>] [B<-k> I<keyring>] [B<-v> I<level>]
 
 =head1 DESCRIPTION
 
@@ -584,20 +683,32 @@ to cancel unwanted articles (like spam and articles in moderated
 newsgroups which were not approved by their moderators).  It can
 also be used by readers as a I<third-party killfile>.  It is
 intended to eventually replace the protocol for third-party cancel
-messages.
+messages which can too easily be forged as cancel messages are not
+authenticated, contrary to NoCeM notices.
 
 B<perl-nocem> processes third-party, PGP-signed article cancellation
-notices.  It is possible not to honour all NoCeM notices but only those
-which are sent by people whom you trust (that is to say if you trust
-the PGP key they use to sign their NoCeM notices).  Indeed, it is up
-to you to decide whether you wish to honour their notices, depending
-on the criteria they use.
+notices.  It is possible to honour a selective set of NoCeM notices,
+and not all of them.  You can configure in F<nocem.ctl> in I<pathetc>
+the list of NoCeM issuers you trust and add the corresponding
+public PGP keys to your NoCeM keyring (by default, no PGP keys are
+installed, so nobody is trusted).  It is up to you to decide whether
+you wish to honour their notices, depending on the criteria they use.
+You are encouraged to regularly have a look at the official L<NoCeM
+Registry|https://rosalind.home.xs4all.nl/nocemreg/nocemreg.html>
+to check for possible new NoCeM issuers to add and see an
+overview of their policy.  The L<daily summary of NoCeM messages
+sent|https://www.novabbs.com/SEARCH/search_nocem.php?stats=daily> may also
+be useful.
 
-The B<perl-nocem> program appends all status messages to F<perl-nocem.log>
-in I<pathlog> if C<Sys::Syslog> is not available; otherwise, and it should
-normally be the case, the syslog facility is used.  Status messages are then
-appended to a file usually named F<news.notice> in I<pathlog>.  (Some logs
-will be written only if debug level is set up to be logged via syslog.)
+B<perl-nocem> expects either storage tokens or file names on its standard
+input.  It will then read and process the corresponding article.  It appends
+all status messages to F<perl-nocem.log> in I<pathlog> if the syslog facility
+is not available or the B<-l> flag is explicitly used; otherwise, the syslog
+facility is used in which case status messages are appended to a file usually
+named F<news.notice> in I<pathlog>.  (Some logs will be written only if debug
+level is set up to be logged via syslog.)
+
+=head1 CONFIGURATION
 
 Processing NoCeM notices is easy to set up:
 
@@ -606,11 +717,11 @@ Processing NoCeM notices is easy to set up:
 =item 1.
 
 If not already done, install GnuPG, or an equivalent implementation of the
-OpenPGP standard, to be able to verify the signature of NoCeM notices.
+OpenPGP standard, to be able to verify the signature of NoCeM messages.
 It will provide the B<gpg> and B<gpgv> programs.  If GnuPG was already
 installed when INN was configured, then the paths to these programs were taken
-into account.  Otherwise, you have to set the C<$gpg> and C<$gpgv> variables
-in I<pathlib>/perl/INN/Config.pm to the paths to these programs.
+into account.  Otherwise, you can use the B<-g> and B<-G> flags to set (or
+even override) the commands B<perl-nocem> will use to run these programs.
 
 All still active NoCeM issuers use rather modern PGP keys accepted by both
 GnuPG 1.x and 2.x versions.  It is no longer needed to explicitly use B<gpg1>
@@ -618,7 +729,7 @@ to process NoCeM notices.
 
 =item 2.
 
-Import the keys of the NoCeM issuers you trust in order to check the
+Import the public keys of the NoCeM issuers you trust in order to check the
 authenticity of their notices.  You can run the following command:
 
     gpg --no-default-keyring --allow-non-selfsigned-uid \
@@ -627,48 +738,56 @@ authenticity of their notices.  You can run the following command:
     chmod 644 <pathetc>/pgp/ncmring.gpg
 
 where <pathetc> is the value of the I<pathetc> parameter set in F<inn.conf>
-and <key-file> the file containing the key(s) to import.  The keyring must
-be located in F<< <pathetc>/pgp/ncmring.gpg >>; you only have to create the
-directory F<< <pathetc>/pgp >> before using B<gpg> (it will automatically
-generate the F<ncmring.gpg> file) and make sure the news user can read this
-file, once generated.
+and <key-file> the file containing the public key(s) to import.  The keyring
+is located in F<< <pathetc>/pgp/ncmring.gpg >> by default; you only have
+to create the directory F<< <pathetc>/pgp >> before using B<gpg> (it will
+automatically generate the F<ncmring.gpg> file) and make sure the news user
+can read this file, once generated.  You can use another location and file
+name for the keyring, and then run B<perl-nocem> with the B<-k> flag.
 
-The keys of NoCeM issuers can be found in the web site of I<The NoCeM
-Registry>: L<http://rosalind.home.xs4all.nl/nocemreg/nocemreg.html>.
-You can even download there a unique file which contains all the keys.
+The public keys of NoCeM issuers can be found in the L<web site of The NoCeM
+Registry|https://rosalind.home.xs4all.nl/nocemreg/nocemreg.html> where you can
+even download a unique file which contains all the public keys.
 
 =item 3.
 
-Create a F<nocem.ctl> config file in I<pathetc> indicating the NoCeM issuers
-and notices you want to follow.  This permission file contains lines like:
+Create or update the F<nocem.ctl> configuration file in I<pathetc> to
+indicate the NoCeM issuers and the types of notices you want to follow.
+This permission file contains lines like:
 
     bleachbot@httrack.com:spam,site
     pgpmoose@killfile.org:pgpmoose-forged-moderation
 
 This will remove all articles for which the issuer (first part of the line,
-before the colon C<:>) has issued NoCeM notices corresponding to the criteria
-specified after the colon.  Usually, you just keep the lines corresponding to
-the keys previously installed.
+before the colon C<:>) has issued NoCeM notices of a type present in the
+comma-separated list of types specified after the colon (using C<*> is
+possible, and means that all types are accepted).
 
-You will also find information about that on the web site of I<The NoCeM
-Registry>.  Note that INN is shipped with an up-to-date F<nocem.ctl> file
-already configured with the current NoCeM issuers.  (Only the keys installed
-at the previous step are not included, so as to leave you the choice of whom
-to trust, and download the most recent ones, in case they have changed.)
+Blank lines and lines beginning with a hash sign (C<#>) are ignored.  Case is
+insensitive.  Any entry with no corresponding public PGP key in the keyring
+will be skipped.
+
+You will also find information about the issuers on the web site of I<The
+NoCeM Registry>.  Note that INN is shipped with an up-to-date F<nocem.ctl>
+file already configured with the current NoCeM issuers.  (Only the public PGP
+keys installed at the previous step are not included, so as to leave you the
+choice of whom to trust, and download the most recent ones, in case they have
+changed.)
 
 =item 4.
 
-Add to the F<newsfeeds> file an entry like this one in order to feed
-B<perl-nocem> with the NoCeM notices (cross)posted to news.lists.filters, the
-global newsgroup where notices are sent:
+Add to the F<newsfeeds> file in I<pathetc> an entry like this one in
+order to feed B<perl-nocem> with the NoCeM messages (cross)posted to
+news.lists.filters, the global newsgroup where notices should be sent:
 
     nocem!\
         :!*,news.lists.filters\
         :Tc,Wf,Ap:<pathbin>/perl-nocem
 
-with the correct path to B<perl-nocem>, located in <pathbin>.  Then, run
-C<inncheck> to ensure the syntax of the modified F<newsfeeds> file is correct,
-and reload it (via C<ctlinnd reload newsfeeds 'NoCeM channel feed'>).
+with the correct path to B<perl-nocem>, located in <pathbin>, and any optional
+flag you want to use.  Then, run C<inncheck> to ensure the syntax of the
+modified F<newsfeeds> file is correct, and reload it (via C<ctlinnd reload
+newsfeeds 'NoCeM channel feed'>).
 
 Note that you should at least carry news.lists.filters on your news
 server (or other newsgroups where NoCeM notices are sent) if you wish
@@ -677,13 +796,130 @@ to process them.
 =item 5.
 
 Everything should now work.  However, do not hesitate to manually test
-B<perl-nocem> with a NoCeM notice, using:
+B<perl-nocem> with a NoCeM message, using either:
 
-    grephistory '<Message-ID>' | perl-nocem
+    grephistory '<Message-ID>' | perl-nocem -l -v 2
+    echo '/path/to/a/nocem/message' | perl-nocem -l -v 2
 
-Indeed, B<perl-nocem> expects tokens on its standard input, and
-B<grephistory> can easily give it the token of a known article,
-thanks to its Message-ID.
+B<perl-nocem> expects either storage tokens or file names on its standard
+input (B<grephistory> returns the storage token of an article identified by
+its Message-ID).
+
+Check the logs of that test in F<perl-nocem.log> in I<pathlog>.
+
+You can also check the list of installed PGP public keys with the following
+command, adapted to the location of the NoCeM keyring:
+
+    gpg --no-default-keyring --list-keys \
+        --primary-keyring <pathetc>/pgp/ncmring.gpg
+
+=back
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<-c> I<filename>
+
+By default, B<perl-nocem> reads a configuration file named F<nocem.ctl> in
+I<pathetc>.  This flag permits reading another configuration file, specified
+with an absolute path.
+
+=item B<-g> I<command>
+
+By default, B<perl-nocem> runs the gpg(1) binary whose path was determined
+when INN was configured.  If GnuPG wasn't installed at that time, or if you
+want to use another program, this flag will be helpful.  Please ensure that
+at least an equivalent of the default options given to B<gpg> is present in
+I<command>; otherwise, B<perl-nocem> may malfunction.
+
+Assuming C</bin/gpg> corresponds to the B<gpg> binary, the default is:
+
+    -g "/bin/gpg --status-fd=1 --verify --allow-weak-digest-algos"
+
+=item B<-G> I<command>
+
+By default, B<perl-nocem> runs the gpgv(1) binary whose path was determined
+when INN was configured.  If GnuPG wasn't installed at that time, or if you
+want to use another program, this flag will be helpful.  Please ensure that
+at least an equivalent of the default option given to B<gpgv> is present in
+I<command>; otherwise, B<perl-nocem> may malfunction.
+
+Assuming C</bin/gpgv> corresponds to the B<gpgv> binary, the default is:
+
+    -G "/bin/gpgv --status-fd=1"
+
+Note that B<gpg> will be preferentially used over B<gpgv> when both are
+available, unless B<-g> is given an empty string.
+
+=item B<-h>
+
+Print to standard output a usage message and exit.
+
+=item B<-i> I<filename>
+
+When this flag is used, B<perl-nocem> includes an external Perl script
+named I<filename>, specified with an absolute path.  It permits loading a
+C<local_want_cancel_id> function with local rules to fine-tune within a NoCeM
+notice which articles get cancelled.  All the articles present in a NoCeM
+notice are otherwise cancelled by default.
+
+This function is called for every article in the notice and has access
+to several variables: the Message-ID C<$msgid> of the NoCeM message, the
+Message-ID C<$artid> of the article to cancel, the comma-separated list
+of newsgroups C<$groups> to which the article to cancel was posted, the
+hash reference C<$hdrs> to the pseudo header fields of the NoCeM notice,
+in lowercase value.  The article is kept if the function returns C<0>, and
+cancelled otherwise.
+
+Here is an illustration of what this function can do, when defined in
+I<filename> and the B<-i> flag is used:
+
+    sub local_want_cancel_id {
+        my ($msgid, $artid, $groups, $hdrs) = @_;
+
+        # Walk through the newsgroups the article was posted to.
+        foreach my $group (split(/,/, $groups)) {
+            # Keep it if posted to news.software.nntp.
+            return 0 if $group eq "news.software.nntp";
+
+            # Keep it if posted to fr.* and the issuer is "john".
+            return 0
+              if $group =~ /^fr\./ and $hdrs->{issuer} eq "john";
+        }
+
+        # Keep it if only posted to news.admin.net-abuse.usenet
+        # and the type of the notice is "spam".
+        return 0
+          if $groups eq "news.admin.net-abuse.usenet"
+          and $hdrs->{type} eq "spam";
+
+        # Cancel it!
+        return 1;
+    }
+
+If any syntax problem occurs when Perl loads the function, B<perl-nocem> will
+die and report the reason in the logs.  You'll then have to fix the function.
+
+=item B<-k> I<keyring>
+
+By default, B<perl-nocem> verifies the signatures of NoCeM messages
+with the PGP public keys present in a keyring named F<ncmring.gpg> in the
+I<pathetc>/pgp directory.  This flag permits using another keyring, specified
+with an absolute path.
+
+A B<--keyring=> flag with the I<keyring> value is then passed to the gpg(1)
+and gpgv(1) commands unless I<keyring> is an empty string.
+
+=item B<-l>
+
+By default, B<perl-nocem> send logs to syslog(3).  In case the syslog facility
+is not available or this flag is used, logs are sent to F<perl-nocem.log>
+in I<pathlog>.
+
+=item B<-v> I<level>
+
+Increase log verbosity to that I<level>, from 1 to 3.  Default is C<1>.
 
 =back
 
@@ -693,15 +929,22 @@ thanks to its Message-ID.
 
 =item I<pathbin>/perl-nocem
 
-The Perl script itself used to process NoCeM notices.
+The Perl script itself used to process NoCeM messages.
 
 =item I<pathetc>/nocem.ctl
 
 The configuration file which specifies the NoCeM notices to be processed.
+Another file can be specified with the B<-c> flag.
 
 =item I<pathetc>/pgp/ncmring.gpg
 
-The keyring which contains the public keys of trusted NoCeM issuers.
+The keyring which contains the public keys of trusted NoCeM issuers.  Another
+file can be specified with the B<-k> flag.
+
+=item I<pathlog>/perl-nocem.log
+
+The log file used when the syslog facility is not available or the B<-l> flag
+is used.
 
 =back
 
@@ -710,10 +953,11 @@ The keyring which contains the public keys of trusted NoCeM issuers.
 The Subject header field body is not checked for the C<@@NCM> string and
 there is no check for the presence of the References header field.
 
-The Newsgroups pseudo header field body is not checked, but this can
-be done in C<local_want_cancel_id()>.
-
-The Hierarchies header field is ignored.
+The accuracy of the newsgroups following the Message-IDs to cancel in
+the NoCeM body is not checked, nor is the Newsgroups pseudo header field
+if present.  Well, as we already trust the issuer of the notice about the
+Message-IDs he marks as spam, let's also be confident about the listed
+newsgroups.
 
 =head1 HISTORY
 

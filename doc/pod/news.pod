@@ -70,6 +70,16 @@ new B<-r> flag).
 
 =item *
 
+Added several new options to better parameterize B<perl-nocem>.  The location
+of its configuration file, the keyring to use, and the full B<gpg> and B<gpgv>
+commands to run can now be modified by flags passed to the program.  Log
+verbosity can be controlled, and B<perl-nocem> can write logs to a separate
+F<perl-nocem.log> file.  Local rules to fine-tune within a NoCeM notice which
+articles get cancelled can also be applied.  See its manual page for more
+information about the use of these options.
+
+=item *
+
 B<perl-nocem> now correctly parses NoCeM issuers with special characters
 like C<+> in the configuration file.  They previously failed to be recognized
 without being escaped.
