@@ -159,13 +159,15 @@ main(void)
 {
     char buff[64] = "";
     bool status;
+    bool useOlsonTZ = true;
     time_t now, result;
     double diff = 0;
     int n;
     unsigned int i;
 
     char PST8PDT[] = "TZ=PST8PDT";
-    char Newfoundland[] = "TZ=Canada/Newfoundland";
+    char LosAngeles[] = "TZ=America/Los_Angeles";
+    char StJohns[] = "TZ=America/St_Johns";
 
     test_init(44 + ARRAY_SIZE(test_times) * 3 + 3 + ARRAY_SIZE(test_dates) * 2
               + ARRAY_SIZE(test_dates_lax) * 2);
@@ -185,7 +187,7 @@ main(void)
     }
     ok(2, status && diff >= 0 && diff < 10);
 
-    putenv(PST8PDT);
+    putenv(LosAngeles);
     tzset();
 
     status = makedate(100000000UL, false, buff, sizeof(buff));
@@ -193,6 +195,20 @@ main(void)
     ok_string(4, "Sat, 3 Mar 1973 09:46:40 -0000 (UTC)", buff);
     status = makedate(100000000UL, true, buff, sizeof(buff));
     ok(5, status);
+    /* Some systems like Alpine Linux based on musl do not use daylight saving
+     * time for time zones like PST8PDT in POSIX form without giving explicit
+     * daylight saving time rules.  To use TZDB file names containing the set
+     * of transitions, musl expects :PST8PDT as a time zone, with a leading
+     * colon.  This behaviour has been seen in musl 1.2.5 and is not
+     * interoperable with historic UNIX implementations which are very old
+     * nowadays.  Let's then assume everyone supports the Olson time zone
+     * identifiers, and just fall back on PST8PDT otherwise. */
+    if (strncmp(buff, "Sat, 3 Mar 1973 01:46:40 -0800 (PST)", 36) != 0) {
+        putenv(PST8PDT);
+        tzset();
+        status = makedate(100000000UL, true, buff, sizeof(buff));
+        useOlsonTZ = false;
+    }
     ok_string(6, "Sat, 3 Mar 1973 01:46:40 -0800 (PST)", buff);
     status = makedate(300000000UL, false, buff, sizeof(buff));
     ok(7, status);
@@ -210,17 +226,20 @@ main(void)
     ok(14, status);
     ok_string(15, "Wed, 4 Jul 1979 22:20:00 -0700", buff);
 
-    putenv(Newfoundland);
+    putenv(StJohns);
     tzset();
 
     status = makedate(900000045UL, true, buff, sizeof(buff));
     ok(16, status);
     if (memcmp(buff, "Thu, 9 Jul 1998 16:00:45 +0000", 30) == 0)
-        skip(17, "Newfoundland time zone not installed");
+        skip(17, "America/St_Johns time zone not installed");
     else
         ok_string(17, "Thu, 9 Jul 1998 13:30:45 -0230 (NDT)", buff);
 
-    putenv(PST8PDT);
+    if (useOlsonTZ)
+        putenv(LosAngeles);
+    else
+        putenv(PST8PDT);
     tzset();
 
     /* clang-format off */
