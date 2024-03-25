@@ -5,7 +5,7 @@
  * which can be found at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
  *
  * Written by Russ Allbery <eagle@eyrie.org>
- * Copyright 2003-2005, 2016, 2019 Russ Allbery <eagle@eyrie.org>
+ * Copyright 2003-2005, 2016, 2019, 2024 Russ Allbery <eagle@eyrie.org>
  * Copyright 2015 Julien ÉLIE <julien@trigofacile.com>
  * Copyright 2007-2009, 2011-2013
  *     The Board of Trustees of the Leland Stanford Junior University
@@ -52,9 +52,9 @@ main(void)
     struct addrinfo hints;
     struct sockaddr_in *saddr;
     struct hostent *host;
-    struct in_addr addr;
+    struct in_addr addr, *addrs;
     struct servent *service;
-    int i, result;
+    int i, result, count;
     int found;
 
     plan(75);
@@ -255,6 +255,11 @@ main(void)
         skip_block(3, "cannot look up cnn.com");
         exit(0);
     }
+    for (count = 0; host->h_addr_list[count] != NULL; count++)
+        ;
+    addrs = bcalloc_type(count, struct in_addr);
+    for (i = 0; host->h_addr_list[i] != NULL; i++)
+        memcpy(&addrs[i], host->h_addr_list[i], sizeof(addrs[i]));
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_flags = AI_CANONNAME;
     ok(test_getaddrinfo("cnn.com", NULL, &hints, &ai) == 0,
@@ -274,8 +279,8 @@ main(void)
         found = 0;
         saddr = (struct sockaddr_in *) (void *) ai->ai_addr;
         addr = saddr->sin_addr;
-        for (i = 0; host->h_addr_list[i] != NULL; i++)
-            if (memcmp(&addr, host->h_addr_list[i], host->h_length) == 0)
+        for (i = 0; i < count; i++)
+            if (memcmp(&addr, &addrs[i], sizeof(addr)) == 0)
                 found = 1;
         if (!found) {
             ok(0, "...result found in gethostbyname address list");
@@ -284,6 +289,7 @@ main(void)
     }
     if (found)
         ok(1, "...result found in gethostbyname address list");
+    free(addrs);
     test_freeaddrinfo(first);
 
     return 0;
