@@ -878,6 +878,8 @@ I<filename> and the B<-i> flag is used:
     sub local_want_cancel_id {
         my ($msgid, $artid, $groups, $hdrs) = @_;
 
+        my $carried = 0;
+
         # Walk through the newsgroups the article was posted to.
         foreach my $group (split(/,/, $groups)) {
             # Keep it if posted to news.software.nntp.
@@ -886,7 +888,18 @@ I<filename> and the B<-i> flag is used:
             # Keep it if posted to fr.* and the issuer is "john".
             return 0
               if $group =~ /^fr\./ and $hdrs->{issuer} eq "john";
+
+            # The article has been posted to at least a newsgroup
+            # in the fr.* or news.* hierarchy.
+            $carried = 1 if $group =~ /^(fr|news)\./;
         }
+
+        # In case the server only carries fr.* and news.*, this
+        # rule permits discarding NoCeM notices related to
+        # newsgroups not carried by the server, and therefore
+        # neither treating nor remembering in the history file
+        # Message-IDs of articles which won't reach the server.
+        return 0 if not $carried;
 
         # Keep it if only posted to news.admin.net-abuse.usenet
         # and the type of the notice is "spam".
@@ -948,7 +961,7 @@ is used.
 
 =back
 
-=head1 BUGS
+=head1 NOTES
 
 The Subject header field body is not checked for the C<@@NCM> string and
 there is no check for the presence of the References header field.
