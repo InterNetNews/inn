@@ -237,6 +237,8 @@ sub read_nocem {
     my $i = 0;
     my $body = '';
     my $from = '';
+    my $subject = '';
+    my $hasreferences = 0;
     my $msgid = '<>';
 
     while (<$artfh>) {
@@ -249,6 +251,10 @@ sub read_nocem {
                 $from = $1;
             } elsif (/^Message-ID:\s+(<.*>)/i) {
                 $msgid = $1;
+            } elsif (/^Subject:\s+(.*)$/i) {
+                $subject = $1;
+            } elsif (/^References:\s+/i) {
+                $hasreferences = 1;
             }
         } else {
             $body .= $_;
@@ -267,6 +273,16 @@ sub read_nocem {
     }
     if (not $isncm) {
         logmsg("Article $msgid: not a NoCeM", 'info');
+        return;
+    }
+    # Subject begins with @@NCM or @@newsgroup.
+    if ($subject !~ /^@@\w/) {
+        logmsg("Article $msgid: missing tag in Subject header field", 'info');
+        return;
+    }
+    # Must not be a followup.
+    if ($hasreferences) {
+        logmsg("Article $msgid: has a References header field", 'info');
         return;
     }
 
@@ -962,9 +978,6 @@ is used.
 =back
 
 =head1 NOTES
-
-The Subject header field body is not checked for the C<@@NCM> string and
-there is no check for the presence of the References header field.
 
 The accuracy of the newsgroups following the Message-IDs to cancel in
 the NoCeM body is not checked, nor is the Newsgroups pseudo header field
