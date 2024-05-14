@@ -291,11 +291,7 @@ our %nntplink_times;
 our %nocem_badsigs;
 our %nocem_goodsigs;
 our $nocem_lastid;
-our $nocem_newids;
 our %nocem_newids;
-our $nocem_totalbad;
-our $nocem_totalgood;
-our $nocem_totalids;
 our %nocem_totalids;
 our %rnews_bogus_date;
 our %rnews_bogus_dist;
@@ -2088,7 +2084,6 @@ sub collect($$$$$$) {
         # <article> good signature from foo@bar.com
         if ($left =~ /good signature from (.*)/o) {
             $nocem_goodsigs{$1}++;
-            $nocem_totalgood++;
             $nocem_lastid = $1;
             return 1;
         }
@@ -2096,15 +2091,12 @@ sub collect($$$$$$) {
         if ($left =~ /bad signature from (.*)/o) {
             $nocem_badsigs{$1}++;
             $nocem_goodsigs{$1} = 0 unless ($nocem_goodsigs{$1});
-            $nocem_totalbad++;
             $nocem_lastid = $1;
             return 1;
         }
         # <article> contained 123 new 456 total ids
         if ($left =~ /contained (\d+) new (\d+) total ids/o) {
-            $nocem_newids += $1;
             $nocem_newids{$nocem_lastid} += $1;
-            $nocem_totalids += $2;
             $nocem_totalids{$nocem_lastid} += $2;
             return 1;
         }
@@ -2117,10 +2109,7 @@ sub collect($$$$$$) {
         if ($left =~ /processed notice .* by (.*) for (.*) \((\d+) ids,/o) {
             $nocem_lastid = "$1 ($2)";
             $nocem_goodsigs{$nocem_lastid}++;
-            $nocem_totalgood++;
-            $nocem_newids += $3;
             $nocem_newids{$nocem_lastid} += $3;
-            $nocem_totalids += $3;
             $nocem_totalids{$nocem_lastid} += $3;
             return 1;
         }
@@ -2128,7 +2117,6 @@ sub collect($$$$$$) {
             $nocem_badsigs{$1}++;
             $nocem_goodsigs{$1} = 0 unless ($nocem_goodsigs{$1});
             $nocem_totalids{$1} = 0 unless ($nocem_totalids{$1});
-            $nocem_totalbad++;
             $nocem_lastid = $1;
             return 1;
         }
@@ -2138,7 +2126,6 @@ sub collect($$$$$$) {
             $nocem_badsigs{$1}++;
             $nocem_goodsigs{$1} = 0 unless ($nocem_goodsigs{$1});
             $nocem_totalids{$1} = 0 unless ($nocem_totalids{$1});
-            $nocem_totalbad++;
             $nocem_lastid = $1;
             return 1;
         }
@@ -2146,7 +2133,6 @@ sub collect($$$$$$) {
             $nocem_badsigs{$1}++;
             $nocem_goodsigs{$1} = 0 unless ($nocem_goodsigs{$1});
             $nocem_totalids{$1} = 0 unless ($nocem_totalids{$1});
-            $nocem_totalbad++;
             $nocem_lastid = $1;
             return 1;
         }
@@ -2154,7 +2140,6 @@ sub collect($$$$$$) {
             $nocem_badsigs{$1}++;
             $nocem_goodsigs{$1} = 0 unless ($nocem_goodsigs{$1});
             $nocem_totalids{$1} = 0 unless ($nocem_totalids{$1});
-            $nocem_totalbad++;
             $nocem_lastid = $1;
             return 1;
         }
