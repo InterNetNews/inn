@@ -138,7 +138,7 @@ if ($syslog_available) {
 }
 
 if (not $gpgbin and not $gpgvbin) {
-    logmsg("paths to both gpg and gpgv binaries unset", 'err');
+    logmsg("Paths to both gpg and gpgv binaries unset", 'err');
     exit 1;
 }
 
@@ -151,7 +151,7 @@ if ($gpgbin and not -x $gpgbin) {
 }
 
 if ($keyring and not -r $keyring) {
-    logmsg("keyring $keyring does not exist or is not readable", 'err');
+    logmsg("Keyring $keyring does not exist or is not readable", 'err');
     exit 1;
 }
 
@@ -167,7 +167,7 @@ if ($opt_b and not -w $opt_b) {
 
 if ($opt_i) {
     if (not -r $opt_i) {
-        logmsg("file $opt_i does not exist or is not readable", 'err');
+        logmsg("File $opt_i does not exist or is not readable", 'err');
         exit 1;
     }
     if (open(my $localfile_fh, '<', $opt_i)) {
@@ -175,7 +175,7 @@ if ($opt_i) {
         close($localfile_fh);
         eval($lines);
         if ($@) {
-            logmsg("cannot load $opt_i: $@", 'err');
+            logmsg("Cannot load $opt_i: $@", 'err');
             exit 1;
         }
     } else {
@@ -196,7 +196,7 @@ $SIG{INT} = \&term_handler;
 $SIG{TERM} = \&term_handler;
 $SIG{PIPE} = \&term_handler;
 
-logmsg('starting up');
+logmsg('Starting up');
 
 unless (read_ctlfile()) {
     exit 1;
@@ -211,7 +211,7 @@ while (<STDIN>) {
     hup_handler() if $got_sighup;
 }
 
-logmsg('exiting', 'info');
+logmsg('Exiting', 'info');
 exit 0;
 
 ##############################################################################
@@ -253,7 +253,7 @@ sub do_nocem {
 sub read_nocem {
     my $artfh = shift;
 
-    # Examine the first 200 lines to see if it is a PGP signed NoCeM.
+    # Examine the first 200 lines to see if it is a PGP-signed NoCeM.
     my $ispgp = 0;
     my $isncm = 0;
     my $inhdr = 1;
@@ -289,9 +289,9 @@ sub read_nocem {
         }
     }
 
-    # must be a PGP signed NoCeM.
+    # Must be a PGP-signed NoCeM.
     if (not $ispgp) {
-        logmsg("Article $msgid: not PGP signed", 'info');
+        logmsg("Article $msgid: not PGP-signed", 'info');
         return;
     }
     if (not $isncm) {
@@ -309,7 +309,7 @@ sub read_nocem {
         return;
     }
 
-    # read the headers of this NoCeM, and check if it's supported.
+    # Read the headers of this NoCeM, and check if it's supported.
     my %hdrs;
     while (<$artfh>) {
         s/\r\n/\n/;
@@ -354,13 +354,13 @@ sub read_nocem {
     # a temp file so that we can check the PGP signature when done.
     my $tmpfile = "$INN::Config::pathtmp/nocem.$$";
     if (not open(OFD, ">$tmpfile")) {
-        logmsg("cannot open temp file $tmpfile: $!", 'err');
+        logmsg("Cannot open temp file $tmpfile: $!", 'err');
         return;
     }
     print OFD $body;
     undef $body;
 
-    # process NoCeM body.
+    # Process NoCeM body.
     my $inbody = 1;
     my @nocems;
     my $skipped = 0;
@@ -421,10 +421,7 @@ sub want_cancel_id {
     $accepted = local_want_cancel_id(@_) if defined &local_want_cancel_id;
 
     if (not $accepted) {
-        logmsg(
-            "Article $msgid: keeping $artid for $hdrs->{issuer}",
-            'info',
-        );
+        logmsg("Keeping $artid by local rule", 'info');
     }
     return $accepted;
 }
@@ -643,7 +640,7 @@ sub cancel_ctlinnd {
                   'cancel', $msgid;
                 exit 126;
             }
-            logmsg("Cancelling: $msgid [$i/$max]", 'debug');
+            logmsg("Cancelling $msgid [$i/$max]", 'debug');
         }
         # Now wait for all children.
         while ((my $pid = wait) > 0) {
@@ -679,7 +676,7 @@ sub cancel_nntp {
         }
         if (($r = <NNTP>) !~ /^200 /) {
             $r =~ s/\r\n$//;
-            logmsg("bad reply from server: $r", 'err');
+            logmsg("Bad reply from server: $r", 'err');
             goto ERR;
         }
         select NNTP;
@@ -694,11 +691,11 @@ sub cancel_nntp {
         $nntp_open = 1;
     }
     foreach (@$ids) {
-        logmsg("Cancelling: $_", 'debug');
+        logmsg("Cancelling $_", 'debug');
         print NNTP "$_\r\n";
         if (($r = <NNTP>) !~ /^289/) {
             $r =~ s/\r\n$//;
-            logmsg("cannot cancel $_: $r", 'err');
+            logmsg("Cannot cancel $_: $r", 'err');
             goto ERR;
         }
     }
@@ -792,7 +789,7 @@ sub hup_handler {
 sub term_handler {
     $got_sigterm = 1;
     return if $working;
-    logmsg('exiting because of signal');
+    logmsg('Exiting because of signal');
     exit 1;
 }
 
