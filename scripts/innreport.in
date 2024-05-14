@@ -3029,7 +3029,7 @@ sub EvalHash($) {
     return $result;
 }
 
-sub EvalExpr {
+sub EvalExpr($;$$$) {
     my ($v, $key, $num, $key1) = @_;
     my ($sub, $r_num, $r_key, $r_key1, $r_key2) = PrepareEval($v, $key1);
 
