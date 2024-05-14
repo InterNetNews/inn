@@ -331,8 +331,11 @@ sub read_nocem {
         $inbody = 0 if /^\@\@END NCM BODY/;
         next if not $inbody or /^#/;
 
-        my ($id, $grp) = /^(\S*)\s+(\S+)/;
+        my ($id, $grp) = /^(\S*)\s+(\S+.*)$/;
         next if not $grp;
+        # Convert the whitespace-separated list of newsgroups to a
+        # comma-separated list of newsgrous.
+        $grp =~ s/\s+/,/g;
         if ($id) {
             push(@nocems, $lastid)
               if $lastid and want_cancel_id($msgid, $lastid, $lastgrp, \%hdrs);
