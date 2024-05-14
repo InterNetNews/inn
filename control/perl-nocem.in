@@ -421,8 +421,11 @@ sub pgp_check {
         } else {
             @command = (
                 $INN::Config::gpg, '--status-fd=1',
-                '--verify', '--allow-weak-digest-algos',
+                '--verify',
             );
+            if ($INN::Config::gpg_has_allow_weak_digest_algos_flag) {
+                push(@command, '--allow-weak-digest-algos');
+            }
         }
     } else {
         if ($opt_G) {
