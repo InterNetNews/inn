@@ -2877,8 +2877,7 @@ sub Write_Results {
                       || die "Error in section $report section 'graph'. "
                       . "No factor specified for 'value' "
                       . ${ ${ ${ ${ $output{$report}{'graph'} }[$i] }{'data'} }
-                          [1] }{'name'}
-                      . ".\n";
+                          [1] }{'name'} . ".\n";
                     $factor =~ s/^\"\s*(.*?)\s*\"$/$1/o;
                     my $labelx
                       = ${ ${ ${ ${ $output{$report}{'graph'} }[$i] }{'data'} }
@@ -2898,8 +2897,7 @@ sub Write_Results {
                       || die "Error in section $report section 'graph'. "
                       . "No 'value' specified for "
                       . ${ ${ ${ ${ $output{$report}{'graph'} }[$i] }{'data'} }
-                          [0] }{'name'}
-                      . ".\n";
+                          [0] }{'name'} . ".\n";
                     my $r_labels = EvalHash($t);
 
                     $t
@@ -2908,8 +2906,7 @@ sub Write_Results {
                       || die "Error in section $report section 'graph'. "
                       . "No 'value' specified for "
                       . ${ ${ ${ ${ $output{$report}{'graph'} }[$i] }{'data'} }
-                          [1] }{'name'}
-                      . ".\n";
+                          [1] }{'name'} . ".\n";
                     my $r_values = EvalHash($t);
                     my $s = ($i ? $i : '') . $suffix;
                     {
