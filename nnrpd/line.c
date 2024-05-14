@@ -275,7 +275,7 @@ line_doread(void *p, size_t len, int timeout)
             /* Loop to actually inflate the compressed data we received. */
             n = 0;
         }
-#endif                /* HAVE_ZLIB */
+#endif /* HAVE_ZLIB */
     } while (n == 0); /* Split SASL blob, need to read more data. */
 
     return n;

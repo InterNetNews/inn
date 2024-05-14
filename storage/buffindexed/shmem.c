@@ -21,7 +21,7 @@
 #endif
 
 #ifndef MAP_FAILED
-#    define MAP_FAILED ((caddr_t) -1)
+#    define MAP_FAILED ((caddr_t) - 1)
 #endif
 
 /* Only use these 6 useful and portable symbolic constants.

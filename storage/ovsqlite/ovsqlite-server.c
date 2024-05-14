@@ -814,14 +814,12 @@ sql_error_response(client_t *client, int status)
 
 #    define fail_stmt() goto failure_stmt
 
-#    define failure_response           \
-    failure:                           \
-        simple_response(client, code); \
+#    define failure_response                     \
+        failure : simple_response(client, code); \
         break
 
-#    define failure_stmt_response           \
-    failure_stmt:                           \
-        sql_error_response(client, status); \
+#    define failure_stmt_response                          \
+        failure_stmt : sql_error_response(client, status); \
         break
 
 #    define failhandling      \

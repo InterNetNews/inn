@@ -143,8 +143,8 @@ static char CMDfetchhelp[] = "[message-ID|number]";
 */
 static CMDENT CMDtable[] = {
     {"ARTICLE",      CMDfetch,        true,  1, 2,      true,  CMDfetchhelp               },
- /* Parse AUTHINFO in a special way so as to keep white spaces
-  * in usernames and passwords. */
+    /* Parse AUTHINFO in a special way so as to keep white spaces
+     * in usernames and passwords. */
     {"AUTHINFO",     CMDauthinfo,     false, 3, CMDany, false,
      "USER name|PASS password"
 #ifdef HAVE_SASL
@@ -176,8 +176,8 @@ static CMDENT CMDtable[] = {
     {"OVER",         CMDover,         true,  1, 2,      true,  "[range]"                  },
     {"POST",         CMDpost,         true,  1, 1,      true,  NULL                       },
     {"QUIT",         CMDquit,         false, 1, 1,      true,  NULL                       },
- /* SLAVE (which was ill-defined in RFC 977) was removed from the NNTP
-  * protocol in RFC 3977. */
+    /* SLAVE (which was ill-defined in RFC 977) was removed from the NNTP
+     * protocol in RFC 3977. */
     {"SLAVE",        CMD_unimp,       false, 1, 1,      true,  NULL                       },
 #ifdef HAVE_OPENSSL
     {"STARTTLS",     CMDstarttls,     false, 1, 1,      true,  NULL                       },
