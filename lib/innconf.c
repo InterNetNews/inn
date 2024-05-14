@@ -107,7 +107,7 @@ static const struct config config_table[] = {
     {K(pathspool),                  STRING(NULL)      },
     {K(pathtmp),                    STRING(NULL)      },
 
- /* The following settings are specific to innd. */
+    /* The following settings are specific to innd. */
     {K(artcutoff),                  UNUMBER(10)       },
     {K(badiocount),                 UNUMBER(5)        },
     {K(bindaddress),                STRING(NULL)      },
@@ -150,7 +150,7 @@ static const struct config config_table[] = {
     {K(wipexpire),                  UNUMBER(10)       },
     {K(xrefslave),                  BOOL(false)       },
 
- /* The following settings are specific to nnrpd. */
+    /* The following settings are specific to nnrpd. */
     {K(addinjectiondate),           BOOL(true)        },
     {K(addinjectionpostingaccount), BOOL(false)       },
     {K(addinjectionpostinghost),    BOOL(true)        },
@@ -198,11 +198,11 @@ static const struct config config_table[] = {
     {K(tlsprotocols),               LIST(NULL)        },
 #endif  /* HAVE_OPENSSL */
 
-  /* The following settings are used by nnrpd and rnews. */
+    /* The following settings are used by nnrpd and rnews. */
     {K(nnrpdposthost),              STRING(NULL)      },
     {K(nnrpdpostport),              UNUMBER(119)      },
 
- /* The following settings are specific to the storage subsystem. */
+    /* The following settings are specific to the storage subsystem. */
     {K(articlemmap),                BOOL(true)        },
     {K(cnfscheckfudgesize),         UNUMBER(0)        },
     {K(immediatecancel),            BOOL(false)       },
@@ -217,15 +217,15 @@ static const struct config config_table[] = {
     {K(useoverchan),                BOOL(false)       },
     {K(wireformat),                 BOOL(true)        },
 
- /* The following settings are specific to the history subsystem. */
+    /* The following settings are specific to the history subsystem. */
     {K(hismethod),                  STRING(NULL)      },
 
- /* The following settings are specific to rc.news. */
+    /* The following settings are specific to rc.news. */
     {K(docnfsstat),                 BOOL(false)       },
     {K(innflags),                   STRING(NULL)      },
     {K(pgpverify),                  BOOL(false)       },
 
- /* The following settings are specific to innwatch. */
+    /* The following settings are specific to innwatch. */
     {K(doinnwatch),                 BOOL(true)        },
     {K(innwatchbatchspace),         UNUMBER(4000)     },
     {K(innwatchlibspace),           UNUMBER(25000)    },
@@ -236,11 +236,11 @@ static const struct config config_table[] = {
     {K(innwatchspoolnodes),         UNUMBER(200)      },
     {K(innwatchspoolspace),         UNUMBER(25000)    },
 
- /* The following settings are specific to scanlogs.
-  * Keep a low value by default as it has a privacy impact; three days
-  * should be enough to diagnose the most common cases of malfunction
-  * and abuse.  Where more is needed, it is easy for the news admin
-  * to increase it. */
+    /* The following settings are specific to scanlogs.
+     * Keep a low value by default as it has a privacy impact; three days
+     * should be enough to diagnose the most common cases of malfunction
+     * and abuse.  Where more is needed, it is easy for the news admin
+     * to increase it. */
     {K(logcycles),                  UNUMBER(3)        },
 };
 

@@ -33,9 +33,9 @@ static const struct {
      "437 Space before colon in \"Test\" header field"               },
     {"../data/articles/bad-hdr-trunc",
      "437 No colon-space in \"Test:\" header field"                  },
- /* Not an error for a relaying agent. */
+    /* Not an error for a relaying agent. */
     {"../data/articles/bad-long-cont",  ""                           },
- /* Not an error for a relaying agent. */
+    /* Not an error for a relaying agent. */
     {"../data/articles/bad-long-hdr",   ""                           },
     {"../data/articles/bad-no-body",    "437 No body"                },
     {"../data/articles/bad-no-header",  "437 No headers"             },

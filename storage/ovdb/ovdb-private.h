@@ -181,9 +181,7 @@ struct rs_artinfo {
             }                                                             \
         }
 
-#    define TXN_START(label, tid) \
-    label:                        \
-        TXN_START_NORETRY(label, tid)
+#    define TXN_START(label, tid) label : TXN_START_NORETRY(label, tid)
 
 #    define TXN_RETRY(label, tid) \
         {                         \

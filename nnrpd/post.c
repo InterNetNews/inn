@@ -29,7 +29,7 @@ static const char *const BadDistribs[] = {BAD_DISTRIBS};
 **    http://www.iana.org/assignments/message-headers/
 */
 HEADER Table[] = {
-  /*  Name                       CanSet  Type Size Value Body Len */
+    /* Name                      CanSet  Type Size Value Body Len */
     {"Path",                      true,  HTstd, 0, NULL, NULL, 0},
     {"From",                      true,  HTreq, 0, NULL, NULL, 0},
     {"Newsgroups",                true,  HTreq, 0, NULL, NULL, 0},
@@ -74,9 +74,9 @@ HEADER Table[] = {
     {"See-Also",                  false, HTobs, 0, NULL, NULL, 0},
     {"Cancel-Key",                true,  HTstd, 0, NULL, NULL, 0},
     {"Cancel-Lock",               true,  HTstd, 0, NULL, NULL, 0},
- /* The Comments and Original-Sender header fields can appear more than once
-  * in the headers of an article.  Consequently, we MUST NOT put them here.
-  */
+    /* The Comments and Original-Sender header fields can appear more than once
+     * in the headers of an article.  Consequently, we MUST NOT put them here.
+     */
 };
 
 HEADER *EndOfTable = ARRAY_END(Table);

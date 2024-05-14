@@ -114,7 +114,7 @@ static int dbzversion = 6; /* for validating .dir file format */
 
 #ifdef DO_TAGGED_HASH
 #    define SOF      (sizeof(of_t))
-#    define NOTFOUND ((of_t) -1)
+#    define NOTFOUND ((of_t) - 1)
 #    include <limits.h>
 
 /* MAXDROPBITS is the maximum number of bits dropped from the offset value.
@@ -134,7 +134,7 @@ static int dbzversion = 6; /* for validating .dir file format */
  */
 #    define VACANT         ((of_t) 0)
 #    define BIAS(o)        ((o) + 1) /* make any valid of_t non-VACANT */
-#    define UNBIAS(o)      ((o) -1)  /* reverse BIAS() effect */
+#    define UNBIAS(o)      ((o) - 1) /* reverse BIAS() effect */
 
 #    define HASTAG(o)      ((o) & taghere)
 #    define TAG(o)         ((o) & tagbits)

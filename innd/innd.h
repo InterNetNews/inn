@@ -55,7 +55,7 @@
 BEGIN_DECLS
 
 typedef short SITEIDX;
-#define NOSITE          ((SITEIDX) -1)
+#define NOSITE          ((SITEIDX) - 1)
 
 /*
 **  Various constants.

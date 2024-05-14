@@ -18,8 +18,8 @@ int sasl_ssf = 0;
 int sasl_maxout = NNTP_MAXLEN_COMMAND;
 
 sasl_callback_t sasl_callbacks[] = {
-  /* XXX Do we want a proxy callback? */
-  /* XXX Add a getopt callback? */
+    /* XXX Do we want a proxy callback? */
+    /* XXX Add a getopt callback? */
     {SASL_CB_LIST_END, NULL, NULL}
 };
 
