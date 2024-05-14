@@ -947,7 +947,9 @@ I<filename> and the B<-i> flag is used:
               if $group =~ /^fr\./ and $hdrs->{issuer} eq "john";
 
             # The article has been posted to at least a newsgroup
-            # in the fr.* or news.* hierarchy.
+            # in the fr.* or news.* hierarchy.  You may use here
+            # a regular expression corresponding to the newsgroups
+            # pattern you ask your feeds to send you.
             $carried = 1 if $group =~ /^(fr|news)\./;
         }
 
