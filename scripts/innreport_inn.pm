@@ -290,9 +290,10 @@ our %nntplink_site;
 our %nntplink_sockerr;
 our %nntplink_times;
 our %nocem_badsigs;
-our %nocem_goodsigs;
+our %nocem_count;
 our $nocem_lastid;
 our %nocem_newids;
+our %nocem_skipids;
 our %nocem_totalids;
 our %rnews_bogus_date;
 our %rnews_bogus_dist;
@@ -2141,20 +2142,22 @@ sub collect($$$$$$) {
     if ($prog eq "ncmspool") {
         # <article> good signature from foo@bar.com
         if ($left =~ /good signature from (.*)/o) {
-            $nocem_goodsigs{$1}++;
+            $nocem_count{$1}++;
             $nocem_lastid = $1;
             return 1;
         }
         # <article> bad signature from foo@bar.com
         if ($left =~ /bad signature from (.*)/o) {
             $nocem_badsigs{$1}++;
-            $nocem_goodsigs{$1} = 0 unless ($nocem_goodsigs{$1});
+            $nocem_newids{$1} = 0 unless ($nocem_newids{$1});
+            $nocem_totalids{$1} = 0 unless ($nocem_totalids{$1});
             $nocem_lastid = $1;
             return 1;
         }
         # <article> contained 123 new 456 total ids
         if ($left =~ /contained (\d+) new (\d+) total ids/o) {
             $nocem_newids{$nocem_lastid} += $1;
+            $nocem_skipids{$nocem_lastid} += $2 - $1;
             $nocem_totalids{$nocem_lastid} += $2;
             return 1;
         }
@@ -2164,41 +2167,75 @@ sub collect($$$$$$) {
     ########
     ## nocem
     if ($prog eq "nocem") {
-        if ($left =~ /processed notice .* by (.*) for (.*) \((\d+) ids,/o) {
+        if (
+            $left =~ /processed\ notice\ .*\ by\ (.*)\ for\ (.*)
+                      \ \((\d+)\ ids,\ (\d+)\ skipped/ox
+        ) {
             $nocem_lastid = "$1 ($2)";
-            $nocem_goodsigs{$nocem_lastid}++;
+            $nocem_count{$nocem_lastid}++;
             $nocem_newids{$nocem_lastid} += $3;
+            $nocem_skipids{$nocem_lastid} += $4;
+            $nocem_totalids{$nocem_lastid} += $3 + $4;
+            return 1;
+        }
+        if ($left =~ /unwanted notice .* by (.*) for (.*) \((\d+) ids\)/o) {
+            $nocem_lastid = "$1 ($2)";
+            $nocem_count{$nocem_lastid}++;
+            $nocem_newids{$nocem_lastid} = 0
+              unless ($nocem_newids{$nocem_lastid});
+            $nocem_skipids{$nocem_lastid} += $3;
             $nocem_totalids{$nocem_lastid} += $3;
             return 1;
         }
-        if ($left =~ /Article <[^>]*>: signed by .* instead of (.*)/o) {
-            $nocem_badsigs{$1}++;
-            $nocem_goodsigs{$1} = 0 unless ($nocem_goodsigs{$1});
-            $nocem_totalids{$1} = 0 unless ($nocem_totalids{$1});
-            $nocem_lastid = $1;
+        if ($left =~ /Article <[^>]*>: signed by .* instead of (.*) for (.*)/o)
+        {
+            $nocem_lastid = "$1 ($2)";
+            $nocem_badsigs{$nocem_lastid}++;
+            $nocem_newids{$nocem_lastid} = 0
+              unless ($nocem_newids{$nocem_lastid});
+            $nocem_totalids{$nocem_lastid} = 0
+              unless ($nocem_totalids{$nocem_lastid});
+            return 1;
+        }
+        # not in keyring
+        if ($left
+            =~ /Article <[^>]*>: (.*) \(ID [[:xdigit:]]*\) for (.*) not/o)
+        {
+            $nocem_lastid = "$1 ($2)";
+            $nocem_badsigs{$nocem_lastid}++;
+            $nocem_newids{$nocem_lastid} = 0
+              unless ($nocem_newids{$nocem_lastid});
+            $nocem_totalids{$nocem_lastid} = 0
+              unless ($nocem_totalids{$nocem_lastid});
+            return 1;
+        }
+        if ($left =~ /Article <[^>]*>: bad signature from (.*) for (.*)/o) {
+            $nocem_lastid = "$1 ($2)";
+            $nocem_badsigs{$nocem_lastid}++;
+            $nocem_newids{$nocem_lastid} = 0
+              unless ($nocem_newids{$nocem_lastid});
+            $nocem_totalids{$nocem_lastid} = 0
+              unless ($nocem_totalids{$nocem_lastid});
             return 1;
         }
         if ($left
-            =~ /Article <[^>]*>: (.*) \(ID [[:xdigit:]]*\) not in keyring/o)
+            =~ /Article <[^>]*>: malformed signature from (.*) for (.*)/o)
         {
-            $nocem_badsigs{$1}++;
-            $nocem_goodsigs{$1} = 0 unless ($nocem_goodsigs{$1});
-            $nocem_totalids{$1} = 0 unless ($nocem_totalids{$1});
-            $nocem_lastid = $1;
+            $nocem_lastid = "$1 ($2)";
+            $nocem_badsigs{$nocem_lastid}++;
+            $nocem_newids{$nocem_lastid} = 0
+              unless ($nocem_newids{$nocem_lastid});
+            $nocem_totalids{$nocem_lastid} = 0
+              unless ($nocem_totalids{$nocem_lastid});
             return 1;
         }
-        if ($left =~ /Article <[^>]*>: bad signature from (.*)/o) {
-            $nocem_badsigs{$1}++;
-            $nocem_goodsigs{$1} = 0 unless ($nocem_goodsigs{$1});
-            $nocem_totalids{$1} = 0 unless ($nocem_totalids{$1});
-            $nocem_lastid = $1;
-            return 1;
-        }
-        if ($left =~ /Article <[^>]*>: malformed signature from (.*)/o) {
-            $nocem_badsigs{$1}++;
-            $nocem_goodsigs{$1} = 0 unless ($nocem_goodsigs{$1});
-            $nocem_totalids{$1} = 0 unless ($nocem_totalids{$1});
-            $nocem_lastid = $1;
+        if ($left =~ /Article <[^>]*>: unknown error .* from (.*) for (.*)/o) {
+            $nocem_lastid = "$1 ($2)";
+            $nocem_badsigs{$nocem_lastid}++;
+            $nocem_newids{$nocem_lastid} = 0
+              unless ($nocem_newids{$nocem_lastid});
+            $nocem_totalids{$nocem_lastid} = 0
+              unless ($nocem_totalids{$nocem_lastid});
             return 1;
         }
 
