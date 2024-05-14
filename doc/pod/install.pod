@@ -12,7 +12,7 @@ try to update your old installation.  This is particularly true if you're
 upgrading from a version of INN prior to 2.0.
 
 If you are upgrading from S<INN 2.3> or later, you may be able to just update
-the binaries, scripts, and man pages by running:
+the binaries, scripts, and manual pages by running:
 
     make update
 
@@ -27,6 +27,18 @@ this approach (in particular, INN compiled with B<--enable-largefiles>
 can't read the data structures written by INN compiled without that flag,
 and vice versa).  If you don't remember what options you used but you have
 your old build tree, look at the beginning of F<config.log>.
+
+If you are building INN from a Git clone of the development tree rather than
+a snapshot or standard release, you first need to (re)generate the autoconf
+files so as to pick up possible changes since the last pull of the Git tree.
+This can be done by running the following commands:
+
+    make maintclean
+    ./autogen
+
+before building INN with C<./configure> (followed by the wanted configure
+options) and C<make>.  You may then also want to run the test suite with
+C<make tests>.
 
 If you made B<ckpasswd> setuid root so that you could use system passwords,
 you'll have to do that again after C<make update>.  (It's much better to use
