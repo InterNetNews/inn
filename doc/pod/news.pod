@@ -62,6 +62,11 @@ as a format like C<Jul 29 04:15:01> was expected.
 
 =item *
 
+B<innreport> now alphabetically sorts lines which have the same rank instead
+of displaying them in random order.
+
+=item *
+
 B<scanspool> now detects empty files in a tradspool news spool, directories
 with an all-digit component (which may conflict with a possible file with
 the same name), correctly parses continuation lines in header fields, and can
