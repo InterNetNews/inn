@@ -16,10 +16,11 @@
 ##
 ##  See the perl-nocem manual page for more information.
 
-bleachbot@httrack.com:spam,site
+bleachbot@httrack.com:site,spam
+i2pn2-nocem@i2pn2.org:spam
+mm+nocem@dorfdsl.de:spam
 news@uni-berlin.de:Admincancel
-nocem@aioe.org:aioe-spam
-nocem@arcor.de:spam
-nocem@novabbs.com:spam
+nocem@chmurka.net:spam
+nocem@eternal-september.org:bot,misplaced_binary,spam
 pgpmoose@killfile.org:pgpmoose-forged-moderation
-robot@pasdenom.info:spam,site
+robot@pasdenom.info:site,spam
