@@ -4,16 +4,18 @@
 
 =item *
 
-An up-to-date F<nocem.ctl> file is provided with this release.  You should
-manually update your F<nocem.ctl> file with the new information recorded about
-NoCeM issuers, and make sure the right PGP keys are present on your system.
+Up-to-date F<control.ctl> and F<nocem.ctl> files are provided with this
+release.  You may want to manually update your configuration with the new
+information recorded about hierarchies and NoCeM issuers, and make sure the
+relevant PGP keys are installed on your system.
 
 =item *
 
-Added a new I<ovflushcount> parameter in F<inn.conf>, defaulting to C<50>, to
-parameterize the number of articles received between flushing their overview
-data to disk, when using the buffindexed overview storage method.  (In
-previous releases, that number was ten times the value of I<icdsynccount>.)
+Added a new I<ovflushcount> parameter in F<inn.conf>, defaulting to C<50>,
+to parameterize the number of articles received between flushing their
+overview data to disk, when using the buffindexed overview storage method.
+(In previous releases, that number was ten times the value of I<icdsynccount>,
+but a dedicated parameter is better.)
 
 =item *
 
@@ -34,13 +36,13 @@ Added two new options in F<storage.conf>, contributed by Christoph Biedl:
 =item *
 
 a I<filtered> option to store articles which have been rejected by a
-Perl or Python filter for B<innd> in a separate storage class, when
+Perl or Python filter for B<innd> into a separate storage class, when
 I<dontrejectfiltered> is set to true in F<inn.conf>;
 
 =item *
 
 a I<path> option to store articles by the contents of the Path header field,
-notably to filter spammy sites.
+notably to isolate the storage of spammy sites from other sites.
 
 =back
 
@@ -49,16 +51,16 @@ notably to filter spammy sites.
 The B<delayer> program, which previously was in the F<contrib> directory, is
 now installed by default.  It notably permits generating a delayed feed, for
 instance to give cancel control articles and NoCeM messages time to arrive,
-and therefore actually cancel articles before they are locally stored and
-spread to other peers.  Thanks to Christoph Biedl for the documentation,
-testing, and addition of several useful flags to B<delayer>.
+and therefore actually cancel articles before they are locally stored.  Thanks
+to Christoph Biedl for the documentation, testing, and addition of several
+useful flags to B<delayer>.
 
 =item *
 
 B<innreport> now supports high-precision timestamps like
 C<2023-07-29T04:15:01.889064+02:00> that syslog can be parameterized to use;
-daily Usenet reports otherwise indicated all these logs as unknown entries,
-as a format like C<Jul 29 04:15:01> was expected.
+daily Usenet reports otherwise indicated all these logs as unknown entries
+because a format like C<Jul 29 04:15:01> was expected.
 
 =item *
 
@@ -67,7 +69,7 @@ of displaying them in random order.
 
 =item *
 
-B<scanspool> now detects empty files in a tradspool news spool, directories
+B<scanspool> now detects empty files in a tradspool news spool and directories
 with an all-digit component (which may conflict with a possible file with
 the same name), correctly parses continuation lines in header fields, and can
 automatically remove articles reported to have a problem (when run with the
@@ -78,7 +80,7 @@ new B<-r> flag).
 Added several new options to better parameterize B<perl-nocem>.  The location
 of its configuration file, the keyring to use, and the full B<gpg> and
 B<gpgv> commands to run can now be modified by flags passed to the program.
-Unprocessed NoCeM notices will also show up in daily reports generated
+Unprocessed NoCeM notices will also show up in daily Usenet reports generated
 by B<innreport>.  Log verbosity can be controlled, cancelled articles can
 be backed up into files, and B<perl-nocem> can write logs to a separate
 F<perl-nocem.log> file.  Local rules to fine-tune within a NoCeM notice which
@@ -87,9 +89,8 @@ information about the use of these options.
 
 =item *
 
-B<perl-nocem> now correctly parses NoCeM issuers with special characters
-like C<+> in the configuration file.  They previously failed to be recognized
-without being escaped.
+B<perl-nocem> now correctly parses the identifiers of NoCeM issuers with
+special characters like C<+> in the configuration file.
 
 =item *
 
@@ -103,25 +104,10 @@ B<innd> no longer dies when C<ctlinnd trace> is run on an invalid channel.
 =item *
 
 INN now properly handles header field names starting with a leading dot:
-
-=over 2
-
-=item *
-
-B<innd> correctly computes the C<:bytes> metadata item of articles with such
-header field names.
-
-=item *
-
-B<nnrpd> correctly parses header field names with a leading dot in HDR, XHDR
-and XPAT commands.
-
-=item *
-
-B<nnrpd> correctly parses header field names with a leading dot (and now
-preserves the leading initial dot at injection time).
-
-=back
+B<innd> accurately computes the C<:bytes> metadata item of articles with such
+header field names, and B<nnrpd> correctly preserves the leading initial dot
+at injection time and rightly parses such header field names in HDR, XHDR and
+XPAT commands.
 
 =item *
 
@@ -143,7 +129,8 @@ flag) which had not the expected native LF line termination.
 =item *
 
 Fixed B<inndf> on 32-bit architectures with large file support (previously,
-B<inndf> could not count more than 2^32 bytes or inodes).
+B<inndf> could not count more than 2^32 bytes or inodes on these
+architectures).
 
 =item *
 
