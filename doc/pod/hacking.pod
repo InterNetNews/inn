@@ -776,16 +776,16 @@ any special care when upgrading.)
 Bump the revision number in F<doc/FAQ> (subject 1.2) so that it could be
 included in a final release.  It should not be changed for a beta or a release
 candidate (the FAQ is indeed periodically posted to news.software.nntp from
-the GitHub directory, and should not contain unreleased versions).
+the GitHub directory, and should not mention unreleased versions).
 
 If making a major release, the revision numbers of the STABLE series
 should also be bumped in F<doc/FAQ> at the end of subject 1.2.
 
 =item *
 
-Double-check that the library version information in
-F<history/Makefile>, F<lib/Makefile>, and F<storage/Makefile> has
-been updated since the previous release.  Follow the rules given at
+Double-check for the final release that the library version information
+in F<history/Makefile>, F<lib/Makefile>, and F<storage/Makefile>
+has been updated since the previous release.  Follow the rules given at
 L<https://www.gnu.org/software/libtool/manual/html_node/Updating-version-info.html>.
 The commit message usually contains a brief description of API changes, if
 any, just for the record.  Avoid bumping SONAME in minor releases (ideally,
@@ -839,7 +839,7 @@ for the first release candidate version of a new release.
 
 =item 11.
 
-On the branch where C<make release> was run, modify the C<VERSION_EXTRA>
+Only on the branch where the release is done, modify the C<VERSION_EXTRA>
 variable in F<Makefile.global.in> so that the C<prerelease> value does not
 appear in the upcoming Git tag.
 
@@ -849,8 +849,8 @@ command (like C<rc1 version>).
 
 =item 12.
 
-Create an annotated signed tag corresponding to the tarball, using a PGP key
-declared in the committer's GitHub profile:
+Create an annotated signed tag corresponding to the contents of the tarball,
+using a PGP key declared in the committer's GitHub profile:
 
     git tag Y.Y.Y <commit-hash> -s -m "INN Y.Y.Y release tag"
     git push origin Y.Y.Y
