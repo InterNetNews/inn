@@ -361,14 +361,13 @@ insert into repairs
             or count_was_bad;
 }
     );
-    pragma_foreign_keys(1);
 
     $statement = $dbh->prepare("select count(*) from repairs;");
     ($result) = $dbh->selectrow_array($statement);
 
     if ($result > 0) {
         printf STDERR (
-            "%d groupinfo record%s incoherent\n", $result,
+            "%d groupinfo record%s incoherent (Low, High, Count)\n", $result,
             ($result > 1) ? "s" : "",
         );
 
@@ -407,6 +406,7 @@ insert or replace into groupinfo
         }
 
     }
+    pragma_foreign_keys(1);
 }
 
 # Dump overview information (-g option).
