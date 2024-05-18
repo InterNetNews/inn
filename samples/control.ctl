@@ -1,5 +1,5 @@
 ##  control.ctl - Access control for control messages.
-##  Last modified: 2021-11-28
+##  Last modified: 2023-08-05
 ##
 ##  Based on rone's unified control.ctl file.
 ##
@@ -421,11 +421,16 @@ rmgroup:control@news.bloomington.in.us:blgtn.*:doit
 
 ## BLN (Berlin, Germany)
 # Contact: news@fu-berlin.de
-# URL: ftp://ftp.fu-berlin.de/doc/news/bln/bln
-# Admin group: bln.net.news
-checkgroups:news@*fu-berlin.de:bln.*:doit
-newgroup:news@*fu-berlin.de:bln.*:doit
-rmgroup:news@*fu-berlin.de:bln.*:doit
+# URL: https://ftp.fu-berlin.de/doc/news/bln/bln-info.txt
+# Admin group: bln.misc
+# Key URL: https://ftp.fu-berlin.de/doc/news/bln/bln-key.txt
+# Key fingerprint: 2B24 B5C7 8A48 6140 7BCD  5A88 281D 9076 3F36 8EA0
+# *PGP*   See comment at top of file.
+newgroup:*:bln.*:drop
+rmgroup:*:bln.*:drop
+checkgroups:news@fu-berlin.de:bln.*:verify-news@fu-berlin.de
+newgroup:news@fu-berlin.de:bln.*:verify-news@fu-berlin.de
+rmgroup:news@fu-berlin.de:bln.*:verify-news@fu-berlin.de
 
 ## BNE (Brisbane, Australia)
 # Contact: ausadmin@aus.news-admin.org
