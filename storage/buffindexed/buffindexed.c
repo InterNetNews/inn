@@ -343,7 +343,7 @@ ovparse_part_line(char *l)
     ovbuff->index = strtoul(l, NULL, 10);
     for (; tmp != (OVBUFF *) NULL; tmp = tmp->next) {
         if (tmp->index == ovbuff->index) {
-            warn("buffindexed: dupulicate index in line '%s'", l);
+            warn("buffindexed: duplicate index in line '%s'", l);
             free(ovbuff);
             return false;
         }
@@ -373,8 +373,7 @@ ovparse_part_line(char *l)
     /*
     ** The minimum article offset will be the size of the bitfield itself,
     ** len / (blocksize * 8), plus however many additional blocks the
-    *OVBUFFHEAD
-    ** external header occupies ... then round up to the next block.
+    ** *OVBUFFHEAD external header occupies... then round up to the next block.
     */
     base = len / (OV_BLOCKSIZE * 8) + OV_BEFOREBITF;
     tonextblock = hdr_pagesize - (base & (hdr_pagesize - 1));

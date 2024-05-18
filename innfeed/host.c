@@ -845,8 +845,8 @@ tryBlockedHosts(TimeoutId tid UNUSED, void *data UNUSED)
 
         if (params && params->peerName) {
             if (findHostByName(params->peerName) != NULL) {
-                /* Wierd, someone's managed to start it when it's on
-                 * the blocked list. Just silently discard.
+                /* Weird, someone has managed to start it when it is on
+                 * the blocked list.  Just silently discard.
                  */
                 freeHostParams(params);
             } else {
