@@ -598,12 +598,12 @@ DoArt(ARTHANDLE *art)
     static char SEP[] = "\t";
     static char NUL[] = "\0";
     static char COLONSPACE[] = ": ";
-    size_t i, j, len;
+    size_t i, j;
     const char *MessageID;
     time_t Arrived;
     time_t Expires;
     time_t Posted;
-    char overdata[BIG_BUFFER];
+    char *overdata = NULL;
     char Bytes[BIG_BUFFER];
     char Lines[BIG_BUFFER];
     struct artngnum ann;
@@ -723,17 +723,12 @@ DoArt(ARTHANDLE *art)
         } else {
             if (ann.artnum == 0 || ann.groupname == NULL)
                 return;
-            len = strlen(innconf->pathhost) + 1 + strlen(ann.groupname) + 1
-                  + 16 + 1;
-            if (len > BIG_BUFFER) {
-                Xrefp->Header = NULL;
-                Xrefp->HeaderLength = 0;
-            } else {
-                snprintf(overdata, sizeof(overdata), "%s %s:%lu",
-                         innconf->pathhost, ann.groupname, ann.artnum);
-                Xrefp->Header = overdata;
-                Xrefp->HeaderLength = strlen(overdata);
-            }
+
+            xasprintf(&overdata, "%s %s:%lu", innconf->pathhost, ann.groupname,
+                      ann.artnum);
+            Xrefp->Header = overdata;
+            Xrefp->HeaderLength = strlen(overdata);
+
             if (ann.groupname != NULL)
                 free(ann.groupname);
         }
@@ -826,6 +821,8 @@ DoArt(ARTHANDLE *art)
         }
         WriteOverLine(art->token, Xrefp->Header, Xrefp->HeaderLength,
                       buffer.data, buffer.left, Arrived, Expires);
+        if (overdata != NULL)
+            free(overdata);
     }
 
     if (!NoHistory) {
