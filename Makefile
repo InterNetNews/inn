@@ -267,9 +267,20 @@ reformat:
 	fi
 	@if command -v "clang-format" &> /dev/null ; then \
 	    echo "Running clang-format to reformat C code..." ; \
-	    find . -name '*.[ch]' \! -name config_l.c \! -name config_y.\* \
+	    find . \( -name '*.[ch]' -o -name paths.h.in \) \
+	        \! -wholename ./history/hismethods.\* \
+	        \! -wholename ./include/config.h \
+	        \! -wholename ./include/inn/paths.h \
+	        \! -wholename ./include/inn/portable-\* \
+	        \! -wholename ./include/inn/system.h \
+	        \! -wholename ./include/inn/version.h \
+	        \! -wholename ./innfeed/config_l.c \
+	        \! -wholename ./innfeed/config_y.\* \
+	        \! -wholename ./storage/methods.\* \
+	        \! -wholename ./storage/ovmethods.\* \
+	        \! -wholename ./storage/ovsqlite/sql-init.\* \
+	        \! -wholename ./storage/ovsqlite/sql-main.\* \
 	        -print | xargs clang-format --style=file -i ; \
-	    clang-format --style=file -i include/inn/paths.h.in ; \
 	else \
 	    echo "Skipping C code reformatting (clang-format not found)" ; \
 	fi
