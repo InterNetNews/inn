@@ -90,7 +90,7 @@ L<http://top1000.anthologeek.net/>.
 
 Save dumps in I<dumpfile>.  Any C<%d> in I<dumpfile> will be replaced with
 the current system time when the dump is made.  This option should be used
-with B<-p>.
+with B<-p>.  If I<dumpfile> is C<->, then stdout is used.
 
 The format of these dump files is described below.
 
