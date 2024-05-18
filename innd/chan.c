@@ -283,11 +283,11 @@ CHANtracing(CHANNEL *cp, bool flag)
                cp->BadWrites, cp->BlockedWrites, cp->BadReads);
         network_sockaddr_sprint(addr, sizeof(addr),
                                 (struct sockaddr *) &cp->Address);
-        notice("%s trace address %s lastactive %ld nextlog %ld", name, addr,
-               (long) cp->LastActive, (long) cp->NextLog);
+        notice("%s trace address %s lastactive %lu nextlog %lu", name, addr,
+               (unsigned long) cp->LastActive, (unsigned long) cp->NextLog);
         if (FD_ISSET(cp->fd, &channels.sleep_set))
-            notice("%s trace sleeping %ld 0x%p", name, (long) cp->Waketime,
-                   (void *) cp->Waker);
+            notice("%s trace sleeping %lu 0x%p", name,
+                   (unsigned long) cp->Waketime, (void *) cp->Waker);
         if (FD_ISSET(cp->fd, &channels.read_set))
             notice("%s trace reading %lu %s", name,
                    (unsigned long) cp->In.used,
@@ -314,14 +314,14 @@ CHANclose_nntp(CHANNEL *cp, const char *name)
     WIPprecomfree(cp);
     NCclearwip(cp);
     if (cp->State == CScancel)
-        notice("%s closed seconds %ld cancels %lu", name,
-               (long) (Now.tv_sec - cp->Started), cp->Received);
+        notice("%s closed seconds %lu cancels %lu", name,
+               (unsigned long) (Now.tv_sec - cp->Started), cp->Received);
     else {
         notice(
-            "%s checkpoint seconds %ld accepted %lu refused %lu rejected %lu"
+            "%s checkpoint seconds %lu accepted %lu refused %lu rejected %lu"
             " duplicate %lu accepted size %.0f duplicate size %.0f"
             " rejected size %.0f",
-            name, (long) (Now.tv_sec - cp->Started_checkpoint),
+            name, (unsigned long) (Now.tv_sec - cp->Started_checkpoint),
             cp->Received - cp->Received_checkpoint,
             cp->Refused - cp->Refused_checkpoint,
             cp->Rejected - cp->Rejected_checkpoint,
@@ -329,10 +329,10 @@ CHANclose_nntp(CHANNEL *cp, const char *name)
             (double) (cp->Size - cp->Size_checkpoint),
             (double) (cp->DuplicateSize - cp->DuplicateSize_checkpoint),
             (double) (cp->RejectSize - cp->RejectSize_checkpoint));
-        notice("%s closed seconds %ld accepted %lu refused %lu rejected %lu"
+        notice("%s closed seconds %lu accepted %lu refused %lu rejected %lu"
                " duplicate %lu accepted size %.0f duplicate size %.0f"
                " rejected size %.0f",
-               name, (long) (Now.tv_sec - cp->Started), cp->Received,
+               name, (unsigned long) (Now.tv_sec - cp->Started), cp->Received,
                cp->Refused, cp->Rejected, cp->Duplicate, (double) cp->Size,
                (double) cp->DuplicateSize, (double) cp->RejectSize);
     }

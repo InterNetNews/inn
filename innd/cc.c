@@ -302,13 +302,13 @@ CCaddhist(char *av[])
         InndHisClose();
     if (strspn(av[1], DIGITS) != strlen(av[1]))
         return "1 Bad arrival date";
-    Data.Arrived = atol(av[1]);
+    Data.Arrived = atoll(av[1]);
     if (strspn(av[2], DIGITS) != strlen(av[2]))
         return "1 Bad expiration date";
-    Data.Expires = atol(av[2]);
+    Data.Expires = atoll(av[2]);
     if (strspn(av[3], DIGITS) != strlen(av[3]))
         return "1 Bad posted date";
-    Data.Posted = atol(av[3]);
+    Data.Posted = atoll(av[3]);
 
     /* Allow empty tokens, but not badly formatted tokens. */
     if (*av[4] != '\0' && !IsToken(av[4]))
@@ -906,11 +906,11 @@ CCmode(char *unused[] UNUSED)
         count++;
     buffer_append_sprintf(&CCreply,
                           "Parameters c %lu i %lu (%d) l %lu o %d"
-                          " t %ld H %d T %d X %ld %s %s\n",
+                          " t %lu H %d T %d X %lu %s %s\n",
                           innconf->artcutoff, innconf->maxconnections, count,
                           innconf->maxartsize, MaxOutgoing,
-                          (long) TimeOut.tv_sec, RemoteLimit, RemoteTotal,
-                          (long) RemoteTimer,
+                          (unsigned long) TimeOut.tv_sec, RemoteLimit,
+                          RemoteTotal, (unsigned long) RemoteTimer,
                           innconf->xrefslave ? "slave" : "normal",
                           AnyIncoming ? "any" : "specified");
 
@@ -1027,9 +1027,9 @@ CCnameWriteInfo(struct buffer *buffer, CHANNEL *cp)
         break;
     case CTnntp:
         mode = (cp->MaxCnx > 0 && cp->ActiveCnx == 0) ? "paused" : "";
-        buffer_append_sprintf(buffer, ":%s:%ld:%s",
-                              cp->State == CScancel ? "cancel" : "nntp",
-                              (long) (Now.tv_sec - cp->LastActive), mode);
+        buffer_append_sprintf(
+            buffer, ":%s:%lu:%s", cp->State == CScancel ? "cancel" : "nntp",
+            (unsigned long) (Now.tv_sec - cp->LastActive), mode);
         break;
     case CTlocalconn:
         buffer_append_sprintf(buffer, ":localconn::");
@@ -1115,7 +1115,7 @@ CCnewgroup(char *av[])
         syslog(L_ERROR, "%s cant open %s %m", LogName, TIMES);
         IOError(WHEN, oerrno);
     } else {
-        xasprintf(&buff, "%s %ld %s\n", Name, (long) Now.tv_sec, who);
+        xasprintf(&buff, "%s %lu %s\n", Name, (unsigned long) Now.tv_sec, who);
         if (xwrite(fd, buff, strlen(buff)) < 0) {
             oerrno = errno;
             syslog(L_ERROR, "%s cant write %s %m", LogName, TIMES);
@@ -1202,8 +1202,9 @@ CCparam(char *av[])
         syslog(L_NOTICE, "%s changed -o %d", LogName, MaxOutgoing);
         break;
     case 't':
-        TimeOut.tv_sec = atol(p);
-        syslog(L_NOTICE, "%s changed -t %ld", LogName, (long) TimeOut.tv_sec);
+        TimeOut.tv_sec = atoll(p);
+        syslog(L_NOTICE, "%s changed -t %lu", LogName,
+               (unsigned long) TimeOut.tv_sec);
         break;
     case 'H':
         RemoteLimit = atoi(p);
@@ -1221,8 +1222,9 @@ CCparam(char *av[])
         RemoteTotal = temp;
         break;
     case 'X':
-        RemoteTimer = (time_t) atoi(p);
-        syslog(L_NOTICE, "%s changed -X %d", LogName, (int) RemoteTimer);
+        RemoteTimer = (time_t) atoll(p);
+        syslog(L_NOTICE, "%s changed -X %lu", LogName,
+               (unsigned long) RemoteTimer);
         break;
     }
     return NULL;

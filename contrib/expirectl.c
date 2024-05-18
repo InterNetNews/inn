@@ -159,7 +159,7 @@ main(int ac, char **av)
         if ((fi = fopen(EXPIRE_DAYS, "r")) != NULL) {
             while (fgets(buf, sizeof(buf), fi) != NULL) {
                 if (strncmp(buf, "time", 4) == 0) {
-                    expireIncTime = strtol(buf + 4, NULL, 0);
+                    expireIncTime = strtoul(buf + 4, NULL, 0);
                 } else if (strncmp(buf, "days", 4) == 0) {
                     expireDays = strtol(buf + 4, NULL, 0);
                 }

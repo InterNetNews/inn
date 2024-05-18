@@ -280,10 +280,11 @@ NCpostit(CHANNEL *cp)
     cp->Reported++;
     if (cp->Reported >= innconf->incominglogfrequency) {
         syslog(L_NOTICE,
-               "%s checkpoint seconds %ld accepted %lu refused %lu rejected "
+               "%s checkpoint seconds %lu accepted %lu refused %lu rejected "
                "%lu duplicate %lu"
                " accepted size %.0f duplicate size %.0f rejected size %.0f",
-               CHANname(cp), (long) (Now.tv_sec - cp->Started_checkpoint),
+               CHANname(cp),
+               (unsigned long) (Now.tv_sec - cp->Started_checkpoint),
                cp->Received - cp->Received_checkpoint,
                cp->Refused - cp->Refused_checkpoint,
                cp->Rejected - cp->Rejected_checkpoint,
@@ -1580,14 +1581,14 @@ NCproc(CHANNEL *cp)
             {
                 char buff2[SMBUF];
                 int fd, oerrno, failed;
-                long now;
+                time_t now;
 
                 now = time(NULL);
                 failed = 0;
                 /* time+channel file descriptor should make an unique file name
                  */
-                snprintf(buff, sizeof(buff), "%s/%ld%d.tmp",
-                         innconf->pathincoming, now, cp->fd);
+                snprintf(buff, sizeof(buff), "%s/%lu%d.tmp",
+                         innconf->pathincoming, (unsigned long) now, cp->fd);
                 fd = open(buff, O_WRONLY | O_CREAT | O_EXCL, ARTFILE_MODE);
                 if (fd < 0) {
                     oerrno = errno;
@@ -1623,8 +1624,8 @@ NCproc(CHANNEL *cp)
                     NCwritereply(cp, buff);
                     failed = 1;
                 }
-                snprintf(buff2, sizeof(buff2), "%s/%ld%d.x",
-                         innconf->pathincoming, now, cp->fd);
+                snprintf(buff2, sizeof(buff2), "%s/%lu%d.x",
+                         innconf->pathincoming, (unsigned long) now, cp->fd);
                 if (rename(buff, buff2)) {
                     oerrno = errno;
                     syslog(L_ERROR, "%s cant rename %s to %s: %m",

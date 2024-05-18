@@ -292,7 +292,7 @@ check_data(const char *group, ARTNUM artnum, const char *expected,
         warn("Missing CRLF after data for %s:%lu", group, artnum);
         status = false;
     }
-    if (data->arrived != (time_t) artnum * 10) {
+    if ((unsigned long) data->arrived != artnum * 10) {
         warn("Arrival time wrong for %s:%lu: %lu != %lu", group, artnum,
              (unsigned long) data->arrived, artnum * 10);
         status = false;

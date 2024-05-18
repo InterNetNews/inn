@@ -58,7 +58,7 @@ print_date(time_t date)
 
     if (date_format) {
         if (!makedate(date, date_local, date_buffer, sizeof(date_buffer))) {
-            warn("can't format %ld", (long) date);
+            warn("can't format %lu", (unsigned long) date);
             return false;
         } else {
             printf("%s\n", date_buffer);
@@ -66,7 +66,7 @@ print_date(time_t date)
     } else {
         result = ctime(&date);
         if (result == NULL) {
-            warn("can't format %ld", (long) date);
+            warn("can't format %lu", (unsigned long) date);
             return false;
         } else {
             printf("%s", result);
@@ -96,7 +96,7 @@ convdate(const char *date, char mode)
             warn("\"%s\" doesn't look like a number", date);
             return false;
         } else {
-            seconds = (time_t) atol(date);
+            seconds = (time_t) atoll(date);
         }
     } else {
         seconds = parsedate_rfc5322_lax(date);
@@ -108,7 +108,7 @@ convdate(const char *date, char mode)
 
     /* Output the resulting date. */
     if (mode == 'n') {
-        printf("%ld\n", (long) seconds);
+        printf("%lu\n", (unsigned long) seconds);
         return true;
     } else {
         return print_date(seconds);

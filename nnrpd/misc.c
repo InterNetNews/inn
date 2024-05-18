@@ -318,7 +318,7 @@ UnlockPostRec(char *path)
 ** Get the stored postrecord for that IP.
 */
 static int
-GetPostRecord(char *path, long *lastpost, long *lastsleep, long *lastn)
+GetPostRecord(char *path, time_t *lastpost, long *lastsleep, long *lastn)
 {
     static char buff[SMBUF];
     FILE *fp;
@@ -340,7 +340,7 @@ GetPostRecord(char *path, long *lastpost, long *lastsleep, long *lastn)
         fclose(fp);
         return 0;
     }
-    *lastpost = atol(buff);
+    *lastpost = (time_t) atoll(buff);
 
     if ((s = strchr(buff, ',')) == NULL) {
         syslog(L_ERROR, "%s bad data in postrec file: '%s'", Client.host,
@@ -379,7 +379,7 @@ StorePostRecord(char *path, time_t lastpost, long lastsleep, long lastn)
         return 0;
     }
 
-    fprintf(fp, "%ld,%ld,%ld\n", (long) lastpost, lastsleep, lastn);
+    fprintf(fp, "%lu,%ld,%ld\n", (unsigned long) lastpost, lastsleep, lastn);
     fclose(fp);
     return 1;
 }
@@ -391,13 +391,14 @@ int
 RateLimit(long *sleeptime, char *path)
 {
     time_t now;
-    long prevpost, prevsleep, prevn, n;
+    time_t prevpost;
+    long prevsleep, prevn, n;
 
     now = time(NULL);
-    prevpost = 0L;
-    prevsleep = 0L;
-    prevn = 0L;
-    n = 0L;
+    prevpost = 0;
+    prevsleep = 0;
+    prevn = 0;
+    n = 0;
     if (!GetPostRecord(path, &prevpost, &prevsleep, &prevn)) {
         syslog(L_ERROR, "%s can't get post record: %s", Client.host,
                strerror(errno));
@@ -405,24 +406,24 @@ RateLimit(long *sleeptime, char *path)
     }
     /* Just because yer paranoid doesn't mean they ain't out ta get ya.
      * This is called paranoid clipping. */
-    if (prevn < 0L)
-        prevn = 0L;
-    if (prevsleep < 0L)
-        prevsleep = 0L;
+    if (prevn < 0)
+        prevn = 0;
+    if (prevsleep < 0)
+        prevsleep = 0;
     if ((unsigned long) prevsleep > PERMaccessconf->backoff_postfast)
         prevsleep = PERMaccessconf->backoff_postfast;
 
     /* Compute the new sleep time. */
-    *sleeptime = 0L;
-    if (prevpost <= 0L) {
-        prevpost = 0L;
-        prevn = 1L;
+    *sleeptime = 0;
+    if (prevpost <= 0) {
+        prevpost = 0;
+        prevn = 1;
     } else {
         n = now - prevpost;
-        if (n < 0L) {
+        if (n < 0) {
             syslog(L_NOTICE, "%s previous post was in the future (%ld sec)",
                    Client.host, n);
-            n = 0L;
+            n = 0;
         }
         if ((unsigned long) n < PERMaccessconf->backoff_postfast) {
             if ((unsigned long) prevn >= PERMaccessconf->backoff_trigger) {
@@ -433,7 +434,7 @@ RateLimit(long *sleeptime, char *path)
                 *sleeptime = prevsleep;
             }
         } else {
-            prevn = 0L;
+            prevn = 0;
         }
         prevn++;
     }
@@ -442,11 +443,11 @@ RateLimit(long *sleeptime, char *path)
                      ? (long) PERMaccessconf->backoff_postfast
                      : (*sleeptime);
     /* This ought to trap this bogon. */
-    if ((*sleeptime) < 0L) {
+    if ((*sleeptime) < 0) {
         syslog(L_ERROR,
                "%s Negative sleeptime detected: %ld, prevsleep: %ld, N: %ld",
                Client.host, *sleeptime, prevsleep, n);
-        *sleeptime = 0L;
+        *sleeptime = 0;
     }
 
     /* Store the postrecord. */

@@ -95,8 +95,8 @@ main(int ac, char *av[])
             PostMode = true;
             break;
         case 'r': /* Random Message-ID */
-            xasprintf(&mesgid, "<%ld@%ld>", (long) getpid(),
-                      (long) time(NULL));
+            xasprintf(&mesgid, "<%ld@%lu>", (long) getpid(),
+                      (unsigned long) time(NULL));
             break;
         case 't':
             Tracing = true;

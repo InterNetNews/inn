@@ -415,8 +415,8 @@ prepareWake(EndpTCB func, time_t timeToWake, void *clientData)
     id = timerElemAdd(timeToWake, func, clientData);
 
 #if defined(INNFEED_DEBUG)
-    d_printf(1, "Preparing wake %d at date %ld for %ld seconds\n", (int) id,
-             (long) now, (long) (timeToWake - now));
+    d_printf(1, "Preparing wake %d at date %lu for %ld seconds\n", (int) id,
+             (unsigned long) now, (long) (timeToWake - now));
 #endif
 
     return id;
@@ -433,8 +433,8 @@ prepareSleep(EndpTCB func, int timeToSleep, void *clientData)
     id = timerElemAdd(now + timeToSleep, func, clientData);
 
 #if defined(INNFEED_DEBUG)
-    d_printf(1, "Preparing sleep %d at date %ld for %ld seconds\n", (int) id,
-             (long) now, (long) timeToSleep);
+    d_printf(1, "Preparing sleep %d at date %lu for %ld seconds\n", (int) id,
+             (unsigned long) now, (long) timeToSleep);
 #endif
 
     return id;
@@ -1293,8 +1293,8 @@ printDate(TimeoutId tid, void *data)
     const time_t t = theTime();
 
     timeToString(t, dateString, sizeof(dateString));
-    d_printf(1, "Timeout (%d) time now is %ld %s\n", (int) tid, (long) t,
-             dateString);
+    d_printf(1, "Timeout (%d) time now is %lu %s\n", (int) tid,
+             (unsigned long) t, dateString);
 
     if (timeoutQueue == NULL) {
         int ti = (rand() % 10) + 1;
@@ -1320,8 +1320,8 @@ Timeout(TimeoutId tid, void *data)
     }
 
     timeToString(t, dateString, sizeof(dateString));
-    d_printf(1, "Timeout (%d) time now is %ld %s\n", (int) tid, (long) t,
-             dateString);
+    d_printf(1, "Timeout (%d) time now is %lu %s\n", (int) tid,
+             (unsigned long) t, dateString);
 
     if (timeoutQueue != NULL && timeoutQueue->next != NULL)
         d_printf(1, "%s timeout id %d\n",

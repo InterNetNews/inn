@@ -50,10 +50,10 @@ typedef struct _STATUS {
     struct _STATUS *next;
 } STATUS;
 
-static unsigned STATUSlast_time;
+static unsigned long STATUSlast_time;
 static char start_time[50];
 
-static unsigned
+static unsigned long
 STATUSgettime(void)
 {
     static int init = 0;
@@ -274,8 +274,8 @@ STATUSsummary(void)
         fprintf(F, "%lu days\n", innconf->artcutoff);
     else
         fprintf(F, "none\n");
-    fprintf(F, "               Timeout period: %ld seconds\n",
-            (long) TimeOut.tv_sec);
+    fprintf(F, "               Timeout period: %lu seconds\n",
+            (unsigned long) TimeOut.tv_sec);
     if (innconf->remembertrash) {
         fprintf(F, "               Remember Trash: Yes\n");
     } else {
@@ -294,7 +294,7 @@ STATUSsummary(void)
 
     /* Global values */
     fprintf(F, "global (process)\n");
-    fprintf(F, "         seconds: %ld\n", (long) seconds);
+    fprintf(F, "         seconds: %lu\n", (unsigned long) seconds);
     offered = accepted + refused + rejected;
     fprintf(F, "         offered: %-9lu\n", offered);
     if (offered == 0)
@@ -319,18 +319,19 @@ STATUSsummary(void)
     fputc('\n', F);
 
     if (innconf->logstatus) {
-        notice("%s status seconds %ld accepted %lu "
+        notice("%s status seconds %lu accepted %lu "
                "refused %lu rejected %lu duplicate %lu "
                "accepted size %.0f duplicate size %.0f rejected size %.0f\n",
-               "ME", (long) seconds, accepted, refused, rejected, duplicate,
-               (double) size, (double) DuplicateSize, (double) RejectSize);
+               "ME", (unsigned long) seconds, accepted, refused, rejected,
+               duplicate, (double) size, (double) DuplicateSize,
+               (double) RejectSize);
     }
 
     /* Incoming Feeds */
     for (status = head; status != NULL;) {
         fprintf(F, "%s\n", status->name);
         fprintf(F, " ip address: %s\n", status->ip_addr);
-        fprintf(F, "    seconds: %-7ld  ", (long) status->seconds);
+        fprintf(F, "    seconds: %-7lu  ", (unsigned long) status->seconds);
         fprintf(F, "      duplicates: %-5lu ", status->Duplicate);
         fprintf(F, "max allowed cxns: %u\n", status->maxCxn);
         fprintf(F, "    offered: %-7lu  ",
@@ -372,13 +373,13 @@ STATUSsummary(void)
 
         if (innconf->logstatus) {
             notice(
-                "%s status seconds %ld accepted %lu "
+                "%s status seconds %lu accepted %lu "
                 "refused %lu rejected %lu duplicate %lu "
                 "accepted size %.0f duplicate size %.0f rejected size %.0f\n",
-                status->name, (long) status->seconds, status->accepted,
-                status->refused, status->rejected, status->Duplicate,
-                (double) status->Size, (double) status->DuplicateSize,
-                (double) status->RejectSize);
+                status->name, (unsigned long) status->seconds,
+                status->accepted, status->refused, status->rejected,
+                status->Duplicate, (double) status->Size,
+                (double) status->DuplicateSize, (double) status->RejectSize);
         }
 
         tmp = status->next;
@@ -398,7 +399,7 @@ STATUSsummary(void)
 void
 STATUSmainloophook(void)
 {
-    unsigned now;
+    unsigned long now;
 
     if (innconf->status == 0)
         return;

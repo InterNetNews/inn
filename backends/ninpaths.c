@@ -145,9 +145,10 @@ writedump(FILE *f)
     if (!total) {
         return -1;
     }
-    fprintf(f, "!!NINP " VERSION " %lu %lu %ld %ld %ld\n",
+    fprintf(f, "!!NINP " VERSION " %lu %lu %ld %ld %lu\n",
             (unsigned long) starttime, (unsigned long) time(NULL), sites,
-            total, (long) ((atimes / (double) total) + (double) starttime));
+            total,
+            (unsigned long) ((atimes / (double) total) + (double) starttime));
     n = j = 0;
     /* write the S-records (hosts), numbering them in the process */
     for (i = 0; i < HASH_TBL; ++i)
@@ -202,7 +203,7 @@ writedumpfile(const char *n)
 #if __GNUC__ > 4 || defined(__llvm__) || defined(__clang__)
 #    pragma GCC diagnostic ignored "-Wformat-nonliteral"
 #endif
-    snprintf(buf, sizeof(buf), n, time(0));
+    snprintf(buf, sizeof(buf), n, (unsigned long) time(0));
 #if __GNUC__ > 4 || defined(__llvm__) || defined(__clang__)
 #    pragma GCC diagnostic warning "-Wformat-nonliteral"
 #endif
