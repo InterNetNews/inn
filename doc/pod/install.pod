@@ -57,17 +57,18 @@ Unix platform.  It does, however, make extensive use of mmap(2) and
 certain other constructs that may be poorly or incompletely implemented,
 particularly on very old operating systems.
 
-INN has been confirmed to work on recent versions of the following
-operating systems:
+INN has been confirmed to build on recent versions of the following operating
+systems:
 
-    AIX (including 7.2)
-    FreeBSD (including 12.1 and 13.0)
-    Linux (including 3.16, 4.19, 5.10, 5.15 and 6.1 kernels,
-           glibc 2.19, 2.28, 2.31 and 2.36)
-    macOS (including 11, 12 and 13)
+    AIX (including 7.2 and 7.3)
+    FreeBSD (including 12.1, 13.0 and 14.0)
+    Linux (including 3.16, 4.19, 5.10, 5.15, 6.1 and 6.8 kernels,
+           glibc 2.19, 2.28, 2.31, 2.36 and 2.38,
+           and musl 1.1.24, 1.2.2, 1.2.3 and 1.2.4)
+    macOS (including 11, 12, 13 and 14)
     NetBSD (including 9.2)
-    OpenBSD (including 6.8 and 7.2)
-    Oracle Solaris (including 10 1/13 and 11.3)
+    OpenBSD (including 6.8, 7.2 and 7.5)
+    Oracle Solaris (including 10 1/13, 11.3 and 11.4)
 
 Current versions of INN may also work on other operating systems like
 HP-UX, OpenServer, SCO, UnixWare or UX/4800, as well as old versions of
