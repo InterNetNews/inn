@@ -87,7 +87,7 @@ create table artinfo (
     primary key (groupid, artnum)
 ) without rowid;
 
--- The "arrived" and "expired" columns contain time_t values.
+-- The "arrived" and "expires" columns contain time_t values.
 --
 -- The "token" column contains TOKEN values in raw 18-byte format.
 --

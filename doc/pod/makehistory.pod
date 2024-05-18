@@ -73,7 +73,7 @@ in F<inn.conf>.
 Making sure that the directory specified by the I<pathoverview> parameter in
 F<inn.conf> exists and is empty (or contains freshly created buffindexed
 buffers, if using that overview storage method).  Otherwise, rename
-the current directory (to backup existing overview data) and re-create
+the current directory (to back up existing overview data) and re-create
 I<pathoverview> as the news user.
 
 =item 5.
