@@ -2498,10 +2498,10 @@ buffindexed_close(void)
                             break;
                         }
                     }
-                    fprintf(F, "%d: % 6ld, % 2d: 0x%08x, % 10ld, % 10ld\n",
+                    fprintf(F, "%d: % 6ld, % 2d: 0x%08x, % 10lu, % 10lu\n",
                             ovbuff->index, i, j, trace->ov_trace[j].gloc.recno,
-                            trace->ov_trace[j].occupied,
-                            trace->ov_trace[j].freed);
+                            (unsigned long) trace->ov_trace[j].occupied,
+                            (unsigned long) trace->ov_trace[j].freed);
                 }
             }
         }
@@ -2614,8 +2614,8 @@ main(int argc, char **argv)
     if (isdigit((unsigned char) *group)) {
         gloc.recno = atoi(group);
         ge = &GROUPentries[gloc.recno];
-        fprintf(stdout, "left articles are %d for %d, last expiry is %ld\n",
-                ge->count, gloc.recno, (long) ge->expired);
+        fprintf(stdout, "left articles are %d for %d, last expiry is %lu\n",
+                ge->count, gloc.recno, (unsigned long) ge->expired);
         if (ge->count == 0) {
             GROUPlock(gloc, INN_LOCK_UNLOCK);
             exit(0);

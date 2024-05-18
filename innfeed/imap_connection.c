@@ -4595,10 +4595,10 @@ printCxnInfo(Connection cxn, FILE *fp, unsigned int indentAmt)
 
     fprintf(fp, "%s    Issuing Quit : %d\n", indent, cxn->issue_quit);
 
-    fprintf(fp, "%s    time-connected (imap) : %ld\n", indent,
-            (long) cxn->imap_timeCon);
-    fprintf(fp, "%s    time-connected (lmtp) : %ld\n", indent,
-            (long) cxn->lmtp_timeCon);
+    fprintf(fp, "%s    time-connected (imap) : %lu\n", indent,
+            (unsigned long) cxn->imap_timeCon);
+    fprintf(fp, "%s    time-connected (lmtp) : %lu\n", indent,
+            (unsigned long) cxn->lmtp_timeCon);
     fprintf(fp, "%s    articles from INN : %d\n", indent,
             cxn->lmtp_succeeded + cxn->lmtp_failed + cxn->cancel_succeeded
                 + cxn->cancel_failed + cxn->create_succeeded

@@ -534,7 +534,7 @@ CMDnewgroups(int ac, char *av[])
         if ((q = strchr(p, ' ')) == NULL)
             continue;
         *q++ = '\0';
-        if ((time_t) atol(q) < date)
+        if ((time_t) atoll(q) < date)
             continue;
         if (!OVgroupstats(p, &lo, &hi, &count, &flag))
             continue;

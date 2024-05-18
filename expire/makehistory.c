@@ -271,8 +271,8 @@ FlushOverTmpFile(void)
             *p++ = '\0';
             *q++ = '\0';
             *r++ = '\0';
-            arrived = (time_t) atol(p);
-            expires = (time_t) atol(q);
+            arrived = (time_t) atoll(p);
+            expires = (time_t) atoll(q);
             q = r;
             if ((r = strchr(r, '\t')) == NULL) {
                 warn("sorted overview file %s has a bad line at %d",
@@ -284,8 +284,8 @@ FlushOverTmpFile(void)
             *p++ = '\0';
             *q++ = '\0';
             *r++ = '\0';
-            arrived = (time_t) atol(line);
-            expires = (time_t) atol(p);
+            arrived = (time_t) atoll(line);
+            expires = (time_t) atoll(p);
         }
         token = TextToToken(q);
         if (OVadd(token, r, strlen(r), arrived, expires) == OVADDFAILED) {
@@ -338,8 +338,8 @@ WriteOverLine(TOKEN *token, const char *xrefs, int xrefslen, char *overdata,
     /* If WriteStdout is set, just print the overview information to standard
        output and return. */
     if (WriteStdout) {
-        printf("%s %ld %ld ", TokenToText(*token), (long) arrived,
-               (long) expires);
+        printf("%s %lu %lu ", TokenToText(*token), (unsigned long) arrived,
+               (unsigned long) expires);
         fwrite(overdata, 1, overlen, stdout);
         fputc('\n', stdout);
         return;
@@ -350,8 +350,8 @@ WriteOverLine(TOKEN *token, const char *xrefs, int xrefslen, char *overdata,
        process or to the overview database directly. */
     if (sorttype == OVNOSORT) {
         if (Fork) {
-            fprintf(Overchan, "%s %ld %ld ", TokenToText(*token),
-                    (long) arrived, (long) expires);
+            fprintf(Overchan, "%s %lu %lu ", TokenToText(*token),
+                    (unsigned long) arrived, (unsigned long) expires);
             if (fwrite(overdata, 1, overlen, Overchan) != (size_t) overlen)
                 sysdie("writing overview failed");
             fputc('\n', Overchan);
@@ -1077,7 +1077,8 @@ main(int argc, char **argv)
         if (!WriteStdout) {
             if ((F = fopen(RebuiltflagPath, "w")) == NULL)
                 sysdie("cannot open %s", RebuiltflagPath);
-            if (fprintf(F, "%ld\n", (long) time(NULL)) == EOF || ferror(F))
+            if (fprintf(F, "%lu\n", (unsigned long) time(NULL)) == EOF
+                || ferror(F))
                 sysdie("cannot write rebuilt flag file");
             fclose(F);
         }

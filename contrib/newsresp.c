@@ -80,7 +80,7 @@ void error(const char *);
 void fatal(const char *);
 void ierror(const char *, const char *);
 void ifatal(const char *, const char *);
-unsigned int do_time(unsigned int);
+unsigned long do_time(unsigned long);
 void ptime(void);
 void massagebuff(int, char *);
 bool punt(int);
@@ -175,8 +175,8 @@ ifatal(const char *how, const char *what)
     exit(1);
 }
 
-unsigned int
-do_time(unsigned int start)
+unsigned long
+do_time(unsigned long start)
 {
     struct timeval now;
 
@@ -184,7 +184,7 @@ do_time(unsigned int start)
     return (now.tv_sec * 1000 + now.tv_usec / 1000 - start);
 }
 
-static unsigned int start, elapsed, diff;
+static unsigned long start, elapsed, diff;
 
 void
 ptime(void)
@@ -248,7 +248,7 @@ punt(int numart)
     }
 
     do {
-        snprintf(ihave, sizeof(ihave), "ihave <%u@a>\r\n", start + numart);
+        snprintf(ihave, sizeof(ihave), "ihave <%lu@a>\r\n", start + numart);
         ptime();
         printf(">>> %s", ihave);
         if (write(sock, ihave, strlen(ihave)) != (int) strlen(ihave)) {

@@ -534,7 +534,7 @@ main(int ac, char *av[])
             exit(0);
             /* NOTREACHED */
         case 't':
-            TimeOut.tv_sec = atol(optarg);
+            TimeOut.tv_sec = atoll(optarg);
             break;
         case 'T':
             RemoteTotal = atoi(optarg);
@@ -543,7 +543,7 @@ main(int ac, char *av[])
             BufferedLogs = false;
             break;
         case 'X':
-            RemoteTimer = atoi(optarg);
+            RemoteTimer = atoll(optarg);
             break;
         case 'Z':
             StreamingOff = true;

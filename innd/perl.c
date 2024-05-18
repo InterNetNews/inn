@@ -343,7 +343,7 @@ XS(XS_INN_addhist)
 
     /* If any of the times are missing, they should default to now. */
     if (i < 4) {
-        snprintf(tbuff, sizeof(tbuff), "%ld", (long) time(NULL));
+        snprintf(tbuff, sizeof(tbuff), "%lu", (unsigned long) time(NULL));
         for (; i < 4; i++)
             parambuf[i] = tbuff;
     }
