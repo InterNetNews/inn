@@ -165,10 +165,12 @@ Add a new entry to F<newsfeeds> in I<pathetc> like:
 
     innfeed-delayed!\
         :!*\
-        :Tc,Wnm*,S16384:<pathbin>/delayer --delay 120 -- \
+        :Tc,Wnm*,S16384:<pathbin>/delayer --delay 300 -- \
             <pathbin>/innfeed -c innfeed-delayed.conf
 
-This will delay articles via that feed for 120 seconds.
+This will delay articles via that feed for 300 seconds.  If the intent is to
+give NoCeM messages time to arrive, the delay should match the frequency at
+which they are sent in the news.lists.filters newsgroup.
 
 =item *
 
