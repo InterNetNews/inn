@@ -286,9 +286,15 @@ reformat:
 	fi
 	@if command -v "perltidy" &> /dev/null ; then \
 	    echo "Running perltidy to reformat Perl code..." ; \
-	    (grep --include=\*.in -Rin perl * | grep ':1:' | cut -f1 -d':' ; \
-	        find * -name '*.pl' -o -name '*.pl.in' -o -name '*.pm' \
-	        -o -name '*.pm.in' ; echo support/mkmanifest) \
+	    (grep --include=\*.in -Rin perl . | grep ':1:' | cut -f1 -d':' ; \
+	        find . \( -name '*.pl' -o -name '*.pl.in' -o -name '*.pm' \
+	        -o -name '*.pm.in' \) \
+	        \! -wholename ./perl/INN/Config.pm \
+	        \! -wholename ./perl/INN/Utils/Shlock.pm \
+	        \! -wholename ./samples/nnrpd_access.pl \
+	        \! -wholename ./samples/nnrpd_auth.pl \
+	        \! -wholename ./scripts/innshellvars.pl \
+	        ; echo support/mkmanifest) \
 	        | grep -v pgpverify | grep -v '^site/' | sort -u \
 	        | xargs perltidy ; \
 	else \
