@@ -4,6 +4,8 @@
 
    Contributed by Alex Kiernan <alexk@demon.net>. */
 
+#include "portable/system.h"
+
 #include <errno.h>
 #include <fcntl.h>
 #include <poll.h>
