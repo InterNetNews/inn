@@ -350,14 +350,17 @@ for distributions.
 
 =item B<--enable-largefiles>
 
-Enables large file support.  This is not enabled by default, even on
-platforms that support it, because it changes the format of INN's on-disk
-databases (making it difficult to upgrade an earlier INN installation)
-and can significantly increase the size of some of the history database
-files.  Large file support is not necessary unless your F<history>
-database is so large that it exceeds S<2 GB> or you want to use CNFS
-buffers larger than S<2 GB> on 32-bit platforms (and some very rare
-64-bit platforms that aren't Linux).
+Enables large file support, arranging for 64-bit file offsets.  This flag
+is only useful for 32-bit platforms and some very rare 64-bit platforms that
+define a 32-bit I<off_t> type.
+
+This is not enabled by default (unless of course I<off_t> is already 64-bit
+long), even on platforms that support it, because it changes the format
+of INN's on-disk databases (making it difficult to upgrade an earlier INN
+installation) and can significantly increase the size of some of the history
+database files.  Large file support is not necessary unless your F<history>
+database is so large that it exceeds S<2 GB> or you want to use CNFS buffers
+larger than S<2 GB> on 32-bit platforms.
 
 The history, tradindexed and buffindexed overview, and timecaf databases
 written by an INN built with this option are incompatible with those
@@ -1267,10 +1270,10 @@ be stored.  Also, when laying out your cycbuffs, you will want to try to
 arrange them across as many physical disks as possible (or use a striped
 disk array and put them all on that).
 
-In order to use any cycbuff larger than S<2 GB> on 32-bit platforms
-(and some very rare 64-bit platforms that aren't Linux), you need to
-build INN with the B<--enable-largefiles> option.  See L<Installing INN>
-for more information and some caveats.
+In order to use any cycbuff larger than S<2 GB> on 32-bit platforms (and some
+very rare 64-bit platforms that define a 32-bit I<off_t> type), you need to
+build INN with the B<--enable-largefiles> option.  See L<Installing INN> for
+more information and some caveats.
 
 For each cycbuff you will be creating, add a line to F<cycbuff.conf> like
 the following:
