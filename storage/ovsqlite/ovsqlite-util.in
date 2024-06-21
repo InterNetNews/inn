@@ -16,7 +16,6 @@ $0 =~ s!.*/!!;
 eval {
     require DBI;
     require DBD::SQLite;
-    my $err = $DBI::errstr;    # Just to silence "used only once" warning.
     1;
 } or die "DBI Perl module with SQLite driver needed"
   . " (usually packaged as libdbd-sqlite3-perl, perl-DBD-SQLite,"
@@ -102,7 +101,7 @@ my @pack_length_bias = (
 my $dbh = DBI->connect(
     $datasource, '', '',
     { PrintError => 0, RaiseError => 1, AutoCommit => 0 },
-) or die "Can't connect to database: $DBI::errstr";
+) or die "Can't connect to database: " . DBI::errstr();
 
 # To process multiple SQL statements in a do() handle.
 $dbh->{sqlite_allow_multiple_statements} = 1;
