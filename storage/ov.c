@@ -309,7 +309,7 @@ OVopensearch(char *group, int low, int high)
     if (!ov.open) {
         /* must be opened */
         warn("ovopen must be called first");
-        return false;
+        return NULL;
     }
     return ((*ov.opensearch)(group, low, high));
 }

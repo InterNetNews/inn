@@ -1417,7 +1417,7 @@ ovdb_check_user(void)
         int rv;
         uid_t uid;
 
-        rv = get_news_uid_gid(&uid, false, false);
+        rv = get_news_uid_gid(&uid, NULL, false);
 
         if (rv != 0) {
             syswarn("OVDB: can't resolve runasuser user to a UID");

@@ -292,7 +292,7 @@ main(int argc, char *argv[])
        need privileged ports easier and to make testing easier. */
     real_uid = getuid();
     if (real_uid != geteuid()) {
-        get_news_uid_gid(&uid, false, true);
+        get_news_uid_gid(&uid, NULL, true);
         if (real_uid != uid) {
             die("must be run by runasuser (%lu), not %lu", (unsigned long) uid,
                 (unsigned long) real_uid);
