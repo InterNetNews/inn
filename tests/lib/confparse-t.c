@@ -22,7 +22,7 @@ read_section(FILE *file)
 
     status = fgets(buf, sizeof(buf), file);
     if (status == NULL)
-        return false;
+        return NULL;
     while (1) {
         if (status == NULL)
             die("Unexpected end of file while reading tests");

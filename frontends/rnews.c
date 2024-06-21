@@ -867,7 +867,7 @@ main(int ac, char *av[])
 
         /* Do not use ensure_news_user() because it will fail to deal
          * with the case of rnews being setuid news. */
-        get_news_uid_gid(&uid, false, true);
+        get_news_uid_gid(&uid, NULL, true);
         if (setuid(uid) < 0) {
             sysdie("failed to setuid");
         }
