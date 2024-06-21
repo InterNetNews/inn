@@ -121,14 +121,15 @@ buffer.o: buffer.c ../include/portable/system.h ../include/config.h \
   ../include/inn/portable-stdbool.h ../include/inn/xmalloc.h \
   ../include/inn/system.h ../include/inn/xwrite.h \
   ../include/inn/messages.h buffer.h misc.h
-config_l.o: config_l.c innfeed.h ../include/inn/timer.h \
+config_l.o: config_l.c ../include/portable/system.h ../include/config.h \
   ../include/inn/macros.h ../include/inn/portable-macros.h \
-  ../include/portable/stdbool.h ../include/config.h \
-  ../include/inn/macros.h ../include/inn/options.h ../include/inn/system.h \
-  ../include/portable/stdbool.h ../include/inn/libinn.h \
-  ../include/inn/concat.h ../include/inn/portable-stdbool.h \
-  ../include/inn/xmalloc.h ../include/inn/system.h ../include/inn/xwrite.h \
-  configfile.h config_y.h misc.h ../include/portable/macros.h
+  ../include/inn/options.h ../include/inn/system.h \
+  ../include/portable/stdbool.h ../include/portable/macros.h \
+  ../include/portable/stdbool.h innfeed.h ../include/inn/timer.h \
+  ../include/inn/macros.h ../include/inn/libinn.h ../include/inn/concat.h \
+  ../include/inn/portable-stdbool.h ../include/inn/xmalloc.h \
+  ../include/inn/system.h ../include/inn/xwrite.h configfile.h config_y.h \
+  misc.h
 config_y.o: config_y.c ../include/portable/system.h ../include/config.h \
   ../include/inn/macros.h ../include/inn/portable-macros.h \
   ../include/inn/options.h ../include/inn/system.h \

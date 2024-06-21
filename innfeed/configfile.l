@@ -1,3 +1,7 @@
+%top{
+#include "portable/system.h"
+}
+
 %{
 /*
 **  A flex input file for the innfeed config file.
