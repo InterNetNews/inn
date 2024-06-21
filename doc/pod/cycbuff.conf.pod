@@ -19,8 +19,8 @@ cycbuff is filled before moving on to the next).  This is so that you
 can distribute the individual cycbuffs across multiple physical disks
 and balance the load between them.  Note that in order to use any
 cycbuff larger than S<2 GB> on 32-bit platforms (and some very rare
-64-bit platforms that aren't Linux), you need to build INN with the
-B<--enable-largefiles> option.
+64-bit platforms that define a 32-bit I<off_t> type), you need to
+build INN with the B<--enable-largefiles> option.
 
 For information about how to configure INN to use CNFS, see
 storage.conf(5).
