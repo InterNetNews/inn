@@ -102,7 +102,7 @@ Xstop)
     ;;
 esac
 
-##  Pick ${INND} or ${INNDSTART}
+##  Program to start.
 WHAT=${INND}
 
 ADDHEADER="Auto-Submitted: auto-generated"
