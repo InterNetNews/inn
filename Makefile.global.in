@@ -20,7 +20,7 @@
 ##      be complying with the NNTP protocol.
 
 VERSION		= 2.7.2
-VERSION_EXTRA	=
+VERSION_EXTRA	= prerelease
 
 ##  The absolute path to the top of the build directory, used to find the
 ##  libraries built as part of INN.  Using relative paths confuses libtool
