@@ -154,7 +154,8 @@ elif [ "$tree" = "GIT" ]; then
         date=$(git log -1 --pretty=%cd --date=format:%Y%m%d)
         SNAPDIR=inn-"$VERSION"-"$date"
     else
-        SNAPDIR=inn-"$(git describe --tags)"
+        # Do not take into account tags of beta or release candidate versions.
+        SNAPDIR=inn-"$(git describe --tags --exclude '*[A-Za-z]*')"
     fi
     make snapshot SNAPDIR="$SNAPDIR" SNAPDATE="$date"
 else
