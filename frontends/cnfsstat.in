@@ -423,8 +423,8 @@ sub print_cycbuff_head {
 
     if ($opt{'a'}) {
         if (defined $oldart) {
-            my ($when, $ago) = make_time($oldart);
-            print "  Oldest: $when, $ago ago\n";
+            my ($when_oldart, $ago_oldart) = make_time($oldart);
+            print "  Oldest: $when_oldart, $ago_oldart ago\n";
         } else {
             print "  No oldest article\n";
         }
@@ -436,13 +436,13 @@ sub make_time {
     my ($t) = @_;
     my (@ret);
 
-    my ($sec, $min, $hour, $mday, $mon, $year)
+    my ($sec, $minutes, $hour, $mday, $mon, $year)
       = (localtime($t))[0 .. 5];
     push(
         @ret,
         sprintf(
             "%04d-%02d-%02d %2d:%02d:%02d",
-            $year + 1900, $mon + 1, $mday, $hour, $min, $sec,
+            $year + 1900, $mon + 1, $mday, $hour, $minutes, $sec,
         ),
     );
     $t = time - $t;
@@ -451,14 +451,14 @@ sub make_time {
     $t = $t % 86400;
     $hour = int($t / 3600);
     $t = $t % 3600;
-    $min = int($t / 60);
+    $minutes = int($t / 60);
     $t = $t % 60;
 
     push(
         @ret,
         sprintf(
             "%4d days, %2d:%02d:%02d",
-            $mday, $hour, $min, $t,
+            $mday, $hour, $minutes, $t,
         ),
     );
     return @ret;

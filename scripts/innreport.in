@@ -164,8 +164,7 @@ my @old_argv = @ARGV;
 
 # Convert DO/DONT into boolean values.
 {
-    my $i;
-    foreach $i (
+    foreach my $i (
         \$HTML, \$GRAPH, \$ARCHIVE, \$WANT_UNKNOWN,
         \$CASE_SENSITIVE, \$NOT_DAILY,
     ) {
@@ -206,8 +205,7 @@ Usage(0) if $ref{'h'} || $ref{'help'} || !defined $ref{'f'};
 
 # Remove sections from the general configuration file that are now in a
 # separate display configuration file.
-my $output_section;
-foreach $output_section (@{ $output{'_order_'} }) {
+foreach my $output_section (@{ $output{'_order_'} }) {
     next if $output_section eq 'default';
     delete $output{$output_section};
 }
@@ -383,9 +381,9 @@ my ($current_year, $local_timezone);
 my $HTML_header = '';
 my $HTML_footer = '';
 
-my $xmax = &GetValue($output{'default'}{'graph_width'})    # Graph size.
+my $imgxmax = &GetValue($output{'default'}{'graph_width'})    # Graph size.
   if defined $output{'default'}{'graph_width'};
-$xmax = 550 unless $xmax;
+$imgxmax = 550 unless $imgxmax;
 
 my $transparent = &GetValue($output{'default'}{'transparent'})
   if defined $output{'default'}{'transparent'};
@@ -685,8 +683,7 @@ if ($ARCHIVE) {
     &Rotate($CYCLE, $HTML_dir, 'news-notice', $HTML_EXTENSION);
 
     # rotate pictures
-    my $report;
-    foreach $report (@{ $output{'_order_'} }) {
+    foreach my $report (@{ $output{'_order_'} }) {
         next if $report =~ m/^(default|index)$/;
         next unless defined $output{$report}{'graph'};
 
@@ -775,7 +772,7 @@ sub ms2time($) {
 # Rotate the archive files.
 sub Rotate {
     # Usage: &Rotate ($max_files, "$directory", "prefix", "suffix");
-    my ($max, $rep, $prefix, $suffix) = @_;
+    my ($max, $rep, $prefix, $rotsuffix) = @_;
     my ($file, $num, %files);
     local ($a, $b);
 
@@ -800,14 +797,14 @@ sub Rotate {
                         \d\d             # Minute : 34
                         $SEPARATOR       # Separator : ":"
                         \d\d             # Second : 29
-                        $suffix          # Suffix : ".html"
+                        $rotsuffix       # Suffix : ".html"
                         $/x;
         $files{$file}++;
     }
     closedir DIR;
     $num = 0;
-    foreach $file (sort { $b cmp $a } (keys(%files))) {
-        unlink "$rep/$file" if $num++ >= $max && -f "$rep/$file";
+    foreach my $filename (sort { $b cmp $a } (keys(%files))) {
+        unlink "$rep/$filename" if $num++ >= $max && -f "$rep/$filename";
     }
     return 1;
 }
@@ -1095,22 +1092,21 @@ EOF
 
 # make an index for archive pages
 sub Make_Index($$$$) {
-    my ($rep, $index, $filename, $data) = @_;
-    my %output = %$data;
+    my ($rep, $indexname, $filename, $data) = @_;
+    my %outputdata = %$data;
 
-    $index =~ s/^\"\s*(.*?)\s*\"$/$1/o;
+    $indexname =~ s/^\"\s*(.*?)\s*\"$/$1/o;
 
     # add requested data at the end of the database.
     open(DATA, ">> $rep/innreport.db") || die "can't open $rep/innreport.db\n";
     my $i = 0;
     my $res = "$filename";
-    while (defined ${ ${ $output{'index'}{'column'} }[$i] }{'value'}) {
-        my $data
-          = &GetValue(${ ${ $output{'index'}{'column'} }[$i] }{'value'});
-        $data =~ s/\n//sog;
-        my @list = split /\|/, $data;
-        my $val;
-        foreach $val (@list) {
+    while (defined ${ ${ $outputdata{'index'}{'column'} }[$i] }{'value'}) {
+        my $indexdata
+          = &GetValue(${ ${ $outputdata{'index'}{'column'} }[$i] }{'value'});
+        $indexdata =~ s/\n//sog;
+        my @list = split /\|/, $indexdata;
+        foreach my $val (@list) {
             $res .= (
                 $val eq 'date'
                 ? "|$first_date -- $last_date"
@@ -1138,30 +1134,33 @@ sub Make_Index($$$$) {
     }
     close DATA;
 
-    my $title = "Daily Usenet report";
-    $title = &GetValue($output{'default'}{'title'})
-      if defined $output{'default'}{'title'};
-    $title =~ s/\\\"/\"/g;
-    my $Title = $title;
+    my $maintitle = "Daily Usenet report";
+    $maintitle = &GetValue($outputdata{'default'}{'title'})
+      if defined $outputdata{'default'}{'title'};
+    $maintitle =~ s/\\\"/\"/g;
+    my $Title = $maintitle;
     $Title =~ s/<.*?>//g;
     my $result = GetHTMLHeader($Title . ': index')
-      . "<div class=\"ir-pageTitle\"><h1>$title - archives</h1></div>\n";
+      . "<div class=\"ir-pageTitle\"><h1>$maintitle - archives</h1></div>\n";
 
     if ($GRAPH) {
-        my $i = 0;
+        $i = 0;
         $result .= "<div class=\"ir-feedTotals\">\n";
-        while (defined ${ ${ $output{'index'}{'graph'} }[$i] }{'title'}) {
+        while (defined ${ ${ $outputdata{'index'}{'graph'} }[$i] }{'title'}) {
             my $title
-              = &GetValue(${ ${ $output{'index'}{'graph'} }[$i] }{'title'});
-            my $filename = "index$i.$GD_FORMAT";
+              = &GetValue(
+                  ${ ${ $outputdata{'index'}{'graph'} }[$i] }{'title'});
+            my $imgname = "index$i.$GD_FORMAT";
             my $color_bg
-              = &GetValue(${ ${ $output{'index'}{'graph'} }[$i] }{'color'});
+              = &GetValue(
+                  ${ ${ $outputdata{'index'}{'graph'} }[$i] }{'color'});
             my $unit
-              = &GetValue(${ ${ $output{'index'}{'graph'} }[$i] }{'unit'});
+              = &GetValue(${ ${ $outputdata{'index'}{'graph'} }[$i] }{'unit'});
             my $date_idx
-              = &GetValue(${ ${ $output{'index'}{'graph'} }[$i] }{'value'});
+              = &GetValue(
+                  ${ ${ $outputdata{'index'}{'graph'} }[$i] }{'value'});
             $date_idx =~ s/^val(\d+)$/$1/o;
-            my @c = @{ ${ ${ $output{'index'}{'graph'} }[$i] }{'data'} };
+            my @c = @{ ${ ${ $outputdata{'index'}{'graph'} }[$i] }{'data'} };
             my $label_in = &GetValue(${ $c[0] }{'name'});
             my $color_in = &GetValue(${ $c[0] }{'color'});
             my $value_in = &GetValue(${ $c[0] }{'value'});
@@ -1174,9 +1173,9 @@ sub Make_Index($$$$) {
             my $type_out = 0;
             $type_out = $value_out =~ s/^byte\((.*?)\)$/$1/o;
             $value_out =~ s/^val(\d+)$/$1/o;
-            my (%in, %out, %dates, $k);
+            my (%in, %out, %dates);
 
-            foreach $k (keys(%data)) {
+            foreach my $k (keys(%data)) {
                 my @res = split /\|/, $data{$k};
                 my ($year) = $k =~ m/^news-notice\.
                        (\d+)\.\d+\.\d+-\d+.\d+.\d+$HTML_EXTENSION/x;
@@ -1215,12 +1214,12 @@ sub Make_Index($$$$) {
             }
             my ($xmax, $ymax) = (500, 170);
             &Chrono(
-                "$IMG_dir/$filename", $title, $color_bg, $xmax, $ymax,
+                "$IMG_dir/$imgname", $title, $color_bg, $xmax, $ymax,
                 \%in, \%out, \%dates, $label_in, $label_out,
                 $color_in, $color_out, $unit,
             );
             $result .= "<img width=\"$xmax\" height=\"$ymax\" ";
-            $result .= "src=\"$IMG_pth$filename\" alt=\"Graph\"/>\n";
+            $result .= "src=\"$IMG_pth$imgname\" alt=\"Graph\"/>\n";
             $i++;
         }
         $result .= "</div>\n";
@@ -1229,12 +1228,12 @@ sub Make_Index($$$$) {
     $result .= "<table class=\"ir-archives\" summary=\"archives\">\n";
     $result .= "<tr class=\"ir-headerRow\">";
     my $temp = '';
-    while (defined ${ ${ $output{'index'}{'column'} }[$i] }{'title'}) {
+    while (defined ${ ${ $outputdata{'index'}{'column'} }[$i] }{'title'}) {
         my $title
-          = &GetValue(${ ${ $output{'index'}{'column'} }[$i] }{'title'});
+          = &GetValue(${ ${ $outputdata{'index'}{'column'} }[$i] }{'title'});
         my $name = '';
-        $name = &GetValue(${ ${ $output{'index'}{'column'} }[$i] }{'name'})
-          if defined ${ ${ $output{'index'}{'column'} }[$i] }{'name'};
+        $name = &GetValue(${ ${ $outputdata{'index'}{'column'} }[$i] }{'name'})
+          if defined ${ ${ $outputdata{'index'}{'column'} }[$i] }{'name'};
         my @list = split /\|/, $name;
         if ($name) {
             $result .= sprintf "<th colspan=\"%d\">$title</th>", $#list + 1;
@@ -1273,7 +1272,7 @@ sub Make_Index($$$$) {
     $result .= "</table>\n";
     $result .= GetHTMLFooter();
 
-    my $name = $rep . "/" . $index;
+    my $name = $rep . "/" . $indexname;
     while ($name =~ m/\/\.\.\//o) {
         $name =~ s|^\./||o;              # ^./xxx        =>      ^xxx
         $name =~ s|/\./|/|go;            # xxx/./yyy     =>      xxx/yyy
@@ -1295,10 +1294,8 @@ sub Graph3d {
     my $xmax = shift;        # width
     my $n = shift;           # Number of hash code tables
 
-    use strict;
-    my ($i, $k, $t);
     my @val;
-    for $i (0 .. $n - 1) {
+    for my $i (0 .. $n - 1) {
         push @val, shift;    # hash code table
     }
     my $colors = shift;      # colors table
@@ -1307,10 +1304,10 @@ sub Graph3d {
     my $max = 0;
     my $max_size = 0;
     my $size = 0;
-    foreach $k (sort keys(%{ $val[0] })) {
-        $t = 0;
+    foreach my $k (sort keys(%{ $val[0] })) {
+        my $t = 0;
         $size++;
-        for $i (0 .. $n - 1) {
+        for my $i (0 .. $n - 1) {
             $t += ${ $val[$i] }{$k} if defined ${ $val[$i] }{$k};
         }
         $max = $t if $max < $t;
@@ -1362,7 +1359,7 @@ sub Graph3d {
     }
     $image->filledRectangle(0, 0, $xmax, $ymax, $white);
     my @col;
-    for $i (0 .. $n - 1) {
+    for my $i (0 .. $n - 1) {
         $col[$i][0] = $image->colorAllocate(
             $$colors[$i][0],
             $$colors[$i][1],
@@ -1384,7 +1381,7 @@ sub Graph3d {
 
     $image->rectangle(0, 0, $xmax - 1, $size * $d + $mt + $mb - 1, $black);
     $image->line(0, $mt - 5, $xmax - 1, $mt - 5, $black);
-    for $i (0 .. $n - 1) {
+    for my $i (0 .. $n - 1) {
         $image->string(
             gdSmallFont(), $i * $xmax / $n + $mt - 10 + $rx,
             ($mt - gdSmallFont()->height) / 2, "$$labels[$i]", $black,
@@ -1455,7 +1452,7 @@ sub Graph3d {
 
     # Graduations.
     my $nn = 10;
-    for $k (1 .. ($nn - 1)) {
+    for my $k (1 .. ($nn - 1)) {
         $image->dashedLine(
             $ml + $rx + $k * ($xmax - $ml - $mr - $rx) / $nn,
             $mt + 10, $ml + $rx + $k * ($xmax - $ml - $mr - $rx) / $nn,
@@ -1503,7 +1500,7 @@ sub Graph3d {
             $size * $d + $mt + 6, "$t", $black,
         );
     }
-    foreach $k (
+    foreach my $k (
         sort { ${ $val[0] }{$b} <=> ${ $val[0] }{$a} }
         keys(%{ $val[0] })
     ) {
@@ -1517,7 +1514,7 @@ sub Graph3d {
             $ml + ($t + ${ $val[0] }{$k}) * $r + $rx, $e - $ry + $h,
             $black,
         );
-        for $i (0 .. $n - 1) {
+        for my $i (0 .. $n - 1) {
             next unless defined ${ $val[$i] }{$k};
             {
                 my $poly = new GD::Polygon;
@@ -1606,15 +1603,14 @@ sub Histo($$$$$$$$) {
         $labelx, $labely, $val1, $labels1,
     ) = @_;
 
-    use strict;
     my $max = 0;
     my $ymax = 300;
     my $nb = 0;
     # A hugly hack to convert hashes to lists
     # and to adjust the first and the last value...
     # This function should be rewritten.
-    my (@a, @b, $kk);
-    foreach $kk (sort keys(%$val1)) {
+    my (@a, @b);
+    foreach my $kk (sort keys(%$val1)) {
         if (defined $$val1{$kk}) {
             $nb++;
             # Arg... the following MUST be removed!!!!!!!!!
@@ -1832,7 +1828,7 @@ sub Histo($$$$$$$$) {
     my $w = ($xmax - $marginl - $marginr) / $nb;
     my $k = $w / 5;
     $$val[$nb - 1] = 0 unless $$val[$nb - 1];
-    foreach $j (@$val) {
+    foreach my $jval (@$val) {
         my $MAX = 1;
         if ($i++ <= $nb) {
             # Graduation
@@ -1857,15 +1853,19 @@ sub Histo($$$$$$$$) {
             my $poly = new GD::Polygon;
             $poly->addPt(
                 $marginl + ($i) * $w - $k,
-                $ymax - $marginb - $shy
-                  - $j / $factor * ($ymax - $marginb - $margint - $shy) / $max,
+                $ymax - $marginb - $shy - $jval
+                  / $factor
+                  * ($ymax - $marginb - $margint - $shy)
+                  / $max,
             );
             $poly->addPt($marginl + ($i) * $w - $k, $ymax - $marginb - $shy);
             $poly->addPt($marginl + ($i) * $w - $k - $shx, $ymax - $marginb);
             $poly->addPt(
                 $marginl + ($i) * $w - $k - $shx,
-                $ymax - $marginb
-                  - $j / $factor * ($ymax - $marginb - $margint - $shy) / $max,
+                $ymax - $marginb - $jval
+                  / $factor
+                  * ($ymax - $marginb - $margint - $shy)
+                  / $max,
             );
 
             $image->filledPolygon($poly, $red3);
@@ -1874,15 +1874,19 @@ sub Histo($$$$$$$$) {
             # Front
             $image->filledRectangle(
                 $marginl + ($i - 1) * $w + $k - $shx,
-                $ymax - $marginb
-                  - $j / $factor * ($ymax - $marginb - $margint - $shy) / $max,
+                $ymax - $marginb - $jval
+                  / $factor
+                  * ($ymax - $marginb - $margint - $shy)
+                  / $max,
                 $marginl + ($i) * $w - $k - $shx,
                 $ymax - $marginb, $red,
             );
             $image->rectangle(
                 $marginl + ($i - 1) * $w + $k - $shx,
-                $ymax - $marginb
-                  - $j / $factor * ($ymax - $marginb - $margint - $shy) / $max,
+                $ymax - $marginb - $jval
+                  / $factor
+                  * ($ymax - $marginb - $margint - $shy)
+                  / $max,
                 $marginl + ($i) * $w - $k - $shx,
                 $ymax - $marginb, $coltxt,
             );
@@ -1890,23 +1894,31 @@ sub Histo($$$$$$$$) {
             my $poly2 = new GD::Polygon;
             $poly2->addPt(
                 $marginl + ($i - 1) * $w + $k,
-                $ymax - $marginb - $shy
-                  - $j / $factor * ($ymax - $marginb - $margint - $shy) / $max,
+                $ymax - $marginb - $shy - $jval
+                  / $factor
+                  * ($ymax - $marginb - $margint - $shy)
+                  / $max,
             );
             $poly2->addPt(
                 $marginl + ($i) * $w - $k,
-                $ymax - $marginb - $shy
-                  - $j / $factor * ($ymax - $marginb - $margint - $shy) / $max,
+                $ymax - $marginb - $shy - $jval
+                  / $factor
+                  * ($ymax - $marginb - $margint - $shy)
+                  / $max,
             );
             $poly2->addPt(
                 $marginl + ($i) * $w - $k - $shx,
-                $ymax - $marginb
-                  - $j / $factor * ($ymax - $marginb - $margint - $shy) / $max,
+                $ymax - $marginb - $jval
+                  / $factor
+                  * ($ymax - $marginb - $margint - $shy)
+                  / $max,
             );
             $poly2->addPt(
                 $marginl + ($i - 1) * $w + $k - $shx,
-                $ymax - $marginb
-                  - $j / $factor * ($ymax - $marginb - $margint - $shy) / $max,
+                $ymax - $marginb - $jval
+                  / $factor
+                  * ($ymax - $marginb - $margint - $shy)
+                  / $max,
             );
 
             $image->rectangle(0, 0, $xmax - 1, $ymax - 1, $coltxt);
@@ -1944,7 +1956,6 @@ sub Chrono {
 
     my $unit = shift;
 
-    my $key;
     my $x_min = 1E30;
     my $x_max = 0;
     my $y_min = 0;
@@ -1952,7 +1963,7 @@ sub Chrono {
     my $y_max_in = 0;
     my $y_max_out = 0;
 
-    foreach $key (sort keys %$dates) {
+    foreach my $key (sort keys %$dates) {
         $x_min = $key if $x_min > $key;
         $x_max = $$dates{$key} if $x_max < $$dates{$key};
         my $delta = $dates->{$key} - $key;
@@ -1980,12 +1991,12 @@ sub Chrono {
     $unit .= "/" . ($factor == 60 ? "min" : "sec");
 
     # min range is 4 weeks.
-    my $delta = $x_max - $x_min;
-    $x_min = $x_max - 3024000 if $delta < 3024000;
+    my $range = $x_max - $x_min;
+    $x_min = $x_max - 3024000 if $range < 3024000;
     # between 4 weeks and one year, range is a year.
-    $x_min = $x_max - 31536000 if ($delta < 31536000 && $delta > 3024000);
+    $x_min = $x_max - 31536000 if ($range < 31536000 && $range > 3024000);
     # max range is 13 months
-    $x_min = $x_max - 34128000 if $delta > 34128000;
+    $x_min = $x_max - 34128000 if $range > 34128000;
     my $image = new GD::Image($xmax, $ymax);
     my ($white, $black);
     if (defined $output{'default'}{'graph_fg'}) {
@@ -2081,7 +2092,7 @@ sub Chrono {
     $brush->line(0, 0, 0, 1, $b_col);
     $image->setBrush($brush);
     my ($old_x, $old_y_in, $old_y_out);
-    foreach $key (sort keys %$dates) {
+    foreach my $key (sort keys %$dates) {
         next if $key < $x_min;
         my $delta = $$dates{$key} - $key;
         $min_in = $$in{$key} / $delta if $min_in > $$in{$key} / $delta;
@@ -2132,8 +2143,7 @@ sub Chrono {
         $xmax - $marginr, $ymax - $marginb, $black,
     );
     # graduations
-    my $i;
-    foreach $i (0, 25, 50, 75, 100) {
+    foreach my $i (0, 25, 50, 75, 100) {
         my $t = $ymax - $margint - $marginb;
         $image->line(
             $marginl, $ymax - $marginb - $i / 100 * $t,
@@ -2195,7 +2205,7 @@ sub Chrono {
         $d = 86400;    # 1 day
         $n = int($x_min / $y);
         $t = $n * $y + int(($n - 2) / 4) * 24 * 3600;
-        $i = 0;
+        my $i = 0;
         my $x;
         while ($t < $x_max) {
             $x = $marginl + ($t - $x_min) * $xratio;
@@ -2319,9 +2329,8 @@ sub Chrono {
 }
 
 sub Write_all_results {
-    my $HTML_output = shift;
+    my $filename = shift;
     my $h = shift;
-    my $k;
 
     my $title
       = $$h{'default'}{'title'}
@@ -2332,17 +2341,17 @@ sub Write_all_results {
     my $Title = $title;
     $Title =~ s/<.*?>//go;
     {
-        my $Title = $Title;
-        $Title =~ s/\&amp;/&/go;
-        $Title =~ s/\&lt;/</go;
-        $Title =~ s/\&gt;/>/go;
-        print "$Title from $first_date to $last_date\n\n"
+        my $Title2 = $Title;
+        $Title2 =~ s/\&amp;/&/go;
+        $Title2 =~ s/\&lt;/</go;
+        $Title2 =~ s/\&gt;/>/go;
+        print "$Title2 from $first_date to $last_date\n\n"
           if ((defined $$h{'default'}{'text'})
               and ($$h{'default'}{'text'} =~ m/^true$/io));
     }
 
     if ($HTML) {
-        open(HTML, "> $HTML_output") || die "Error: cant open $HTML_output\n";
+        open(HTML, "> $filename") || die "Error: can't open $filename\n";
 
         print HTML GetHTMLHeader("$Title: $first_date");
         print HTML "<div class=\"ir-pageTitle\">\n"
@@ -2352,7 +2361,7 @@ sub Write_all_results {
 
         # Index
         print HTML "<ul>\n";
-        foreach $k (@{ $$h{'_order_'} }) {
+        foreach my $k (@{ $$h{'_order_'} }) {
             next if $k =~ m/^(default|index)$/;
             my $r_data = EvalHash($h->{$k}{'data'});
             my ($string) = $$h{$k}{'title'} =~ m/^\"\s*(.*?)\s*\"$/o;
@@ -2405,85 +2414,92 @@ sub Write_all_results {
     }
 
     close HTML if $HTML;
-    foreach $k (@{ $$h{'_order_'} }) {
+    foreach my $k (@{ $$h{'_order_'} }) {
         next if $k =~ m/^(default|index)$/;
-        &Write_Results($HTML_output, $k, $h);
+        &Write_Results($filename, $k, $h);
     }
     if ($HTML) {
-        open(HTML, ">> $HTML_output") || die "Error: cant open $HTML_output\n";
+        open(HTML, ">> $filename") || die "Error: can't open $filename\n";
         print HTML GetHTMLFooter();
         close HTML;
     }
 }
 
 sub Write_Results {
-    my $HTML_output = shift;
+    my $filename = shift;
     my $report = shift;
     my $data = shift;
-    my %output = %$data;
-    return 0 unless defined $output{$report};    # no data to write
+    my %outputdata = %$data;
+    return 0 unless defined $outputdata{$report};    # no data to write
     return 0
-      if defined $output{$report}{'skip'}
-      && $output{$report}{'skip'} =~ m/^true$/io;
-    my ($TEXT, $HTML, $DOUBLE);
+      if defined $outputdata{$report}{'skip'}
+      && $outputdata{$report}{'skip'} =~ m/^true$/io;
+    my ($doTEXT, $doHTML, $DOUBLE);
 
     # Need a text report?
-    $TEXT
-      = defined $output{$report}{'text'}
-      ? $output{$report}{'text'}
-      : (defined $output{'default'}{'text'} ? $output{'default'}{'text'} : '');
-    die "Error in config file. Field 'text' is mandatory.\n" unless $TEXT;
-    $TEXT = ($TEXT =~ m/^true$/io) ? 1 : 0;
+    $doTEXT
+      = defined $outputdata{$report}{'text'} ? $outputdata{$report}{'text'}
+      : (
+          defined $outputdata{'default'}{'text'}
+          ? $outputdata{'default'}{'text'}
+          : ''
+      );
+    die "Error in config file. Field 'text' is mandatory.\n" unless $doTEXT;
+    $doTEXT = ($doTEXT =~ m/^true$/io) ? 1 : 0;
 
     # Need an HTML report?
-    if ($HTML_output) {
-        $HTML
-          = defined $output{$report}{'html'} ? $output{$report}{'html'}
+    if ($filename) {
+        $doHTML
+          = defined $outputdata{$report}{'html'} ? $outputdata{$report}{'html'}
           : (
-              defined $output{'default'}{'html'} ? $output{'default'}{'html'}
+              defined $outputdata{'default'}{'html'}
+              ? $outputdata{'default'}{'html'}
               : ''
           );
-        die "Error in config file. Field 'html' is mandatory.\n" unless $HTML;
-        $HTML = ($HTML =~ m/^true$/io) ? 1 : 0;
+        die "Error in config file. Field 'html' is mandatory.\n"
+          unless $doHTML;
+        $doHTML = ($doHTML =~ m/^true$/io) ? 1 : 0;
     }
     # Double table?
     $DOUBLE
-      = defined $output{$report}{'double'} ? $output{$report}{'double'} : 0;
+      = defined $outputdata{$report}{'double'}
+      ? $outputdata{$report}{'double'}
+      : 0;
     $DOUBLE = ($DOUBLE =~ m/^true$/io) ? 1 : 0;
 
     # Want to truncate the report?
-    my $TOP = defined $output{$report}{'top'} ? $output{$report}{'top'} : -1;
+    my $TOP
+      = defined $outputdata{$report}{'top'} ? $outputdata{$report}{'top'} : -1;
     my $TOP_HTML
-      = defined $output{$report}{'top_html'}
-      ? $output{$report}{'top_html'}
+      = defined $outputdata{$report}{'top_html'}
+      ? $outputdata{$report}{'top_html'}
       : $TOP;
     my $TOP_TEXT
-      = defined $output{$report}{'top_text'}
-      ? $output{$report}{'top_text'}
+      = defined $outputdata{$report}{'top_text'}
+      ? $outputdata{$report}{'top_text'}
       : $TOP;
 
     my (%h, $r_data, @keys, $h);
     {
-        my $t = $output{$report}{'data'}
+        my $t = $outputdata{$report}{'data'}
           || die "Error in section $report. Need a 'data' field.\n";
         $r_data = EvalHash($t);
         @keys = keys(%$r_data);
         return unless @keys;    # nothing to report. exit.
     }
     {
-        my $t = $output{$report}{'sort'};
+        my $t = $outputdata{$report}{'sort'};
         ($h) = defined($t) ? PrepareEval($t) : sub { $a cmp $b };
     }
 
-    if ($HTML) {
-        open(HTML, ">> $HTML_output") || die "Error: cant open $HTML_output\n";
+    if ($doHTML) {
+        open(HTML, ">> $filename") || die "Error: can't open $filename\n";
     }
-    print "\n" if $TEXT;
-    my ($key, $key1, $key2);
-    if (defined $output{$report}{'title'}) {
-        my $t = $output{$report}{'title'};
+    print "\n" if $doTEXT;
+    if (defined $outputdata{$report}{'title'}) {
+        my $t = $outputdata{$report}{'title'};
         $t =~ s/^\"\s*(.*?)\s*\"$/$1/o;
-        if ($HTML) {
+        if ($doHTML) {
             my $html = $t;
             $html =~ s/(:?)$/ [Top $TOP_HTML]$1/o if $TOP_HTML > 0;
             print HTML
@@ -2493,18 +2509,17 @@ sub Write_Results {
               "</p>\n<table class=\"ir-report\" summary=\"$report\">\n";
         }
         $t =~ s/(:?)$/ [Top $TOP_TEXT]$1/o if $TOP_TEXT > 0;
-        print $t, "\n" if $TEXT;
+        print $t, "\n" if $doTEXT;
     }
     my $numbering = 0;
     $numbering = 1
-      if defined $output{$report}{'numbering'}
-      && $output{$report}{'numbering'} =~ m/^true$/o;
-    my $i;
+      if defined $outputdata{$report}{'numbering'}
+      && $outputdata{$report}{'numbering'} =~ m/^true$/o;
     my $s = '';
     my $html = '';
     my $first = 0;
 
-    foreach $i (@{ $output{$report}{'column'} }) {
+    foreach my $i (@{ $outputdata{$report}{'column'} }) {
         my ($v1, $v2);
 
         my $wtext = defined $$i{'text'} ? $$i{'text'} : 1;
@@ -2521,8 +2536,7 @@ sub Write_Results {
         $v2 =~ s/^\"\s*(.*?)\s*\"$/$1/o;
         $s .= sprintf $v1 . " ", $v2 if $wtext && !($DOUBLE && $first == 1);
 
-        if ($HTML && $whtml) {
-            my $v1 = $v1;
+        if ($doHTML && $whtml) {
             $v1 =~ s/\%-?(?:\d+(?:\.\d+)?)?(\w)/\%$1/g;
             my $temp = $first ? "center" : "left";
             $temp .= "\" colspan=\"2" if $numbering && !$first;
@@ -2531,9 +2545,9 @@ sub Write_Results {
         $first++;
     }
     $s =~ s/\s*$//;
-    print "$s\n" if $TEXT;
+    print "$s\n" if $doTEXT;
     $s = '';
-    if ($HTML) {
+    if ($doHTML) {
         print HTML "<tr class=\"ir-headerRow\">$html</tr>\n";
         $html = '';
     }
@@ -2541,20 +2555,20 @@ sub Write_Results {
     my $done;
     if ($DOUBLE) {
         my $num_d = 0;
-        foreach $key1 (sort @keys) {
+        foreach my $key1 (sort @keys) {
             $done = 0;
             $num = 0;
             $num_d++;
             $s = '';
             $html = '';
             my @res;
-            foreach $key2 (
+            foreach my $key2 (
                 sort { $r_data->{$key1}{$b} <=> $r_data->{$key1}{$a} }
                 keys(%{ $r_data->{$key1} })
             ) {
-                my $first = 0;
+                $first = 0;
                 $num++;
-                foreach $i (@{ $output{$report}{'column'} }) {
+                foreach my $i (@{ $outputdata{$report}{'column'} }) {
                     my ($v1, $v2, $p);
 
                     my $wtext = defined $$i{'text'} ? $$i{'text'} : 1;
@@ -2585,7 +2599,7 @@ sub Write_Results {
                     if ($p) {
                         $s .= sprintf $v1 . "\n", EscapeHTML($r)
                           unless $done || !$wtext;
-                        if ($HTML && $whtml) {
+                        if ($doHTML && $whtml) {
                             if ($done) {
                                 $html .= "<td></td>";
                             } else {
@@ -2610,7 +2624,7 @@ sub Write_Results {
                             $s .= "  " if $first == 1;
                             $s .= sprintf $v1 . " ", $r;
                         }
-                        if ($HTML && $whtml) {
+                        if ($doHTML && $whtml) {
                             $html .= $numbering ? '<td></td>' : ''
                               if $first == 1;
                             $v1 =~ s/\%-?(?:\d+(?:\.\d+)?)?s/\%s/g;
@@ -2626,8 +2640,8 @@ sub Write_Results {
                 $s =~ s/\s*$//;
                 $s =~ s/\\n/\n/g;
                 print "$s\n"
-                  if $TEXT && ($num <= $TOP_TEXT || $TOP_TEXT == -1);
-                if ($HTML && ($num <= $TOP_HTML || $TOP_HTML == -1)) {
+                  if $doTEXT && ($num <= $TOP_TEXT || $TOP_TEXT == -1);
+                if ($doHTML && ($num <= $TOP_HTML || $TOP_HTML == -1)) {
                     $html =~ s/\\n//g;
                     print HTML "<tr>$html</tr>\n";
                 }
@@ -2638,12 +2652,12 @@ sub Write_Results {
             $s = '';
             $html = '';
             if ($TOP_TEXT != -1 && $TOP_HTML != -1) {
-                foreach $i (@{ $output{$report}{'column'} }) {
+                foreach my $i (@{ $outputdata{$report}{'column'} }) {
                     if (defined $$i{'primary'} && $$i{'primary'} =~ m/true/o) {
                         $first++;
                         $s .= '  ';
-                        $html .= "<td></td>" if $HTML;
-                        $html .= "<td></td>" if $HTML && $numbering;
+                        $html .= "<td></td>" if $doHTML;
+                        $html .= "<td></td>" if $doHTML && $numbering;
                         next;
                     }
                     my ($v1, $v2);
@@ -2654,7 +2668,7 @@ sub Write_Results {
                     $v1 =~ s/^\"\s*(.*?)\s*\"$/$1/o;
                     my $r = $first == 1 ? $num : $res[$first];
                     $s .= sprintf $v1 . ' ', $r;
-                    if ($HTML) {
+                    if ($doHTML) {
                         my $temp
                           = $first > 1
                           ? 'style="text-align:right"'
@@ -2667,16 +2681,16 @@ sub Write_Results {
                 }
                 $s =~ s/\s*$//;
                 $s =~ s/\\n//g;
-                print "$s\n" if $TEXT;
-                print HTML "<tr>$html</tr>\n" if $HTML;
+                print "$s\n" if $doTEXT;
+                print HTML "<tr>$html</tr>\n" if $doHTML;
             }
         }
-        print "\n" if $TEXT;
+        print "\n" if $doTEXT;
         $first = 0;
         $num = $num_d;
         $s = '';
         $html = '';
-        foreach $i (@{ $output{$report}{'column'} }) {
+        foreach my $i (@{ $outputdata{$report}{'column'} }) {
             my $wtext = defined $$i{'text'} ? $$i{'text'} : 1;
             $wtext = $wtext =~ m/^(1|true)$/io ? 1 : 0;
             my $whtml = defined $$i{'html'} ? $$i{'html'} : 1;
@@ -2701,7 +2715,7 @@ sub Write_Results {
                   unless defined $r;
             }
             $s .= sprintf $v1 . " ", $r if $wtext && $first != 1;
-            if ($HTML && $whtml) {
+            if ($doHTML && $whtml) {
                 my $temp
                   = $first
                   ? 'style="text-align:right"'
@@ -2717,15 +2731,15 @@ sub Write_Results {
         }
         $s =~ s/\s*$//;
         $s =~ s/\\n//g;
-        print "$s\n" if $TEXT;
-        if ($HTML) {
+        print "$s\n" if $doTEXT;
+        if ($doHTML) {
             print HTML
               "<tr class=\"ir-totalRow\">$html</tr>\n",
               "</table>\n",
               "</div><!-- id=\"$report\" class=\"ir-section\"-->\n";
         }
     } else {
-        foreach $key (sort $h @keys) {
+        foreach my $key (sort $h @keys) {
             next unless defined $key;
             next
               unless defined $r_data->{$key}
@@ -2736,8 +2750,8 @@ sub Write_Results {
               || $TOP_HTML == -1
               || $num <= $TOP_TEXT
               || $TOP_TEXT == -1;
-            my $first = 0;
-            foreach $i (@{ $output{$report}{'column'} }) {
+            $first = 0;
+            foreach my $i (@{ $outputdata{$report}{'column'} }) {
                 my $wtext = defined $$i{'text'} ? $$i{'text'} : 1;
                 $wtext = $wtext =~ m/^(1|true)$/io ? 1 : 0;
                 my $whtml = defined $$i{'html'} ? $$i{'html'} : 1;
@@ -2757,7 +2771,9 @@ sub Write_Results {
                 }
                 $s .= sprintf $v1 . " ", $r
                   if $wtext && (($num <= $TOP_TEXT) || ($TOP_TEXT == -1));
-                if ($HTML && $whtml && ($num <= $TOP_HTML || $TOP_HTML == -1))
+                if ($doHTML
+                    && $whtml
+                    && ($num <= $TOP_HTML || $TOP_HTML == -1))
                 {
 
                     # substitute full fledged "%s" specifiers (alignment, width
@@ -2773,17 +2789,17 @@ sub Write_Results {
                 $first++;
             }
             $s =~ s/\s*$//;
-            print "$s\n" if $TEXT && ($num <= $TOP_TEXT || $TOP_TEXT == -1);
+            print "$s\n" if $doTEXT && ($num <= $TOP_TEXT || $TOP_TEXT == -1);
             $s = '';
-            if ($HTML && ($num <= $TOP_HTML || $TOP_HTML == -1)) {
+            if ($doHTML && ($num <= $TOP_HTML || $TOP_HTML == -1)) {
                 my $class = $num % 2 ? 'ir-oddRow' : 'ir-evenRow';
                 print HTML "<tr class=\"$class\">$html</tr>\n";
                 $html = '';
             }
         }
-        print "\n" if $TEXT;
+        print "\n" if $doTEXT;
         $first = 0;
-        foreach $i (@{ $output{$report}{'column'} }) {
+        foreach my $i (@{ $outputdata{$report}{'column'} }) {
             my $wtext = defined $$i{'text'} ? $$i{'text'} : 1;
             $wtext = $wtext =~ m/^(1|true)$/io ? 1 : 0;
             my $whtml = defined $$i{'html'} ? $$i{'html'} : 1;
@@ -2808,7 +2824,7 @@ sub Write_Results {
                   unless defined $r;
             }
             $s .= sprintf $v1 . " ", $r if $wtext;
-            if ($HTML && $whtml) {
+            if ($doHTML && $whtml) {
                 $v1 =~ s/\%-?(?:\d+(?:\.\d+)?)?s/\%s/g;
                 my $temp
                   = $first
@@ -2820,8 +2836,8 @@ sub Write_Results {
             $first++;
         }
         $s =~ s/\s*$//;
-        print "$s\n" if $TEXT;
-        if ($HTML) {
+        print "$s\n" if $doTEXT;
+        if ($doHTML) {
             print HTML
               "<tr class=\"ir-totalRow\">$html</tr>\n",
               "</table>\n",
@@ -2829,20 +2845,23 @@ sub Write_Results {
 
             my $i = 0;
             while ($GRAPH
-                && defined ${ ${ $output{$report}{'graph'} }[$i] }{'type'})
+                && defined ${ ${ $outputdata{$report}{'graph'} }[$i] }
+                {'type'})
             {
-                my $type = ${ ${ $output{$report}{'graph'} }[$i] }{'type'};
+                my $type = ${ ${ $outputdata{$report}{'graph'} }[$i] }{'type'};
                 my ($title)
-                  = ${ ${ $output{$report}{'graph'} }[$i] }{'title'}
+                  = ${ ${ $outputdata{$report}{'graph'} }[$i] }{'title'}
                   =~ m/^\"\s*(.*?)\s*\"$/o;
                 if ($type eq 'histo3d') {
                     my (@values, @colors, @labels);
-                    my $num = 0;
-                    my $j;
-                    foreach $j (
-                        @{ ${ ${ $output{$report}{'graph'} }[$i] }{'data'} })
-                    {
-                        $num++;
+                    my $graphnum = 0;
+                    foreach my $j (
+                        @{
+                            ${ ${ $outputdata{$report}{'graph'} }[$i] }
+                              {'data'}
+                        }
+                    ) {
+                        $graphnum++;
                         push @values, EvalHash($j->{'value'});
                         my ($t) = $$j{'name'} =~ m/^\"\s*(.*?)\s*\"$/o;
                         push @labels, $t;
@@ -2857,58 +2876,86 @@ sub Write_Results {
                         push @colors, \@c;
                     }
                     $suffix = '' unless defined $suffix;
-                    my $s = ($i ? $i : '') . $suffix;
+                    my $repsuffix = ($i ? $i : '') . $suffix;
                     print HTML
                       "<div class=\"ir-reportGraph\"><img alt=\"$title\" ";
                     close HTML;
                     my $y = &Graph3d(
-                        "$IMG_dir/$report$s.$GD_FORMAT",
-                        $title, $xmax, $num, @values, \@colors, \@labels,
+                        "$IMG_dir/$report$repsuffix.$GD_FORMAT",
+                        $title, $imgxmax, $graphnum, @values, \@colors,
+                        \@labels,
                     );
-                    open(HTML, ">> $HTML_output")
-                      || die "Error: cant open $HTML_output\n";
-                    print HTML "width=\"$xmax\" height=\"$y\" ";
+                    open(HTML, ">> $filename")
+                      || die "Error: can't open $filename\n";
+                    print HTML "width=\"$imgxmax\" height=\"$y\" ";
                     print HTML
-                      "src=\"$IMG_pth$report$s.$GD_FORMAT\"/></div>\n";
+                      "src=\"$IMG_pth$report$repsuffix.$GD_FORMAT\"/></div>\n";
                 } elsif ($type eq 'histo') {
-                    my $factor
-                      = ${ ${ ${ ${ $output{$report}{'graph'} }[$i] }{'data'} }
-                          [1] }{'factor'}
+                    my $factor = ${
+                        ${
+                            ${ ${ $outputdata{$report}{'graph'} }[$i] }
+                              {'data'}
+                        }[1]
+                    }{'factor'}
                       || die "Error in section $report section 'graph'. "
                       . "No factor specified for 'value' "
-                      . ${ ${ ${ ${ $output{$report}{'graph'} }[$i] }{'data'} }
-                          [1] }{'name'} . ".\n";
+                      . ${
+                          ${
+                              ${ ${ $outputdata{$report}{'graph'} }[$i] }
+                              {'data'}
+                          }[1]
+                      }{'name'} . ".\n";
                     $factor =~ s/^\"\s*(.*?)\s*\"$/$1/o;
-                    my $labelx
-                      = ${ ${ ${ ${ $output{$report}{'graph'} }[$i] }{'data'} }
-                          [0] }{'name'}
+                    my $labelx = ${
+                        ${
+                            ${ ${ $outputdata{$report}{'graph'} }[$i] }
+                              {'data'}
+                        }[0]
+                    }{'name'}
                       || die "Error in section $report section 'graph'. "
                       . "No name specified for value.\n";
                     $labelx =~ s/^\"\s*(.*?)\s*\"$/$1/o;
-                    my $labely
-                      = ${ ${ ${ ${ $output{$report}{'graph'} }[$i] }{'data'} }
-                          [1] }{'name'}
+                    my $labely = ${
+                        ${
+                            ${ ${ $outputdata{$report}{'graph'} }[$i] }
+                              {'data'}
+                        }[1]
+                    }{'name'}
                       || die "Error in section $report section 'graph'. "
                       . "No name specified for value.\n";
                     $labely =~ s/^\"\s*(.*?)\s*\"$/$1/o;
-                    my $t
-                      = ${ ${ ${ ${ $output{$report}{'graph'} }[$i] }{'data'} }
-                          [0] }{'value'}
+                    my $t = ${
+                        ${
+                            ${ ${ $outputdata{$report}{'graph'} }[$i] }
+                              {'data'}
+                        }[0]
+                    }{'value'}
                       || die "Error in section $report section 'graph'. "
                       . "No 'value' specified for "
-                      . ${ ${ ${ ${ $output{$report}{'graph'} }[$i] }{'data'} }
-                          [0] }{'name'} . ".\n";
+                      . ${
+                          ${
+                              ${ ${ $outputdata{$report}{'graph'} }[$i] }
+                              {'data'}
+                          }[0]
+                      }{'name'} . ".\n";
                     my $r_labels = EvalHash($t);
 
-                    $t
-                      = ${ ${ ${ ${ $output{$report}{'graph'} }[$i] }{'data'} }
-                          [1] }{'value'}
+                    $t = ${
+                        ${
+                            ${ ${ $outputdata{$report}{'graph'} }[$i] }
+                              {'data'}
+                        }[1]
+                    }{'value'}
                       || die "Error in section $report section 'graph'. "
                       . "No 'value' specified for "
-                      . ${ ${ ${ ${ $output{$report}{'graph'} }[$i] }{'data'} }
-                          [1] }{'name'} . ".\n";
+                      . ${
+                          ${
+                              ${ ${ $outputdata{$report}{'graph'} }[$i] }
+                              {'data'}
+                          }[1]
+                      }{'name'} . ".\n";
                     my $r_values = EvalHash($t);
-                    my $s = ($i ? $i : '') . $suffix;
+                    my $repsuffix = ($i ? $i : '') . $suffix;
                     {
                         my $r;
                         close HTML;
@@ -2918,16 +2965,18 @@ sub Write_Results {
                         #
                         my %values = %$r_values;
                         $r = &Histo(
-                            "$IMG_dir/$report$s.$GD_FORMAT", $title, $xmax,
+                            "$IMG_dir/$report$repsuffix.$GD_FORMAT", $title,
+                            $imgxmax,
                             $factor, $labelx, $labely, \%values, $r_labels,
                         );
-                        open(HTML, ">> $HTML_output")
-                          || die "Error: cant open $HTML_output\n";
+                        open(HTML, ">> $filename")
+                          || die "Error: can't open $filename\n";
                         if ($r) {
                             print HTML
                               "<div class=\"ir-reportGraph\">",
-                              "<img alt=\"$title\" width=\"$xmax\" ",
-                              "src=\"$IMG_pth$report$s.$GD_FORMAT\"/></div>\n";
+                              "<img alt=\"$title\" width=\"$imgxmax\" ",
+                              "src=\"$IMG_pth$report$repsuffix.$GD_FORMAT\"/>",
+                              "</div>\n";
                         }
                     }
                 } elsif ($type eq 'piechart') {
@@ -2940,7 +2989,7 @@ sub Write_Results {
             }
         }
     }
-    close HTML if $HTML;
+    close HTML if $doHTML;
 }
 
 sub PrepareEval($;$) {

@@ -122,7 +122,7 @@ sub HELP_MESSAGE {
 #
 my $prog = $0;                       # our name
 my $spool = "$INN::Config::patharticles";
-my $active = "$INN::Config::active";
+my $activefile = "$INN::Config::active";
 my $ctlinnd = "$INN::Config::pathbin/ctlinnd";
 my $reason = "running scanspool";    # throttle reason
 
@@ -130,7 +130,7 @@ my $reason = "running scanspool";    # throttle reason
 #
 my %opt;
 getopts("a:cnrs:v", \%opt) || die $usage;
-$active = $opt{'a'} if defined $opt{'a'};
+$activefile = $opt{'a'} if defined $opt{'a'};
 $spool = $opt{'s'} if defined $opt{'s'};
 
 # throttle innd unless -n
@@ -141,7 +141,7 @@ if (!defined $opt{'n'}) {
 
 # process the active file
 #
-parse_active($active);
+parse_active($activefile);
 
 # check the spool directory
 #
@@ -223,20 +223,20 @@ sub parse_active {
     close $ACTIVE;
 
     # be sure that any alias type is aliased to a real group
-    foreach my $name (keys %realgname) {
+    foreach my $ngname (keys %realgname) {
         # skip if not an alias type
-        next if $gname2type{$name} ne "=";
+        next if $gname2type{$ngname} ne "=";
 
         # be sure that the alias exists
-        $alias = $realgname{$name};
+        $alias = $realgname{$ngname};
         if (!defined $realgname{$alias}) {
-            problem("WARNING: alias for $name: $alias, is not a group");
+            problem("WARNING: alias for $ngname: $alias, is not a group");
             next;
         }
 
         # be sure that the alias is not an alias of something else
         if ($gname2type{$alias} eq "=") {
-            problem("WARNING: alias for $name: $alias, is also an alias");
+            problem("WARNING: alias for $ngname: $alias, is also an alias");
             next;
         }
     }

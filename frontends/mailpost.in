@@ -396,11 +396,11 @@ ${real_news_hdrs}Date: ${dateHdr}
 ${weird_mail_hdrs}
 EOF
 
-my $rest = '';
-$rest .= $_ while (<STDIN>);
-$rest =~ s/\n*$/\n/g;    # Remove trailing \n except very last.
+my $tmprest = '';
+$tmprest .= $_ while (<STDIN>);
+$tmprest =~ s/\n*$/\n/g;    # Remove trailing \n except very last.
 
-print TMPFILE $rest;
+print TMPFILE $tmprest;
 close TMPFILE;
 
 if (!$tmpfile) {
@@ -568,13 +568,13 @@ unlink $tmpfile;
 exit $status;
 
 sub mailArtAndDie {
-    my ($msg) = @_;
+    my ($errmsg) = @_;
 
-    syslog("err", "$msg") if $use_syslog;
-    print STDERR $msg, "\n" if -t STDERR;
+    syslog("err", "$errmsg") if $use_syslog;
+    print STDERR $errmsg, "\n" if -t STDERR;
 
     open(SENDMAIL, "|" . $Sendmail)
-      || die "die($msg): sendmail: $!\n";
+      || die "die($errmsg): sendmail: $!\n";
     # As the mail is sent in direct response to a message, it is auto-replied,
     # and not auto-generated (RFC 3834).
     print SENDMAIL <<"EOF" ;
@@ -582,7 +582,7 @@ To: $Maintainer
 Subject: mailpost failure ($newsgroups)
 Auto-Submitted: auto-replied
 
-$msg
+$errmsg
 
 EOF
 
@@ -655,9 +655,8 @@ sub dltb {
 sub append_newsgroups ($$) {
     my (@orig) = split(/,/, $_[0]);
     my (@new) = split(/,/, $_[1]);
-    my $newsgroup;
 
-    foreach $newsgroup (@new) {
+    foreach my $newsgroup (@new) {
         if (!grep($_ eq $newsgroup, @orig)) {
             push @orig, $newsgroup;
         } else {

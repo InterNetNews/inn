@@ -155,9 +155,9 @@ sub generate_body {
     push(@lines, "\0");
     $stmt_count = @{$names};
 
-    foreach my $name (@{$names}) {
-        push(@lines, "$name\0");
-        push(@lines, splice(@{ $sections->{$name} }));
+    foreach my $n (@{$names}) {
+        push(@lines, "$n\0");
+        push(@lines, splice(@{ $sections->{$n} }));
         push(@lines, "\0");
     }
     foreach my $line (@lines) {

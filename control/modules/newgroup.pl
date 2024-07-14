@@ -25,7 +25,7 @@ sub control_newgroup {
     my $head = $article->head;
     my @headers = split(/\r?\n/, $head->stringify);
     my @fullbody = split(/\r?\n/, $article->stringify_body);
-    my (@body, $part, $part_head);
+    my (@body, $part_head);
     my $mimegroupinfo = 0;
 
     my $charset_message;
@@ -36,7 +36,7 @@ sub control_newgroup {
     # Check if it is a multipart message.  The body is restricted to
     # the application/news-groupinfo part, if any.
     if ($article->parts > 0) {
-        foreach $part ($article->parts) {
+        foreach my $part ($article->parts) {
             $part_head = $part->head;
 
             if ($part_head->mime_type eq 'application/news-groupinfo') {

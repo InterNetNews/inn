@@ -66,7 +66,7 @@ if ($query_result) {    # The user authenticated fine.
 sub readconf {
     my ($file) = @_;
 
-    my %conf;
+    my %config;
 
     open(CONF, "$file");
     while (<CONF>) {
@@ -77,20 +77,22 @@ sub readconf {
 
         if ($_ ne "") {
             my ($key, $value) = split(':', $_, 2);
-            $conf{$key} = $_;
+            $config{$key} = $_;
         }
     }
     close(CONF);
 
-    return (%conf);
+    return (%config);
 }
 
 sub db_open {
-    my (%conf) = @_;
-    my ($err, $dbh);
+    my (%config) = @_;
+    my ($err, $dbhandle);
 
-    if ($dbh = DBI->connect($conf{'database'}, $conf{'User'}, $conf{'Pass'})) {
-        return ($dbh);
+    if ($dbhandle
+        = DBI->connect($config{'database'}, $config{'User'}, $config{'Pass'})
+    ) {
+        return ($dbhandle);
     } else {
         $err = "Failure opening database " . $DBI::errstr;
     }
@@ -99,7 +101,7 @@ sub db_open {
 }
 
 sub get_stdin {
-    my %stdin;
+    my %retstdin;
     while (<STDIN>) {
         chomp;
         next if $_ =~ /^#.*$/;
@@ -108,10 +110,9 @@ sub get_stdin {
         $_ =~ s/\s+//g;
 
         if ($_ ne "") {
-            my $key = $_;
             my ($key, $value) = split(':', $_, 2);
-            $stdin{$key} = $value;
+            $retstdin{$key} = $value;
         }
     }
-    return (%stdin);
+    return (%retstdin);
 }

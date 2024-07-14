@@ -125,8 +125,8 @@ sub read_cf {
         }
 
         if ($time) {
-            foreach my $time (split(/,/, $time)) {
-                next if $time != $hour;
+            foreach my $timehour (split(/,/, $time)) {
+                next if $timehour != $hour;
                 push @sites, [$site, $host, $funnel, $compress, $size];
             }
         } else {

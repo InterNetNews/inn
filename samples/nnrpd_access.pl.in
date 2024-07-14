@@ -73,8 +73,7 @@ sub loadnnrp {
 sub checkhost {
     my ($host, $ip) = @_;
     my %return_hash;
-    my $key;
-    for $key (@hosts) {
+    for my $key (@hosts) {
         my ($read, $post) = ($key->{canread}, $key->{canpost});
 
         # First check for CIDR-style blocks.

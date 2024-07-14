@@ -62,10 +62,9 @@ sub unlock {
 ##  Returns the number of removed locks.
 ##
 sub releaselocks {
-    my $key;
     my $count = 0;
 
-    foreach $key (keys(%lockfiles)) {
+    foreach my $key (keys(%lockfiles)) {
         $count += unlock($key);
     }
 

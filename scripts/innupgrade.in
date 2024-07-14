@@ -108,9 +108,8 @@ $0 =~ s@.*/@@;
 # file name for error reporting.
 sub fix_incoming_conf {
     my ($input, $output, $file) = @_;
-    my $raw;
     local $_;
-    for $raw (@$input) {
+    for my $raw (@$input) {
         $_ = $raw;
         # Commented or blank lines.
         if (/^\s*\#/ || /^\s*$/) {
@@ -143,9 +142,9 @@ sub fix_incoming_conf {
 sub fix_inn_conf {
     my ($input, $output, $file) = @_;
     my $line = 0;
-    my ($raw, $hismethod, $overview, $tls);
+    my ($hismethod, $overview, $tls);
     local $_;
-    for $raw (@$input) {
+    for my $raw (@$input) {
         $_ = $raw;
         $line++;
         # Commented or blank lines.
@@ -304,9 +303,8 @@ sub fix_inn_conf {
 # file name for error reporting.
 sub fix_newsfeeds {
     my ($input, $output, $file) = @_;
-    my $raw;
     local $_;
-    for $raw (@$input) {
+    for my $raw (@$input) {
         $_ = $raw;
         # Commented or blank lines.
         if (/^\s*\#/ || /^\s*$/) {
@@ -327,9 +325,8 @@ sub fix_newsfeeds {
 # file name for error reporting.
 sub fix_readers_conf {
     my ($input, $output, $file) = @_;
-    my $raw;
     local $_;
-    for $raw (@$input) {
+    for my $raw (@$input) {
         $_ = $raw;
         # Commented or blank lines.
         if (/^\s*\#/ || /^\s*$/) {
