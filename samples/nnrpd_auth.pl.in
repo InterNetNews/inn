@@ -62,7 +62,8 @@ sub checkuser {
     return ($authcodes{denied}, "No username given.")
       unless defined $users{$user};
 
-    my ($password, $post, $speed, $subscription) = split(/\t/, $users{$user});
+    my ($password, $post_unused, $speed_unused, $subscription_unused)
+      = split(/\t/, $users{$user});
     return ($authcodes{denied}, "Incorrect password.")
       if (crypt($pass, $password) ne $password);
 

@@ -126,7 +126,6 @@ sub write_storage {
 :       #include "methods.h"
 :
 EOE
-    my $method;
     write_includes(\*DEF, $storage);
     print DEF "\nSTORAGE_METHOD storage_methods[",
       scalar(keys %{ $$storage{method} }), "] = {\n";

@@ -17,9 +17,9 @@ use strict;
 
 sub control_checkgroups {
     my (
-        $par, $sender, $replyto, $site, $action, $log, $approved,
-        $article, $charset_from, $charset_to, $exclusionpats,
-        $droppats, $maxchanges,
+        $par, $sender, $replyto_unused, $site_unused, $action, $log,
+        $approved_unused, $article, $charset_from, $charset_to,
+        $exclusionpats, $droppats, $maxchanges,
     ) = @_;
     my ($newsgrouppats) = @$par;
     my $head = $article->head;

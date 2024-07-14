@@ -118,7 +118,7 @@ use strict;
 my %stats;
 
 while (<>) {
-    my ($group, $peer, $bytes, $id, $token, @Newsgroups) = split;
+    my ($group, $peer, $bytes, $id_unused, $token, @Newsgroups) = split;
     next unless ($USE_ALL_GROUPS ? @Newsgroups : $token);    # bad input line
 
     my @groups = map { split /\s*,\s*/ } @Newsgroups;
@@ -172,9 +172,9 @@ sub max {
     my $who;
     my ($field, $listref) = @_;
 
-    while (my ($peer, $stats) = each %{$listref}) {
-        if ($stats->{$field} > $x) {
-            $x = $stats->{$field};
+    while (my ($peer, $statsref) = each %{$listref}) {
+        if ($statsref->{$field} > $x) {
+            $x = $statsref->{$field};
             $who = $peer;
         }
     }

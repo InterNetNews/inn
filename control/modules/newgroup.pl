@@ -17,8 +17,8 @@ use strict;
 
 sub control_newgroup {
     my (
-        $par, $sender, $replyto, $site, $action, $log, $approved,
-        $article, $charset_from, $charset_to,
+        $par, $sender, $replyto_unused, $site_unused, $action, $log,
+        $approved, $article, $charset_from, $charset_to,
     ) = @_;
     my ($groupname, $modflag) = @$par;
 

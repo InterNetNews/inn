@@ -17,8 +17,8 @@ use strict;
 
 sub control_sendme {
     my (
-        $par, $sender, $replyto, $site, $action, $log, $approved,
-        $article,
+        $par_unused, $sender, $replyto_unused, $site, $action, $log,
+        $approved_unused, $article,
     ) = @_;
 
     my @body = split(/\r?\n/, $article->stringify_body);

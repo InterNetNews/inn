@@ -587,8 +587,8 @@ sub get_cycbuff_info {
     }
 
     my (
-        $magic, $name, $path, $lena, $freea, $updatea, $cyclenuma, $metaname,
-        $orderinmeta, $currentbuff, $blksza,
+        $magic, $name, $path_unused, $lena, $freea, $updatea, $cyclenuma,
+        $metaname_unused, $orderinmeta_unused, $currentbuff_unused, $blksza,
     ) = unpack("a8 a16 a64 a16 a16 a16 a16 a16 a16 a8 a16", $buff);
 
     if (!$magic) {

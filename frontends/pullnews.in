@@ -832,7 +832,7 @@ sub bail {
 
 sub crossFeedGroup {
     my ($fromServer, $toServer, $server, $group, $shash) = @_;
-    my ($date, $high) = @{ $shash->{$group} };
+    my ($date_unused, $high) = @{ $shash->{$group} };
     my ($prevDate, $prevHigh) = @{ $shash->{$group} };
     my ($narticles, $first, $last, $name) = $fromServer->group($group);
     my $count = 0;
@@ -948,7 +948,7 @@ sub crossFeedGroup {
 
             # Continue if the article exists on the upstream server.
             if ($org_code == 223 and not $rnews) {
-                my $new_msgid = $toServer->nntpstat($org_msgid);
+                my $new_msgid_unused = $toServer->nntpstat($org_msgid);
                 my $new_code = $toServer->code();
                 print LOG
                   "\n\tDEBUGGING $i\t$org_msgid ($org_code) => $new_code\n"

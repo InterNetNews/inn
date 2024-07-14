@@ -278,7 +278,7 @@ sub parse_config {
         # include-file hack: ignore; user needs to check it separately
         if (defined $options->{'<include>'}->{$word}) {
             $parse_error = 0;
-            my $includefile = get_config_word();
+            my $includefile_unused = get_config_word();
             next;
         }
 

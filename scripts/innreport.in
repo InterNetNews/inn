@@ -370,7 +370,7 @@ if ($HTML) {
 my $unrecognize_max = 0;
 my @unrecognize;
 my ($total_line, $total_size) = (0, 0);
-my ($suffix, $HTML_output, %config, %prog_type, %prog_size);
+my ($suffix, $HTML_output, %prog_type, %prog_size);
 my ($current_year, $local_timezone);
 {
     my $local_time = localtime(time);
@@ -555,7 +555,7 @@ while (!eof()) {
         ########
         ## Program name
         # word[7164] -> word
-        my ($pid) = $prog =~ s/\[(\d+)\]$//o;
+        my ($pid_unused) = $prog =~ s/\[(\d+)\]$//o;
         # word: -> word
         $prog =~ s/:$//o;
         # wordX -> word   (where X is a digit)
@@ -620,6 +620,7 @@ sub secondsBetweenFirstAndLast() {
 }
 
 my $sec_glob = secondsBetweenFirstAndLast();
+print "Elapsed time between first and last logs: $sec_glob\n" if $DEBUG;
 
 $HTML_output = '';
 
@@ -1295,7 +1296,7 @@ sub Graph3d {
     my $n = shift;           # Number of hash code tables
 
     my @val;
-    for my $i (0 .. $n - 1) {
+    for my $i_unused (0 .. $n - 1) {
         push @val, shift;    # hash code table
     }
     my $colors = shift;      # colors table
@@ -2052,7 +2053,6 @@ sub Chrono {
     my $white2 = $image->colorAllocate(255, 255, 255);
     my $gray = $image->colorAllocate(192, 192, 192);
     my $red = $image->colorAllocate(255, 0, 0);
-    my $coltxt = $black;
 
     my $size = 22;                            # legend
                                               # legend statistics
@@ -2479,7 +2479,7 @@ sub Write_Results {
       ? $outputdata{$report}{'top_text'}
       : $TOP;
 
-    my (%h, $r_data, @keys, $h);
+    my ($r_data, @keys, $h);
     {
         my $t = $outputdata{$report}{'data'}
           || die "Error in section $report. Need a 'data' field.\n";
@@ -2496,6 +2496,7 @@ sub Write_Results {
         open(HTML, ">> $filename") || die "Error: can't open $filename\n";
     }
     print "\n" if $doTEXT;
+    my ($savedkey, $savedkey2);
     if (defined $outputdata{$report}{'title'}) {
         my $t = $outputdata{$report}{'title'};
         $t =~ s/^\"\s*(.*?)\s*\"$/$1/o;
@@ -2591,6 +2592,7 @@ sub Write_Results {
                     my $r = '';
                     if ($v2) {
                         $r = &EvalExpr($v2, $key2, $num, $key1);
+                        $savedkey2 = $key2;
                         die "Error in section $report column $$i{'name'}. "
                           . "Invalid 'value' value.\n"
                           unless defined $r;
@@ -2660,8 +2662,7 @@ sub Write_Results {
                         $html .= "<td></td>" if $doHTML && $numbering;
                         next;
                     }
-                    my ($v1, $v2);
-                    $v1
+                    my $v1
                       = defined($$i{'format_total'})
                       ? $$i{'format_total'}
                       : (defined($$i{'format'}) ? $$i{'format'} : "%s");
@@ -2709,7 +2710,7 @@ sub Write_Results {
             my $r = '';
 
             if ($v2) {
-                $r = &EvalExpr($v2, $key2, $num, 1);
+                $r = &EvalExpr($v2, $savedkey2, $num, 1);
                 die "Error in section $report column $$i{'name'}. "
                   . "Invalid 'total' value.\n"
                   unless defined $r;
@@ -2765,6 +2766,7 @@ sub Write_Results {
                 my $r = '';
                 if ($v2) {
                     $r = &EvalExpr($v2, $key, $num);
+                    $savedkey = $key;
                     die "Error in section $report column $$i{'name'}. "
                       . "Invalid 'value' value.\n"
                       unless defined $r;
@@ -2818,7 +2820,7 @@ sub Write_Results {
             my $r = '';
 
             if ($v2) {
-                $r = &EvalExpr($v2, $key, $num);
+                $r = &EvalExpr($v2, $savedkey, $num);
                 die "Error in section $report column $$i{'name'}. "
                   . "Invalid 'total' value.\n"
                   unless defined $r;
@@ -3161,7 +3163,6 @@ sub Decode_Config_File {
                 my %hash;
                 print "\t$keyword {\n" if $DEBUG;
                 ($info, $linenum, $line) = &read_conf($linenum, $line, \*FILE);
-                my @sublist;    # to store the "data" blocks
 
                 while ($info ne '}') {
                     last if eof(FILE);

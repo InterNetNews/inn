@@ -162,8 +162,6 @@ my $dateHdr = "MAILPOST-UNKNOWN-DATE";
 my $msgIdHdr = "MAILPOST-UNKNOWN-MESSAGE-ID";
 my $from = undef;
 my $date = undef;
-my $hdr = undef;
-my $txt = undef;
 my $message_id;
 my $subject = "(NONE)";
 my @emptyHdrs = ();

@@ -76,7 +76,7 @@ sub readconf {
         $_ =~ s/#.*$//g;
 
         if ($_ ne "") {
-            my ($key, $value) = split(':', $_, 2);
+            my ($key, $value_unused) = split(':', $_, 2);
             $config{$key} = $_;
         }
     }

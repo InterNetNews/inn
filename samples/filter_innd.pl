@@ -117,9 +117,9 @@ sub filter_mode {
 }
 
 sub filter_messageid {
-    my ($messageid) = @_;
+    my ($messageid_unused) = @_;
     $rval = '';
-    # $rval = 'No' if ($messageid =~ /a\.spam\.domain>?/i);
+    # $rval = 'No' if ($messageid_unused =~ /a\.spam\.domain>?/i);
     $rval;
 }
 

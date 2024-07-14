@@ -659,7 +659,7 @@ sub collect($$$$$$) {
         ) {
             my (
                 $server, $status, $seconds, $accepted, $refused, $rejected,
-                $duplicate, $accptsize, $dupsize, $rjctsize,
+                $duplicate_unused, $accptsize, $dupsize, $rjctsize,
             ) = ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);
             $server = lc $server unless $CASE_SENSITIVE;
 
@@ -1201,8 +1201,8 @@ sub collect($$$$$$) {
             return 1;
         }
         # times
-        if ($left =~ /(\S+) times user (.+) system (\S+) elapsed (\S+)$/o) {
-            my ($server, $user, $system, $elapsed) = ($1, $2, $3, $4);
+        if ($left =~ /(\S+) times user .+ system \S+ elapsed (\S+)$/o) {
+            my ($server, $elapsed) = ($1, $2);
             $server = lc $server unless $CASE_SENSITIVE;
             $innxbatch_times{$server} += $elapsed;
             return 1;
@@ -1248,14 +1248,13 @@ sub collect($$$$$$) {
         # 437 Unwanted site ... in path
         if (
             $left =~ /(\S+)\ rejected\ [^\s]+\ \(.*?\)
-                      \ (?:437|439)\ Unwanted\ site\ (\S+)\ in\ path
+                      \ (?:437|439)\ Unwanted\ site\ \S+\ in\ path
                       $/ox
         ) {
-            my ($server, $site) = ($1, $2);
+            my $server = $1;
             $server = lc $server unless $CASE_SENSITIVE;
             $innxmit_badart{$server}++;
             $innxmit_uw_site{$server}++;
-            # $innxmit_site_path{$site}++;
             return 1;
         }
         # 437 Unwanted newsgroup "..."
@@ -1387,8 +1386,8 @@ sub collect($$$$$$) {
             return 1;
         }
         # times
-        if ($left =~ /(\S+) times user (.+) system (\S+) elapsed (\S+)$/o) {
-            my ($server, $user, $system, $elapsed) = ($1, $2, $3, $4);
+        if ($left =~ /(\S+) times user .+ system \S+ elapsed (\S+)$/o) {
+            my ($server, $elapsed) = ($1, $2);
             $server = lc $server unless $CASE_SENSITIVE;
             $innxmit_times{$server} += $elapsed;
             return 1;
@@ -1607,8 +1606,8 @@ sub collect($$$$$$) {
             return 1;
         }
         # xmit
-        if ($left =~ /(\S+) xmit user (.+) system (\S+) elapsed (\S+)$/o) {
-            my ($server, $user, $system, $elapsed) = ($1, $2, $3, $4);
+        if ($left =~ /(\S+) xmit user .+ system \S+ elapsed (\S+)$/o) {
+            my ($server, $elapsed) = ($1, $2);
             $server = lc $server unless $CASE_SENSITIVE;
             $nntplink_times{$server} += $elapsed;
             return 1;
@@ -1744,8 +1743,8 @@ sub collect($$$$$$) {
             return 1;
         }
         # post/ihave failed
-        if ($left =~ /(\S+) (post|ihave) failed (.*)$/o) {
-            my ($cust, $error) = ($1, $3);
+        if ($left =~ /(\S+) (post|ihave) failed .*$/o) {
+            my $cust = $1;
             $cust = lc $cust unless $CASE_SENSITIVE;
             my $dom = &host2dom($cust);
             $nnrpd_dom_post_error{$dom}++;
@@ -1824,10 +1823,10 @@ sub collect($$$$$$) {
         if (
             $left =~ /(\S+)
                       \ (?:exit|exit\ for\ STARTTLS|exit\ for\ AUTHINFO SASL)
-                      \ articles\ (\d+)\ groups\ (\d+)
+                      \ articles\ (\d+)\ groups\ \d+
                       $/ox
         ) {
-            my ($cust, $articles, $groups) = ($1, $2, $3);
+            my ($cust, $articles) = ($1, $2);
             $cust = lc $cust unless $CASE_SENSITIVE;
             my $dom = &host2dom($cust);
             if ($cust eq '?') {
@@ -1854,8 +1853,8 @@ sub collect($$$$$$) {
             return 1;
         }
         # artstats
-        if ($left =~ /(\S+) artstats get (\d+) time (\d+) size (\d+)$/o) {
-            my ($cust, $articles, $time, $bytes) = ($1, $2, $3, $4);
+        if ($left =~ /(\S+) artstats get \d+ time \d+ size (\d+)$/o) {
+            my ($cust, $bytes) = ($1, $2);
             $cust = lc $cust unless $CASE_SENSITIVE;
             my $dom = &host2dom($cust);
             $nnrpd_bytes{$cust} += $bytes;
@@ -2005,7 +2004,8 @@ sub collect($$$$$$) {
     if ($prog eq "overchan") {
         # times
         if ($left =~ /timings (\d+) arts (\d+) of (\d+) ms$/o) {
-            my ($articles, $work_time, $run_time) = ($1, $2, $3);
+            my ($articles_unused, $worktime_unused, $runtime_unused)
+              = ($1, $2, $3);
             # ??? What to do with numbers
             return 1;
         }
@@ -2015,11 +2015,9 @@ sub collect($$$$$$) {
     ## batcher
     if ($prog eq "batcher") {
         # times
-        if ($left =~ /(\S+) times user (.+) system (\S+) elapsed (\S+)$/o) {
-            my ($server, $user, $system, $elapsed) = ($1, $2, $3, $4);
+        if ($left =~ /(\S+) times user .+ system \S+ elapsed (\S+)$/o) {
+            my ($server, $elapsed) = ($1, $2);
             $server = lc $server unless $CASE_SENSITIVE;
-            # $batcher_user{$server} += $user;
-            # $batcher_system{$server} += $system;
             $batcher_elapsed{$server} += $elapsed;
             return 1;
         }
@@ -2433,8 +2431,6 @@ sub adjust($$) {
 
     # Fill some hashes
     {
-        my ($hostname, $channel);
-
         # Since the checkpoint counts include entries for all server
         # connections, check to see if any checkpoint server entries are not
         # also in %innd_connect.  Add any missing servers (persistant servers
@@ -2573,7 +2569,7 @@ sub adjust($$) {
         my $first = 1;
         my (%hash, %hash_time, %hash_size, $date, $delay);
         foreach my $day (sort datecmp keys(%inn_flow)) {
-            my ($r, $h) = $day =~ /^(.*) (\d+)$/o;
+            my ($r_unused, $h) = $day =~ /^(.*) (\d+)$/o;
             if ($first) {
                 $first = 0;
                 my ($t) = $first_date =~ m/:(\d\d:\d\d)$/o;
