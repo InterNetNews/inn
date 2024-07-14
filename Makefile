@@ -247,6 +247,30 @@ snapshot:
 	tar cf $(SNAPDIR).tar $(SNAPDIR)
 	$(GZIP) -9 $(SNAPDIR).tar
 
+
+##  Check code for nits and potential errors by running:
+##    * perltidy warnings for Perl scripts.
+##  This should only be run by a maintainer since it depends on the presence
+##  of these programs, and sometimes a specific version.
+code-check:
+	@if command -v "perltidy" &> /dev/null ; then \
+	    echo "Running perltidy to check Perl code..." ; \
+	    (grep --include=\*.in -Rin perl . | grep ':1:' | cut -f1 -d':' ; \
+	        find . \( -name '*.pl' -o -name '*.pl.in' -o -name '*.pm' \
+	        -o -name '*.pm.in' \) \
+	        \! -wholename ./perl/INN/Config.pm \
+	        \! -wholename ./perl/INN/Utils/Shlock.pm \
+	        \! -wholename ./samples/nnrpd_access.pl \
+	        \! -wholename ./samples/nnrpd_auth.pl \
+	        \! -wholename ./scripts/innshellvars.pl \
+	        ; echo ./support/mkmanifest) \
+	        | grep -v pgpverify | grep -v '^./site/' | sort -u \
+	        | xargs perltidy -se -wma -wmauc=0 ; \
+	else \
+	    echo "Skipping Perl code checking (perltidy not found)" ; \
+	fi
+
+
 ##  Reformat all source code using:
 ##    * black for Python scripts,
 ##    * clang-format for C code,

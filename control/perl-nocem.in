@@ -738,7 +738,7 @@ sub read_ctlfile {
     return 1;
 }
 
-sub logmsg {
+sub logmsg ($;$) {
     my ($msg, $lvl) = @_;
 
     # Default is logging at notice level.
