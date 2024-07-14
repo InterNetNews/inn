@@ -231,13 +231,13 @@ sub run_site {
 }
 
 ##############################################################################
-sub logmsg {
+sub logmsg ($;$) {
     my ($msg, $lvl) = @_;
 
     syslog($lvl || 'notice', '%s', $msg) if ($use_syslog);
 }
 
-sub logdie {
+sub logdie ($;$) {
     my ($msg, $lvl) = @_;
 
     logmsg($msg, $lvl || 'err');

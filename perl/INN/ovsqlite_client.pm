@@ -279,8 +279,8 @@ sub send_request {
       or croak "Short write?!";
 }
 
-sub receive_response {
-    my ($self) = @_;
+sub receive_response ($$$) {
+    my $self = $_[0];
     my ($buf, $got, $len, $code, $errmsg);
 
     $got = sysread($self, $buf, 4);

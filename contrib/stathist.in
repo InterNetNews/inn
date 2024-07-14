@@ -59,7 +59,7 @@ sub parse {
     $data;
 }
 
-sub report {
+sub report ($;$) {
     my $data = shift;
     my $inc = shift;
 
