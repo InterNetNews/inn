@@ -358,18 +358,18 @@ BEGIN {
             $addr = pack_sockaddr_un($path);
             $cookie = "";
         } elsif (-f _ && $stat[7] == 18) {
-            my ($fh, $buf, $got, $port, $cookie);
+            my ($fh, $fhbuf, $got, $port, $fhcookie);
 
             open($fh, "<", $path)
               or croak "$path: open: $!";
             binmode($fh);
-            $got = read($fh, $buf, 18);
+            $got = read($fh, $fhbuf, 18);
             defined($got)
               or croak "$path: read: $!";
             $got == 18
               or croak "$path: Unexpected EOF";
             close($fh);
-            ($port, $cookie) = unpack("n a16", $buf);
+            ($port, $fhcookie) = unpack("n a16", $fhbuf);
             $pf = PF_INET;
             $addr = pack_sockaddr_in($port, INADDR_LOOPBACK);
         } else {
@@ -926,27 +926,27 @@ BEGIN {
         }
         $self->receive_response($buf, $code, $errmsg);
         if ($code == response_artlist || $code == response_artlist_done) {
-            my ($cols, $artcount, @articles);
+            my ($respcols, $artcount, @articles);
 
-            ($cols, $artcount) = unpack("x C L", $buf);
+            ($respcols, $artcount) = unpack("x C L", $buf);
             if ($artcount > 0) {
                 my ($unpack, @keys, @flat);
 
                 $unpack = "Q";
                 push(@keys, "artnum");
-                if ($cols & search_col_arrived) {
+                if ($respcols & search_col_arrived) {
                     $unpack .= " q";
                     push(@keys, "arrived");
                 }
-                if ($cols & search_col_expires) {
+                if ($respcols & search_col_expires) {
                     $unpack .= " q";
                     push(@keys, "expires");
                 }
-                if ($cols & search_col_token) {
+                if ($respcols & search_col_token) {
                     $unpack .= " a18";
                     push(@keys, "token");
                 }
-                if ($cols & search_col_overview) {
+                if ($respcols & search_col_overview) {
                     $unpack .= " L/a";
                     push(@keys, "overview");
                 }

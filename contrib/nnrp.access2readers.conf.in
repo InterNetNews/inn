@@ -103,9 +103,9 @@ if (!$debug) {
     open(PASSWD, ">$passwd") or die "Could not open $passwd: $!\n";
     $OUT = \*PASSWD;
 }
-while (my ($user, $pass) = each %passwords) {
-    $pass = crypt($pass, seedchar() . seedchar());
-    print $OUT "$user:$pass\n";
+while (my ($u, $p) = each %passwords) {
+    $p = crypt($p, seedchar() . seedchar());
+    print $OUT "$u:$p\n";
 }
 close PASSWD unless $debug;
 

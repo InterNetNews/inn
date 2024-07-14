@@ -2381,7 +2381,6 @@ sub adjust($$) {
     my $curious;
 
     {
-        my $serv;
         if (%nnrpd_connect) {
             my @keys = keys(%nnrpd_connect);
             my $c = @keys;
@@ -2434,7 +2433,7 @@ sub adjust($$) {
 
     # Fill some hashes
     {
-        my ($key, $hostname, $channel);
+        my ($hostname, $channel);
 
         # Since the checkpoint counts include entries for all server
         # connections, check to see if any checkpoint server entries are not
@@ -2447,7 +2446,7 @@ sub adjust($$) {
             }
         }
 
-        foreach $key (keys(%innd_connect)) {
+        foreach my $key (keys(%innd_connect)) {
             $innd_offered{$key}
               = ($innd_accepted{$key} || 0)
               + ($innd_refused{$key} || 0)
@@ -2459,7 +2458,7 @@ sub adjust($$) {
         }
 
         # Sum all incoming traffic for each full server.
-        foreach $key (keys(%innd_connect)) {
+        foreach my $key (keys(%innd_connect)) {
             if ($key =~ /^(\S+):\d+$/) {
                 $innd_seconds_sum{$1} += ($innd_seconds{$key} || 0);
                 $innd_connect_sum{$1} += ($innd_connect{$key} || 0);
@@ -2478,7 +2477,7 @@ sub adjust($$) {
 
         # adjust min/max of innd timer stats.
         if (%innd_time_min) {
-            foreach $key (keys(%innd_time_min)) {
+            foreach my $key (keys(%innd_time_min)) {
                 $innd_time_min{$key} = 0 if ($innd_time_min{$key} == $MIN);
                 $innd_time_max{$key} = 0 if ($innd_time_max{$key} == $MAX);
 
@@ -2487,7 +2486,7 @@ sub adjust($$) {
             }
         }
         if (%innfeed_time_min) {
-            foreach $key (keys(%innfeed_time_min)) {
+            foreach my $key (keys(%innfeed_time_min)) {
                 $innfeed_time_min{$key} = 0
                   if ($innfeed_time_min{$key} == $MIN);
                 $innfeed_time_max{$key} = 0
@@ -2495,7 +2494,7 @@ sub adjust($$) {
             }
         }
         if (%nnrpd_time_min) {
-            foreach $key (keys(%nnrpd_time_min)) {
+            foreach my $key (keys(%nnrpd_time_min)) {
                 $nnrpd_time_min{$key} = 0 if ($nnrpd_time_min{$key} == $MIN);
                 $nnrpd_time_max{$key} = 0 if ($nnrpd_time_max{$key} == $MAX);
             }
@@ -2525,8 +2524,7 @@ sub adjust($$) {
 
     if (%inn_flow) {
         my ($prev_dd, $prev_d, $prev_h) = ("", -1, -1);
-        my $day;
-        foreach $day (sort datecmp keys(%inn_flow)) {
+        foreach my $day (sort datecmp keys(%inn_flow)) {
             my ($r, $h) = $day =~ /^(.*) (\d+)$/;
             my $d = index(
                 "JanFebMarAprMayJunJulAugSepOctNovDec",
@@ -2574,7 +2572,7 @@ sub adjust($$) {
         }
         my $first = 1;
         my (%hash, %hash_time, %hash_size, $date, $delay);
-        foreach $day (sort datecmp keys(%inn_flow)) {
+        foreach my $day (sort datecmp keys(%inn_flow)) {
             my ($r, $h) = $day =~ /^(.*) (\d+)$/o;
             if ($first) {
                 $first = 0;
@@ -2610,100 +2608,86 @@ sub adjust($$) {
     }
 
     if (%innd_bad_ihave) {
-        my $key;
         my $msg = 'Bad ihave control messages received';
-        foreach $key (keys %innd_bad_ihave) {
+        foreach my $key (keys %innd_bad_ihave) {
             $innd_misc_stat{$msg}{$key} = $innd_bad_ihave{$key};
         }
     }
     if (%innd_bad_msgid) {
-        my $key;
         my $msg = 'Bad Message-ID\'s offered';
-        foreach $key (keys %innd_bad_msgid) {
+        foreach my $key (keys %innd_bad_msgid) {
             $innd_misc_stat{$msg}{$key} = $innd_bad_msgid{$key};
         }
     }
     if (%innd_bad_sendme) {
-        my $key;
         my $msg = 'Ignored sendme control messages received';
-        foreach $key (keys %innd_bad_sendme) {
+        foreach my $key (keys %innd_bad_sendme) {
             $innd_misc_stat{$msg}{$key} = $innd_bad_sendme{$key};
         }
     }
     if (%innd_bad_command) {
-        my $key;
         my $msg = 'Bad command received';
-        foreach $key (keys %innd_bad_command) {
+        foreach my $key (keys %innd_bad_command) {
             $innd_misc_stat{$msg}{$key} = $innd_bad_command{$key};
         }
     }
     if (%innd_bad_newsgroup) {
-        my $key;
         my $msg = 'Bad newsgroups received';
-        foreach $key (keys %innd_bad_newsgroup) {
+        foreach my $key (keys %innd_bad_newsgroup) {
             $innd_misc_stat{$msg}{$key} = $innd_bad_newsgroup{$key};
         }
     }
     if (%innd_posted_future) {
-        my $key;
         my $msg = 'Article posted in the future';
-        foreach $key (keys %innd_posted_future) {
+        foreach my $key (keys %innd_posted_future) {
             $innd_misc_stat{$msg}{$key} = $innd_posted_future{$key};
         }
     }
     if (%innd_no_colon_space) {
-        my $key;
         my $msg = 'No colon-space in header field';
-        foreach $key (keys %innd_no_colon_space) {
+        foreach my $key (keys %innd_no_colon_space) {
             $innd_misc_stat{$msg}{$key} = $innd_no_colon_space{$key};
         }
     }
     if (%innd_huge) {
-        my $key;
         my $msg = 'Huge articles';
-        foreach $key (keys %innd_huge) {
+        foreach my $key (keys %innd_huge) {
             $innd_misc_stat{$msg}{$key} = $innd_huge{$key};
         }
     }
     if (%innd_blocked) {
-        my $key;
         my $msg = 'Blocked server feeds';
-        foreach $key (keys %innd_blocked) {
+        foreach my $key (keys %innd_blocked) {
             $innd_misc_stat{$msg}{$key} = $innd_blocked{$key};
         }
     }
     if (%innd_strange_strings) {
-        my $key;
         my $msg = 'Including strange strings';
-        foreach $key (keys %innd_strange_strings) {
+        foreach my $key (keys %innd_strange_strings) {
             $innd_misc_stat{$msg}{$key} = $innd_strange_strings{$key};
         }
     }
     if (%rnews_bogus_ng) {
-        my $key;
         my $msg = 'Unwanted newsgroups';
-        foreach $key (keys %rnews_bogus_ng) {
+        foreach my $key (keys %rnews_bogus_ng) {
             $rnews_misc{$msg}{$key} = $rnews_bogus_ng{$key};
         }
     }
     if (%rnews_bogus_dist) {
-        my $key;
         my $msg = 'Unwanted distributions';
-        foreach $key (keys %rnews_bogus_dist) {
+        foreach my $key (keys %rnews_bogus_dist) {
             $rnews_misc{$msg}{$key} = $rnews_bogus_dist{$key};
         }
     }
     if (%rnews_unapproved) {
-        my $key;
         my $msg = 'Articles unapproved';
-        foreach $key (keys %rnews_unapproved) {
+        foreach my $key (keys %rnews_unapproved) {
             $rnews_misc{$msg}{$key} = $rnews_unapproved{$key};
         }
     }
     if (%rnews_bogus_date) {
-        my $key;
         my $msg = 'Bad Date';
-        foreach $key (keys %rnews_bogus_date) {
+        foreach my $key (keys %rnews_bogus_date) {
             $rnews_misc{$msg}{$key} = $rnews_bogus_date{$key};
         }
     }
@@ -2746,9 +2730,8 @@ sub report_unwanted_ng($) {
     rename($file, "${file}.old");
 
     open(FILE, "> $file") && do {
-        my $g;
-        foreach $g (sort { $inn_uw_ng{$b} <=> $inn_uw_ng{$a} }
-            (keys(%inn_uw_ng)))
+        foreach
+          my $g (sort { $inn_uw_ng{$b} <=> $inn_uw_ng{$a} } (keys(%inn_uw_ng)))
         {
             printf FILE "%d %s\n", $inn_uw_ng{$g}, $g;
         }

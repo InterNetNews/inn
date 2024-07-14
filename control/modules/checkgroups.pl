@@ -161,9 +161,9 @@ sub docheckgroups {
             open(STDIN, "$tempfile") or die $!;
             open(STDOUT, ">$tempfile.modact") or die $!;
 
-            my $st = system("$INN::Config::pathbin/mod-active");
-            logdie('Cannot run mod-active: ' . $!) if $st == -1;
-            logdie('mod-active returned status ' . ($st & 255)) if $st > 0;
+            my $stem = system("$INN::Config::pathbin/mod-active");
+            logdie('Cannot run mod-active: ' . $!) if $stem == -1;
+            logdie('mod-active returned status ' . ($stem & 255)) if $stem > 0;
 
             close(STDIN);
             close(STDOUT);

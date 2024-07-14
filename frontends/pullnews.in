@@ -484,8 +484,8 @@ while (<FILE>) {
 
         # Find a possible port at the end of the news server name.
         # Count the number of ":" to check that it is not an IPv6 address.
-        my @colons = split(/:/, $upstreamName);
-        if ((scalar(@colons) == 2) and ($upstreamName =~ s/:(\d+)$//)) {
+        my @colonsName = split(/:/, $upstreamName);
+        if ((scalar(@colonsName) == 2) and ($upstreamName =~ s/:(\d+)$//)) {
             $upstreamParams->{$sname}->{port} = $1;
         } else {
             $upstreamParams->{$sname}->{port} = $defaultPort;
@@ -785,14 +785,12 @@ sub saveConfig {
     local $SIG{QUIT} = 'IGNORE';
 
     open(FILE, ">$groupFile") || die "can't open $groupFile: $!\n";
-    my $server;
-    my $group;
 
     print LOG "\nSaving config\n" unless $quiet;
     print FILE "# Format: (date is epoch seconds)\n";
     print FILE "# hostname[:port][_tlsmode] [username password]\n";
     print FILE "#     group date high\n";
-    foreach $server (
+    foreach my $server (
         sort { $servers->{$a}->{_order} <=> $servers->{$b}->{_order} }
         keys %$servers
     ) {
@@ -801,7 +799,7 @@ sub saveConfig {
             printf FILE " %s %s", $passwd{$server}->[0], $passwd{$server}->[1];
         }
         print FILE "\n";
-        foreach $group (sort keys %{ $servers->{$server} }) {
+        foreach my $group (sort keys %{ $servers->{$server} }) {
             next if $group eq '_order';
             my ($date, $high) = @{ $servers->{$server}->{$group} };
             printf FILE "    %s %d %d\n", $group, $date, $high;
@@ -839,7 +837,6 @@ sub crossFeedGroup {
     my ($narticles, $first, $last, $name) = $fromServer->group($group);
     my $count = 0;
     my $len = 0;    # Received article length (bytes) (for stats).
-    my $code;
     my $startTime = time;
     my ($prevRefused, $prevRejected) = ($info{refused}, $info{rejected});
 
@@ -1133,7 +1130,7 @@ sub crossFeedGroup {
                 print LOG "\tDEBUGGING $i\tcut1 $cut\n" if $debug >= 2;
                 while ($article->[$idx] =~ /^[[:space:]](.+)/) {
                     # Folded lines.
-                    my $cut = join("\n\t", splice(@{$article}, $idx, 1));
+                    $cut = join("\n\t", splice(@{$article}, $idx, 1));
                     $tx_len -= length($cut);
                     $idx_blank_pre_body--;
                     print LOG "\tDEBUGGING $i\tcut_ $cut\n" if $debug >= 2;

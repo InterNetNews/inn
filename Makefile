@@ -265,7 +265,8 @@ code-check:
 	        \! -wholename ./scripts/innshellvars.pl \
 	        ; echo ./support/mkmanifest) \
 	        | grep -v pgpverify | grep -v '^./site/' | sort -u \
-	        | xargs perltidy -se -wma -wmauc=0 ; \
+	        | xargs perltidy -se -wma -wmauc=0 \
+	            -wvt='p r' ; \
 	else \
 	    echo "Skipping Perl code checking (perltidy not found)" ; \
 	fi

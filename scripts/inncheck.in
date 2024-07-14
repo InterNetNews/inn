@@ -728,7 +728,7 @@ sub newsfeeds {
     my ($next, $start, @muxes, %sites);
     my ($site, $pats, $dists, $flags, $param, $type, $k, $v, $defsub);
     my ($bang, $nobang, $prog, $dir);
-    my (%variables, $key);
+    my %variables;
 
   INPUT:
     while (<$IN>) {

@@ -292,13 +292,13 @@ exit 0;
 # misc functions ##########################################################
 sub parse_article {
     my ($article, $hdr) = @_;
-    my ($h, $buffer);
+    my $buffer;
     my %uniquehdr = map { $_ => 1 } qw(approved control date followup-to
       from injection-date message-id newsgroups path reply-to sender subject);
 
     my $head = $article->head;
 
-    foreach $h (%uniquehdr) {
+    foreach my $h (%uniquehdr) {
         $hdr->{$h} = '';
         $buffer = $head->get($h);
         if ($buffer) {

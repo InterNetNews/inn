@@ -83,8 +83,7 @@ sub parse_config {
 # Write out include directives for a list of files.
 sub write_includes {
     my ($fh, $config) = @_;
-    my $method;
-    for $method (sort keys %{ $$config{method} }) {
+    for my $method (sort keys %{ $$config{method} }) {
         my $path = $$config{method}{$method};
         print $fh qq(\#include "$path/$method.h"\n);
     }
@@ -93,8 +92,8 @@ sub write_includes {
 # Write out the method struct.
 sub write_methods {
     my ($fh, $config, $prefix, @funcs) = @_;
-    my ($notfirst, $method);
-    for $method (sort keys %{ $$config{method} }) {
+    my $notfirst;
+    for my $method (sort keys %{ $$config{method} }) {
         print $fh "\n},\n" if $notfirst;
         print $fh qq(\{\n    "$method");
         print $fh ', ', $prefix, '_', uc($method) if $prefix;
@@ -109,8 +108,7 @@ sub write_methods {
 # Write out the constant defines for methods.
 sub write_constants {
     my ($fh, $config, $prefix) = @_;
-    my $method;
-    for $method (sort keys %{ $$config{method} }) {
+    for my $method (sort keys %{ $$config{method} }) {
         printf $fh "#define ${prefix}_%-30s%d\n", uc($method),
           $$config{number}{ $$config{method}{$method} };
     }
@@ -241,7 +239,7 @@ sub write_makefile {
     rename('Make.methods.new', 'Make.methods');
 }
 
-my ($dir, %storage, %overview, %makefile);
+my (%storage, %overview, %makefile);
 %makefile = (
     filelists => [map([], @filelistnames)],
     makefiles => [],
@@ -256,7 +254,7 @@ if (!-d 'cnfs') {
 }
 opendir(D, ".") or die "Can't open current directory: $!\n";
 my @dirs = sort readdir D;
-for $dir (@dirs) {
+for my $dir (@dirs) {
     if (-e "$dir/method.config") {
         parse_config($dir, 'method.config', \%storage, \%makefile);
     } elsif (-e "$dir/ovmethod.config") {

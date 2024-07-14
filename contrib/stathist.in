@@ -13,9 +13,9 @@ if ($file eq '-h' || $file eq '--help') {
 }
 
 sub parse {
-    my $file = shift;
+    my $filename = shift;
 
-    my $f = new FileHandle $file;
+    my $f = FileHandle->new($filename);
     unless (defined $f) {
         print STDERR "Can't open file: $!\n";
         return {};

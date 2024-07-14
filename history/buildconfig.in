@@ -69,8 +69,7 @@ sub parse_config {
 # Write out include directives for a list of files.
 sub write_includes {
     my ($fh, $config) = @_;
-    my $method;
-    for $method (sort keys %{ $$config{method} }) {
+    for my $method (sort keys %{ $$config{method} }) {
         my $path = $$config{method}{$method};
         print $fh qq(\#include "$path/$method.h"\n);
     }
@@ -79,8 +78,8 @@ sub write_includes {
 # Write out the method struct.
 sub write_methods {
     my ($fh, $config, $prefix, @funcs) = @_;
-    my ($notfirst, $method);
-    for $method (sort keys %{ $$config{method} }) {
+    my $notfirst;
+    for my $method (sort keys %{ $$config{method} }) {
         print $fh "\n},\n" if $notfirst;
         print $fh qq(\{\n    "$method");
         print $fh ', ', $prefix, '_', uc($method) if $prefix;
@@ -171,7 +170,7 @@ sub write_makefile {
     rename('Make.methods.new', 'Make.methods');
 }
 
-my ($dir, %history);
+my %history;
 if (!-d 'hisv6') {
     if (-d 'history/cnfs') {
         chdir 'history' or die "Can't chdir to history: $!\n";
@@ -181,7 +180,7 @@ if (!-d 'hisv6') {
 }
 opendir(D, ".") or die "Can't open current directory: $!\n";
 my @dirs = sort readdir D;
-for $dir (@dirs) {
+for my $dir (@dirs) {
     if (-e "$dir/hismethod.config") {
         parse_config($dir, 'hismethod.config', \%history);
     }
