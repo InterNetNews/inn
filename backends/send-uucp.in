@@ -198,7 +198,6 @@ sub run_site {
 
     # append the old .work temp file to the current batch file if needed
     if (-f "$site.work.tmp") {
-        my $err = '';
         open(OUT, ">>$site.work")
           or logdie("cannot open $site.work: $!", 'crit');
         open(IN, "$site.work.tmp")

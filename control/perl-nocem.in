@@ -415,7 +415,7 @@ sub read_nocem {
 # Some general rules could be added (for instance not to actually cancel
 # articles in groups we do not carry).
 sub want_cancel_id {
-    my ($msgid, $artid, $groups, $hdrs) = @_;
+    my ($msgid_unused, $artid, $groups_unused, $hdrs_unused) = @_;
     my $accepted = 1;
 
     $accepted = local_want_cancel_id(@_) if defined &local_want_cancel_id;

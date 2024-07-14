@@ -17,8 +17,8 @@ use strict;
 
 sub control_rmgroup {
     my (
-        $par, $sender, $replyto, $site, $action, $log, $approved,
-        $article,
+        $par, $sender, $replyto_unused, $site_unused, $action, $log,
+        $approved, $article,
     ) = @_;
     my ($groupname) = @$par;
 

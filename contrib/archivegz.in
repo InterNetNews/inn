@@ -76,13 +76,6 @@ sub fhbits {
 
 sub timed_getline {
     my ($fileh, $timeout) = @_;
-    my $filehandle = (
-        ref($fileh)
-        ? (ref($fileh) eq 'GLOB'
-              || UNIVERSAL::isa($fileh, 'GLOB')
-              || UNIVERSAL::isa($fileh, 'IO::Handle'))
-        : (ref(\$fileh) eq 'GLOB')
-    );
     local (*FILEH) = *$fileh{FILEHANDLE};
 
     local ($rin, $win, $ein);
