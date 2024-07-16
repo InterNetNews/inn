@@ -20,7 +20,7 @@
  * which can be found at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
  *
  * Written by Russ Allbery <eagle@eyrie.org>
- * Copyright 2014-2017 Russ Allbery <eagle@eyrie.org>
+ * Copyright 2014-2017, 2024 Russ Allbery <eagle@eyrie.org>
  * Copyright 2009, 2011-2014
  *     The Board of Trustees of the Leland Stanford Junior University
  * Copyright 2004-2008 Internet Systems Consortium, Inc. ("ISC")
@@ -279,7 +279,8 @@ bool
 network_bind_all(int type, unsigned short port, socket_type **fds,
                  unsigned int *count)
 {
-    struct addrinfo hints, *addrs, *addr;
+    struct addrinfo hints, *addrs;
+    const struct addrinfo *addr;
     unsigned int size;
     int status;
     socket_type fd;

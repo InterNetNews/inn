@@ -16,7 +16,7 @@
  * which can be found at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
  *
  * Written by Russ Allbery <eagle@eyrie.org>
- * Copyright 2015-2016, 2019 Russ Allbery <eagle@eyrie.org>
+ * Copyright 2015-2016, 2019, 2024 Russ Allbery <eagle@eyrie.org>
  * Copyright 2011-2012, 2014
  *     The Board of Trustees of the Leland Stanford Junior University
  * Copyright 2004-2006 Internet Systems Consortium, Inc. ("ISC")
@@ -241,7 +241,8 @@ bool
 buffer_find_string(struct buffer *buffer, const char *string, size_t start,
                    size_t *offset)
 {
-    char *terminator, *data;
+    char *data;
+    const char *terminator;
     size_t length;
 
     if (buffer->data == NULL)
