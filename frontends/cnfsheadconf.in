@@ -254,13 +254,7 @@ sub make_time {
     $min = int($t / 60);
     $t = $t % 60;
 
-    push(
-        @ret,
-        sprintf(
-            "%4d days, %2d:%02d:%02d",
-            $mday, $hour, $min, $t,
-        ),
-    );
+    push(@ret, sprintf("%4d days, %2d:%02d:%02d", $mday, $hour, $min, $t));
     return @ret;
 }
 
@@ -374,9 +368,9 @@ sub print_cycbuff_head {
             $currentbuff = sprintf("%0.8s", $in);
         }
         $buff = pack(
-            "a8 a16 a64 a16 a16 a16 a16 a16 a16 a8", $magic, $name,
-            $path, $lena, $freea, $updatea, $cyclenuma, $metaname,
-            $orderinmetaa, $currentbuff,
+            "a8 a16 a64 a16 a16 a16 a16 a16 a16 a8",
+            $magic, $name, $path, $lena, $freea, $updatea, $cyclenuma,
+            $metaname, $orderinmetaa, $currentbuff,
         );
         $buff .= pack("a16", $blksza) if ($magic =~ m/^CBuf4/);
         seek $BUFF, 0, 0;

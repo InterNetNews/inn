@@ -344,8 +344,8 @@ sub read_nocem {
         # innreport will parse "unwanted notice" lines.
         logmsg(
             sprintf(
-                "Article %s: %s notice %s by %s for %s (%d ids)", $msgid,
-                $opt_u ? "skipped" : "unwanted", $hdrs{'notice-id'},
+                "Article %s: %s notice %s by %s for %s (%d ids)",
+                $msgid, $opt_u ? "skipped" : "unwanted", $hdrs{'notice-id'},
                 $hdrs{issuer}, $hdrs{type}, $skipped,
             )
         );
@@ -470,10 +470,7 @@ sub pgp_check {
         if ($opt_g) {
             @command = split(/ /, $gpg);
         } else {
-            @command = (
-                $INN::Config::gpg, '--status-fd=1',
-                '--verify',
-            );
+            @command = ($INN::Config::gpg, '--status-fd=1', '--verify');
             if ($INN::Config::gpg_has_allow_weak_digest_algos_flag) {
                 push(@command, '--allow-weak-digest-algos');
             }
@@ -512,10 +509,13 @@ sub pgp_check {
         if ($? >> 8) {
             $status = $? >> 8;
         } else {
-            logmsg("Article $msgid: "
+            logmsg(
+                "Article $msgid: "
                   . ($gpgbin ? $gpgbin : $gpgvbin)
                   . " killed by signal "
-                  . ($? & 255), 'err');
+                  . ($? & 255),
+                'err',
+            );
             return 0;
         }
     }

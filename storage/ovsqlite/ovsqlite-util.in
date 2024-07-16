@@ -366,8 +366,8 @@ insert into repairs
 
     if ($result > 0) {
         printf STDERR (
-            "%d groupinfo record%s incoherent (Low, High, Count)\n", $result,
-            ($result > 1) ? "s" : "",
+            "%d groupinfo record%s incoherent (Low, High, Count)\n",
+            $result, ($result > 1) ? "s" : "",
         );
 
         # Show incoherent records (L, H and C are for Low, High, Count).
@@ -399,8 +399,8 @@ insert or replace into groupinfo
             $dbh->commit();
 
             printf STDERR (
-                "%d groupinfo record%s fixed\n", $result,
-                ($result > 1) ? "s" : "",
+                "%d groupinfo record%s fixed\n",
+                $result, ($result > 1) ? "s" : "",
             );
         }
 
