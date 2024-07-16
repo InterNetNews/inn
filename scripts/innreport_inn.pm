@@ -1814,6 +1814,8 @@ sub collect($$$$$$) {
             my $dom = &host2dom($cust);
             $error = "_null command_" if ($error !~ /\S/);
             $error =~ s/^(xmotd) .*$/$1/i if ($error =~ /^xmotd .*$/i);
+            # Convert non-printable chars to "?" for later output in reports.
+            $error =~ s/[^[:print:]]+/?/g;
             $nnrpd_dom_unrecognized{$dom}++;
             $nnrpd_unrecognized{$cust}++;
             $nnrpd_unrecogn_cmd{$error}++;
