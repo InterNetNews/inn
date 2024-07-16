@@ -58,7 +58,7 @@ sub filter_post {
 ### config hash directs it to.
 
     if ($config{checkincludedtext}) {
-        my ($lines, $quoted, $antiquoted) = analyze($body);
+        my ($lines, $quoted, $antiquoted) = analyze($hdr{'__BODY__'});
         if ($lines > $config{includedcutoff}
             && $quoted - $antiquoted > $lines * $config{includedratio})
         {
