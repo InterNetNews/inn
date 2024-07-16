@@ -5,7 +5,7 @@
  * which can be found at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
  *
  * Written by Russ Allbery <eagle@eyrie.org>
- * Copyright 2005-2006, 2014, 2018, 2022-2023 Russ Allbery <eagle@eyrie.org>
+ * Copyright 2005-2006, 2014, 2018, 2022-2024 Russ Allbery <eagle@eyrie.org>
  * Copyright 2007-2011
  *     The Board of Trustees of the Leland Stanford Junior University
  *
@@ -39,10 +39,10 @@ main(void)
 {
     char node[256], service[256];
     struct sockaddr_in sin;
-    struct sockaddr *sa = (struct sockaddr *) &sin;
+    const struct sockaddr *sa;
     int status;
     struct hostent *hp;
-    struct servent *serv;
+    const struct servent *serv;
     char *name;
 
     plan(26);
@@ -54,6 +54,7 @@ main(void)
      * the same port, but with different protocols.
      */
     memset(&sin, 0, sizeof(sin));
+    sa = (struct sockaddr *) &sin;
     sin.sin_family = AF_INET;
     sin.sin_port = htons(119);
     inet_aton("10.20.30.40", &sin.sin_addr);

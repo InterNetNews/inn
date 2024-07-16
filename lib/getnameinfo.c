@@ -17,7 +17,7 @@
  * which can be found at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
  *
  * Written by Russ Allbery <eagle@eyrie.org>
- * Copyright 2005, 2020 Russ Allbery <eagle@eyrie.org>
+ * Copyright 2005, 2020, 2024 Russ Allbery <eagle@eyrie.org>
  * Copyright 2008, 2011, 2013-2014
  *     The Board of Trustees of the Leland Stanford Junior University
  *
@@ -108,10 +108,10 @@ static int
 lookup_name(const struct in_addr *addr, char *node, socklen_t nodelen,
             int flags)
 {
-    struct hostent *host;
+    const struct hostent *host;
     char **alias;
     int status;
-    char *name;
+    const char *name;
     size_t namelen;
 
     /* Do the name lookup first unless told not to. */
@@ -155,7 +155,7 @@ static int
 lookup_service(unsigned short port, char *service, socklen_t servicelen,
                int flags)
 {
-    struct servent *srv;
+    const struct servent *srv;
     const char *protocol;
     int status;
     size_t namelen;
