@@ -95,9 +95,11 @@ sub db_open {
         return ($dbhandle);
     } else {
         $err = "Failure opening database " . $DBI::errstr;
+        # Log the error?
+        # The script currently just exits with a non-zero status.
     }
 
-    return (undef, $err);
+    return (undef);
 }
 
 sub get_stdin {
