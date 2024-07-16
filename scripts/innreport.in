@@ -1854,19 +1854,17 @@ sub Histo($$$$$$$$) {
             my $poly = new GD::Polygon;
             $poly->addPt(
                 $marginl + ($i) * $w - $k,
-                $ymax - $marginb - $shy - $jval
-                  / $factor
-                  * ($ymax - $marginb - $margint - $shy)
-                  / $max,
+                $ymax - $marginb - $shy
+                  - ($jval / $factor)
+                  * (($ymax - $marginb - $margint - $shy) / $max),
             );
             $poly->addPt($marginl + ($i) * $w - $k, $ymax - $marginb - $shy);
             $poly->addPt($marginl + ($i) * $w - $k - $shx, $ymax - $marginb);
             $poly->addPt(
                 $marginl + ($i) * $w - $k - $shx,
-                $ymax - $marginb - $jval
-                  / $factor
-                  * ($ymax - $marginb - $margint - $shy)
-                  / $max,
+                $ymax - $marginb
+                  - ($jval / $factor)
+                  * (($ymax - $marginb - $margint - $shy) / $max),
             );
 
             $image->filledPolygon($poly, $red3);
@@ -1875,19 +1873,17 @@ sub Histo($$$$$$$$) {
             # Front
             $image->filledRectangle(
                 $marginl + ($i - 1) * $w + $k - $shx,
-                $ymax - $marginb - $jval
-                  / $factor
-                  * ($ymax - $marginb - $margint - $shy)
-                  / $max,
+                $ymax - $marginb
+                  - ($jval / $factor)
+                  * (($ymax - $marginb - $margint - $shy) / $max),
                 $marginl + ($i) * $w - $k - $shx,
                 $ymax - $marginb, $red,
             );
             $image->rectangle(
                 $marginl + ($i - 1) * $w + $k - $shx,
-                $ymax - $marginb - $jval
-                  / $factor
-                  * ($ymax - $marginb - $margint - $shy)
-                  / $max,
+                $ymax - $marginb
+                  - ($jval / $factor)
+                  * (($ymax - $marginb - $margint - $shy) / $max),
                 $marginl + ($i) * $w - $k - $shx,
                 $ymax - $marginb, $coltxt,
             );
@@ -1895,31 +1891,27 @@ sub Histo($$$$$$$$) {
             my $poly2 = new GD::Polygon;
             $poly2->addPt(
                 $marginl + ($i - 1) * $w + $k,
-                $ymax - $marginb - $shy - $jval
-                  / $factor
-                  * ($ymax - $marginb - $margint - $shy)
-                  / $max,
+                $ymax - $marginb - $shy
+                  - ($jval / $factor)
+                  * (($ymax - $marginb - $margint - $shy) / $max),
             );
             $poly2->addPt(
                 $marginl + ($i) * $w - $k,
-                $ymax - $marginb - $shy - $jval
-                  / $factor
-                  * ($ymax - $marginb - $margint - $shy)
-                  / $max,
+                $ymax - $marginb - $shy
+                  - ($jval / $factor)
+                  * (($ymax - $marginb - $margint - $shy) / $max),
             );
             $poly2->addPt(
                 $marginl + ($i) * $w - $k - $shx,
-                $ymax - $marginb - $jval
-                  / $factor
-                  * ($ymax - $marginb - $margint - $shy)
-                  / $max,
+                $ymax - $marginb
+                  - ($jval / $factor)
+                  * (($ymax - $marginb - $margint - $shy) / $max),
             );
             $poly2->addPt(
                 $marginl + ($i - 1) * $w + $k - $shx,
-                $ymax - $marginb - $jval
-                  / $factor
-                  * ($ymax - $marginb - $margint - $shy)
-                  / $max,
+                $ymax - $marginb
+                  - ($jval / $factor)
+                  * (($ymax - $marginb - $margint - $shy) / $max),
             );
 
             $image->rectangle(0, 0, $xmax - 1, $ymax - 1, $coltxt);
