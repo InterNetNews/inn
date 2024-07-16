@@ -165,8 +165,10 @@ sub control_newgroup {
     if ($errmsg) {
         if ($log) {
             logger(
-                $log, "skipping newgroup $groupname $modcmd"
-                  . " $sender (would $status): $errmsg", $article,
+                $log,
+                "skipping newgroup $groupname $modcmd"
+                  . " $sender (would $status): $errmsg",
+                $article,
             );
         } else {
             logmsg("skipping newgroup $groupname $modcmd $sender"
@@ -197,8 +199,10 @@ END
     } elsif ($action eq 'log') {
         if ($log) {
             logger(
-                $log, "skipping newgroup $groupname $modcmd"
-                  . " $sender (would $status)", $article,
+                $log,
+                "skipping newgroup $groupname $modcmd"
+                  . " $sender (would $status)",
+                $article,
             );
         } else {
             logmsg("skipping newgroup $groupname $modcmd $sender"

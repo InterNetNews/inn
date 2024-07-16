@@ -67,8 +67,9 @@ END
     } elsif ($action eq 'log') {
         if ($log) {
             logger(
-                $log, "skipping rmgroup $groupname"
-                  . " $sender (would $status)", $article,
+                $log,
+                "skipping rmgroup $groupname" . " $sender (would $status)",
+                $article,
             );
         } else {
             logmsg("skipping rmgroup $groupname $sender (would $status)");

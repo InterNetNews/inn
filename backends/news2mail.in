@@ -112,8 +112,8 @@ sub mailto {
     $sendmail =~ s!(^|\s+)-f\s*\S*!!;
     $sendmail =~ s!(^|\s+)-oem!!;
     my @command = (
-        split(' ', $sendmail), '-oee', '-odq', "-f$s",
-        "-pNNTP:$INN::Config::pathhost", @a,
+        split(' ', $sendmail),
+        '-oee', '-odq', "-f$s", "-pNNTP:$INN::Config::pathhost", @a,
     );
 
     syslog('debug', join(' ', @command)) if ($use_syslog);

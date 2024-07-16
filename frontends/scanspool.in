@@ -346,9 +346,11 @@ sub check_spool {
     # start finding files
     #
     if (
-        !open $FINDFILE, '-|',
-        "find . \\( -type d -o -type f -o -type l \\) -name '[0-9]*' "
-        . "-print 2>&1",
+        !open(
+            $FINDFILE, '-|',
+            "find . \\( -type d -o -type f -o -type l \\) -name '[0-9]*' "
+              . "-print 2>&1",
+        )
     ) {
         fatal(3, "cannot start find in $spool");
     }

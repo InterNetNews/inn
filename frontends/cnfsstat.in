@@ -58,9 +58,8 @@ my ($oclass, $obuffer);
 my %opt = (c => \$oclass, m => \$obuffer);
 Getopt::Long::config('no_ignore_case');
 GetOptions(
-    \%opt,
-    "-a", "-c=s", "-h", "-i=i", "-l:i", "-m=s",
-    "-p", "-P", "-s", "-v",
+    \%opt, "-a", "-c=s", "-h", "-i=i", "-l:i",
+    "-m=s", "-p", "-P", "-s", "-v",
 ) || die $usage;
 
 help() if defined($opt{'h'});
@@ -231,8 +230,8 @@ if ($oclass) {
                 );
             } else {
                 $logline = sprintf(
-                    "Class %s for groups matching \"%s\"%s", $c, $gr,
-                    $filtered_s,
+                    "Class %s for groups matching \"%s\"%s",
+                    $c, $gr, $filtered_s,
                 );
             }
         } else {
@@ -398,7 +397,9 @@ sub print_cycbuff_head {
             'notice',
             '%s Buffer %s, len: %.2f  Mbytes, '
               . 'used: %.2f Mbytes (%4.1f%%) %3d cycles',
-            $logline, $name, Math::BigFloat->new($len) / (1024 * 1024),
+            $logline,
+            $name,
+            Math::BigFloat->new($len) / (1024 * 1024),
             Math::BigFloat->new($free) / (1024 * 1024),
             100 * Math::BigFloat->new($free) / Math::BigFloat->new($len),
             $cyclenum,
@@ -456,10 +457,7 @@ sub make_time {
 
     push(
         @ret,
-        sprintf(
-            "%4d days, %2d:%02d:%02d",
-            $mday, $hour, $minutes, $t,
-        ),
+        sprintf("%4d days, %2d:%02d:%02d", $mday, $hour, $minutes, $t),
     );
     return @ret;
 }

@@ -222,8 +222,7 @@ while (<STDIN>) {
     my $exclusionpats = '';
     my $droppats = '';
     my $charset_to = ctlperm(
-        $progname, $sender, $progparams[0],
-        $token, $article, \@charset_from,
+        $progname, $sender, $progparams[0], $token, $article, \@charset_from,
         \@maxchanges, \@matches,
     );
 
@@ -273,10 +272,9 @@ while (<STDIN>) {
 
         if ($action ne 'drop') {
             &$subfind(
-                \@progparams, $sender, $replyto,
-                $sitepath, $action, $logname, $approved, $article,
-                \@charset_from, $charset_to, $exclusionpats, $droppats,
-                \@maxchanges,
+                \@progparams, $sender, $replyto, $sitepath, $action,
+                $logname, $approved, $article, \@charset_from, $charset_to,
+                $exclusionpats, $droppats, \@maxchanges,
             );
 
             $exclusionpats .= '|' if $exclusionpats;

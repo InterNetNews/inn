@@ -165,8 +165,8 @@ my @old_argv = @ARGV;
 # Convert DO/DONT into boolean values.
 {
     foreach my $i (
-        \$HTML, \$GRAPH, \$ARCHIVE, \$WANT_UNKNOWN,
-        \$CASE_SENSITIVE, \$NOT_DAILY,
+        \$HTML, \$GRAPH, \$ARCHIVE, \$WANT_UNKNOWN, \$CASE_SENSITIVE,
+        \$NOT_DAILY,
     ) {
         $$i = $$i eq 'DO' ? 1 : 0;
     }
@@ -1384,16 +1384,22 @@ sub Graph3d {
     $image->line(0, $mt - 5, $xmax - 1, $mt - 5, $black);
     for my $i (0 .. $n - 1) {
         $image->string(
-            gdSmallFont(), $i * $xmax / $n + $mt - 10 + $rx,
-            ($mt - gdSmallFont()->height) / 2, "$$labels[$i]", $black,
+            gdSmallFont(),
+            $i * $xmax / $n + $mt - 10 + $rx,
+            ($mt - gdSmallFont()->height) / 2,
+            "$$labels[$i]", $black,
         );
         $image->filledRectangle(
-            $i * $xmax / $n + 10, 8 + $ry / 2,
-            $i * $xmax / $n + $mt - 10, $mt - 12, $col[$i][0],
+            $i * $xmax / $n + 10,
+            8 + $ry / 2,
+            $i * $xmax / $n + $mt - 10,
+            $mt - 12, $col[$i][0],
         );
         $image->rectangle(
-            $i * $xmax / $n + 10, 8 + $ry / 2,
-            $i * $xmax / $n + $mt - 10, $mt - 12, $black,
+            $i * $xmax / $n + 10,
+            8 + $ry / 2,
+            $i * $xmax / $n + $mt - 10,
+            $mt - 12, $black,
         );
         {
             my $poly = new GD::Polygon;
@@ -1421,9 +1427,11 @@ sub Graph3d {
     }
     # Title
     $image->string(
-        gdMediumBoldFont(), ($xmax - gdMediumBoldFont()->width
-              * length($title)) / 2, $ymax - gdMediumBoldFont()->height - 7,
-        "$title", $black,
+        gdMediumBoldFont(),
+        ($xmax - gdMediumBoldFont()->width * length($title)) / 2,
+        $ymax - gdMediumBoldFont()->height - 7,
+        "$title",
+        $black,
     );
 
     my $e = $mt - $h + $d;
@@ -1432,23 +1440,31 @@ sub Graph3d {
     # Axe Oz
     $image->line($ml + $rx, $mt, $ml + $rx, $size * $d + $mt - $ry, $black);
     $image->line(
-        $ml + $rx + $max * $r, $mt, $ml + $rx + $max * $r,
+        $ml + $rx + $max * $r,
+        $mt,
+        $ml + $rx + $max * $r,
         $size * $d + $mt - $ry, $black,
     );
     $image->line($ml, $mt + $ry, $ml, $size * $d + $mt, $black);
     # Axe Ox
     $image->line(
-        $ml + $rx, $size * $d + $mt - $ry,
-        $ml + $rx - 2 * $rx, $size * $d + $mt + $ry, $black,
+        $ml + $rx,
+        $size * $d + $mt - $ry,
+        $ml + $rx - 2 * $rx,
+        $size * $d + $mt + $ry, $black,
     );
     # Axe Oy
     $image->line(
-        $ml + $rx, $size * $d + $mt - $ry,
-        $xmax - $mr / 2, $size * $d + $mt - $ry, $black,
+        $ml + $rx,
+        $size * $d + $mt - $ry,
+        $xmax - $mr / 2,
+        $size * $d + $mt - $ry, $black,
     );
     $image->line(
-        $ml, $size * $d + $mt,
-        $xmax - $mr - $rx, $size * $d + $mt, $black,
+        $ml,
+        $size * $d + $mt,
+        $xmax - $mr - $rx,
+        $size * $d + $mt, $black,
     );
 
     # Graduations.
@@ -1456,49 +1472,62 @@ sub Graph3d {
     for my $k (1 .. ($nn - 1)) {
         $image->dashedLine(
             $ml + $rx + $k * ($xmax - $ml - $mr - $rx) / $nn,
-            $mt + 10, $ml + $rx + $k * ($xmax - $ml - $mr - $rx) / $nn,
-            $size * $d + $mt - $ry, $black,
+            $mt + 10,
+            $ml + $rx + $k * ($xmax - $ml - $mr - $rx) / $nn,
+            $size * $d + $mt - $ry,
+            $black,
         );
         $image->dashedLine(
             $ml + $rx + $k * ($xmax - $ml - $mr - $rx) / $nn,
             $size * $d + $mt - $ry,
             $ml + $k * ($xmax - $ml - $mr - $rx) / $nn,
-            $size * $d + $mt, $black,
+            $size * $d + $mt,
+            $black,
         );
         $image->line(
             $ml + $k * ($xmax - $ml - $mr - $rx) / $nn,
             $size * $d + $mt,
             $ml + $k * ($xmax - $ml - $mr - $rx) / $nn,
-            $size * $d + $mt + 5, $black,
+            $size * $d + $mt + 5,
+            $black,
         );
         my $t = sprintf "%d%%", $k * 10;
         $image->string(
-            gdSmallFont(), $ml
-              + $k * ($xmax - $ml - $mr - $rx) / $nn
+            gdSmallFont(),
+            $ml + $k * ($xmax - $ml - $mr - $rx) / $nn
               - length($t) * gdSmallFont()->width / 2,
-            $size * $d + $mt + 6, "$t", $black,
+            $size * $d + $mt + 6,
+            "$t",
+            $black,
         );
     }
     {
         my $t = sprintf "%d%%", 0;
         $image->line($ml, $size * $d + $mt, $ml, $size * $d + $mt + 5, $black);
         $image->string(
-            gdSmallFont(), $ml - length($t) * gdSmallFont()->width / 2,
-            $size * $d + $mt + 6, "$t", $black,
+            gdSmallFont(),
+            $ml - length($t) * gdSmallFont()->width / 2,
+            $size * $d + $mt + 6,
+            "$t", $black,
         );
         $image->line(
-            $xmax - $mr, $size * $d + $mt - $ry,
-            $xmax - $mr - $rx, $size * $d + $mt, $black,
+            $xmax - $mr,
+            $size * $d + $mt - $ry,
+            $xmax - $mr - $rx,
+            $size * $d + $mt, $black,
         );
         $image->line(
-            $xmax - $mr - $rx, $size * $d + $mt,
-            $xmax - $mr - $rx, $size * $d + $mt + 5, $black,
+            $xmax - $mr - $rx,
+            $size * $d + $mt,
+            $xmax - $mr - $rx,
+            $size * $d + $mt + 5, $black,
         );
         $t = sprintf "%d%%", 100;
         $image->string(
-            gdSmallFont(), $xmax - $mr - $rx
-              - length($t) * gdSmallFont()->width / 2,
-            $size * $d + $mt + 6, "$t", $black,
+            gdSmallFont(),
+            $xmax - $mr - $rx - length($t) * gdSmallFont()->width / 2,
+            $size * $d + $mt + 6,
+            "$t", $black,
         );
     }
     foreach my $k (
@@ -1506,14 +1535,17 @@ sub Graph3d {
         keys(%{ $val[0] })
     ) {
         $image->string(
-            gdSmallFont(), $ml - length($k) * gdSmallFont()->width - 3,
-            $e + $h / 2 - gdSmallFont()->height / 2, "$k", $black,
+            gdSmallFont(),
+            $ml - length($k) * gdSmallFont()->width - 3,
+            $e + $h / 2 - gdSmallFont()->height / 2,
+            "$k", $black,
         );
         my $t = 0;
         $image->line(
-            $ml + ($t + ${ $val[0] }{$k}) * $r + $rx - $rx, $e + $h,
-            $ml + ($t + ${ $val[0] }{$k}) * $r + $rx, $e - $ry + $h,
-            $black,
+            $ml + ($t + ${ $val[0] }{$k}) * $r + $rx - $rx,
+            $e + $h,
+            $ml + ($t + ${ $val[0] }{$k}) * $r + $rx,
+            $e - $ry + $h, $black,
         );
         for my $i (0 .. $n - 1) {
             next unless defined ${ $val[$i] }{$k};
@@ -1553,12 +1585,13 @@ sub Graph3d {
                 $image->polygon($poly, $black);
             }
             $image->filledRectangle(
-                $ml + $t * $r, $e,
-                $ml + ($t + ${ $val[$i] }{$k}) * $r, $e + $h,
-                $col[$i][0],
+                $ml + $t * $r,
+                $e, $ml + ($t + ${ $val[$i] }{$k}) * $r,
+                $e + $h, $col[$i][0],
             );
             $image->rectangle(
-                $ml + $t * $r, $e, $ml + ($t + ${ $val[$i] }{$k}) * $r,
+                $ml + $t * $r,
+                $e, $ml + ($t + ${ $val[$i] }{$k}) * $r,
                 $e + $h, $black,
             );
             $t += ${ $val[$i] }{$k};
@@ -1568,11 +1601,14 @@ sub Graph3d {
             $ml + $t * $r + $rx + 3,
             $e - 2 - gdSmallFont()->height / 2,
             $ml + $t * $r + $rx + 4 + gdSmallFont()->width * length $t,
-            $e - 6 + gdSmallFont()->height / 2, $white,
+            $e - 6 + gdSmallFont()->height / 2,
+            $white,
         );
         $image->string(
-            gdSmallFont(), $ml + $t * $r + $rx + 5,
-            $e - 3 - gdSmallFont()->height / 2, "$t", $black,
+            gdSmallFont(),
+            $ml + $t * $r + $rx + 5,
+            $e - 3 - gdSmallFont()->height / 2,
+            "$t", $black,
         );
         # first value (accepted)
         $image->filledRectangle(
@@ -1580,11 +1616,14 @@ sub Graph3d {
             $e - 4 + gdSmallFont()->height / 2,
             $ml + $t * $r + $rx + 4
               + gdSmallFont()->width * length(${ $val[0] }{$k}),
-            $e - 2 + gdSmallFont()->height, $white,
+            $e - 2 + gdSmallFont()->height,
+            $white,
         );
         $image->string(
-            gdSmallFont(), $ml + $t * $r + $rx + 5,
-            $e - 5 + gdSmallFont()->height / 2, ${ $val[0] }{$k}, $black,
+            gdSmallFont(),
+            $ml + $t * $r + $rx + 5,
+            $e - 5 + gdSmallFont()->height / 2,
+            ${ $val[0] }{$k}, $black,
         );
         $e += $d;
     }
@@ -1696,43 +1735,51 @@ sub Histo($$$$$$$$) {
         gdMediumBoldFont(),
         ($xmax - length($title) * gdMediumBoldFont()->width) / 2,
         ($margint - $shy - gdMediumBoldFont()->height) / 2,
-        $title, $coltxt,
+        $title,
+        $coltxt,
     );
 
     # Labels
     $image->string(
-        gdSmallFont(), $marginl / 2, $margint / 2, $labely,
-        $coltxt,
+        gdSmallFont(),
+        $marginl / 2,
+        $margint / 2,
+        $labely, $coltxt,
     );
     $image->string(
-        gdSmallFont(), $xmax
-          - $marginr / 2
-          - $FontWidth * length($labelx), $ymax - $marginb / 2,
+        gdSmallFont(),
+        $xmax - $marginr / 2 - $FontWidth * length($labelx),
+        $ymax - $marginb / 2,
         $labelx, $coltxt,
     );
 
     # Max
     $image->line(
-        $marginl, $ymax
-          - $marginb - $shy
+        $marginl,
+        $ymax - $marginb - $shy
           - $old_max * ($ymax - $marginb - $margint - $shy) / $max,
-        $xmax - $marginr, $ymax
-          - $marginb - $shy
-          - $old_max * ($ymax - $marginb - $margint - $shy) / $max, $red,
+        $xmax - $marginr,
+        $ymax - $marginb - $shy
+          - $old_max * ($ymax - $marginb - $margint - $shy) / $max,
+        $red,
     );
     $image->line(
-        $marginl, $ymax
-          - $marginb - $shy
+        $marginl,
+        $ymax - $marginb - $shy
           - $old_max * ($ymax - $marginb - $margint - $shy) / $max,
-        $marginl - $shx, $ymax
-          - $marginb
-          - $old_max * ($ymax - $marginb - $margint - $shy) / $max, $red,
+        $marginl - $shx,
+        $ymax - $marginb
+          - $old_max * ($ymax - $marginb - $margint - $shy) / $max,
+        $red,
     );
 
     # Left
     $image->line(
-        $marginl - $shx, $margint + $shy,
-        $marginl - $shx, $ymax - $marginb, $coltxt,
+        $marginl - $shx,
+        $margint + $shy,
+        $marginl - $shx,
+        $ymax - $marginb,
+        $coltxt,
     );
     $image->line(
         $marginl, $margint,
@@ -1740,39 +1787,46 @@ sub Histo($$$$$$$$) {
     );
     $image->line(
         $marginl, $margint,
-        $marginl - $shx, $margint + $shy, $coltxt,
+        $marginl - $shx,
+        $margint + $shy, $coltxt,
     );
     $image->line(
-        $marginl - $shx, $ymax - $marginb,
+        $marginl - $shx,
+        $ymax - $marginb,
         $marginl, $ymax - $marginb - $shy, $coltxt,
     );
 
     # Right
     $image->line(
-        $xmax - $marginr, $margint,
-        $xmax - $marginr, $ymax - $marginb - $shy, $coltxt,
+        $xmax - $marginr,
+        $margint,
+        $xmax - $marginr,
+        $ymax - $marginb - $shy, $coltxt,
     );
     $image->line(
-        $xmax - $marginr - $shx, $ymax - $marginb,
-        $xmax - $marginr, $ymax - $marginb - $shy, $coltxt,
+        $xmax - $marginr - $shx,
+        $ymax - $marginb,
+        $xmax - $marginr,
+        $ymax - $marginb - $shy, $coltxt,
     );
 
     # Bottom
     $image->line(
-        $marginl - $shx, $ymax - $marginb,
-        $xmax - $marginr - $shx, $ymax - $marginb, $coltxt,
+        $marginl - $shx,
+        $ymax - $marginb,
+        $xmax - $marginr - $shx,
+        $ymax - $marginb, $coltxt,
     );
     $image->line(
-        $marginl, $ymax - $marginb - $shy,
-        $xmax - $marginr, $ymax - $marginb - $shy, $coltxt,
+        $marginl,
+        $ymax - $marginb - $shy,
+        $xmax - $marginr,
+        $ymax - $marginb - $shy, $coltxt,
     );
     $image->fill($xmax / 2, $ymax - $marginb - $shy / 2, $gray);
 
     # Top
-    $image->line(
-        $marginl, $margint,
-        $xmax - $marginr, $margint, $coltxt,
-    );
+    $image->line($marginl, $margint, $xmax - $marginr, $margint, $coltxt);
     $image->setStyle(
         $coltxt, $coltxt, &GD::gdTransparent,
         &GD::gdTransparent, &GD::gdTransparent,
@@ -1787,42 +1841,49 @@ sub Histo($$$$$$$$) {
         $j = sprintf "%d", $j if $j > 100;
 
         $image->line(
-            $marginl - $shx - 3, $ymax
-              - $marginb
+            $marginl - $shx - 3,
+            $ymax - $marginb
               - $i * ($ymax - $marginb - $margint - $shy) / $part,
-            $marginl - $shx, $ymax
-              - $marginb
-              - $i * ($ymax - $marginb - $margint - $shy) / $part, $coltxt,
+            $marginl - $shx,
+            $ymax - $marginb
+              - $i * ($ymax - $marginb - $margint - $shy) / $part,
+            $coltxt,
         );
         $image->line(
-            $marginl - $shx, $ymax
-              - $marginb
+            $marginl - $shx,
+            $ymax - $marginb
               - $i * ($ymax - $marginb - $margint - $shy) / $part,
-            $marginl, $ymax
-              - $marginb - $shy
-              - $i * ($ymax - $marginb - $margint - $shy) / $part, gdStyled(),
+            $marginl,
+            $ymax - $marginb - $shy
+              - $i * ($ymax - $marginb - $margint - $shy) / $part,
+            gdStyled(),
         );
         $image->line(
-            $marginl, $ymax
-              - $marginb - $shy
+            $marginl,
+            $ymax - $marginb - $shy
               - $i * ($ymax - $marginb - $margint - $shy) / $part,
-            $xmax - $marginr, $ymax
-              - $marginb - $shy
-              - $i * ($ymax - $marginb - $margint - $shy) / $part, gdStyled(),
+            $xmax - $marginr,
+            $ymax - $marginb - $shy
+              - $i * ($ymax - $marginb - $margint - $shy) / $part,
+            gdStyled(),
         );
         $image->string(
             gdSmallFont(),
             $marginl - $shx - $FontWidth * length("$j") - 7,
             $ymax - $marginb
               - ($i) * ($ymax - $marginb - $margint - $shy) / ($part)
-              - $FontHeight / 2, "$j", $coltxt,
+              - $FontHeight / 2,
+            "$j",
+            $coltxt,
         );
     }
 
     # Graduation (right bottom corner)
     $image->line(
-        $xmax - $marginr - $shx, $ymax - $marginb,
-        $xmax - $marginr - $shx, $ymax - $marginb + 3, $coltxt,
+        $xmax - $marginr - $shx,
+        $ymax - $marginb,
+        $xmax - $marginr - $shx,
+        $ymax - $marginb + 3, $coltxt,
     );
     # Bars
     $i = 0;
@@ -1834,9 +1895,10 @@ sub Histo($$$$$$$$) {
         if ($i++ <= $nb) {
             # Graduation
             $image->line(
-                $marginl + ($i - 1) * $w - $shx, $ymax - $marginb,
-                $marginl + ($i - 1) * $w - $shx, $ymax - $marginb + 3,
-                $coltxt,
+                $marginl + ($i - 1) * $w - $shx,
+                $ymax - $marginb,
+                $marginl + ($i - 1) * $w - $shx,
+                $ymax - $marginb + 3, $coltxt,
             );
             my $ii = sprintf "%d", $i / $MAX;
             $image->string(
@@ -1845,7 +1907,9 @@ sub Histo($$$$$$$$) {
                   + ($i - 0.5) * $w + 1
                   - ($FontWidth * length($$labels[$i - 1])) / 2
                   - $shx,
-                $ymax - $marginb + 3, $$labels[$i - 1], $coltxt,
+                $ymax - $marginb + 3,
+                $$labels[$i - 1],
+                $coltxt,
               )
               unless ($w < $FontWidth * length($$labels[$i - 1]))
               && ($i != $MAX * $ii);
@@ -1877,7 +1941,8 @@ sub Histo($$$$$$$$) {
                   - ($jval / $factor)
                   * (($ymax - $marginb - $margint - $shy) / $max),
                 $marginl + ($i) * $w - $k - $shx,
-                $ymax - $marginb, $red,
+                $ymax - $marginb,
+                $red,
             );
             $image->rectangle(
                 $marginl + ($i - 1) * $w + $k - $shx,
@@ -1885,7 +1950,8 @@ sub Histo($$$$$$$$) {
                   - ($jval / $factor)
                   * (($ymax - $marginb - $margint - $shy) / $max),
                 $marginl + ($i) * $w - $k - $shx,
-                $ymax - $marginb, $coltxt,
+                $ymax - $marginb,
+                $coltxt,
             );
             # Top
             my $poly2 = new GD::Polygon;
@@ -2077,13 +2143,15 @@ sub Chrono {
 
     $image->filledRectangle(
         $marginl, $margint,
-        $xmax - $marginr, $ymax - $marginb, $bg,
+        $xmax - $marginr,
+        $ymax - $marginb, $bg,
     );
     my $brush = new GD::Image(1, 2);
     my $b_col = $brush->colorAllocate(@col_out);
     $brush->line(0, 0, 0, 1, $b_col);
     $image->setBrush($brush);
     my ($old_x, $old_y_in, $old_y_out);
+
     foreach my $key (sort keys %$dates) {
         next if $key < $x_min;
         my $delta = $$dates{$key} - $key;
@@ -2102,8 +2170,10 @@ sub Chrono {
             $marginl + ($key - $x_min) * $xratio,
             $ymax - $marginb - $tt_in,
             $marginl + ($$dates{$key} - $x_min) * $xratio,
-            $ymax - $marginb, $col_in,
+            $ymax - $marginb,
+            $col_in,
         );
+
         if (defined $old_x) {
             $old_x = $new_x if $old_x > $new_x;
             my $poly = new GD::Polygon;
@@ -2117,7 +2187,8 @@ sub Chrono {
             $marginl + ($key - $x_min) * $xratio,
             $ymax - $marginb - $tt_out,
             $marginl + ($$dates{$key} - $x_min) * $xratio,
-            $ymax - $marginb - $tt_out, &GD::gdBrushed,
+            $ymax - $marginb - $tt_out,
+            &GD::gdBrushed,
         );
         $image->line(
             $old_x, $old_y_out, $new_x,
@@ -2132,35 +2203,42 @@ sub Chrono {
     # main frame
     $image->rectangle(
         $marginl, $margint,
-        $xmax - $marginr, $ymax - $marginb, $black,
+        $xmax - $marginr,
+        $ymax - $marginb, $black,
     );
     # graduations
     foreach my $i (0, 25, 50, 75, 100) {
         my $t = $ymax - $margint - $marginb;
         $image->line(
-            $marginl, $ymax - $marginb - $i / 100 * $t,
-            $xmax - $marginr, $ymax - $marginb - $i / 100 * $t,
+            $marginl,
+            $ymax - $marginb - $i / 100 * $t,
+            $xmax - $marginr,
+            $ymax - $marginb - $i / 100 * $t,
             gdStyled(),
         );
         $image->line(
-            $xmax - $marginr, $ymax - $marginb - $i / 100 * $t,
-            $xmax - $marginr + 3, $ymax - $marginb - $i / 100 * $t,
-            $black,
+            $xmax - $marginr,
+            $ymax - $marginb - $i / 100 * $t,
+            $xmax - $marginr + 3,
+            $ymax - $marginb - $i / 100 * $t, $black,
         );
         $image->line(
-            $marginl - 3, $ymax - $marginb - $i / 100 * $t,
-            $marginl, $ymax - $marginb - $i / 100 * $t,
-            $black,
+            $marginl - 3,
+            $ymax - $marginb - $i / 100 * $t,
+            $marginl, $ymax - $marginb - $i / 100 * $t, $black,
         );
         $image->string(
-            gdSmallFont(), $xmax - $marginr + 8, -$FontHeight / 2
-              + $ymax - $marginb
-              - $i / 100 * $t, "$i%", $black,
+            gdSmallFont(),
+            $xmax - $marginr + 8,
+            -$FontHeight / 2 + $ymax - $marginb - $i / 100 * $t,
+            "$i%", $black,
         );
         my $s = sprintf "%d", $y_max * $i / 100 * $factor;
         $image->string(
-            gdSmallFont(), $marginl - 5 - $FontWidth * length $s,
-            -$FontHeight / 2 + $ymax - $marginb - $i / 100 * $t, $s, $black,
+            gdSmallFont(),
+            $marginl - 5 - $FontWidth * length $s,
+            -$FontHeight / 2 + $ymax - $marginb - $i / 100 * $t,
+            $s, $black,
         );
     }
     ##
@@ -2180,13 +2258,15 @@ sub Chrono {
             if ($n > $x_min) {
                 $image->line($t, $margint, $t, $ymax - $marginb, gdStyled());
                 $image->line(
-                    $t, $ymax - $marginb, $t, $ymax - $marginb + 2,
-                    $black,
+                    $t, $ymax - $marginb,
+                    $t, $ymax - $marginb + 2, $black,
                 );
             }
             $image->string(
-                gdSmallFont(), $FontWidth * 7 / 2 + $t,
-                $ymax - $marginb + 4, (sprintf "Week %02d", $f), $black,
+                gdSmallFont(),
+                $FontWidth * 7 / 2 + $t,
+                $ymax - $marginb + 4,
+                (sprintf "Week %02d", $f), $black,
             ) if ($n + $w / 2 > $x_min) && ($n + $w / 2 < $x_max);
             $f++;
             $n += $w;
@@ -2235,8 +2315,8 @@ sub Chrono {
             if ($t > $x_min) {
                 $image->line($x, $margint, $x, $ymax - $marginb, gdStyled());
                 $image->line(
-                    $x, $ymax - $marginb, $x,
-                    $ymax - $marginb + 2, $black,
+                    $x, $ymax - $marginb,
+                    $x, $ymax - $marginb + 2, $black,
                 );
                 $image->line($x, $margint, $x, $ymax - $marginb, $red)
                   unless $i;
@@ -2244,8 +2324,8 @@ sub Chrono {
             $image->string(
                 gdSmallFont(),
                 $mm * $xratio / 2 - $FontWidth * 3 / 2 + $x,
-                $ymax - $marginb + 4, (sprintf "%s", $m[$i]),
-                $black,
+                $ymax - $marginb + 4,
+                (sprintf "%s", $m[$i]), $black,
             ) if ($t + 2 * $w > $x_min) && ($x_max > 2 * $w + $t);
             $t += $mm;
             $t += $d
@@ -2275,8 +2355,8 @@ sub Chrono {
     # Title
     $image->string(
         gdMediumBoldFont(),
-        $xmax / 2 - $FontWidth * length($title) / 2, 4,
-        $title, $black,
+        $xmax / 2 - $FontWidth * length($title) / 2,
+        4, $title, $black,
     );
 
     # Legend
@@ -2291,8 +2371,8 @@ sub Chrono {
         (sprintf "Avg: %5.1f $unit", $s_in / $t_in * $factor), $black,
     );
     $image->string(
-        gdSmallFont(), 3 * $xmax / 4, $y_in,
-        (sprintf "Max: %5.1f $unit", $max_in * $factor), $black,
+        gdSmallFont(), 3 * $xmax / 4,
+        $y_in, (sprintf "Max: %5.1f $unit", $max_in * $factor), $black,
     );
 
     my $y_out = $ymax - $size + 5;
@@ -2306,8 +2386,8 @@ sub Chrono {
         (sprintf "Avg: %5.1f $unit", $s_out / $t_out * $factor), $black,
     );
     $image->string(
-        gdSmallFont(), 3 * $xmax / 4, $y_out,
-        (sprintf "Max: %5.1f $unit", $max_out * $factor), $black,
+        gdSmallFont(), 3 * $xmax / 4,
+        $y_out, (sprintf "Max: %5.1f $unit", $max_out * $factor), $black,
     );
 
     open(IMG, "> $filename") || die "Error: Can't open \"$filename\": $!\n";
@@ -2382,8 +2462,7 @@ sub Write_all_results {
           if $MAX_UNRECOGNIZED > 0 && $mm > $MAX_UNRECOGNIZED - 1;
         if ($mm < $unrecognize_max && $unrecognize_max > 0) {
             printf HTML "<p>First %d / $unrecognize_max lines (%3.1f%%)</p>\n",
-              $mm + 1,
-              ($mm + 1) / $unrecognize_max * 100
+              $mm + 1, ($mm + 1) / $unrecognize_max * 100
               if $HTML && $WANT_HTML_UNKNOWN;
             printf "First %d / $unrecognize_max lines (%3.1f%%)\n", $mm + 1,
               ($mm + 1) / $unrecognize_max * 100;
@@ -2959,9 +3038,9 @@ sub Write_Results {
                         #
                         my %values = %$r_values;
                         $r = &Histo(
-                            "$IMG_dir/$report$repsuffix.$GD_FORMAT", $title,
-                            $imgxmax,
-                            $factor, $labelx, $labely, \%values, $r_labels,
+                            "$IMG_dir/$report$repsuffix.$GD_FORMAT",
+                            $title, $imgxmax, $factor, $labelx,
+                            $labely, \%values, $r_labels,
                         );
                         open(HTML, ">> $filename")
                           || die "Error: can't open $filename\n";
