@@ -89,6 +89,10 @@ if ($use_syslog) {
     }
     openlog('controlchan', 'pid', $INN::Config::syslog_facility);
 }
+
+sub logmsg($;$);
+sub logdie($;$);
+
 logmsg('starting');
 
 # load modules from the control directory #################################
@@ -547,7 +551,7 @@ sub logger {
 }
 
 # write to syslog or errlog
-sub logmsg ($;$) {
+sub logmsg($;$) {
     my ($msg, $lvl) = @_;
 
     return if $lvl and $lvl eq 'debug' and not $debug;
@@ -559,7 +563,7 @@ sub logmsg ($;$) {
 }
 
 # log a message and then die
-sub logdie ($;$) {
+sub logdie($;$) {
     my ($msg, $lvl) = @_;
 
     $msg .= " ($curmsgid)" if $curmsgid;
@@ -647,7 +651,7 @@ sub convdate {
 # $addresses may be a scalar or a reference to a list of addresses.
 # If not defined, $INN::Config::newsmaster is the default.
 # Parts of this code stolen from innmail.
-sub sendmail ($;$$) {
+sub sendmail($;$$) {
     my ($subject, $addresses, $body) = @_;
     $addresses = [$addresses || $INN::Config::newsmaster]
       if not ref $addresses;

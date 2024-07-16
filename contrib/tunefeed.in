@@ -43,7 +43,7 @@ use vars qw(%big8 $days %global %ignore $threshold %traffic $version);
 # argument is true, exclude any groups in the hierarchies listed in %local
 # and use this active file to store traffic information (in a rather
 # simple-minded fashion).
-sub hash ($$;$) {
+sub hash($$;$) {
     my ($file, $hash, $local) = @_;
     open(ACTIVE, $file) or die "$0: cannot open $file: $!\n";
     local $_;

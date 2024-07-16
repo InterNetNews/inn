@@ -650,7 +650,7 @@ sub dltb {
     return $str;
 }
 
-sub append_newsgroups ($$) {
+sub append_newsgroups($$) {
     my (@orig) = split(/,/, $_[0]);
     my (@new) = split(/,/, $_[1]);
 
