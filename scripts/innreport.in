@@ -2481,7 +2481,7 @@ sub Write_Results {
     }
     {
         my $t = $outputdata{$report}{'sort'};
-        ($h) = defined($t) ? PrepareEval($t) : sub { $a cmp $b };
+        ($h) = defined($t) ? (PrepareEval($t))[0] : sub { $a cmp $b };
     }
 
     if ($doHTML) {
@@ -3061,7 +3061,7 @@ sub PrepareEval($;$) {
 
 sub EvalHash($) {
     my $v = shift;
-    my ($sub) = PrepareEval($v);
+    my ($sub) = (PrepareEval($v))[0];
 
     my $result;
     eval { local $^W = $DEBUG; $result = &$sub(); };

@@ -185,7 +185,7 @@ sub argparser {
         push(@outnames, $name);
     }
 
-    (
+    return (
         sub {
             my ($missing, @missing, %unknown, @unknown);
 
