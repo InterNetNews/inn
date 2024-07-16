@@ -24,6 +24,8 @@ use Getopt::Std;
 use POSIX qw(locale_h strftime);
 use Sys::Hostname;
 
+sub logmsg($;$);
+
 # Use high resolution timers when available.
 # To be effectively used, the time() function is imported by an evaluation
 # inside a BEGIN block.
@@ -738,7 +740,7 @@ sub read_ctlfile {
     return 1;
 }
 
-sub logmsg ($;$) {
+sub logmsg($;$) {
     my ($msg, $lvl) = @_;
 
     # Default is logging at notice level.
