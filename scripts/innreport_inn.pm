@@ -2767,8 +2767,19 @@ sub datecmp() {
 sub host2dom($) {
     my $host = shift;
 
-    $host =~ m/^[^\.]+(.*)/;
-    $host =~ m/^[\d\.]+$/ ? "unresolved" : $1 ? "*$1" : "?";
+    # Unresolved IPv4 and IPv6 addresses.
+    return "unresolved" if ($host =~ /^[\d\.]+$/);
+    return "unresolved" if ($host =~ /^[\da-fA-F\:]+$/);
+
+    # Keep up to the last 3 components of the hostname.
+    # (Some country code top-level domains have 2 components, like ".co.uk".)
+    $host =~ m/((?:\.[^\.]+){1,3})$/;
+
+    if ($1) {
+        return "*$1";
+    } else {
+        return "?";
+    }
 }
 
 1;
