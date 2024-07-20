@@ -260,7 +260,6 @@ our %nnrpd_resource_elapsed;
 our %nnrpd_resource_idle;
 our %nnrpd_resource_system;
 our %nnrpd_resource_user;
-our %nnrpd_sys_times;
 our %nnrpd_time_max;
 our %nnrpd_time_min;
 our %nnrpd_time_num;
@@ -270,7 +269,6 @@ our %nnrpd_time_time;
 our $nnrpd_time_times;
 our %nnrpd_unrecogn_cmd;
 our %nnrpd_unrecognized;
-our %nnrpd_usr_times;
 our %nntplink_accepted;
 our %nntplink_auth;
 our %nntplink_bpipe;
@@ -2377,58 +2375,105 @@ sub collect($$$$$$) {
 sub adjust($$) {
     my ($first_date, $last_date) = @_;
 
-    my $nnrpd_doit = 0;
-    my $curious;
+    if (%nnrpd_connect) {
+        my @keys = keys(%nnrpd_connect);
+        my $c = @keys;
+        foreach my $serv (@keys) {
+            my $dom = &host2dom($serv);
 
-    {
-        if (%nnrpd_connect) {
-            my @keys = keys(%nnrpd_connect);
-            my $c = @keys;
-            foreach my $serv (@keys) {
-                if ($nnrpd_no_permission{$serv}) {
-                    my $dom = &host2dom($serv);
-                    $nnrpd_dom_connect{$dom} -= $nnrpd_connect{$serv}
-                      if defined $nnrpd_dom_connect{$dom};
-                    $nnrpd_dom_times{$dom} -= $nnrpd_times{$serv}
-                      if defined $nnrpd_dom_times{$dom};
-
-                    # The message "bad_auth" can occur more than once per
-                    # session.  Subtracting nnrpd_no_permission from
-                    # nnrpd_connect is broken and can yield negative values
-                    # for nnrpd_connect.
-                    $nnrpd_connect{$serv} -= $nnrpd_no_permission{$serv};
-
-                    # Perl considers negative values to be true.  Previously
-                    # the hash entry was deleted only if the value was
-                    # exactly 0.
-                    delete $nnrpd_connect{$serv}
-                      unless $nnrpd_connect{$serv} > 0;
-
-                    delete $nnrpd_groups{$serv} unless $nnrpd_groups{$serv};
-                    delete $nnrpd_times{$serv} unless $nnrpd_times{$serv};
-                    delete $nnrpd_usr_times{$serv}
-                      unless $nnrpd_usr_times{$serv};
-                    delete $nnrpd_sys_times{$serv}
-                      unless $nnrpd_sys_times{$serv};
-                    delete $nnrpd_dom_connect{$dom}
-                      unless $nnrpd_dom_connect{$dom} > 0;
-                    delete $nnrpd_dom_groups{$dom}
-                      unless $nnrpd_dom_groups{$dom};
-                    delete $nnrpd_dom_times{$dom}
-                      unless $nnrpd_dom_times{$dom};
-                    $c--;
+            # Mark connections without any actual reader action as curious.
+            if (%nnrpd_groups) {
+                unless ($nnrpd_groups{$serv}
+                    || $nnrpd_post_ok{$serv}
+                    || $nnrpd_post_rej{$serv}
+                    || $nnrpd_post_error{$serv}
+                    || $nnrpd_articles{$serv})
+                {
+                    $nnrpd_curious{$serv} = $nnrpd_connect{$serv};
                 }
-                $nnrpd_doit++
-                  if $nnrpd_groups{$serv} || $nnrpd_post_ok{$serv};
             }
-            undef %nnrpd_connect unless $c;
+
+            # After the check for curious readers, as the number of
+            # connections is modified.
+            if ($nnrpd_no_permission{$serv}) {
+                # The message "bad_auth" can occur more than once per
+                # session.  Subtracting nnrpd_no_permission from
+                # nnrpd_connect is broken and can yield negative values
+                # for nnrpd_connect.
+                $nnrpd_connect{$serv} -= $nnrpd_no_permission{$serv};
+                $nnrpd_dom_connect{$dom} -= $nnrpd_no_permission{$serv}
+                  if (exists($nnrpd_dom_connect{$dom}));
+            }
+
+            # Perl considers negative values to be true.  Previously
+            # the hash entry was deleted only if the value was
+            # exactly 0.
+            if ($nnrpd_connect{$serv} <= 0
+                or exists($nnrpd_curious{$serv}))
+            {
+                if (exists($nnrpd_dom_connect{$dom})) {
+                    if ($nnrpd_dom_connect{$dom} <= 0) {
+                        delete($nnrpd_dom_connect{$dom});
+                        delete($nnrpd_dom_articles{$dom})
+                          if (exists($nnrpd_dom_articles{$dom}));
+                        delete($nnrpd_dom_bytes{$dom})
+                          if (exists($nnrpd_dom_bytes{$dom}));
+                        delete($nnrpd_dom_groups{$dom})
+                          if (exists($nnrpd_dom_groups{$dom}));
+                        delete($nnrpd_dom_post_error{$dom})
+                          if (exists($nnrpd_dom_post_error{$dom}));
+                        delete($nnrpd_dom_post_ok{$dom})
+                          if (exists($nnrpd_dom_post_ok{$dom}));
+                        delete($nnrpd_dom_post_rej{$dom})
+                          if (exists($nnrpd_dom_post_rej{$dom}));
+                        delete($nnrpd_dom_times{$dom})
+                          if (exists($nnrpd_dom_times{$dom}));
+                    } elsif (!exists($nnrpd_curious{$serv})) {
+                        $nnrpd_dom_articles{$dom} -= $nnrpd_articles{$serv}
+                          if (exists($nnrpd_dom_articles{$dom})
+                              and exists($nnrpd_articles{$serv}));
+                        $nnrpd_dom_bytes{$dom} -= $nnrpd_bytes{$serv}
+                          if (exists($nnrpd_dom_bytes{$dom})
+                              and exists($nnrpd_bytes{$serv}));
+                        $nnrpd_dom_groups{$dom} -= $nnrpd_groups{$serv}
+                          if (exists($nnrpd_dom_groups{$dom})
+                              and exists($nnrpd_groups{$serv}));
+                        $nnrpd_dom_post_error{$dom} -= $nnrpd_post_error{$serv}
+                          if (exists($nnrpd_dom_post_error{$dom})
+                              and exists($nnrpd_post_error{$serv}));
+                        $nnrpd_dom_post_ok{$dom} -= $nnrpd_post_ok{$serv}
+                          if (exists($nnrpd_dom_post_ok{$dom})
+                              and exists($nnrpd_post_ok{$serv}));
+                        $nnrpd_dom_post_rej{$dom} -= $nnrpd_post_rej{$serv}
+                          if (exists($nnrpd_dom_post_rej{$dom})
+                              and exists($nnrpd_post_rej{$serv}));
+                        $nnrpd_dom_times{$dom} -= $nnrpd_times{$serv}
+                          if (exists($nnrpd_dom_times{$dom})
+                              and exists($nnrpd_times{$serv}));
+                    }
+                }
+
+                # Do not report the connections.
+                delete($nnrpd_connect{$serv});
+                delete($nnrpd_articles{$serv})
+                  if (exists($nnrpd_articles{$serv}));
+                delete($nnrpd_bytes{$serv})
+                  if (exists($nnrpd_bytes{$serv}));
+                delete($nnrpd_groups{$serv})
+                  if (exists($nnrpd_groups{$serv}));
+                delete($nnrpd_post_error{$serv})
+                  if (exists($nnrpd_post_error{$serv}));
+                delete($nnrpd_post_ok{$serv})
+                  if (exists($nnrpd_post_ok{$serv}));
+                delete($nnrpd_post_rej{$serv})
+                  if (exists($nnrpd_post_rej{$serv}));
+                delete($nnrpd_times{$serv})
+                  if (exists($nnrpd_times{$serv}));
+
+                $c--;
+            }
         }
-        foreach my $serv (keys(%nnrpd_groups)) {
-            $curious = "ok"
-              unless $nnrpd_groups{$serv}
-              || $nnrpd_post_ok{$serv}
-              || $nnrpd_articles{$serv};
-        }
+        undef(%nnrpd_connect) unless ($c);
     }
 
     # Fill some hashes
@@ -2697,19 +2742,6 @@ sub adjust($$) {
     $rnews_misc{'No colon-space'}{'--'} = $rnews_no_colon_space
       if $rnews_no_colon_space;
 
-    if (%nnrpd_groups) {
-        foreach my $key (keys(%nnrpd_connect)) {
-            unless ($nnrpd_groups{$key}
-                || $nnrpd_post_ok{$key}
-                || $nnrpd_post_rej{$key}
-                || $nnrpd_post_error{$key}
-                || $nnrpd_articles{$key})
-            {
-                $nnrpd_curious{$key} = $nnrpd_connect{$key};
-                delete $nnrpd_connect{$key};
-            }
-        }
-    }
 }
 
 sub report_unwanted_ng($) {

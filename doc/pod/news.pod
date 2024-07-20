@@ -32,8 +32,8 @@ C<:bytes> and C<:lines> metadata to news clients using CAPABILITIES.
 Several improvements have been made to readership statistics reported by
 B<innreport>: IPv6 addresses are now correctly recognized and reported
 as unresolved instead of unknown, statistics by domain are at a better
-granularity, only the top 100 entries are displayed by default instead of a
-possibly very long exhaustive list.
+granularity, totals are correctly computed, and only the top 100 entries are
+displayed by default instead of a possibly very long exhaustive list.
 
 =back
 
