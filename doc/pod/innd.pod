@@ -496,15 +496,6 @@ SIGINT will also be caught and will result in an orderly shutdown.
 B<innd> will catch the SIGUSR1 signal and recreate the control channel
 used by ctlinnd(8).
 
-=head1 BUGS
-
-B<innd> normally attempts to strip IP options from incoming connections,
-since it uses IP-based authentication and source routing can confuse that.
-However, this doesn't work on all systems, and it doesn't work at all in
-the presence of IPv6 support (and is disabled in that case).  Hence, if
-using B<innd> with IPv6 support, make sure that your kernel or router
-disables source routing.
-
 =head1 HISTORY
 
 Written by Rich $alz <rsalz@uunet.uu.net> for InterNetNews.
