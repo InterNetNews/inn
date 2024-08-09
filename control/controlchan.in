@@ -100,7 +100,10 @@ opendir(CTL, $INN::Config::controlprogs)
   or logdie("Cannot open $INN::Config::controlprogs: $!", 'crit');
 foreach (readdir CTL) {
     next if not /^([a-z\.]+\.pl)$/ or not -f "$INN::Config::controlprogs/$_";
+    # We're still using old-school .pl libraries, and that's fine!
+    ## no critic (RequireBarewordIncludes)
     eval { require "$INN::Config::controlprogs/$1" };
+    ## use critic
     if ($@) {
         $@ =~ s/\n/  /g;
         logdie($@, 'crit');
