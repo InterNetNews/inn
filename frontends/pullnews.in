@@ -300,8 +300,10 @@ my $quietness = $opt_Q || 0;
 my $skip_headers = lc($opt_H || '');
 my $logFile = '>&STDOUT';
 $logFile = ">>$opt_l" if $opt_l;
-my @hdr_to_match = split(/\s+/, $opt_m) if defined $opt_m;
-my $pathSteps = $opt_P if defined $opt_P;
+my @hdr_to_match = ();
+@hdr_to_match = split(/\s+/, $opt_m) if defined $opt_m;
+my $pathSteps;
+$pathSteps = $opt_P if defined $opt_P;
 my $path_limit;
 
 # Check whether we should use TLS for the downstream server.

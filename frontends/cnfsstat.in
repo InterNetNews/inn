@@ -113,8 +113,10 @@ if (defined($opt{'i'}) && $opt{'i'} > 0) {
 START:
 
 # Check whether the configuration files need reloading.
-my $cycbufftime = (stat($conffile))[9] if (-r $conffile);
-my $storagetime = (stat($storageconf))[9] if (-r $storageconf);
+my $cycbufftime = 0;
+my $storagetime = 0;
+$cycbufftime = (stat($conffile))[9] if (-r $conffile);
+$storagetime = (stat($storageconf))[9] if (-r $storageconf);
 my $maxtime = ($cycbufftime < $storagetime) ? $storagetime : $cycbufftime;
 
 # Set $lastconftime for the first run of the comparison.

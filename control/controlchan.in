@@ -230,8 +230,10 @@ while (<STDIN>) {
     );
 
     foreach my $i (0 .. $#matches) {
-        my $action = $matches[$i][0] if $matches[$i][0];
-        my $logname = $matches[$i][1] if $matches[$i][1];
+        my $action = '';
+        my $logname = '';
+        $action = $matches[$i][0] if $matches[$i][0];
+        $logname = $matches[$i][1] if $matches[$i][1];
         $progparams[0] = $matches[$i][2] if $matches[$i][2];
 
         if ($action eq '_pgpfail') {
