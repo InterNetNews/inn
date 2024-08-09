@@ -76,7 +76,7 @@ sub fhbits {
     for (@fhlist) {
         vec($bits, fileno($_), 1) = 1;
     }
-    $bits;
+    return $bits;
 }
 
 sub timed_getline {
