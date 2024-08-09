@@ -253,7 +253,7 @@ snapshot:
 ##  This should only be run by a maintainer since it depends on the presence
 ##  of these programs, and sometimes a specific version.
 code-check:
-	@if command -v "perltidy" &> /dev/null ; then \
+	@if command -v "perltidy" >/dev/null 2>&1; then \
 	    echo "Running perltidy to check Perl code..." ; \
 	    (grep --include=\*.in -Rin perl . | grep ':1:' | cut -f1 -d':' ; \
 	        find . \( -name '*.pl' -o -name '*.pl.in' -o -name '*.pm' \
@@ -283,14 +283,14 @@ code-check:
 ##  Note we also have C source code in innfeed/configfile.l and configfile.y
 ##  but it should be manually handled as it contains mixed yacc code.
 reformat:
-	@if command -v "black" &> /dev/null ; then \
+	@if command -v "black" >/dev/null 2>&1; then \
 	    echo "Running black to reformat Python code..." ; \
 	    black --line-length 79 --quiet \
 	        --include "contrib/mm_ckpasswd|\.py$$" . ; \
 	else \
 	    echo "Skipping Python code reformatting (black not found)" ; \
 	fi
-	@if command -v "clang-format" &> /dev/null ; then \
+	@if command -v "clang-format" >/dev/null 2>&1; then \
 	    echo "Running clang-format to reformat C code..." ; \
 	    find . \( -name '*.[ch]' -o -name paths.h.in \) \
 	        \! -wholename ./history/hismethods.\* \
@@ -309,7 +309,7 @@ reformat:
 	else \
 	    echo "Skipping C code reformatting (clang-format not found)" ; \
 	fi
-	@if command -v "perltidy" &> /dev/null ; then \
+	@if command -v "perltidy" >/dev/null 2>&1; then \
 	    echo "Running perltidy to reformat Perl code..." ; \
 	    (grep --include=\*.in -Rin perl . | grep ':1:' | cut -f1 -d':' ; \
 	        find . \( -name '*.pl' -o -name '*.pl.in' -o -name '*.pm' \
@@ -325,7 +325,7 @@ reformat:
 	else \
 	    echo "Skipping Perl code reformatting (perltidy not found)" ; \
 	fi
-	@if command -v "shfmt" &> /dev/null ; then \
+	@if command -v "shfmt" >/dev/null 2>&1; then \
 	    echo "Running shfmt to reformat shell code..." ; \
 	    (grep --include=\*.in --include=\*.t --exclude-dir=.libs \
 	        -Rin sh * | grep ':1:' | cut -f1 -d':' ; \
