@@ -77,7 +77,7 @@ sub prefix {
     my ($group, $count) = @_;
     my @group = split(/\./, $group);
     splice(@group, $count);
-    join('.', @group);
+    return join('.', @group);
 }
 
 # Find the common hierarchical prefix of a list.
@@ -91,7 +91,7 @@ sub common {
         $i++ while ($prefix[$i] && $prefix[$i] eq $group[$i]);
         if ($i <= $#prefix) { splice(@prefix, $i) }
     }
-    join('.', @prefix);
+    return join('.', @prefix);
 }
 
 # Given two lists, a list of groups that the remote site does have and a

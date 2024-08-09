@@ -327,7 +327,7 @@ sub receive_response($$$) {
 }
 
 BEGIN {
-    my ($new_in) = argparser(
+    my ($new_in, undef) = argparser(
         [
             {
                 name     => "path",
@@ -638,7 +638,7 @@ BEGIN {
             $errmsg, $groupid, $groups,
             @_,
         );
-        $code;
+        return $code;
     }
 
     my ($list_groups_all_in, $list_groups_all_out) = argparser(
@@ -968,7 +968,7 @@ BEGIN {
             $errmsg, $articles,
             @_,
         );
-        $code;
+        return $code;
     }
 
     my ($search_group_all_in, $search_group_all_out) = argparser(
@@ -1156,7 +1156,7 @@ BEGIN {
             $errmsg,
             @_,
         );
-        $code;
+        return $code;
     }
 
     my ($finish_expire_all_in, $finish_expire_all_out) = argparser(

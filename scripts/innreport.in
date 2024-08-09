@@ -1634,7 +1634,7 @@ sub Graph3d {
         print IMG $image->gif;
     }
     close IMG;
-    $ymax;
+    return $ymax;
 }
 
 sub Histo($$$$$$$$) {
