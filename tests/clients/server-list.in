@@ -92,7 +92,7 @@ $SIG{TERM} = sub { close $server; exit };
 open(PID, '> pid') or die "Cannot create pid: $!\n";
 print PID "$$\n";
 close PID;
-while ($fh = $server->accept) {
+while (my $fh = $server->accept) {
     print $fh "200 Welcome\r\n";
     serve($fh);
 }

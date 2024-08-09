@@ -14,7 +14,7 @@ while (<>) {
     pop @xreflist;                      # Get rid of Xref header field.
     pop @xreflist;
 
-    while ($current = pop @xreflist) {
+    while (my $current = pop @xreflist) {
         ($current) = split(/:/, $current);    # Get newsgroup name.
         $groups{$current}++;                  # Tally.
     }
@@ -22,6 +22,6 @@ while (<>) {
 }
 
 # Display accumulated groups and counts.
-foreach $current (sort keys %groups) {
+foreach my $current (sort keys %groups) {
     printf "%-50s\t%5d\n", $current, $groups{$current};
 }

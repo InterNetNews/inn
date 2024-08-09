@@ -229,10 +229,10 @@ while (!$done) {
 
             # --- concatenate the articles, keeping header info if needed ---
             @accum_headers = ();
-            foreach $srcfile (split(/\s+/, $sourcefile{$group})) {
-                # print STDERR "reading $srcfile...\n";
+            foreach my $file (split(/\s+/, $sourcefile{$group})) {
+                # print STDERR "reading $file...\n";
                 $this_doc = '';
-                open(DOC, "<$srcfile");
+                open(DOC, "<$file");
                 while ($line = <DOC>) {
                     $this_doc .= $line;
                 }

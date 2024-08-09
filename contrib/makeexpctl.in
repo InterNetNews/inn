@@ -63,7 +63,7 @@ printline("comp*,gnu*,info*,ok*,ecn*,uok*", "U", 5);
 printline("comp*,gnu*,info*,ok*,ecn*,uok*", "M", 7);
 # and now handle each group that's regularly read,
 # assinging them 3* normal max expire
-foreach $i (keys %groups) {
+foreach my $i (keys %groups) {
     printline($i, "A", 21);
 }
 # and now put some overrides for groups which are too likely to fill spool if

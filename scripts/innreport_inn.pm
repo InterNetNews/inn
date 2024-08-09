@@ -304,7 +304,6 @@ our $rnews_no_colon_space;
 our %rnews_rejected;
 our $rnews_too_old;
 our %rnews_unapproved;
-our $server;
 
 # init innd timer
 foreach (values %timer_names) {
@@ -2483,7 +2482,7 @@ sub adjust($$) {
         # also in %innd_connect.  Add any missing servers (persistant servers
         # with no connected log lines) to %innd_connect so that incoming totals
         # will be properly computed.
-        foreach $server (keys(%innd_accepted)) {
+        foreach my $server (keys(%innd_accepted)) {
             if (!defined($innd_connect{$server})) {
                 $innd_connect{$server} = 0;
             }
