@@ -4,11 +4,11 @@
 # backlogstat - display backlog to sites
 # based on bklog by bill davidsen <davidsen@tmr.com>
 
-# breaks if backlog-directory in innfeed.conf is not "innfeed"
-my $dir = "$INN::Config::pathspool/innfeed";
-
 use strict;
 use warnings;
+
+# Breaks if backlog-directory in innfeed.conf is not "innfeed".
+my $dir = "$INN::Config::pathspool/innfeed";
 
 use Getopt::Std;
 use vars qw($opt_H $opt_h $opt_n $opt_k $opt_S $opt_d);

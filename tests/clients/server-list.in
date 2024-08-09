@@ -9,6 +9,7 @@
 ##  When started, it prints out its PID to standard output to make it easier
 ##  to kill later.
 
+use strict;
 use IO::Socket::INET ();
 
 # Process a list command.  Only a very minimal wildmat syntax is supported.

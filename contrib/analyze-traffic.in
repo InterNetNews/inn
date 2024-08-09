@@ -101,19 +101,16 @@
 #   ragged.)
 #
 ########################################################################
-#
-# Constants:
 
+use strict;
+
+# Constants:
 my $USE_ALL_GROUPS = 1;    # if 0, use only group article is stored under
 my $SORT_BY_SIZE = 1;      # if 0, sort output by number of articles
 my $FIELD1_WIDTH = 30;     # maximum length of newsgroup name, '' for none
 
 my $TLD_REGEX = '^(?:com|net|org|edu|gov|mil|ac|co|uk|au|ca|de)$';
 # feel free to add any others as needed
-
-########################################################################
-
-use strict;
 
 my %stats;
 

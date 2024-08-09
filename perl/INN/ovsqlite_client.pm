@@ -4,6 +4,9 @@
 
 package INN::ovsqlite_client;
 
+use strict;
+use warnings;
+
 our ($VERSION);
 
 BEGIN {
@@ -11,9 +14,6 @@ BEGIN {
     # The integer part of the above will be used
     # as the protocol version in the server handshake.
 }
-
-use strict;
-use warnings;
 
 use Carp qw(croak);
 use Socket;
