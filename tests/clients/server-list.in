@@ -67,7 +67,13 @@ my $pid = fork;
 if ($pid < 0) {
     die "Cannot fork: $!\n";
 } elsif ($pid > 0) {
-    select(undef, undef, undef, 0.1) while (!-f './pid');
+    while (!-f './pid') {
+        # As Time::HiRes might not be available, select() is used to perform
+        # a non-integer sleep.
+        ## no critic (ProhibitSleepViaSelect)
+        select(undef, undef, undef, 0.1);
+        ## use critic
+    }
     exit;
 } else {
     close STDIN;
