@@ -131,7 +131,7 @@ while (<STDIN>) {
     close $artfh or logdie('sm died with status ' . ($? >> 8));
 
     my %hdr;
-    my $parser = new MIME::Parser;
+    my $parser = MIME::Parser->new();
     $parser->output_dir("$INN::Config::pathtmp");
     my $article = $parser->parse_data($article_string);
 
