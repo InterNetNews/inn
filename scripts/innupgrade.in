@@ -43,6 +43,10 @@ use Getopt::Long qw(GetOptions);
 
 $0 =~ s@.*/@@;
 
+##  innupgrade uses octal numbers in bitwise operations and file modes.
+##  Let's keep these numbers as-is for readability.
+##  no critic (ProhibitLeadingZeros)
+
 # The mappings of file names to fixes.
 %FIXES = (
     'incoming.conf' => \&fix_incoming_conf,

@@ -7,6 +7,10 @@
 use strict;
 use Getopt::Long;
 
+##  inncheck extensively uses octal numbers in bitwise operations and file
+##  modes.  Let's keep these numbers as-is for readability.
+##  no critic (ProhibitLeadingZeros)
+
 my $ST_MODE = 2;
 my $ST_UID = 4;
 my $ST_GID = 5;
