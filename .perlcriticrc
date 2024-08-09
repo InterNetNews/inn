@@ -1,0 +1,72 @@
+# Configuration for perlcritic source code analysis.  -*- conf -*-
+#
+# Many of the Perl::Critic policies are excellent starting points for new code
+# so as to directly enforce conventional, easier to read and modern constructs.
+# However, as most of the Perl INN code base predates the use of Perl::Critic,
+# and given that the policies are mostly just style and not about actual bugs,
+# many exclusions are listed in this configuration file.
+#
+# The idea is to progressively treat the violations while modernizing or
+# modifying parts of existing Perl code, and to write new code following most
+# of these best practices.  Some exceptions will naturally keep existing as
+# Perl::Critic is not intended to be used as rigid rules, and fully complying
+# to all the policies is probably not practical (and even sometimes in conflict
+# with the Perl::Tidy reformatter).
+#
+# Existing code is kept untouched, and has just been quickly reviewed when
+# excluding the policies below to ensure there were not any real bugs to fix.
+#
+# Some useful links:
+#     https://metacpan.org/pod/Perl::Critic::Community
+#     https://metacpan.org/pod/Perl::Critic::PolicySummary
+#     https://metacpan.org/pod/Perl::Critic::Pulp
+#     https://perlmaven.com/perl-critic
+
+# Be gentle for the time being.  Only enable the most severe violations.
+severity = 5
+
+# Custom output.
+verbose = %f:%l:%c: [%p] %m, near '%r' (%e, Severity: %s)\n
+
+# Uncomment to only apply policies explicitly listed below as enabled.
+# It is easier for tests than using the --single-policy flag.
+#only = 1
+
+# Uncomment to ignore "## no critic" annotations in the source code.
+#force = 1
+
+###################################
+# Excluded policies of severity 5 #
+###################################
+
+# If there were only one currently excluded policy to enforce, it would be this
+# one.  We have lots of calls to open in its one or two-argument legacy form.
+# These calls should be secured.  At the same time, we should also get rid of
+# the legacy syntax of bareword file handles.
+[-InputOutput::ProhibitTwoArgOpen]
+
+# The following policies are mostly related to style.  The current code works
+# fine.  Enforcing them is of low priority, but patches are naturally welcome
+# if someone wishes to work on them.  (Note that the code should remain
+# compatible with Perl 5.8.0 and its core modules.)
+[-BuiltinFunctions::ProhibitStringyEval]
+[-ControlStructures::ProhibitMutatingListFunctions]
+[-InputOutput::ProhibitBarewordDirHandles]
+[-InputOutput::ProhibitBarewordFileHandles]
+[-InputOutput::ProhibitInteractiveTest]
+
+# Package declarations are correct: innshellvars.pl declares itself as the inn
+# package for legacy reasons, and Config.pm is generated at configure time from
+# Config.pm.in.
+[-Modules::RequireFilenameMatchesPackage]
+
+# Subroutine prototypes do not harm, and are even valuable hints used by some
+# Perl::Tidy checks.
+[-Subroutines::ProhibitSubroutinePrototypes]
+
+# The majority of our Perl scripts already has strictures enabled.
+# Only a few ones still lack it (INN::Config, innshellvars.pl, innreport,
+# testListener.pl, some contrib scripts and some samples of Perl hooks).
+# At some point, they should be added and the scripts tested with them.
+[-TestingAndDebugging::ProhibitNoStrict]
+[-TestingAndDebugging::RequireUseStrict]

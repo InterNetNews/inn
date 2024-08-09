@@ -458,8 +458,10 @@ acceptable).
 When modifying or writing new code in C, it should conform to the
 I<Clang-format> style of the project.  Similarly, Perl, Python and shell
 scripts should conform to respectively the I<perltidy>, I<Black> and I<shfmt>
-code styles of the project.  Just run C<make reformat> at the top level of the
-source tree to properly reformat all files.
+code styles of the project.  Just run C<make reformat> at the top level of
+the source tree to properly reformat all files.  Additionally, the conformance
+of Perl scripts to some policies from I<perlcritic> and I<perltidy> should be
+checked by running C<make code-check>.
 
 If you're writing a substantial new piece of code, the prevailing
 "standard" INN coding style is the following:
@@ -730,8 +732,9 @@ Makefiles.  Commit the changes, if appropriate.
 
 =item 5.
 
-Ensure that the source code is properly formatted with the latest versions of
-reformatting programs (run C<make reformat>).
+Ensure that the source code is properly formatted with the latest versions
+of reformatting programs (run C<make reformat>) and does not violate some
+enforced rules (run C<make code-check>).
 
 =item 6.
 
