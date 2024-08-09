@@ -13,7 +13,10 @@
 #
 #               See the sample file filter_innd.pl for details on what it does.
 
+use strict;
+
 my $before_count = 1;
+
 # Gets no arguments, and its caller expects no return value.
 sub filter_before_reload {
     if ($before_count == 1) {
@@ -28,6 +31,7 @@ sub filter_before_reload {
 }
 
 my $after_count = 1;
+
 # Gets no arguments, and its caller expects no return value.
 sub filter_after_reload {
     if ($after_count == 1) {
@@ -40,4 +44,3 @@ sub filter_after_reload {
         $after_count++;
     }
 }
-

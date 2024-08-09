@@ -71,14 +71,14 @@
 #               the program when it runs.  They are the Unix time the group was
 #               accessed, and the highest numbered article that was pulled
 #               over.
-#
+
+use strict;
+require 5.004;
 
 # If you have INN and the script is able to successfully include your
 # INN::Config module, the value of $INN::Config::pathdb will override it
 # if pullnews is run as the news user.
 my $pathdb = $ENV{HOME};
-
-require 5.004;
 
 $SIG{INT} = \&outtaHere;
 $SIG{QUIT} = \&bail;
@@ -88,7 +88,6 @@ use Net::NNTP 2.18;   # With libnet 1.0606 (10-Dec-1998) because older versions
 use Getopt::Std;
 use IO::Handle;
 use POSIX qw(ceil floor);
-use strict;
 
 $0 =~ s!.*/!!;
 $pathdb = $INN::Config::pathdb
