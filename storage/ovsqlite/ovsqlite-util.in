@@ -270,7 +270,7 @@ sub decompress_overview {
         my ($lenlen, $len) = overview_length($data);
         if (!defined($lenlen)) {
             warn "$groupname:$artnum: Corrupt overview data\n";
-            return undef;
+            return;
         }
         if ($len == 0) {
             # No compression.
@@ -283,16 +283,16 @@ sub decompress_overview {
             if ($status != Z_OK) {
                 warn
                   "$groupname:$artnum: inflateInit failed with code $status\n";
-                return undef;
+                return;
             }
             ($result, $status) = $inflation->inflate(substr($data, $lenlen));
             if ($status != Z_STREAM_END) {
                 warn "$groupname:$artnum: inflate failed with code $status\n";
-                return undef;
+                return;
             }
             if (length($result) != $len) {
                 warn "$groupname:$artnum: Corrupt overview data\n";
-                return undef;
+                return;
             }
         }
     } else {

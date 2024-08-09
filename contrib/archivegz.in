@@ -103,7 +103,7 @@ sub timed_getline {
             $result = sysread(FILEH, $accum, 1, $offset);
             if ($result <= 0) {
                 $done = 1;
-                return undef;
+                return;
             }
 
             if (substr($accum, $offset, 1) eq "\n") {
