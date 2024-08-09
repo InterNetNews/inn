@@ -12,11 +12,14 @@
 
 package inn;
 
+# Tons of variables, also coming from innconfval run through an eval below.
+no strict;
+
 $ENV{'LC_CTYPE'} = "C";
 
 $prefix = '@prefix@';
 $exec_prefix = "@exec_prefix@";
-eval `@bindir@/innconfval -p`;
+eval qx(@bindir@/innconfval -p);
 
 $newshome = $pathnews;
 $spooldir = $pathspool;

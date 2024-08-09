@@ -6,6 +6,9 @@ package INN::Config;
 use warnings;
 use Exporter;
 
+# Some variables come from innconfval and are dynamically declared.
+no strict;
+
 our @ISA = qw(Exporter);
 our $VERSION = '@PACKAGE_VERSION@';
 
@@ -15,7 +18,7 @@ our $exec_prefix = "@exec_prefix@";
 
 ##  Then, process the variables provided by innconfval.
 my @INNCONFVAR = ();
-my @values = `${exec_prefix}/bin/innconfval -p`;
+my @values = qx(${exec_prefix}/bin/innconfval -p);
 foreach my $line (@values) {
     eval 'our ' . $line;
     if ($line =~ /^(.*?) = /m) {
