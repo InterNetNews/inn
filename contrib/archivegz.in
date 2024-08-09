@@ -215,14 +215,14 @@ while (!$done) {
             open(INDEX, ">>$opt_i");
         }
 
-        # --- make sure that archive file can be written (make parent dirs) ---
-        if ($destfile{$group} =~ /\/[^\/]*$/) {
-            $dirbase = $`;
-            system("mkdir -p $dirbase");
-        }
-
         # --- process each article ---
-        foreach $group (keys(%destfile)) {
+        foreach my $group (keys(%destfile)) {
+            # --- make sure parent directories exist ---
+            if ($destfile{$group} =~ /\/[^\/]*$/) {
+                $dirbase = $`;
+                system("mkdir -p $dirbase");
+            }
+
             # --- gzip the concatenated document, appending archive file ---
             open(GZIP, "|gzip -c >> $destfile{$group}")
               || die "Can't open gzip";
