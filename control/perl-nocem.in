@@ -556,19 +556,19 @@ sub open_article {
         my $pid = open(ART, '-|');
         if ($pid < 0) {
             logmsg('Cannot fork: ' . $!, 'err');
-            return undef;
+            return;
         }
         if ($pid == 0) {
             exec("$INN::Config::newsbin/sm", '-q', $token)
               or logmsg("Cannot exec sm: $!", 'err');
-            return undef;
+            return;
         }
         return *ART;
     } else {
         return *ART if open(ART, $token);
         logmsg("Cannot open article $token: $!", 'err');
     }
-    return undef;
+    return;
 }
 
 # Back up cancelled articles.
