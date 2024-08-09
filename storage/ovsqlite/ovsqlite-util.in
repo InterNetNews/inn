@@ -101,7 +101,7 @@ my @pack_length_bias = (
 my $dbh = DBI->connect(
     $datasource, '', '',
     { PrintError => 0, RaiseError => 1, AutoCommit => 0 },
-) or die "Can't connect to database: " . DBI::errstr();
+);
 
 # To process multiple SQL statements in a do() handle.
 $dbh->{sqlite_allow_multiple_statements} = 1;
