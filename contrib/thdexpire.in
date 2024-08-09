@@ -273,6 +273,7 @@ if ($opt_M) {
       . ">$INN::Config::pathnews/man/man8/thdexpire.8";
 }
 
+## no critic (ProhibitLeadingZeros)
 if ($opt_r) {
     tie(%S, SDBM_File, $sfile, O_RDONLY, 0664) || die "open $sfile: $!";
     &report;
@@ -285,6 +286,8 @@ INN::Utils::Shlock::lock($lockfile, 5)
   or die("cannot create lockfile $lockfile");
 
 tie(%S, SDBM_File, $sfile, O_RDWR | O_CREAT, 0664) || die "open $sfile: $!";
+## use critic
+
 $SIG{'TERM'} = $SIG{'INT'} = 'finish';
 $| = 1;
 printf "starting at %s\n", &wtime(time) if ($opt_v > 0);
