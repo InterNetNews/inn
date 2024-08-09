@@ -165,7 +165,13 @@ for ($i = 0; $total == 0 || $i < $total; $i++) {
     print " $bogus" if ($bogus && (rand(5) % 5) == 0);
     print "\n";
 
-    select(undef, undef, undef, (rand($sleepAmt - 1) + 1)) if $sleepAmt;
+    if ($sleepAmt > 0) {
+        # As Time::HiRes might not be available, select() is used to perform
+        # a non-integer sleep.
+        ## no critic (ProhibitSleepViaSelect)
+        select(undef, undef, undef, (rand($sleepAmt - 1) + 1));
+        ## use critic
+    }
 }
 
 sleep 11500 unless -f STDOUT;
