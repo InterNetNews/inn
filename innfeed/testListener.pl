@@ -149,7 +149,7 @@ if (!-t STDERR) {
 srand;
 $sleepAmt = 1 if ($sleepAmt < 0);
 
-foreach $peer (@ARGV) {
+foreach my $peer (@ARGV) {
     $PEERS{$peer} = 1;
 }
 

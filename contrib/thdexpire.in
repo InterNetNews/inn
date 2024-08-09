@@ -299,7 +299,7 @@ while ($cd = readdir(CD), defined($cd)) {
 }
 closedir CD;
 @classes = sort { $a <=> $b } keys %c;
-foreach $c (@classes) {
+foreach my $c (@classes) {
     &initclass($c);
     $S{"work$;$c"} = $S{"oldest$;$c"} & 0xFFFFFF00;
 }
@@ -314,7 +314,7 @@ while (1) {
     $S{"lastrun"} = $NOW = time;
     printf "%s\n", &wtime($NOW) if ($opt_v > 0);
     $nt = 0;
-    foreach $c (@classes) {
+    foreach my $c (@classes) {
         $t = ($NOW - $S{"work$;$c"}) * 100 / $c;
         $nt = $t if ($nt < $t);
     }
@@ -336,7 +336,7 @@ while (1) {
     $x = "/";
     undef %needk;
     undef %needi;
-    foreach $c (@classes) {
+    foreach my $c (@classes) {
         $Dart{$c} = $Dcaf{$c} = $Dkb{$c} = $Dino{$c} = 0;
         $y = sprintf("time-%02x", $c);
         if (-d $y) {
@@ -375,7 +375,7 @@ while (1) {
         }
         close D;
     }
-    foreach $c (keys %needk) {
+    foreach my $c (keys %needk) {
         printf "Device %d needs to free %d kilobytes, %d inodes\n",
           $c, $needk{$c} < 0 ? 0 : $needk{$c}, $needi{$c} < 0 ? 0 : $needi{$c}
           if ($opt_v > 0 && ($needk{$c} > 0 || $needi{$c} > 0));
@@ -398,13 +398,13 @@ while (1) {
               if ($opt_v > 2);
             ++$pass;
             $Dart = $Dcaf = $Dkb = $Dino = $need = 0;
-            foreach $c (keys %needk) {
+            foreach my $c (keys %needk) {
                 if ($needk{$c} > 0 || $needi{$c} > 0) {
                     ++$need;
                 }
             }
             if ($need) {
-                foreach $c (@classes) {
+                foreach my $c (@classes) {
                     &worktime($c, $NOW - ($S{"normaltime"} * $c / 100));
                     $Dart += $dart;
                     $Dcaf += $dcaf;
@@ -426,7 +426,7 @@ while (1) {
             }
         }
         $Dkb = $Dart = $Dcaf = $Dino = 0;
-        foreach $c (@classes) {
+        foreach my $c (@classes) {
             printf "  class %3d: deleted %6d arts %6d CAFs %10d kb\n",
               $c, $Dart{$c}, $Dcaf{$c}, $Dkb{$c} if ($opt_v > 1);
             $Dkb += $Dkb{$c};
@@ -614,7 +614,7 @@ sub report {
     printf "Started at: %s\n", &xtime($S{"inittime"}) if ($S{"inittime"});
     printf "Last run: %s\n", &xtime($S{"lastrun"}) if ($S{"lastrun"});
     printf "Classes: %s\n", $cc;
-    foreach $c (split(/,/, $cc)) {
+    foreach my $c (split(/,/, $cc)) {
         printf "Class %d:\n", $c;
         #printf "  Initial count %d articles\n", $S{"count$;$c"};
         printf "  Oldest article: %s\n", &xtime($S{"oldest$;$c"});

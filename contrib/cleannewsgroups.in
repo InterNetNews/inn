@@ -37,9 +37,9 @@ close NG;
 
 open NG, ">$INN::Config::newsgroups.new"
   or die "Can't open $INN::Config::newsgroups.new for write: $!\n";
-foreach $group (sort keys %act) {
-    if (defined $hist{$group}) {
-        print NG "$group\t$hist{$group}\n" or die "Can't write: $!\n";
+foreach my $grp (sort keys %act) {
+    if (defined $hist{$grp}) {
+        print NG "$grp\t$hist{$grp}\n" or die "Can't write: $!\n";
     }
 }
 close NG or die "Can't close: $!\n";

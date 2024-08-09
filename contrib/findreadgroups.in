@@ -31,7 +31,7 @@ while (<>) {
 }
 
 open(WRF, ">$readfile") || die "cannot open $readfile for write.\n";
-foreach $i (keys %groups) {
+foreach my $i (keys %groups) {
     print WRF $i, " ", $groups{$i}, "\n";
 }
 
