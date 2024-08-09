@@ -75,7 +75,7 @@ HELP_MESSAGE() if defined($opt{'h'});
 
 # setup logging ###########################################################
 # do not log to syslog if stderr is connected to a console
-if (not -t 2) {
+if (not -t STDERR) {
     eval { require INN::Syslog; import INN::Syslog; $use_syslog = 1; };
     eval { require Sys::Syslog; import Sys::Syslog; $use_syslog = 1; }
       unless $use_syslog;
