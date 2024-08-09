@@ -823,18 +823,18 @@ sub ConvDate($$) {
     my $wrap = shift;
     if (!defined($T)) {
         cluck 'Parameter $T is undefined.' if ($DEBUG);
-        return undef;
+        return;
     }
     my ($y, $m_name, $d, $h, $mn, $s)
       = $T =~ /^(\d+)\s+(\S\S\S)\s+(\d+)\s+(\d+):(\d+):(\d+)$/;
     if (!defined($m_name)) {
         cluck "Invalid date $T" if ($DEBUG);
-        return undef;
+        return;
     }
     my $m = index("JanFebMarAprMayJunJulAugSepOctNovDec", $m_name) / 3;
     if (!defined($m)) {
         cluck "Invalid month name in $T" if ($DEBUG);
-        return undef;
+        return;
     }
     # Take the previous year if a change of year has been detected and
     # the date is after May, 1st.
