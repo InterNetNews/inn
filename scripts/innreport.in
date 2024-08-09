@@ -320,7 +320,7 @@ BEGIN {
     eval "use GD;";
     $HAVE_GD = $@ eq '';
     if ($HAVE_GD) {
-        my $gd = new GD::Image(1, 1);
+        my $gd = GD::Image->new(1, 1);
         $GD_FORMAT = 'gif' if $gd->can('gif');
         $GD_FORMAT = 'png' if $gd->can('png');
     }
@@ -1335,7 +1335,7 @@ sub Graph3d {
     my $d = 25;
 
     my $ymax = $size * $d + $mt + $mb;
-    my $image = new GD::Image($xmax, $ymax);
+    my $image = GD::Image->new($xmax, $ymax);
 
     my ($white, $black);
     if (defined $output{'default'}{'graph_fg'}) {
@@ -1402,7 +1402,7 @@ sub Graph3d {
             $mt - 12, $black,
         );
         {
-            my $poly = new GD::Polygon;
+            my $poly = GD::Polygon->new();
             $poly->addPt($i * $xmax / $n + 10, 8 + $ry / 2);
             $poly->addPt($i * $xmax / $n + 10 + $rx / 2, 8);
             $poly->addPt($i * $xmax / $n + $mt - 10 + $rx / 2, 8);
@@ -1412,7 +1412,7 @@ sub Graph3d {
             $image->polygon($poly, $black);
         }
         {
-            my $poly = new GD::Polygon;
+            my $poly = GD::Polygon->new();
             $poly->addPt($i * $xmax / $n + $mt - 10 + $rx / 2, 8);
             $poly->addPt($i * $xmax / $n + $mt - 10, 8 + $ry / 2);
             $poly->addPt($i * $xmax / $n + $mt - 10, $mt - 12);
@@ -1550,7 +1550,7 @@ sub Graph3d {
         for my $i (0 .. $n - 1) {
             next unless defined ${ $val[$i] }{$k};
             {
-                my $poly = new GD::Polygon;
+                my $poly = GD::Polygon->new();
                 $poly->addPt($ml + $t * $r, $e);
                 $poly->addPt($ml + $t * $r + $rx, $e - $ry);
                 $poly->addPt(
@@ -1563,7 +1563,7 @@ sub Graph3d {
                 $image->polygon($poly, $black);
             }
             unless (${ $val[$i + 1] }{$k} || ${ $val[$i] }{$k} == 0) {
-                my $poly = new GD::Polygon;
+                my $poly = GD::Polygon->new();
                 $poly->addPt(
                     $ml + ($t + ${ $val[$i] }{$k}) * $r + $rx,
                     $e - $ry,
@@ -1669,7 +1669,7 @@ sub Histo($$$$$$$$) {
     my ($i, $j);
     my ($marginl, $marginr, $margint, $marginb, $shx, $shy);
 
-    my $image = new GD::Image($xmax, $ymax);
+    my $image = GD::Image->new($xmax, $ymax);
     my ($white, $black);
     if (defined $output{'default'}{'graph_fg'}) {
         my $t = $output{'default'}{'graph_fg'};
@@ -1915,7 +1915,7 @@ sub Histo($$$$$$$$) {
               && ($i != $MAX * $ii);
 
             # Right
-            my $poly = new GD::Polygon;
+            my $poly = GD::Polygon->new();
             $poly->addPt(
                 $marginl + ($i) * $w - $k,
                 $ymax - $marginb - $shy
@@ -1954,7 +1954,7 @@ sub Histo($$$$$$$$) {
                 $coltxt,
             );
             # Top
-            my $poly2 = new GD::Polygon;
+            my $poly2 = GD::Polygon->new();
             $poly2->addPt(
                 $marginl + ($i - 1) * $w + $k,
                 $ymax - $marginb - $shy
@@ -2056,7 +2056,7 @@ sub Chrono {
     $x_min = $x_max - 31536000 if ($range < 31536000 && $range > 3024000);
     # max range is 13 months
     $x_min = $x_max - 34128000 if $range > 34128000;
-    my $image = new GD::Image($xmax, $ymax);
+    my $image = GD::Image->new($xmax, $ymax);
     my ($white, $black);
     if (defined $output{'default'}{'graph_fg'}) {
         my $t = $output{'default'}{'graph_fg'};
@@ -2133,7 +2133,7 @@ sub Chrono {
     my $xratio = ($xmax - $marginl - $marginr) / ($x_max - $x_min);
     my $yratio = ($ymax - $margint - $marginb) / ($y_max - $y_min);
 
-    my $frame = new GD::Polygon;
+    my $frame = GD::Polygon->new();
     $frame->addPt(2, $margint - $FontHeight - 3);
     $frame->addPt($xmax - 2, $margint - $FontHeight - 3);
     $frame->addPt($xmax - 2, $ymax - 3);
@@ -2146,7 +2146,7 @@ sub Chrono {
         $xmax - $marginr,
         $ymax - $marginb, $bg,
     );
-    my $brush = new GD::Image(1, 2);
+    my $brush = GD::Image->new(1, 2);
     my $b_col = $brush->colorAllocate(@col_out);
     $brush->line(0, 0, 0, 1, $b_col);
     $image->setBrush($brush);
@@ -2176,7 +2176,7 @@ sub Chrono {
 
         if (defined $old_x) {
             $old_x = $new_x if $old_x > $new_x;
-            my $poly = new GD::Polygon;
+            my $poly = GD::Polygon->new();
             $poly->addPt($old_x, $old_y_in);
             $poly->addPt($new_x, $ymax - $marginb - $tt_in);
             $poly->addPt($new_x, $ymax - $marginb);
@@ -2346,7 +2346,7 @@ sub Chrono {
     }
 
     # Add the little red arrow
-    my $poly = new GD::Polygon;
+    my $poly = GD::Polygon->new();
     $poly->addPt($xmax - $marginr - 2, $ymax - $marginb - 3);
     $poly->addPt($xmax - $marginr + 4, $ymax - $marginb);
     $poly->addPt($xmax - $marginr - 2, $ymax - $marginb + 3);
