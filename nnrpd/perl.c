@@ -149,7 +149,7 @@ HandleHeaders(char *article)
 #    if defined(__llvm__) || defined(__clang__)
 #        pragma GCC diagnostic warning "-Wcast-align"
 #    endif
-            s = SvPV(HeVAL(scan), PL_na);
+            s = SvPV_nolen(HeVAL(scan));
 #    ifdef DEBUG_MODIFY
             fprintf(flog, "Hash iter: '%s','%s'\n", p, s);
 #    endif /* DEBUG_MODIFY */
@@ -201,7 +201,7 @@ HandleHeaders(char *article)
     if (SvTRUE(errsv)) {
         failure = true;
         syslog(L_ERROR, "Perl function filter_post died: %s",
-               SvPV(errsv, PL_na));
+               SvPV_nolen(errsv));
         (void) POPs;
     } else {
         failure = false;
@@ -283,7 +283,7 @@ perlAccess(char *user, struct vector *access_vec)
 
     if (rc == 0) { /* Error occured, same as checking $@. */
         errsv = ERRSV;
-        syslog(L_ERROR, "Perl function access died: %s", SvPV(errsv, PL_na));
+        syslog(L_ERROR, "Perl function access died: %s", SvPV_nolen(errsv));
         Reply("%d Internal error (1).  Goodbye!\r\n", NNTP_FAIL_TERMINATING);
         ExitWithStats(1, true);
     }
@@ -302,9 +302,9 @@ perlAccess(char *user, struct vector *access_vec)
 
     for (i = (rc / 2); i >= 1; i--) {
         sv = POPs;
-        val = SvPV(sv, PL_na);
+        val = SvPV_nolen(sv);
         sv = POPs;
-        key = SvPV(sv, PL_na);
+        key = SvPV_nolen(sv);
 
         strlcpy(buffer, key, BIG_BUFFER);
         strlcat(buffer, ": \"", BIG_BUFFER);
@@ -349,7 +349,7 @@ perlAuthInit(void)
     errsv = ERRSV;
     if (SvTRUE(errsv)) { /* Check $@. */
         syslog(L_ERROR, "Perl function authenticate died: %s",
-               SvPV(errsv, PL_na));
+               SvPV_nolen(errsv));
         Reply("%d Internal error (1).  Goodbye!\r\n", NNTP_FAIL_TERMINATING);
         ExitWithStats(1, true);
     }
@@ -404,7 +404,7 @@ perlAuthenticate(char *user, char *passwd, int *code, char *errorstring,
     if (rc == 0) { /* Error occurred, same as checking $@. */
         errsv = ERRSV;
         syslog(L_ERROR, "Perl function authenticate died: %s",
-               SvPV(errsv, PL_na));
+               SvPV_nolen(errsv));
         Reply("%d Internal error (1).  Goodbye!\r\n", NNTP_FAIL_TERMINATING);
         ExitWithStats(1, false);
     }

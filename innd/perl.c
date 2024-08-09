@@ -125,7 +125,7 @@ PLartfilter(const ARTDATA *data, char *artBody, long artLen, int lines)
         failure = true;
         syslog(L_ERROR, "Perl function filter_art died on article %s: %s",
                HDR_FOUND(HDR__MESSAGE_ID) ? HDR(HDR__MESSAGE_ID) : "?",
-               SvPV(errsv, PL_na));
+               SvPV_nolen(errsv));
         (void) POPs;
     } else {
         failure = false;
@@ -184,7 +184,7 @@ PLmidfilter(char *messageID)
     if (SvTRUE(errsv)) {
         failure = true;
         syslog(L_ERROR, "Perl function filter_messageid died on id %s: %s",
-               messageID, SvPV(errsv, PL_na));
+               messageID, SvPV_nolen(errsv));
         (void) POPs;
     } else {
         failure = false;
@@ -261,7 +261,7 @@ PLmode(OPERATINGMODE CurrentMode, OPERATINGMODE NewMode, char *reason)
     if (SvTRUE(errsv)) {
         failure = true;
         syslog(L_ERROR, "Perl function filter_mode died: %s",
-               SvPV(errsv, PL_na));
+               SvPV_nolen(errsv));
         (void) POPs;
     } else {
         failure = false;
@@ -339,7 +339,7 @@ XS(XS_INN_addhist)
         croak("Usage INN::addhist(msgid,[arrival,articletime,expire,token])");
 
     for (i = 0; i < items; i++)
-        parambuf[i] = (char *) SvPV(ST(0), PL_na);
+        parambuf[i] = (char *) SvPV_nolen(ST(0));
 
     /* If any of the times are missing, they should default to now. */
     if (i < 4) {
@@ -381,7 +381,7 @@ XS(XS_INN_article)
         croak("Usage: INN::article(msgid)");
 
     /* Get the article token from the message ID and the history file. */
-    msgid = (char *) SvPV(ST(0), PL_na);
+    msgid = (char *) SvPV_nolen(ST(0));
     if (!HISlookup(History, msgid, NULL, NULL, NULL, &token))
         XSRETURN_UNDEF;
 
@@ -413,7 +413,7 @@ XS(XS_INN_cancel)
     if (items != 1)
         croak("Usage: INN::cancel(msgid)");
 
-    msgid = (char *) SvPV(ST(0), PL_na);
+    msgid = (char *) SvPV_nolen(ST(0));
     parambuf[0] = msgid;
     parambuf[1] = NULL;
 
@@ -439,7 +439,7 @@ XS(XS_INN_filesfor)
     if (items != 1)
         croak("Usage: INN::filesfor(msgid)");
 
-    msgid = (char *) SvPV(ST(0), PL_na);
+    msgid = (char *) SvPV_nolen(ST(0));
     if (HISlookup(History, msgid, NULL, NULL, NULL, &token)) {
         XSRETURN_PV(TokenToText(token));
     } else {
@@ -459,7 +459,7 @@ XS(XS_INN_havehist)
     if (items != 1)
         croak("Usage: INN::havehist(msgid)");
 
-    msgid = (char *) SvPV(ST(0), PL_na);
+    msgid = (char *) SvPV_nolen(ST(0));
     if (HIScheck(History, msgid))
         XSRETURN_YES;
     else
@@ -485,7 +485,7 @@ XS(XS_INN_head)
         croak("Usage: INN::head(msgid)");
 
     /* Get the article token from the Message-ID and the history file. */
-    msgid = (char *) SvPV(ST(0), PL_na);
+    msgid = (char *) SvPV_nolen(ST(0));
     if (!HISlookup(History, msgid, NULL, NULL, NULL, &token))
         XSRETURN_UNDEF;
 
@@ -518,7 +518,7 @@ XS(XS_INN_newsgroup)
 
     if (items != 1)
         croak("Usage: INN::newsgroup(group)");
-    newsgroup = (char *) SvPV(ST(0), PL_na);
+    newsgroup = (char *) SvPV_nolen(ST(0));
 
     ngp = NGfind(newsgroup);
     if (!ngp) {

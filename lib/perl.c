@@ -83,7 +83,7 @@ PerlFilter(bool value)
             errsv = ERRSV;
             if (SvTRUE(errsv)) {
                 syslog(L_ERROR, "SERVER perl function filter_end died: %s",
-                       SvPV(errsv, PL_na));
+                       SvPV_nolen(errsv));
                 (void) POPs;
             }
             PUTBACK;
@@ -161,7 +161,7 @@ PERLsetup(char *startupfile, char *filterfile, const char *function)
         if (SvTRUE(errsv)) {
             failure = true;
             syslog(L_ERROR, "SERVER perl loading %s failed: %s", startupfile,
-                   SvPV(errsv, PL_na));
+                   SvPV_nolen(errsv));
         } else {
             failure = false;
         }
@@ -208,7 +208,7 @@ PERLreadfilter(char *filterfile, const char *function)
             failure = true;
             syslog(L_ERROR,
                    "SERVER perl function filter_before_reload died: %s",
-                   SvPV(errsv, PL_na));
+                   SvPV_nolen(errsv));
             (void) POPs;
         } else {
             failure = false;
@@ -242,7 +242,7 @@ PERLreadfilter(char *filterfile, const char *function)
     if (SvTRUE(errsv)) {
         failure = true;
         syslog(L_ERROR, "SERVER perl loading %s failed: %s", filterfile,
-               SvPV(errsv, PL_na));
+               SvPV_nolen(errsv));
     } else {
         failure = false;
     }
@@ -272,7 +272,7 @@ PERLreadfilter(char *filterfile, const char *function)
         errsv = ERRSV;
         if (SvTRUE(errsv)) {
             syslog(L_ERROR, "SERVER perl undef &%s failed: %s", function,
-                   SvPV(errsv, PL_na));
+                   SvPV_nolen(errsv));
         }
         PUTBACK;
         FREETMPS;
@@ -294,7 +294,7 @@ PERLreadfilter(char *filterfile, const char *function)
             failure = true;
             syslog(L_ERROR,
                    "SERVER perl function filter_after_reload died: %s",
-                   SvPV(errsv, PL_na));
+                   SvPV_nolen(errsv));
             (void) POPs;
         } else {
             failure = false;
@@ -431,8 +431,8 @@ XS(XS_INN_syslog)
     if (items != 2)
         croak("Usage: INN::syslog(level, message)");
 
-    loglevel = (const char *) SvPV(ST(0), PL_na);
-    logmsg = (const char *) SvPV(ST(1), PL_na);
+    loglevel = (const char *) SvPV_nolen(ST(0));
+    logmsg = (const char *) SvPV_nolen(ST(1));
 
     switch (*loglevel) {
     case 'a':
