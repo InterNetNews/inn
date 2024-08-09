@@ -381,11 +381,13 @@ my ($current_year, $local_timezone);
 my $HTML_header = '';
 my $HTML_footer = '';
 
-my $imgxmax = &GetValue($output{'default'}{'graph_width'})    # Graph size.
+my $imgxmax;
+$imgxmax = &GetValue($output{'default'}{'graph_width'})    # Graph size.
   if defined $output{'default'}{'graph_width'};
 $imgxmax = 550 unless $imgxmax;
 
-my $transparent = &GetValue($output{'default'}{'transparent'})
+my $transparent;
+$transparent = &GetValue($output{'default'}{'transparent'})
   if defined $output{'default'}{'transparent'};
 $transparent = (defined $transparent && $transparent eq 'true') ? 1 : 0;
 
