@@ -333,7 +333,14 @@ extern char *strtok(char *, const char *);\
             ;;
         esac
 
-        git status --short ../$2/$3
+        # Output modified files.
+        GIT_STATUS=$(git status --short ../$2/$3)
+        if [ -n "${GIT_STATUS}" ]; then
+            echo ${GIT_STATUS}
+            if [ "$3" = "network.c" ] || [ "$3" = "network.h" ]; then
+                echo "Changes may need backporting in network-innbind.[ch]"
+            fi
+        fi
     fi
 }
 
