@@ -278,7 +278,8 @@ bool
 network_innbind_all(int type, unsigned short port, socket_type **fds,
                     unsigned int *count)
 {
-    struct addrinfo hints, *addrs, *addr;
+    struct addrinfo hints, *addrs;
+    const struct addrinfo *addr;
     unsigned int size;
     int status;
     socket_type fd;
