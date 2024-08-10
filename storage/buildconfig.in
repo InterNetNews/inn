@@ -85,7 +85,7 @@ sub write_includes {
     my ($fh, $config) = @_;
     for my $method (sort keys %{ $$config{method} }) {
         my $path = $$config{method}{$method};
-        print $fh qq(\#include "$path/$method.h"\n);
+        print $fh qq(#include "$path/$method.h"\n);
     }
 }
 
@@ -95,7 +95,7 @@ sub write_methods {
     my $notfirst;
     for my $method (sort keys %{ $$config{method} }) {
         print $fh "\n},\n" if $notfirst;
-        print $fh qq(\{\n    "$method");
+        print $fh qq({\n    "$method");
         print $fh ', ', $prefix, '_', uc($method) if $prefix;
         for (@funcs) {
             print $fh ",\n    ${method}_$_";

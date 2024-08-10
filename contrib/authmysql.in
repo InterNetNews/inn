@@ -29,7 +29,7 @@ my $dbh = db_open(%conf);
 # Create the query we're going to pass through.
 my $query
   = "SELECT $conf{'passcol'} FROM $conf{'TABLE'}"
-  . " WHERE $conf{'usercol'}=\'$stdin{'ClientAuthname'}\'";
+  . " WHERE $conf{'usercol'}='$stdin{'ClientAuthname'}'";
 
 # Get our statement handler... not really a result.
 my $result = $dbh->prepare($query);
@@ -44,8 +44,8 @@ $stdin{'ClientPassword'} = crypt($stdin{'ClientPassword'}, $cryptedpw);
 # match of the encrypted password/username or none.
 $query
   = "SELECT COUNT(*) FROM $conf{'TABLE'} WHERE"
-  . " $conf{'usercol'}=\'$stdin{'ClientAuthname'}\' and"
-  . " $conf{'passcol'}=\'$stdin{'ClientPassword'}\'";
+  . " $conf{'usercol'}='$stdin{'ClientAuthname'}' and"
+  . " $conf{'passcol'}='$stdin{'ClientPassword'}'";
 
 $result = $dbh->prepare($query);
 $result->execute;
