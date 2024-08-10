@@ -28,6 +28,12 @@ severity = 5
 # Custom output.
 verbose = %f:%l:%c: [%p] %m, near '%r' (%e, Severity: %s)\n
 
+# Perl::Critic::Freenode has been renamed upstream to Perl::Critic::Community
+# but some systems may still have both installed.  The related tests would then
+# be run twice and report issues for yet excluded policies in the community
+# theme.
+exclude = Freenode::
+
 # Uncomment to only apply policies explicitly listed below as enabled.
 # It is easier for tests than using the --single-policy flag.
 #only = 1
