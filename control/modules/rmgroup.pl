@@ -48,7 +48,7 @@ sub control_rmgroup {
 
     if ($action eq 'mail' and $status !~ /(not change|be unapproved)/) {
         my $mail = sendmail("rmgroup $groupname $sender");
-        print $mail <<END;
+        print $mail <<"END";
 $sender asks for $groupname
 to $status.
 

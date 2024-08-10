@@ -73,7 +73,7 @@ sub control_checkgroups {
         my $mail = sendmail("checkgroups by $sender");
         print $mail "$sender posted the following checkgroups message:\n\n";
         print $mail map { s/^~/~~/; "$_\n" } @headers;
-        print $mail <<END;
+        print $mail <<"END";
 
 If you want to process it, feed the body
 of the message to docheckgroups while logged

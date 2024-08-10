@@ -960,7 +960,7 @@ sub GetHTMLHeader($) {
         }
     }
 
-    return <<EOF;
+    return <<"EOF";
 <?xml version="1.0" encoding="$encoding"?>$xsl
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
   "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
@@ -987,7 +987,7 @@ sub GetHTMLFooter() {
 
     my $time = second2time(time - $start_time);
 
-    return <<EOF;
+    return <<"EOF";
 <div class="ir-pageFooter">
   <div class="ir-versionNotice"><em>innreport</em> from $INN::Config::version
   based on initial work (&copy;) 1996-2001 by Fabien Tassin
@@ -1009,7 +1009,7 @@ EOF
 sub Make_CSS($) {
     my ($rep) = @_;
     open(CSS, "> $rep/innreport.css") || die "can't open $rep/innreport.css\n";
-    print CSS <<EOF;
+    print CSS <<"EOF";
 div.ir-pageTitle {
   border-bottom:4px double black;
   border-top:4px double black;
