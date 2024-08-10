@@ -180,7 +180,7 @@ sub control_newgroup {
 
     if ($action eq 'mail' and $status !~ /(not change|be unapproved)/) {
         my $mail = sendmail("newgroup $groupname $modcmd $sender");
-        print $mail <<END;
+        print $mail <<"END";
 $sender asks for $groupname
 to $status.
 
