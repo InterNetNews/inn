@@ -863,7 +863,7 @@ sub crossFeedGroup {
     # Do not set several times the water mark to another value.  Just go on
     # downloading articles from the last retrieved one when the connection
     # timed out.
-    if (defined($watermark) and !exists($groupsStarted{$group})) {
+    if (defined($watermark) && !exists($groupsStarted{$group})) {
         printf LOG "\tOur previous highest: %d\n", $prevHigh if not $quiet;
         $high = $watermark;
         $high = $last + $watermark if substr($watermark, 0, 1) eq '-';

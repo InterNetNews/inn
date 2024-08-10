@@ -51,7 +51,7 @@ sub dump_articles {
     );
     defined($errmsg)
       and die "search_group_all: $errmsg";
-    $code != response_artlist && $code != response_artlist_done
+    ($code != response_artlist && $code != response_artlist_done)
       and die "search_group_all: Unexpected response code $code";
     print STDERR $count, "\n";
 }
@@ -81,7 +81,7 @@ sub dump_groups {
     );
     defined($errmsg)
       and die "list_groups_all: $errmsg";
-    $code != response_grouplist && $code != response_grouplist_done
+    ($code != response_grouplist && $code != response_grouplist_done)
       and die "list_groups_all: Unexpected response code $code\n";
 }
 
