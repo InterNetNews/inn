@@ -34,7 +34,8 @@ TESTS	= authprogs/ident.t innd/artparse.t innd/chan.t lib/artnumber.t \
 
 ##  Extra stuff that needs to be built before tests can be run.
 
-EXTRA	= runtests clients/server-list docs/pod.t lib/xmalloc
+EXTRA	= runtests clients/server-list docs/pod.t lib/xmalloc \
+	  perl/minimum-version.t
 
 all check test tests: $(TESTS) $(EXTRA)
 	./runtests -l TESTS
@@ -304,6 +305,9 @@ overview/tradindexed.t: overview/tradindexed-t.o tap/basic.o $(STORAGEDEPS)
 
 overview/xref.t: overview/xref-t.o tap/basic.o $(STORAGEDEPS)
 	$(LINKDEPS) overview/xref-t.o tap/basic.o $(STORAGELIBS) $(LIBS)
+
+perl/minimum-version.t: perl/minimum-version.t.in $(FIXSCRIPT)
+	$(FIX) -i perl/minimum-version.t.in
 
 util/innbind.t: util/innbind-t.o tap/basic.o $(LIBINN)
 	$(LINK) util/innbind-t.o tap/basic.o $(LIBINN) $(LIBS)

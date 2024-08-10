@@ -1,0 +1,95 @@
+#!/usr/bin/perl
+#
+# Check that too-new features of Perl are not being used.
+#
+# This version of the check script supports mapping various directories to
+# different version numbers.  This allows a newer version of Perl to be
+# required for internal tools than for public code.
+#
+# The canonical version of this file is maintained in the rra-c-util package,
+# which can be found at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
+#
+# Written by Russ Allbery <eagle@eyrie.org>
+# Copyright 2016 Russ Allbery <eagle@eyrie.org>
+# Copyright 2012-2014
+#     The Board of Trustees of the Leland Stanford Junior University
+#
+# Permission is hereby granted, free of charge, to any person obtaining a
+# copy of this software and associated documentation files (the "Software"),
+# to deal in the Software without restriction, including without limitation
+# the rights to use, copy, modify, merge, publish, distribute, sublicense,
+# and/or sell copies of the Software, and to permit persons to whom the
+# Software is furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+# THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+# DEALINGS IN THE SOFTWARE.
+#
+# SPDX-License-Identifier: MIT
+
+use 5.006;
+use strict;
+use warnings;
+
+use File::Spec;
+
+# A map of versions to directories or files.  All of the target files and any
+# Perl scripts in those directories will be checked against the version
+# requirement.
+my %REQUIREMENTS = (
+    '5.006' => [
+        'backends', 'contrib', 'contrib/nnrp.access2readers.conf.in',
+        'control', 'frontends', 'history', 'innfeed', 'perl', 'samples',
+        'scripts', 'storage', 'support', 'tests/clients/server-list',
+        'tests/docs/pod.t', 'tests/perl/minimum-version.t'
+    ]
+);
+
+# Red Hat's base perl package doesn't include Test::More (one has to install
+# the perl-core package in addition).  Try to detect this and skip any Perl
+# tests if Test::More is not present.
+eval {
+    require Test::More;
+    Test::More->import();
+};
+if ($@) {
+    print "1..0 # SKIP Test::More required for test\n"
+      or croak('Cannot write to stdout');
+    exit 0;
+}
+
+# Abort if C_TAP_SOURCE isn't set.
+if (!$ENV{C_TAP_SOURCE}) {
+    BAIL_OUT('C_TAP_SOURCE environment variable not set');
+}
+
+# Skip tests if Test::MinimumVersion is not installed.
+if (!eval { require Test::MinimumVersion }) {
+    plan(skip_all => 'Test::MinimumVersion required to test version limits');
+}
+Test::MinimumVersion->import();
+
+# C_TAP_SOURCE will be the test directory.  Change to the parent directory.
+my ($vol, $dirs) = File::Spec->splitpath($ENV{C_TAP_SOURCE}, 1);
+my @dirs = File::Spec->splitdir($dirs);
+pop(@dirs);
+if ($dirs[-1] eq File::Spec->updir) {
+    pop(@dirs);
+    pop(@dirs);
+}
+my $root = File::Spec->catpath($vol, File::Spec->catdir(@dirs), q{});
+chdir($root) or BAIL_OUT("cannot chdir to $root: $!");
+
+# For each file and directory in %REQUIREMENTS, check that file or the files
+# in that directory.
+for my $minimum (sort keys %REQUIREMENTS) {
+    my $paths_ref = $REQUIREMENTS{$minimum};
+    all_minimum_version_ok($minimum, { paths => $paths_ref });
+}

@@ -328,4 +328,5 @@ tests/overview/api.t
 tests/overview/buffindexed.t
 tests/overview/tradindexed.t
 tests/overview/xref.t
+tests/perl/minimum-version.t
 tests/util/innbind.t
