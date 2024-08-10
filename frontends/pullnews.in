@@ -583,7 +583,7 @@ foreach my $server (@servers) {
     if (@groupsToGet > 0) {
         my $ok;
         foreach my $sgroup (keys %{ $servers->{$server} }) {
-            $ok = 1 if grep($_ eq $sgroup, @groupsToGet);
+            $ok = 1 if grep({ $_ eq $sgroup } @groupsToGet);
         }
 
         if (!$ok) {
@@ -667,7 +667,7 @@ foreach my $server (@servers) {
 
     foreach my $group (sort keys %{ $servers->{$server} }) {
         next if $group eq '_order';
-        next if (@groupsToGet && !grep ($_ eq $group, @groupsToGet));
+        next if (@groupsToGet && !grep ({ $_ eq $group } @groupsToGet));
 
         my $ret;
 
@@ -1079,7 +1079,7 @@ sub crossFeedGroup {
                     push @header_nums_to_go, $idx if $remove_hdr;
                 }
 
-                if (grep { $curr_hdr eq $_ } split(':', $skip_headers)) {
+                if (grep({ $curr_hdr eq $_ } split(':', $skip_headers))) {
                     print LOG "\tDEBUGGING $i\tskip_hdr $idx\t$curr_hdr\n"
                       if $debug >= 2;
                     push @header_nums_to_go, $idx;
@@ -1117,7 +1117,7 @@ sub crossFeedGroup {
             if (
                 @hdr_to_match
                 and (not $match_all_hdrs
-                    or scalar(grep { !/^!?#/ } @hdr_to_match) !=
+                    or scalar(grep({ !/^!?#/ } @hdr_to_match)) !=
                     keys %m_found_hdrs)
             ) {
                 $skip_due_to_hdrs = 2;

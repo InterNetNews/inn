@@ -1134,7 +1134,7 @@ sub intersect {
     if (!opendir(my $DH, $dir)) {
         eprint "$pfx$dir:0: can't open directory\n";
     } else {
-        @in = grep($_ ne "." && $_ ne "..", readdir($DH));
+        @in = grep({ $_ ne "." && $_ ne ".." } readdir($DH));
         closedir($DH);
     }
 
@@ -1286,7 +1286,7 @@ Usage("Can't use `--fix' without `--perm'")
   if $fix && $perms < 1;
 $pfx = $fix ? '# ' : '';
 
-@todo = grep(defined $checklist{$_}, sort(keys %paths))
+@todo = grep({ defined $checklist{$_} } sort(keys %paths))
   if $all || (scalar(@todo) == 0 && $perms < 1);
 
 ACTION:
