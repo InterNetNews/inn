@@ -65,8 +65,8 @@ verbose = %f:%l:%c: [%p] %m, near '%r' (%e, Severity: %s)\n
 [-Subroutines::ProhibitSubroutinePrototypes]
 
 # The majority of our Perl scripts already has strictures enabled.
-# Only a few ones still lack it (INN::Config, innshellvars.pl, innreport,
-# testListener.pl, some contrib scripts and some samples of Perl hooks).
+# Only a few ones still lack it (innshellvars.pl, testListener.pl, some contrib
+# scripts and some samples of Perl hooks).
 # At some point, they should be added and the scripts tested with them.
 [-TestingAndDebugging::ProhibitNoStrict]
 [-TestingAndDebugging::RequireUseStrict]
