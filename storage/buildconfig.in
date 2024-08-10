@@ -32,9 +32,9 @@ BEGIN {
         distclean       => "RM_DISTCLEAN",
         maintclean      => "RM_MAINTCLEAN",
     );
-    %filelistix = map(($filelists[$_ * 2] => $_), 0 .. @filelists / 2 - 1);
-    @filelistnames = map($filelists[$_ * 2 + 1], 0 .. @filelists / 2 - 1);
-    $filelistparam = join("|", map(quotemeta($_), keys(%filelistix)));
+    %filelistix = map({ ($filelists[$_ * 2] => $_) } 0 .. @filelists / 2 - 1);
+    @filelistnames = map({ $filelists[$_ * 2 + 1] } 0 .. @filelists / 2 - 1);
+    $filelistparam = join("|", map({ quotemeta($_) } keys(%filelistix)));
 }
 
 # Used to make heredocs more readable.
@@ -65,7 +65,7 @@ sub parse_config {
             my $ix = $filelistix{$1};
             my $files = $2;
             my @files = sort(split(" ", $files));
-            push(@{ $$makefile{filelists}->[$ix] }, map { "$dir/$_" } @files);
+            push(@{ $$makefile{filelists}->[$ix] }, map({ "$dir/$_" } @files));
         } else {
             warn "$dir/$file: ignoring unknown line: $_\n";
         }
@@ -240,7 +240,7 @@ sub write_makefile {
 
 my (%storage, %overview, %makefile);
 %makefile = (
-    filelists => [map([], @filelistnames)],
+    filelists => [map({ [] } @filelistnames)],
     makefiles => [],
     dirs      => [],
 );

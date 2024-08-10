@@ -100,7 +100,7 @@ sub generate_head {
     unless (@{$names}) {
         $names = ["unused"];
     }
-    $stmts = join("\n    ", map("sqlite3_stmt *$_;", @{$names}));
+    $stmts = join("\n    ", map({ "sqlite3_stmt *$_;" } @{$names}));
     print $fh <<"__HEAD__"
 $preamble
 #ifndef $guard
