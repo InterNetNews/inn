@@ -3,11 +3,15 @@
 
 package INN::Config;
 
+use strict;
 use warnings;
 use Exporter;
 
-# Some variables come from innconfval and are dynamically declared.
-no strict;
+# Variables dynamically declared from innconfval, and used in this package.
+use vars qw($ovmethod $pathdb $patharchive $patharticles $pathbin
+  $pathcontrol $pathetc $pathfilter $pathincoming $pathlog $pathnews
+  $pathoutgoing $pathoverview $pathrun $pathspool $pathtmp
+  $runasuser $runasgroup);
 
 our @ISA = qw(Exporter);
 our $VERSION = '@PACKAGE_VERSION@';
