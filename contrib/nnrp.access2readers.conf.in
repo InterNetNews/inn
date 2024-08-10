@@ -126,7 +126,7 @@ sub seedchar {    # From Randal Schwarz.
 
 sub usage {
     $0 =~ s!.*/!!;
-    print STDERR << "__END__";
+    print STDERR << "__MSG__";
 Usage:
   $0 <nnrp.access file> [<passwd file> <readers.conf file>]
 
@@ -136,7 +136,7 @@ Usage:
 
   If the second and third arguments are missing, everything is printed
   instead to stdout for examination purposes.
-__END__
+__MSG__
 
     exit 1;
 }
