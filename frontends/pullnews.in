@@ -121,10 +121,15 @@ eval {
 # shipped with INN).
 # Note that this Perl function does not work as expected on all
 # existing systems (for instance on Solaris).
+#
+# Though Fcntl will always be loaded, flock() will actually be used
+# only when $use_inn_shlock is false.
+## no critic (ProhibitConditionalUseStatements)
 if (not $use_inn_shlock) {
     use Fcntl;
     use Fcntl qw(:flock);
 }
+## use critic
 
 END {
     return unless $runEndBlock;

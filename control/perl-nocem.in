@@ -668,7 +668,7 @@ sub cancel_nntp {
         $nntp_open = 0;
     }
     if (not $nntp_open) {
-        use Socket;
+        use Socket;    ## no critic (ProhibitConditionalUseStatements)
         if (not socket(NNTP, PF_UNIX, SOCK_STREAM, 0)) {
             logmsg("socket: $!", 'err');
             goto ERR;
