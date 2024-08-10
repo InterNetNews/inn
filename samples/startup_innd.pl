@@ -44,3 +44,5 @@ sub filter_after_reload {
         $after_count++;
     }
 }
+
+1;
