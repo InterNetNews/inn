@@ -7,7 +7,7 @@ while (<>) {
     chop;
     @xreflist = split(/\t/);    # Split apart record.
 
-    $_ = $xreflist[$#xreflist]; # Xref is last.
+    $_ = $xreflist[-1];         # Xref is last.
 
     @xreflist = reverse(split(/ /));    # Break part Xref header field body.
 
