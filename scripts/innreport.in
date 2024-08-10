@@ -574,8 +574,8 @@ while (!eof()) {
 
     }    # UNRECOGNIZED
     $unrecognize[$unrecognize_max] = $_
-      unless $unrecognize_max > $MAX_UNRECOGNIZED
-      && $MAX_UNRECOGNIZED > 0;
+      if ($unrecognize_max <= $MAX_UNRECOGNIZED
+          || $MAX_UNRECOGNIZED <= 0);
     $unrecognize_max++;
 }    # LINE
 
@@ -1913,8 +1913,8 @@ sub Histo($$$$$$$$) {
                 $$labels[$i - 1],
                 $coltxt,
               )
-              unless ($w < $FontWidth * length($$labels[$i - 1]))
-              && ($i != $MAX * $ii);
+              if (($w >= $FontWidth * length($$labels[$i - 1]))
+                  || ($i == $MAX * $ii));
 
             # Right
             my $poly = GD::Polygon->new();
@@ -2673,7 +2673,7 @@ sub Write_Results {
                     $res[$first] += $r if $v1 =~ m/\%-?(?:\d+(?:\.\d+)?)?d/o;
                     if ($p) {
                         $s .= sprintf $v1 . "\n", EscapeHTML($r)
-                          unless $done || !$wtext;
+                          if (!$done && $wtext);
                         if ($doHTML && $whtml) {
                             if ($done) {
                                 $html .= "<td></td>";
@@ -2820,10 +2820,10 @@ sub Write_Results {
               ;    # to avoid problems after some undef()
             $num++;
             next
-              unless $num <= $TOP_HTML
-              || $TOP_HTML == -1
-              || $num <= $TOP_TEXT
-              || $TOP_TEXT == -1;
+              if ($num > $TOP_HTML
+                  && $TOP_HTML != -1
+                  && $num > $TOP_TEXT
+                  && $TOP_TEXT != -1);
             $first = 0;
             foreach my $i (@{ $outputdata{$report}{'column'} }) {
                 my $wtext = defined $$i{'text'} ? $$i{'text'} : 1;

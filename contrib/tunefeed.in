@@ -150,7 +150,7 @@ sub smash {
             $traffic += $traffic{ $have[0] };
             push(@keep, shift @have);
         }
-        next unless $saved > $threshold;
+        next if $saved <= $threshold;
         if (@keep) {
             $traffic{"$prefix*"} = $traffic;
             push(@positive, smash(\@keep, \@drop, $prefix, 1));

@@ -56,7 +56,7 @@ sub serve {
         } elsif (@command == 1) {
             list($fh, 'active', '*');
         } else {
-            push(@command, '*') unless @command > 2;
+            push(@command, '*') if @command <= 2;
             list($fh, @command[1, 2]);
         }
     }
