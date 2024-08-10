@@ -5,6 +5,8 @@
 ##  by Brendan Kehoe <brendan@cygnus.com> and Rich $alz.
 
 use strict;
+use warnings;
+
 use Getopt::Long;
 
 ##  inncheck extensively uses octal numbers in bitwise operations and file

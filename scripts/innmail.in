@@ -10,6 +10,8 @@
 #
 
 use strict;
+use warnings;
+
 use Getopt::Std;
 
 # Define variables Getopt::Std uses for --help and --version.

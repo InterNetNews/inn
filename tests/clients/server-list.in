@@ -10,6 +10,8 @@
 ##  to kill later.
 
 use strict;
+use warnings;
+
 use IO::Socket::INET ();
 
 # Process a list command.  Only a very minimal wildmat syntax is supported.

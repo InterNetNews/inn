@@ -18,7 +18,9 @@
 ##############################################################################
 
 require 5.00403;
+
 use strict;
+use warnings;
 
 use Getopt::Std;
 use POSIX qw(locale_h strftime);

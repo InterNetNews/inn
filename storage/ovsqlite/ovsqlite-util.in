@@ -5,10 +5,12 @@
 ##
 ##  Initial version written in March 2023 by Julien ÉLIE.
 
+use strict;
+use warnings;
+
 use Compress::Zlib;
 use Getopt::Std;
 use POSIX qw(strftime locale_h);
-use strict;
 
 $0 =~ s!.*/!!;
 

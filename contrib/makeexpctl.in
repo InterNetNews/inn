@@ -1,8 +1,10 @@
 #! /usr/bin/perl -w
 # fixscript will replace this line with code to load INN::Config
-
+#
 # Create expire.ctl script based on recently read articles.  Argument gives
 # scale factor to use to adjust expires.
+
+use warnings;
 
 $readfile = "$INN::Config::pathdb/readgroups";
 $expirectl = $INN::Config::expirectl;

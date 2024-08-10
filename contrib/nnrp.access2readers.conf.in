@@ -8,6 +8,7 @@
 ##  This work is hereby placed in the public domain by its author.
 
 use strict;
+use warnings;
 
 my ($src, $passwd, $dst, $debug);
 

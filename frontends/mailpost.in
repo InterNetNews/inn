@@ -4,13 +4,15 @@
 # mailpost - Yet another mail-to-news filter
 # vixie 14jun92 [original]
 
+use strict;
+use warnings;
+
 use Getopt::Std;
 use IPC::Open3;
 use IO::Select;
 use POSIX qw(setsid);
 use Sys::Hostname;
 use INN::Utils::Shlock;
-use strict;
 
 my $debugging = 0;
 my $tmpfile;

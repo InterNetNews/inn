@@ -23,6 +23,8 @@
 ##  command line.  The #! line at the top is just so that fixscript will
 ##  work.
 
+use warnings;
+
 # This function is called when perl_access: is reached in readers.conf.
 # For details on all the information passed to it, see
 # ~news/doc/hook-perl.

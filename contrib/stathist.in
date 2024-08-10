@@ -4,6 +4,8 @@
 # 2001/01/29 - Fabien Tassin
 
 use strict;
+use warnings;
+
 use FileHandle;
 
 my $file = shift || "stathist.log";

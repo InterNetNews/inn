@@ -1,8 +1,11 @@
 #! /usr/bin/perl -w
 # fixscript will replace this line with code to load INN::Config
-
+#
 # Keep track of which groups are currently being read.  Takes logfile input
 # on stdin.
+
+use warnings;
+
 $readfile = "$INN::Config::newsetc/readgroups";
 
 $curtime = time;

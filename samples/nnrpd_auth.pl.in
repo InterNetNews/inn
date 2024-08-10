@@ -29,6 +29,8 @@
 ##  work.
 
 use strict;
+use warnings;
+
 use vars qw(%attributes %authcodes %users);
 
 # These codes are a widely implemented de facto standard.

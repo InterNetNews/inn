@@ -36,6 +36,8 @@
 require 5.003;
 
 use strict;
+use warnings;
+
 use vars qw(%FIXES %RENAME);
 use subs qw(fix_inn_conf);
 

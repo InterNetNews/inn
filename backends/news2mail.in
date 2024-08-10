@@ -32,8 +32,10 @@
 
 require 5.006;
 
-use FileHandle;
 use strict;
+use warnings;
+
+use FileHandle;
 
 my $cfFile = $INN::Config::pathetc . "/news2mail.cf";
 my $sm = $INN::Config::pathbin . "/sm";

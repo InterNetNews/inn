@@ -13,6 +13,8 @@
 #  bigint support added by Duane Currie (sandman@hub.org) 1998
 
 use strict;
+use warnings;
+
 use Getopt::Long;
 use Math::BigInt;
 use Math::BigFloat;

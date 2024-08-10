@@ -10,6 +10,8 @@
 #   * Groups with no description are removed.
 #   * Groups matching the $remove regexp are removed.
 
+use warnings;
+
 $remove = '';
 # $remove='^alt\.';
 
