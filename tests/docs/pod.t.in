@@ -2,12 +2,13 @@
 #
 # Check all POD documents in the tree for POD formatting errors.
 #
+# The canonical version of this file is maintained in the rra-c-util package,
+# which can be found at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
+#
+# Written by Russ Allbery <eagle@eyrie.org>
 # Copyright 2016 Russ Allbery <eagle@eyrie.org>
 # Copyright 2012-2014
 #     The Board of Trustees of the Leland Stanford Junior University
-#
-# This file is part of C TAP Harness.  The current version plus supporting
-# documentation is at <https://www.eyrie.org/~eagle/software/c-tap-harness/>.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -53,7 +54,7 @@ if (!$ENV{C_TAP_SOURCE}) {
     BAIL_OUT('C_TAP_SOURCE environment variable not set');
 }
 
-# Load the Test::Pod module.
+# Skip tests if Test::Pod is not installed.
 if (!eval { require Test::Pod }) {
     plan(skip_all => 'Test::Pod required for testing POD');
 }
@@ -61,9 +62,9 @@ if (!eval { require Test::Pod }) {
 if ($Test::Pod::VERSION < '1.50') {
     plan(skip_all => 'Test::Pod 1.50 required for testing POD');
 }
-Test::Pod->import;
+Test::Pod->import();
 
-# C_TAP_SOURCE will be the test directory.  Change to the parent.
+# C_TAP_SOURCE will be the test directory.  Change to the parent directory.
 my ($vol, $dirs) = File::Spec->splitpath($ENV{C_TAP_SOURCE}, 1);
 my @dirs = File::Spec->splitdir($dirs);
 pop(@dirs);

@@ -40,13 +40,7 @@ download() {
             # Update the path of included C header files.
             # Changes in shell, Perl and C files are not the same.
             # Also, do not modify the README file.
-            if [ "$3" = "pod.t" ]; then
-                # Apply specific changes to POD checking, so as to best suit
-                # our needs.
-                sed -i -e '5,9d' \
-                    ${TEMP}
-                chmod 755 ${TEMP}
-            elif [ "$3" != "README" ]; then
+            if [ "$3" != "README" ]; then
                 sed -i -e 's/^#include <tests\/tap\//#include <tap\//g' \
                     ${TEMP}
             fi
@@ -203,10 +197,6 @@ download tests/tap/float.c tests/tap float.c
 download tests/tap/float.h tests/tap float.h
 download tests/tap/libtap.sh tests/tap libtap.sh
 download tests/tap/macros.h tests/tap macros.h
-
-##  Synchronize the POD checker test suite.
-##  Disabled since Test::RRA became a dependency.
-#download tests/docs/pod-t tests/docs pod.t
 
 ##  Synchronize the README file from upstream.
 download docs/writing-tests tests README
