@@ -992,6 +992,8 @@ tests/overview/api-t.c                Basic tests for overview API
 tests/overview/overchan.t             Tests for backends/overchan
 tests/overview/overview-t.c           Basic tests for overview methods
 tests/overview/xref-t.c               Test storing overview data by Xref
+tests/perl                            Test suite for Perl scripts (Directory)
+tests/perl/minimum-version.t.in       Tests for not too-new features of Perl
 tests/runtests.c                      The test suite driver program
 tests/storage                         Test suite for storage (Directory)
 tests/storage/archive.t               Tests for backends/archive

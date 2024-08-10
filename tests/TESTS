@@ -55,6 +55,7 @@ overview/buffindexed
 overview/overchan
 overview/tradindexed
 overview/xref
+perl/minimum-version
 storage/archive
 storage/makehistory
 storage/sm
