@@ -30,7 +30,7 @@ local $| = 1;           # show output as it happens (for an rsh/ssh pipe)
 # Guess at best flags for a condensed diff listing.  The
 # checks for alternative operating systems is incomplete.
 unless ($diff_flags) {
-    if (`diff -v 2>&1` =~ /GNU/) {
+    if (qx(diff -v 2>&1) =~ /GNU/) {
         $diff_flags = '-U0';
     } elsif ($^O =~ /^(dec_osf|solaris)$/) {
         $diff_flags = '-C0';

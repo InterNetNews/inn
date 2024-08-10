@@ -51,6 +51,9 @@ extra_pair_functions = by_hierarchy DateCompare
 [Subroutines::ProhibitBuiltinHomonyms]
 allow = lock
 
+[InputOutput::ProhibitBacktickOperators]
+only_in_void_context = 1
+
 
 ###################################
 # Excluded policies of severity 5 #
