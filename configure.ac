@@ -278,11 +278,12 @@ if test x"$inn_enable_tagged_hash" = xyes \
 fi
 
 dnl Checks for a recent enough Perl interpreter.
-dnl Embedded Perl requires 5.004.  controlchan requires 5.004_03.  Other
-dnl things may work with 5.003, but make 5.004_03 the minimum level; anyone
-dnl should really have at least that these days.
+dnl Embedded Perl requires 5.004.  Use of the three-arg open and the our
+dnl keyword requires 5.006, so makes 5.006 the minimum level; anyone should
+dnl really have at least that these days.
+dnl The recommendation in INSTALL and README is even a bit higher (Perl 5.8.0).
 dnl We also check for useful Perl modules.
-INN_PROG_PERL([5.004_03])
+INN_PROG_PERL([5.006])
 INN_PERL_CHECK_MODULE([Encode], [],
     [inn_perl_mod_warn="$inn_perl_mod_warn Encode (for controlchan)"])
 INN_PERL_CHECK_MODULE([GD], [],
