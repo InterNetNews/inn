@@ -130,7 +130,7 @@ sub main {
             exec(@cmd) || die "cannot exec ninpaths: $!\n";
         } else {
             while (<$NINPATHS>) {
-                ;
+                # Just keep eating the file.
             }
             close($NINPATHS) || next;
         }
