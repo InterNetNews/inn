@@ -439,7 +439,7 @@ sub control_ctl {
         $act =~ s/=.*//;
         $act = "verify" if ($act =~ /^verify-.+/);
         eprint "$file:$line: unknown action `$act'\n"
-          if !defined $control_actions{$act} and $msg !~ /^\//;
+          if (!defined $control_actions{$act} && $msg !~ /^\//);
     }
     return;
 }

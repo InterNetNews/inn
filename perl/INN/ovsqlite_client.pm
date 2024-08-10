@@ -464,10 +464,10 @@ BEGIN {
             @_,
         );
         $namelen = length($groupname);
-        $namelen > 0 && $namelen < 0x10000
+        ($namelen > 0 && $namelen < 0x10000)
           or croak "Bad group name length";
         $flaglen = length($flag_alias);
-        $flaglen > 0 && $flaglen < 0x10000
+        ($flaglen > 0 && $flaglen < 0x10000)
           or croak "Bad flag_alias length";
         $self->send_request(
             "C S/a Q Q S/a",
@@ -518,7 +518,7 @@ BEGIN {
             @_,
         );
         $namelen = length($groupname);
-        $namelen > 0 && $namelen < 0x10000
+        ($namelen > 0 && $namelen < 0x10000)
           or croak "Bad group name length";
         $self->send_request(
             "C S/a",
@@ -560,7 +560,7 @@ BEGIN {
             @_,
         );
         $namelen = length($groupname);
-        $namelen > 0 && $namelen < 0x10000
+        ($namelen > 0 && $namelen < 0x10000)
           or croak "Bad group name length\n";
         $self->send_request(
             "C S/a",
@@ -677,7 +677,7 @@ BEGIN {
                 groups   => $groups,
                 errmsg   => $errmsg,
             );
-            $code == response_grouplist || $code == response_grouplist_done
+            ($code == response_grouplist || $code == response_grouplist_done)
               or last;
             eval {
                 $keep_on = $callback->($groups);
@@ -744,7 +744,7 @@ BEGIN {
             @_,
         );
         $namelen = length($groupname);
-        $namelen > 0 && $namelen < 0x10000
+        ($namelen > 0 && $namelen < 0x10000)
           or croak "Bad group name length";
         length($token) == 18
           or croak "Bad token length";
@@ -794,7 +794,7 @@ BEGIN {
             @_,
         );
         $namelen = length($groupname);
-        $namelen > 0 && $namelen < 0x10000
+        ($namelen > 0 && $namelen < 0x10000)
           or croak "Bad group name length";
         $self->send_request(
             "C S/a Q",
@@ -842,7 +842,7 @@ BEGIN {
             @_,
         );
         $namelen = length($groupname);
-        $namelen > 0 && $namelen < 0x10000
+        ($namelen > 0 && $namelen < 0x10000)
           or croak "Bad group name length";
         $self->send_request(
             "C S/a Q",
@@ -900,7 +900,7 @@ BEGIN {
             @_,
         );
         $namelen = length($groupname);
-        $namelen > 0 && $namelen < 0x10000
+        ($namelen > 0 && $namelen < 0x10000)
           or croak "Bad group name length";
         if (defined($high)) {
             $self->send_request(
@@ -1024,7 +1024,7 @@ BEGIN {
                 articles  => $articles,
                 errmsg    => $errmsg,
             );
-            $code == response_artlist || $code == response_artlist_done
+            ($code == response_artlist || $code == response_artlist_done)
               or last;
             eval {
                 $keep_on = $callback->($articles);
@@ -1071,7 +1071,7 @@ BEGIN {
             @_,
         );
         $namelen = length($groupname);
-        $namelen > 0 && $namelen < 0x10000
+        ($namelen > 0 && $namelen < 0x10000)
           or croak "Bad group name length";
         $self->send_request(
             "C S/a",
@@ -1118,7 +1118,7 @@ BEGIN {
             1;
         } or croak $@;
         $namelen = length($groupname);
-        $namelen > 0 && $namelen < 0x10000
+        ($namelen > 0 && $namelen < 0x10000)
           or croak "Bad group name length";
         $self->send_request(
             "C S/a L/Q",
@@ -1187,7 +1187,7 @@ BEGIN {
             $code = $self->finish_expire(
                 errmsg => $errmsg,
             );
-            $code == response_ok || $code == response_done
+            ($code == response_ok || $code == response_done)
               or last;
             eval {
                 $keep_on = $callback->();

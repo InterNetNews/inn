@@ -1192,7 +1192,7 @@ sub Make_Index($$$$) {
                 }
                 my $start_sec = &ConvDate($year . ' ' . $start, 0);
                 my $end_sec = &ConvDate($year . ' ' . $end, 0);
-                if (!defined($start_sec) or !defined($end_sec)) {
+                if (!defined($start_sec) || !defined($end_sec)) {
                     warn "Invalid date in DB file ignored: $k" if ($DEBUG);
                     next;
                 }

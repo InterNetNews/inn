@@ -77,8 +77,8 @@ die "No action specified\n\n$usage"
 die "Only one action allowed at the same time\n\n$usage"
   if $modes > 1;
 die "A newsgroup must be specified with -n\n\n$usage"
-  if !defined($opt{'n'})
-  and (defined($opt{'g'}) || defined($opt{'o'}) || defined($opt{'O'}));
+  if (!defined($opt{'n'})
+      && (defined($opt{'g'}) || defined($opt{'o'}) || defined($opt{'O'})));
 
 my ($low, $high, $compress, $basedict);
 my $sql_extraclause_artinfo = "";
