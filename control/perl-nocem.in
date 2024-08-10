@@ -40,10 +40,10 @@ $0 =~ s!.*/!!;
 my $usage = "Usage:
   Usually called as a channel feed in newsfeeds.  A typical entry is:
 
-      nocem!\
-        :!*,news.lists.filters\
-        :Tc,Wf,Ap:$INN::Config::pathbin/$0 [-b directory] [-c filename] \
-                  [-g command] [-G command] [-i filename] [-k keyring] \
+      nocem!\\
+        :!*,news.lists.filters\\
+        :Tc,Wf,Ap:$INN::Config::pathbin/$0 [-b directory] [-c filename] \\
+                  [-g command] [-G command] [-i filename] [-k keyring] \\
                   [-l] [-u] [-v level]
 
   On command line, for testing purpose, a storage token or a file name is
