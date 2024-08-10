@@ -127,6 +127,8 @@ sub filter_end {
     # Do whatever you want to clean up things when Perl filtering is disabled.
 }
 
+1;
+
 ###########################################################################
 ##
 ## Another sample. More elaborate, but cleaner... from Christophe
