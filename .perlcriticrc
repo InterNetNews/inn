@@ -41,6 +41,14 @@ exclude = Freenode::
 # Uncomment to ignore "## no critic" annotations in the source code.
 #force = 1
 
+
+##################################
+# Configuration of some policies #
+##################################
+[Community::DollarAB]
+extra_pair_functions = by_hierarchy DateCompare
+
+
 ###################################
 # Excluded policies of severity 5 #
 ###################################

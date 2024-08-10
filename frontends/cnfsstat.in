@@ -206,12 +206,12 @@ if ($oclass) {
             next;
         }
 
-        foreach my $b (@buffers) {
-            if (!$buff{$b}) {
-                print STDERR "No buffer definition for buffer $b ...\n";
+        foreach my $buffer (@buffers) {
+            if (!$buff{$buffer}) {
+                print STDERR "No buffer definition for buffer $buffer ...\n";
                 next;
             }
-            print_cycbuff_head($buff{$b});
+            print_cycbuff_head($buff{$buffer});
         }
     } else {
         print STDERR "Class $oclass not found ...\n";
@@ -253,13 +253,13 @@ if ($oclass) {
             next;
         }
 
-        foreach my $b (@buffers) {
-            if (!$buff{$b}) {
-                print STDERR "No buffer definition for buffer $b ...\n";
+        foreach my $buffer (@buffers) {
+            if (!$buff{$buffer}) {
+                print STDERR "No buffer definition for buffer $buffer ...\n";
                 next;
             }
-            print_cycbuff_head($buff{$b});
-            $buffDone{$b}++;
+            print_cycbuff_head($buff{$buffer});
+            $buffDone{$buffer}++;
         }
         if (!$use_syslog) {
             print STDOUT "\n";
@@ -270,12 +270,12 @@ if ($oclass) {
         # Finally, print all retired cyclic buffers, still active but no longer
         # mentioned in a class.
         my $buffRetired = 0;
-        foreach my $b (sort keys(%buff)) {
-            if (!exists($buffDone{$b})) {
+        foreach my $buffer (sort keys(%buff)) {
+            if (!exists($buffDone{$buffer})) {
                 if (!$buffRetired) {
                     print STDOUT "Retired cyclic buffers\n";
                 }
-                print_cycbuff_head($buff{$b});
+                print_cycbuff_head($buff{$buffer});
                 $buffRetired++;
             }
         }
