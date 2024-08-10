@@ -305,7 +305,7 @@ sub parse_article {
 
     my $head = $article->head;
 
-    foreach my $h (%uniquehdr) {
+    foreach my $h (keys(%uniquehdr)) {
         $hdr->{$h} = '';
         $buffer = $head->get($h);
         if ($buffer) {
