@@ -22,8 +22,8 @@
 #     https://metacpan.org/pod/Perl::Critic::Pulp
 #     https://perlmaven.com/perl-critic
 
-# Be gentle for the time being.  Only enable the most severe violations.
-severity = 5
+# Be stern for the time being.  Only enable the most severe violations.
+severity = 4
 
 # Custom output.
 verbose = %f:%l:%c: [%p] %m, near '%r' (%e, Severity: %s)\n
@@ -47,6 +47,9 @@ exclude = Freenode::
 ##################################
 [Community::DollarAB]
 extra_pair_functions = by_hierarchy DateCompare
+
+[Subroutines::ProhibitBuiltinHomonyms]
+allow = lock
 
 
 ###################################
@@ -96,3 +99,20 @@ extra_pair_functions = by_hierarchy DateCompare
 # At some point, they should be added and the scripts tested with them.
 [-Community::StrictWarnings]
 [-TestingAndDebugging::RequireUseWarnings]
+
+# The following policies are mostly related to style.  Enforcing them is of low
+# priority, but patches are naturally welcome if someone wishes to work on
+# them.  Maybe the BarewordFilehandles and WhileDiamondDefaultAssignment
+# policies would be the most useful to tackle.
+[-Community::AmpersandSubCalls]
+[-Community::BarewordFilehandles]
+[-Community::WhileDiamondDefaultAssignment]
+[-InputOutput::ProhibitExplicitStdin]
+[-InputOutput::ProhibitOneArgSelect]
+[-InputOutput::RequireBriefOpen]
+[-Modules::RequireExplicitPackage]
+[-Subroutines::RequireArgUnpacking]
+[-Subroutines::RequireFinalReturn]
+[-ValuesAndExpressions::ProhibitConstantPragma]
+[-Variables::ProhibitMatchVars]
+[-Variables::RequireLocalizedPunctuationVars]
