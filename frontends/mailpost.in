@@ -655,7 +655,7 @@ sub append_newsgroups($$) {
     my (@new) = split(/,/, $_[1]);
 
     foreach my $newsgroup (@new) {
-        if (!grep($_ eq $newsgroup, @orig)) {
+        if (!grep({ $_ eq $newsgroup } @orig)) {
             push @orig, $newsgroup;
         } else {
             #      mailArtAndDie ("Duplicate newsgroups: $newsgroup") ;

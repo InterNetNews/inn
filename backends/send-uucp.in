@@ -148,7 +148,7 @@ sub count_jobs {
     return 0 if not $INN::Config::uustat;
     open(JOBS, "$INN::Config::uustat -s $site 2> /dev/null |")
       or logdie("cannot fork: $!");
-    my $count = grep(/ Executing rnews /, <JOBS>);
+    my $count = grep({ / Executing rnews / } <JOBS>);
     close JOBS;    # ignore errors, uustat may fail
     return $count;
 }
