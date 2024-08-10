@@ -16,6 +16,8 @@
 #        from innfeed.conf.  Oh well.
 #
 use strict;
+use warnings;
+
 my $tapeDir = $INN::Config::pathspool . "/innfeed";
 my $destDir = $INN::Config::pathtmp;
 my $spoolArts = $INN::Config::patharticles;

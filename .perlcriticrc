@@ -84,3 +84,15 @@ extra_pair_functions = by_hierarchy DateCompare
 # At some point, they should be added and the scripts tested with them.
 [-TestingAndDebugging::ProhibitNoStrict]
 [-TestingAndDebugging::RequireUseStrict]
+
+
+###################################
+# Excluded policies of severity 4 #
+###################################
+
+# The majority of our Perl scripts already has warnings enabled.
+# Only a few ones still lack it (buildconfig, innreport, innshellvars.pl,
+# testListener.pl, some contrib scripts and some samples of Perl hooks).
+# At some point, they should be added and the scripts tested with them.
+[-Community::StrictWarnings]
+[-TestingAndDebugging::RequireUseWarnings]

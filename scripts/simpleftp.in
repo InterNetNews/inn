@@ -17,6 +17,8 @@
 # INN needed.
 
 use strict;
+use warnings;
+
 use Net::FTP;
 use Sys::Hostname;
 

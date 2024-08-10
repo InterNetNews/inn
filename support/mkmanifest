@@ -10,9 +10,10 @@
 require 5.005;
 
 use strict;
-use vars qw(@FILES %IGNORE @IGNORE);
+use warnings;
 
 use File::Find qw(find);
+use vars qw(@FILES %IGNORE @IGNORE);
 
 # The following regex patterns match files to be ignored wherever they are in
 # the tree.  This is intended to handle files that CVS, Subversion or Git

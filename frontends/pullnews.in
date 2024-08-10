@@ -72,8 +72,10 @@
 #               accessed, and the highest numbered article that was pulled
 #               over.
 
-use strict;
 require 5.004;
+
+use strict;
+use warnings;
 
 # If you have INN and the script is able to successfully include your
 # INN::Config module, the value of $INN::Config::pathdb will override it

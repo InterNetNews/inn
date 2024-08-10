@@ -1,6 +1,8 @@
 #! /usr/bin/perl -w
 # fixscript will replace this line with code to load INN::Config
 
+use warnings;
+
 use POSIX ":fcntl_h";
 use SDBM_File;
 use Getopt::Std;

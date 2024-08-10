@@ -16,6 +16,8 @@
 #  <kondou@nec.co.jp>
 
 use strict;
+use warnings;
+
 use Getopt::Long;
 
 # Required for >32bit integers.

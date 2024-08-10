@@ -28,11 +28,14 @@
 ##     :<pathbin>/controlchan
 
 require 5.004_03;
+
+use strict;
+use warnings;
+
 use Encode;
 use Getopt::Std;
 use MIME::Parser;
 use INN::Utils::Shlock;
-use strict;
 
 delete @ENV{ 'IFS', 'CDPATH', 'ENV', 'BASH_ENV' };
 $0 =~ s!.*/!!;

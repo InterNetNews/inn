@@ -14,6 +14,7 @@
 ##      documentation and/or other materials provided with the distribution.
 
 use strict;
+use warnings;
 
 sub control_newgroup {
     my (

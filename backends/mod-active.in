@@ -9,6 +9,7 @@
 # once.  Input can come from command-line files or stdin, a la awk/sed.
 
 use strict;
+use warnings;
 
 my $oldact = $INN::Config::active;         # active file location
 my $newact = "$oldact.new$$";              # temporary name for new active file

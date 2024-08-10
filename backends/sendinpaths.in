@@ -12,6 +12,8 @@
 ##    ninpaths program is installed in ${INN::Config::pathbin}.
 
 use strict;
+use warnings;
+
 use Getopt::Std;
 
 my $pathhost = "$INN::Config::pathhost";

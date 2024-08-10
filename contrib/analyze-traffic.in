@@ -103,6 +103,7 @@
 ########################################################################
 
 use strict;
+use warnings;
 
 # Constants:
 my $USE_ALL_GROUPS = 1;    # if 0, use only group article is stored under
