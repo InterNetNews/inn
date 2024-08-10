@@ -18,7 +18,7 @@ $remove = '';
 open ACT, $INN::Config::active or die "Can't open $INN::Config::active: $!\n";
 while (<ACT>) {
     ($group) = split;
-    $act{$group} = 1 unless ($remove ne "" && $group =~ /$remove/o);
+    $act{$group} = 1 if ($remove eq "" || $group !~ /$remove/o);
 }
 close ACT;
 

@@ -300,7 +300,7 @@ $ac = $cc = 0;
 opendir(CD, ".") || &err("opendir $INN::Config::spool: $!");
 while ($cd = readdir(CD), defined($cd)) {
     $cd =~ /^time(caf)?-([0-9a-f][0-9a-f])$/i || next;
-    $c{ hex($2) } = 1 unless hex($2) > 200;
+    $c{ hex($2) } = 1 if hex($2) <= 200;
 }
 closedir CD;
 @classes = sort { $a <=> $b } keys %c;
