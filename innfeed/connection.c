@@ -4,7 +4,7 @@
 **  Written by James Brister <brister@vix.com>
 **
 **  The Connection object is what manages the NNTP protocol. If the remote
-**  doesn't do streaming, then the standard IHAVE lock-step protcol is
+**  doesn't do streaming, then the standard IHAVE lock-step protocol is
 **  performed. In the streaming situation we have two cases. One where we must
 **  send CHECK commands, and the other where we can directly send TAKETHIS
 **  commands without a prior CHECK.
@@ -805,7 +805,7 @@ cxnClose(Connection cxn)
 }
 
 
-/* This is what the Host calls to get us to tranfer an article. If
+/* This is what the Host calls to get us to transfer an article. If
  * we're running the IHAVE sequence, then we can't take it if we've
  * got an article already. If we're running the CHECK/TAKETHIS
  * sequence, then we'll take as many as we can (up to our MAXCHECK
@@ -1721,7 +1721,7 @@ getModeResponse(EndPoint e, IoStatus i, Buffer *b, void *d)
                 break;
             }
 
-            /* now we consider ourselves completly connected. */
+            /* now we consider ourselves completely connected. */
             cxn->timeCon = theTime();
             cxn->timeCon_checkpoint = theTime();
 
@@ -1937,7 +1937,7 @@ responseIsRead(EndPoint e, IoStatus i, Buffer *b, void *d)
             break;
 
 
-        case 235: /* article transfered OK (IHAVE-body) */
+        case 235: /* article transferred OK (IHAVE-body) */
             processResponse235(cxn, response);
             break;
 
@@ -2801,7 +2801,7 @@ cxnSetCheckThresholds(Connection cxn, double lowFilter, double highFilter,
 
 
 /*
- *  Blow away the connection gracelessly and immedately clean up
+ *  Blow away the connection gracelessly and immediately clean up
  */
 void
 cxnNuke(Connection cxn)
@@ -2938,7 +2938,7 @@ processResponse235(Connection cxn, char *response UNUSED)
 
 
 /*
- * process the "send article to be transfered" response to the IHAVE.
+ * process the "send article to be transferred" response to the IHAVE.
  */
 static void
 processResponse335(Connection cxn, char *response UNUSED)
@@ -3347,7 +3347,7 @@ noSuchMessageId(Connection cxn, unsigned int responseCode, const char *msgid,
 
 
 /*
- * a processing error has occured (for example in parsing a response), or
+ * a processing error has occurred (for example in parsing a response), or
  * we're at the end of the FSM and we're cleaning up.
  */
 static void
@@ -3414,7 +3414,7 @@ prepareReopenCbk(Connection cxn)
 
 
 /*
- * (re)set all state variables to inital condition.
+ * (re)set all state variables to initial condition.
  */
 static void
 resetConnection(Connection cxn)
@@ -3567,7 +3567,7 @@ doSomeWrites(Connection cxn)
 
 
 /* Queue up a buffer with the IHAVE command in it for the article at
- * the head of the transmisson queue.
+ * the head of the transmission queue.
  *
  * If the article is missing, then the Host will be notified and
  * another article may be put on the Connections queue. This new
@@ -4086,7 +4086,7 @@ delConnection(Connection cxn)
     free(cxn);
 
     if (shutDown) {
-        /* exit program if that was the last connexion for the last host */
+        /* exit program if that was the last connection for the last host */
         /* XXX what about if there are ever multiple listeners?
            XXX    this will be executed if all hosts on only one of the
            XXX    listeners have gone */
@@ -4430,7 +4430,7 @@ artHolderByMsgId(const char *msgid, ArtHolder head)
 
 
 /*
- * Randomize a numeber by the given percentage
+ * Randomize a number by the given percentage
  */
 
 static int

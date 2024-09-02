@@ -1,6 +1,6 @@
 # Sample Perl filtering file for the innd hooks.
 #
-# This file gets loaded at innd process startup, and everytime a
+# This file gets loaded at innd process startup, and every time a
 # "ctlinnd reload filter.perl 'reason'" or a
 # "ctlinnd reload all 'reason'" is done.
 #
@@ -201,11 +201,11 @@ sub filter_end {
 ##      delete($history{shift(@history)});
 ##   }
 ##
-##It is pretty successfull in detecting and refusing excessive multi-posting.
+##It is pretty successful in detecting and refusing excessive multi-posting.
 ##Same sender, same subject, appearing more than 10 times without the last
 ##1000 articles gets junked.
 ##
-##Already catched a few hundreds :
+##Already caught a few hundreds :
 ##
 ##Nov 20 08:27:23.175 - vishnu.jussieu.fr <3292ac9a.4064710@nntp.cts.com>
 ##    437 EMP rejected (btr@trenet.com Be a Beta Tester!)

@@ -281,7 +281,7 @@ perlAccess(char *user, struct vector *access_vec)
 
     SPAGAIN;
 
-    if (rc == 0) { /* Error occured, same as checking $@. */
+    if (rc == 0) { /* Error occurred, same as checking $@. */
         errsv = ERRSV;
         syslog(L_ERROR, "Perl function access died: %s", SvPV_nolen(errsv));
         Reply("%d Internal error (1).  Goodbye!\r\n", NNTP_FAIL_TERMINATING);

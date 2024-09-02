@@ -294,7 +294,7 @@ ARTopen(ARTNUM artnum)
     static ARTNUM save_artnum;
     TOKEN token;
 
-    /* Re-use article if it's the same one. */
+    /* Reuse article if it's the same one. */
     if (save_artnum == artnum) {
         if (ARThandle)
             return true;

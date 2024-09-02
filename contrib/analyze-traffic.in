@@ -24,7 +24,7 @@
 #                 :Tf,WgsbmnN:/usr/local/news/log/traffic
 #
 #     You may find it useful to restrict the articles being logged,
-#     either by modifing the wildmat pattern, or by using the /exclude
+#     either by modifying the wildmat pattern, or by using the /exclude
 #     notation to indicate articles that have passed through some
 #     servers should not be included.
 #
@@ -58,7 +58,7 @@
 #   issue warnings (and perhaps produce funny things in the output).
 #
 #   A workaround would be to repeat e.g. the Message-ID at the end of
-#   the intput format (i.e. WgsbmnNm), and then the script could read as
+#   the input format (i.e. WgsbmnNm), and then the script could read as
 #   many lines as necessary until that ad hoc end-of-record marker
 #   appeared.  I haven't found a need for this yet, though.
 #

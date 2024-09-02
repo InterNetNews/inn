@@ -69,12 +69,12 @@ PAGER=less
 # by nroff to edit in the actual inn.conf settings.  The problem with this
 # approach is that if the format of the inn.conf man page ever changes
 # assumptions about the format that this script makes will probably break.
-# Presently, the base/orginal format of the inn.conf man page is in perl
+# Presently, the base/original format of the inn.conf man page is in perl
 # POD documentation.  The formatting of this file is less likely to change
 # in the future and is a cleaner format for automated editing.  However,
 # their is some disadvantages to using this file.  First disadvantage,
 # the POD file is not installed by INN 2.3.0 by default (see INNCONFPOD
-# enviromental variable for setting the script to find the file in the
+# environmental variable for setting the script to find the file in the
 # correct location).  Second disadvantage, pod2man does not appear to
 # support using stdin so the edited POD must be temporarily stored as a
 # file.  Finally, the last disadvantage, the script is slower due to the

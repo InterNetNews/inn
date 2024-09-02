@@ -937,7 +937,7 @@ documentation and the comments in the default configuration file.
 Subject: 5. Problems on Specific Systems
 
 Problems specific to particular operating systems or platforms.  Look here
-if INN doens't behave as expected on your particular system, or if you're
+if INN doesn't behave as expected on your particular system, or if you're
 having trouble compiling INN in the first place.
 
 ------------------------------

@@ -83,7 +83,7 @@
 **     0 <= stnq <= STNBUF
 **     0 <= stoldest < STNBUF
 */
-struct stbufs {                      /* for each article we are procesing */
+struct stbufs {                      /* for each article we are processing */
     char st_fname[SPOOLNAMEBUFF];    /* file name */
     char st_id[NNTP_MAXLEN_COMMAND]; /* Message-ID */
     unsigned int st_retry;           /* retry count (0 for the first try) */
@@ -96,8 +96,8 @@ static int stnq;      /* current number of active entries in stbuf */
 static long stnofail; /* Count of consecutive successful sends */
 static int stoldest;  /* Oldest allocated entry to stbuf (if stnq!=0) */
 
-static int TryStream = true;  /* Should attempt stream negotation? */
-static int CanStream = false; /* Result of stream negotation */
+static int TryStream = true;  /* Should attempt stream negotiation? */
+static int CanStream = false; /* Result of stream negotiation */
 static int DoCheck = true;    /* Should check before takethis? */
 static char modestream[] = "MODE STREAM";
 static char modeheadfeed[] = "MODE HEADFEED";

@@ -668,7 +668,7 @@ sub collect($$$$$$) {
                 $innd_stored_size{$server} += $accptsize;
                 $innd_duplicated_size{$server} += $dupsize;
                 # The size of duplicated articles is included in the rejected
-                # volume.  Substract it in order to generate right totals,
+                # volume.  Subtract it in order to generate right totals,
                 # average article sizes and graphs.
                 $innd_rejected_size{$server} += ($rjctsize || 0) - $dupsize;
             }
@@ -2479,7 +2479,7 @@ sub adjust($$) {
     {
         # Since the checkpoint counts include entries for all server
         # connections, check to see if any checkpoint server entries are not
-        # also in %innd_connect.  Add any missing servers (persistant servers
+        # also in %innd_connect.  Add any missing servers (persistent servers
         # with no connected log lines) to %innd_connect so that incoming totals
         # will be properly computed.
         foreach my $server (keys(%innd_accepted)) {

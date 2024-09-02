@@ -7,7 +7,7 @@ top = ..
 DIFF="diff"
 
 # Added a default rule for ".csh" because Digital UNIX has a builtin
-# rule which would overwite the innshellvars file.
+# rule which would overwrite the innshellvars file.
 .csh:
 
 CTLINND			= ${PATHBIN}/ctlinnd

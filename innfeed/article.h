@@ -9,7 +9,7 @@
 **
 **  When an Article is created there's a chance that another copy of it
 **  already exists.  For example if the Article is pulled out of a Tape for a
-**  particular host it may already be in existance in some other host.  This
+**  particular host it may already be in existence in some other host.  This
 **  class will manage this situation to prevent multiple copies of the article
 **  being in core.
 */
@@ -64,7 +64,7 @@ unsigned int artNntpBufferCount(Article article);
 /* tell the Article class to log (or not) missing articles as they occur. */
 void artLogMissingArticles(bool val);
 
-/* if VAL is true, then when an article is read off disk the necesary
+/* if VAL is true, then when an article is read off disk the necessary
    carriage returns are inserted instead of setting up iovec-style buffers
    for writev. Useful for systems like solaris that have very small max
    number of iovecs that writev can take. Must be called only once before

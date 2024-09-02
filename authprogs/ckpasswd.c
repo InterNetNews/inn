@@ -303,7 +303,7 @@ output_user(const char *username, bool wantgroup)
 /*
 **  Main routine.
 **
-**  We handle the variences between systems with #if blocks above, so that
+**  We handle the variances between systems with #if blocks above, so that
 **  this code can look fairly clean.
 */
 int

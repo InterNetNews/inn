@@ -6,7 +6,7 @@
 **  and don't hold me responsible for any problems with it.
 **
 **  Hacked on by gdb@ninja.UUCP (David Butler); Sun Jun  5 00:27:08 CDT 1988
-**  Various improvments + INCORE by moraes@ai.toronto.edu (Mark Moraes)
+**  Various improvements + INCORE by moraes@ai.toronto.edu (Mark Moraes)
 **  Major reworking by Henry Spencer as part of the C News project.
 **
 **  Minor lint and CodeCenter (Saber) fluff removal by Rich $alz
@@ -43,7 +43,7 @@
 **  performance disaster when the table starts to get full, so a complication
 **  is introduced.  Each file actually contains one *or more* tables, stored
 **  sequentially in the files, and the length of the linear-probe sequences is
-**  limited.  The search (for an existing item or an empy slot always starts
+**  limited.  The search (for an existing item or an empty slot always starts
 **  in the first table of the hash file, and whenever MAXRUN probes have been
 **  done in table N, probing continues in table N+1.  It is best not to
 **  overflow into more than 1-2 tables or else massive performance degradation
@@ -278,7 +278,7 @@ static char *basefname;   /* name for not-yet-opened base file */
 static hash_table pagtab; /* pag hash table, stores hash + offset */
 #else
 static hash_table idxtab; /* index hash table, used for data retrieval */
-static hash_table etab;   /* existance hash table, used for existance checks */
+static hash_table etab;   /* existence hash table, used for existence checks */
 #endif
 static bool dirty;     /* has a store() been done? */
 static erec empty_rec; /* empty rec to compare against
@@ -1252,7 +1252,7 @@ putconf(FILE *f, dbzconfig *cp)
 
 /* getcore - try to set up an in-core copy of file
  *
- * Returns: pointer to copy of file or NULL on errror
+ * Returns: pointer to copy of file or NULL on error
  */
 static bool
 getcore(hash_table *tab)
@@ -1770,7 +1770,7 @@ main(int argc, char *argv[])
          line++, where = ftello(fpi)) {
         if (*ibuf == '<') {
             if ((p = strchr(ibuf, '\t')) == NULL) {
-                fprintf(stderr, "ignoreing bad line: %s\n", ibuf);
+                fprintf(stderr, "ignoring bad line: %s\n", ibuf);
                 continue;
             }
             *p = '\0';

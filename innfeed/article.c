@@ -56,7 +56,7 @@ struct article_s {
     char *fname;         /* the file name of the article */
     char *msgid;         /* the msgid of the article (INN tells us) */
     Buffer contents;     /* the buffer of the actual on disk stuff */
-    Buffer *nntpBuffers; /* list of buffers for transmisson */
+    Buffer *nntpBuffers; /* list of buffers for transmission */
     MapInfo mapInfo;     /* arthandle and mMapping */
     bool loggedMissing;  /* true if article is missing and we logged */
     bool articleOk;      /* true until we know otherwise. */
@@ -785,7 +785,7 @@ fillContents(Article article)
     }
 
 
-    /* If we're not useing storage api, we should close a valid file descriptor
+    /* If we're not using storage api, we should close a valid file descriptor
      */
     if (!arthandle && (fd >= 0))
         close(fd);

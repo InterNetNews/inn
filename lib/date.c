@@ -282,7 +282,7 @@ makedate(time_t date, bool local, char *buff, size_t buflen)
 /*
 **  Given a struct tm representing a calendar time in UTC, convert it to
 **  seconds since epoch.  Returns (time_t) -1 if the time is not
-**  convertable.  Note that this function does not canonicalize the provided
+**  convertible.  Note that this function does not canonicalize the provided
 **  struct tm, nor does it allow out of range values or years before 1970.
 */
 static time_t

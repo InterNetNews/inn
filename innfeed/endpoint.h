@@ -6,7 +6,7 @@
 **  The EndPoint objects are encapsulations of file descriptors that normally
 **  do blocking I/O (i.e. NOT fd's hooked to a disk file).  The EndPoint class
 **  provides methods for requesting read/writes to happen when next possible
-**  and for the requestor to be notified when the I/O is complete (or failed
+**  and for the requester to be notified when the I/O is complete (or failed
 **  for some reason).  Facilities for timeout notifications are provided too.
 **
 **  We should add a way to cancel prepared read/writes.
@@ -108,7 +108,7 @@ int prepareRead(EndPoint endp, Buffer *buffers, EndpRWCB func,
  * passed through to it whenever any data is written except for the
  * final write.  The DONE callback function will be called and the
  * CLIENTDATA value will be passed through to it after the final write.
- * Returns non-zero if scheduled succesfully.
+ * Returns non-zero if scheduled successfully.
  */
 int prepareWrite(EndPoint endp, Buffer *buffers, EndpRWCB progress,
                  EndpRWCB done, void *clientData);
@@ -137,7 +137,7 @@ void *addWorkCallback(EndPoint endp, EndpWorkCbk cbk, void *data);
 void setSigHandler(int signum, void (*ptr)(int));
 
 /* remove the timeout that was previously requested. Returns true if
-   succesfully removed, false otherwise. 0 is a legal parameter value, in
+   successfully removed, false otherwise. 0 is a legal parameter value, in
    which case the function simply returns. */
 bool removeTimeout(TimeoutId tid);
 

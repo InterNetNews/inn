@@ -22,7 +22,7 @@ are:
    groups of the wanted type, won't be seen).
 
 Therefore, the *only* significance of nested group structure is parameter
-inheritence and pruning.  In the absence of pruning, it would always be
+inheritance and pruning.  In the absence of pruning, it would always be
 possible, by duplicating parameter settings that were inherited and laying
 out the groups in depth-first traversal order, to transform any
 configuration file into an entirely equivalent one that contains no nested

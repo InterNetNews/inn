@@ -4,7 +4,7 @@
 **
 **  The encoding uses characters from 0x20 (' ') through 0x7A ('z').
 **  (That fits nicely into the UUCP 'f' protocol by Piet Beertema.) First,
-**  expand three eight-bit charcters into four six-bit ones.  Collect
+**  expand three eight-bit characters into four six-bit ones.  Collect
 **  until we have 13, and spread the last one over the first 12, so that
 **  we have 12 6.5-bit characters.  Since there are very few half-bit
 **  machines, collect them into pairs, making six 13-bit characters.  We

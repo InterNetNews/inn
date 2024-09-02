@@ -188,7 +188,7 @@ doc/man/libinn_list.3                 Manpage for list routines
 doc/man/libinn_qio.3                  Manpage for fast I/O file routines
 doc/man/libinn_tst.3                  Manpage for ternary search tree routines
 doc/man/libinn_uwildmat.3             Manpage for uwildmat library routine
-doc/man/libinnauth.3                  Manpage for authprogs utilty routines
+doc/man/libinnauth.3                  Manpage for authprogs utility routines
 doc/man/libinnhist.3                  Manpage for history API library routines
 doc/man/libinnstorage.3               Manpage for storage API library routines
 doc/man/mailpost.8                    Manpage for mailpost frontend
@@ -582,7 +582,7 @@ lib/setenv.c                          setenv replacement
 lib/seteuid.c                         seteuid replacement
 lib/setproctitle.c                    setproctitle replacement
 lib/snprintf.c                        snprintf and vsnprintf replacement
-lib/strcasecmp.c                      Case-insenstive string comparison (BSD)
+lib/strcasecmp.c                      Case-insensitive string comparison (BSD)
 lib/strlcat.c                         strlcat replacement
 lib/strlcpy.c                         strlcpy replacement
 lib/strspn.c                          Skip bytes in a string (BSD)

@@ -1429,7 +1429,7 @@ NCproc(CHANNEL *cp)
                 if (cp->Next - cp->Start > innconf->datamovethreshold
                     || (innconf->maxartsize != 0
                         && cp->Size > (float) innconf->maxartsize)) {
-                    /* avoid buffer extention for ever */
+                    /* avoid buffer extension for ever */
                     movedata = true;
                 } else {
                     movedata = false;
@@ -1835,7 +1835,7 @@ NCcreate(int fd, bool MustAuthorize, bool IsLocal)
 
 
 /*
-**  These modules support the streaming option to tranfer articles
+**  These modules support the streaming option to transfer articles
 **  faster.
 */
 

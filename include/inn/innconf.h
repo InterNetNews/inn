@@ -83,7 +83,7 @@ struct innconf {
     unsigned long ovflushcount;  /* Articles between buffindexed flushes */
     char *ovgrouppat;            /* Newsgroups to store overview for */
     char *ovmethod;              /* Which overview method to use */
-    bool storeonxref;            /* SMstore use Xref to detemine class? */
+    bool storeonxref;            /* SMstore use Xref to determine class? */
     bool useoverchan;            /* overchan write the overview, not innd? */
     bool wireformat;             /* Store tradspool articles in wire format? */
     bool xrefslave;              /* Act as a slave of another server? */
@@ -217,7 +217,7 @@ struct innconf {
     char *pathlog;      /* Log files */
     char *pathnews;     /* Home directory for news user */
     char *pathoutgoing; /* Outgoing news batch files */
-    char *pathoverview; /* Overview infomation */
+    char *pathoverview; /* Overview information */
     char *pathrun;      /* Runtime state and sockets */
     char *pathspool;    /* Root of news spool hierarchy */
     char *pathtmp;      /* Temporary files for the news system */

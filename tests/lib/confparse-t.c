@@ -216,7 +216,7 @@ test_warnings_int(int n)
 
 /* Test the warning test cases in config/warn-uint, ensuring that they all
    parse successfully and produce the expected error messages when retrieved
-   as usigned numbers.  Takes the current test count and returns the new test
+   as unsigned numbers.  Takes the current test count and returns the new test
    count. */
 static int
 test_warnings_uint(int n)

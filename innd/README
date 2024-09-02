@@ -58,7 +58,7 @@ Core Channel Handling
     with open file descriptors, and three file descriptor sets.  Each
     channel is generally in one of the three sets (reading, writing, or
     sleeping) at any given time.  The states should generally be
-    considered mutually exclusive, since NNTP is not asychronous and a
+    considered mutually exclusive, since NNTP is not asynchronous and a
     channel that's reading and writing at the same time is liable to
     deadlock, but the core code doesn't assume that.
 
@@ -72,7 +72,7 @@ Core Channel Handling
 
     Reading is handled by the channel itself, since some channels don't
     just read data from their file descriptor, but CHANreadtext is
-    provided for channels to call from their reader fuctions if they want
+    provided for channels to call from their reader functions if they want
     to read normally.  CHANreadtext puts the data into the channel's input
     buffer and handles resizing and compacting the buffer as needed.  To
     register as a reading channel, the channel calls RCHANadd, and then
