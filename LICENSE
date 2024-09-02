@@ -23,7 +23,7 @@ and license:
    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 Some specific portions of INN are covered by different licenses.  Those
-licenses, if present, will be noted prominantly at the top of those source
+licenses, if present, will be noted prominently at the top of those source
 files.  Specifically (but possibly not comprehensively):
 
    backends/send-uucp.in and control/perl-nocem.in are under the GNU
