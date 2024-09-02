@@ -75,7 +75,7 @@ space bitmap, therefore ~1696 blocks, thus ~868KB).  Consequently, the
 maximal length of a CAF file is ~3.5GB.
   3.	CAFTOCENTs (CAF Table of Contents Entries), 1 per article storable
 in the file.  Each CAFTOCENT gives the article's size, creation time,
-and offset in the CAF file.  Usually space is alloted in the CAF file
+and offset in the CAF file.  Usually space is allotted in the CAF file
 for 262144 CAFTOCENTs, even if the # of articles in the CAF file is
 nowhere near that amount.  The unused CAFTOCENTs are all zeros, and
 this means CAF files are almost always sparse.

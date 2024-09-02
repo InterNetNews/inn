@@ -16,7 +16,7 @@
 **  16 bytes into which to put the digest.  md5_hash does the above
 **  internally for you and is the most convenient interface; the interface
 **  described above, however, is better when all of the data to hash isn't
-**  available neatly in a single buffer (such as hashing data aquired a
+**  available neatly in a single buffer (such as hashing data acquired a
 **  block at a time).
 **
 **  For information about MD5, see RFC 1321.

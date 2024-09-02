@@ -568,7 +568,7 @@ unlink_filelist(filelist *list, int filecount)
        time the operating system spends doing string compares trying to find
        the file to be removed in the directory.  This is often an O(n)
        operation.  Note that this optimization may slightly slow more
-       effecient operating systems. */
+       efficient operating systems. */
     dir = opendir(prefix_len == 0 ? "." : prefix_dir);
     if (dir == NULL) {
         if (prefix_len > 0 && prefix_dir[0] == '/')

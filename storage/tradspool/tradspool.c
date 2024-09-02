@@ -722,7 +722,7 @@ tradspool_store(const ARTHANDLE article, const STORAGECLASS class)
     close(fd);
 
     /* Blah, this is ugly.  Have to make symlinks under other pathnames for
-     * backwards compatiblility purposes. */
+     * backwards compatibility purposes. */
     if (numxrefs > 1) {
         for (i = 1; i < numxrefs; ++i) {
             if ((p = strchr(xrefs[i], ':')) == NULL)
@@ -1180,7 +1180,7 @@ tradspool_next(ARTHANDLE *article, const RETRTYPE amount)
            group/number combination listed in the Xref header field is the
            canonical path.  This will always be true for spools created by
            this implementation, but for traditional INN 1.x servers,
-           articles are expired indepedently from each group and may expire
+           articles are expired independently from each group and may expire
            out of the first listed newsgroup before other groups.  This
            algorithm will orphan such articles, not adding them to history.
 

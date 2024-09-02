@@ -1513,7 +1513,7 @@ convert_string(struct config_parameter *param, const char *file, void *result)
 
 
 /*
-**  Convert a given parameter value to a list, returning true if succcessful
+**  Convert a given parameter value to a list, returning true if successful
 **  and false otherwise.
 */
 static bool

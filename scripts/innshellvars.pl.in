@@ -1,5 +1,5 @@
 #
-# This package is only kept for compatibility reasons with old softwares.
+# This package is only kept for compatibility reasons with old software.
 # Please use the real INN::Config Perl module instead.
 #
 # Author:       James Brister <brister@vix.com> -- berkeley-unix --

@@ -8,7 +8,7 @@
 **  performs via IMAP.  This means it has 2 active connections at any given
 **  time and 2 queues.
 **
-**  When an article comes in it is immediatly placed in the lmtp queue. When
+**  When an article comes in it is immediately placed in the lmtp queue. When
 **  an article is picked off the lmtp queue for processing first check if it's
 **  a control message.  If so, place it in the IMAP queue.  If not, attempt to
 **  deliver via LMTP.
@@ -613,7 +613,7 @@ AddToQueue(Q_t *q, void *item, control_type_t type, int addsmsg, bool must)
  * Pop an item from the queue
  *
  * q    - the queue to pop from
- * item - where the item shall be placed upon sucess
+ * item - where the item shall be placed upon success
  *
  */
 
@@ -2637,7 +2637,7 @@ imap_sendSearch(connection_t *cxn, char *msgid)
 
     imap_GetTag(cxn);
 
-    /* preform search */
+    /* perform search */
     tosend =
         concat(cxn->imap_currentTag, " UID SEARCH header \"Message-ID\" \"",
                msgid, "\"\r\n", (char *) 0);
@@ -4182,7 +4182,7 @@ delConnection(Connection cxn)
     free(cxn);
 
     if (shutDown) {
-        /* exit program if that was the last connexion for the last host */
+        /* exit program if that was the last connection for the last host */
         /* XXX what about if there are ever multiple listeners?
            XXX    this will be executed if all hosts on only one of the
            XXX    listeners have gone */
@@ -4373,7 +4373,7 @@ cxnTerminate(Connection cxn)
     QuitIfIdle(cxn);
 }
 
-/* Blow away the connection gracelessly and immedately clean up */
+/* Blow away the connection gracelessly and immediately clean up */
 void
 cxnNuke(Connection cxn)
 {

@@ -22,7 +22,7 @@ WIPsetup(void)
 }
 
 /*
- * Add a new entry into the table.  It is the responsiblity of the applications
+ * Add a new entry into the table.  It is the responsibility of the applications
  * to call WIPinprogress or WIPbyid first.
  */
 WIP *

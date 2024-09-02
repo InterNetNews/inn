@@ -19,7 +19,7 @@ Doug Needham:
         moderator info instead of digging it out of a local file.
 
 David Lawrence:
-        Did the hooks for PGP verificiation of control messages, added
+        Did the hooks for PGP verification of control messages, added
         actived support for syncing against an active file obtained via
         ftp.
 
@@ -105,7 +105,7 @@ Katsuhiro Kondou:
         policy for articles stored through storage API and expireindex, as
         well as hundreds of fixes to clean up defects as changes were
         made.  Did a large amount of man page documentation and clean up.
-        Has also been a major force in the CVS pool maintenace.
+        Has also been a major force in the CVS pool maintenance.
 
 Russell Vincent:
         Expanded inn.conf to make many of the old compile time options

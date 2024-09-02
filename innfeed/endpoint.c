@@ -149,7 +149,7 @@ static int timeoutQueueLength;
 /* Create a new EndPoint and hook it to the give file descriptor. All
    fields are initialized to appropriate values.  On the first time this
    function is called the global data structs that manages lists of
-   endpoints are intialized. */
+   endpoints are initialized. */
 static bool inited = false;
 
 EndPoint
@@ -629,7 +629,7 @@ Run(void)
 
                             FD_CLR(fd, &rdSet);
 
-                            /* incase callback wants to issue read */
+                            /* in case callback wants to issue read */
                             ep->inBuffer = NULL;
 
                             if (ep->inCbk != NULL)
@@ -662,7 +662,7 @@ Run(void)
 
                             FD_CLR(fd, &wrSet);
 
-                            /* incase callback wants to issue a write */
+                            /* in case callback wants to issue a write */
                             ep->outBuffer = NULL;
 
                             if (ep->outDoneCbk != NULL)
@@ -962,7 +962,7 @@ doWrite(EndPoint endp)
                     endp->outIndex = 0;
                     writeAmt -= vp[idx].iov_len;
                 } else {
-                    /* this buffer was not completly written */
+                    /* this buffer was not completely written */
                     endp->outIndex += writeAmt;
                     writeAmt = 0;
                 }

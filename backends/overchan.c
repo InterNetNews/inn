@@ -119,7 +119,7 @@ write_overview(struct overview *overview, struct overview_data *data,
 
 /*
 **  Process a single file.  Takes the open overview struct, the file name
-**  (which may be - to process standard intput), and the statistics struct and
+**  (which may be - to process standard input), and the statistics struct and
 **  calls parse_line and write_overview for each line.
 */
 static void

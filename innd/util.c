@@ -126,7 +126,7 @@ CommaSplit(char *text)
 void
 SetupListBuffer(int size, LISTBUFFER *list)
 {
-    /* get space for data to be splitted */
+    /* get space for data to be split */
     if (list->Data == NULL) {
         list->DataLength = size;
         list->Data = xmalloc(list->DataLength + 1);

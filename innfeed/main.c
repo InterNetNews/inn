@@ -246,7 +246,7 @@ main(int argc, char **argv)
 
       without doing this, if the descriptors were closed then the
       freopen calls on some systems (like BSDI 2.1) will really close
-      whatever has aquired the stdio descriptors, such as the socket
+      whatever has acquired the stdio descriptors, such as the socket
       to syslogd.
 
       XXX possible problems: what if fd 0 is closed but no inputFile,
@@ -705,7 +705,7 @@ gprintinfo(void)
 #endif
 
     timeToString(now, nowString, sizeof(nowString));
-    fprintf(fp, "----------------------------System snaphot taken at: %s\n\n",
+    fprintf(fp, "----------------------------System snapshot taken at: %s\n\n",
             nowString);
     gPrintListenerInfo(fp, 0);
     fprintf(fp, "\n\n\n\n");

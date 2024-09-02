@@ -1951,7 +1951,7 @@ cnfs_next(ARTHANDLE *article, const RETRTYPE amount)
     private->offset += (off_t) tonextblock;
     art->arrived = ntohl(cah.arrived);
     /* Generate a token relative to the previous cycle number when offset is
-     * where to begin overwritting files, or beyond. */
+     * where to begin overwriting files, or beyond. */
     token = CNFSMakeToken(cycbuff->name, offset, cycbuff->blksz,
                           (offset >= cycbuff->free) ? cycbuff->cyclenum - 1
                                                     : cycbuff->cyclenum,

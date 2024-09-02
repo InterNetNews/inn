@@ -534,7 +534,7 @@ newArticleCommand(EndPoint ep, IoStatus i, Buffer *buffs, void *data)
             unsigned int leftAmt = blen - (cmd - bbase);
 
             ASSERT(cmd != bbase);
-            /* first we shift whats left in the buffer down to the bottom */
+            /* first we shift what's left in the buffer down to the bottom */
             memmove(bbase, cmd, leftAmt);
             bufferSetDataSize(buffs[0], leftAmt);
 
@@ -681,7 +681,7 @@ openDroppedArticleFile(void)
               droppedFileCount + 'A', (int) myPid);
 
     if ((droppedFp = fopen(dropArtFile, "w")) == NULL) {
-        syswarn("ME cant open %s: loosing articles", dropArtFile);
+        syswarn("ME cant open %s: losing articles", dropArtFile);
 
         free(dropArtFile);
         dropArtFile = NULL;

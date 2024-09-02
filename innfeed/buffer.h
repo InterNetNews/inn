@@ -33,7 +33,7 @@ Buffer newBufferByCharP(const char *ptr, size_t size, size_t dataSize);
 
 /*
  * give up interest in the Buffer. Decrement refcount and delete if no
- * more referants
+ * more referents
  */
 void delBuffer(Buffer buff);
 
