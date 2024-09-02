@@ -63,7 +63,7 @@ struct tst;
 struct tst *tst_init(int width);
 
 /* Insert a value into the tree.  If the key already exists in the tree,
-   option determiens the behavior.  If set to TST_REPLACE, the data for that
+   option determines the behavior.  If set to TST_REPLACE, the data for that
    key is replaced with the new data value and the old value is returned in
    exist_ptr.  Otherwise, TST_DUPLICATE_KEY is returned.  If key is zero
    length, TST_NULL_KEY is returned.  If data is NULL, TST_NULL_DATA is

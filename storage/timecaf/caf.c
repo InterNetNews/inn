@@ -831,7 +831,7 @@ CAFOpenArtWrite(char *path, ARTNUM *artp, int waitlock, size_t size)
                 ** of loop, because someone else was trying to create at the
                 ** same time.
                 ** Is this the best way to solve this?
-                ** (Hmm.  this condition should be quite rare, occuring only
+                ** (Hmm.  this condition should be quite rare, occurring only
                 ** when two different programs are simultaneously doing
                 ** CAFOpenArtWrite()s, and no CF file exists previously.)
                 */
@@ -985,7 +985,7 @@ CAFStartWriteFd(int fd, ARTNUM *artp, size_t size)
 /*
 ** Write out TOC entries for the previous article.  Note that we do *not*
 ** (as was previously done) close the fd; this allows reuse of the fd to write
-** another article to this CAF file w/o an (soemwhat expensive) open().
+** another article to this CAF file w/o an (somewhat expensive) open().
 */
 
 int

@@ -569,7 +569,7 @@ typedef struct _PROCESS {
 */
 typedef struct _WIP {
     HASH MessageID;    /* Hash of the messageid.  Doing it like
-                          this saves us from haveing to allocate
+                          this saves us from having to allocate
                           and deallocate memory a lot, and also
                           means lookups are faster. */
     time_t Timestamp;  /* Time we last looked at this MessageID */

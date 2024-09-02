@@ -74,7 +74,7 @@ void cxnClose(Connection cxn);
    deletes itself */
 void cxnTerminate(Connection cxn);
 
-/* Blow away the connection gracelessly and immedately clean up */
+/* Blow away the connection gracelessly and immediately clean up */
 void cxnNuke(Connection cxn);
 
 /* Tells the Connection to take the article and handle its

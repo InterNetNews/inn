@@ -407,7 +407,7 @@ CMDcapabilities(int ac, char *av[])
 #ifdef HAVE_OPENSSL
             } else {
 #    ifdef HAVE_SASL
-                /* Remove unsecure PLAIN, LOGIN and EXTERNAL SASL mechanisms,
+                /* Remove insecure PLAIN, LOGIN and EXTERNAL SASL mechanisms,
                  * if compiled with TLS support and a TLS layer is not active.
                  */
                 if (mechlist != NULL) {

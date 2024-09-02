@@ -57,7 +57,7 @@ INNCONF=etc/inn.conf
 export INNCONF
 mkdir -p spool
 
-# Store the articles so that archive can read them using the strorage API.
+# Store the articles so that archive can read them using the storage API.
 "$sm" -s <articles/1 >spool/tokens
 "$sm" -s <articles/2 >>spool/tokens
 echo '# This is a comment' >>spool/tokens

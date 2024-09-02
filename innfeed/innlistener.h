@@ -30,7 +30,7 @@ extern bool fastExit;
 InnListener newListener(EndPoint endp, bool isDummy, bool dynamicPeers);
 
 /* print some useful debugging information about the Listener and all its
- * Hosts and all their Connecitons/Article/Buffers etc. to the given FILE.
+ * Hosts and all their Connections/Article/Buffers etc. to the given FILE.
  */
 void gPrintListenerInfo(FILE *fp, unsigned int indentAmt);
 void printListenerInfo(InnListener listener, FILE *fp, unsigned int indentAmt);

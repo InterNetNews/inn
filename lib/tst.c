@@ -273,7 +273,7 @@ tst_search(struct tst *tst, const unsigned char *key)
 
 /*
 **  tst_delete deletes the string key from the tree if it exists and returns
-**  the data pointer assocaited with that key, or NULL if it wasn't found.
+**  the data pointer associated with that key, or NULL if it wasn't found.
 */
 void *
 tst_delete(struct tst *tst, const unsigned char *key)

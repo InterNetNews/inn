@@ -207,7 +207,7 @@ tmp_dh_cb(SSL *s UNUSED, int export UNUSED, int keylength UNUSED)
     /* Security levels have been introduced in OpenSSL 1.1.0 and
      * LibreSSL 3.6.0.
      * Well, as this part of code is no longer active for these versions,
-     * only keep it for possible future re-use. */
+     * only keep it for possible future reuse. */
 #        if OPENSSL_VERSION_NUMBER >= 0x010100000L \
             || (defined(LIBRESSL_VERSION_NUMBER)   \
                 && LIBRESSL_VERSION_NUMBER > 0x030600000L)
@@ -870,7 +870,7 @@ bio_dump_cb(BIO *bio, int cmd, const char *argp, size_t len, int argi UNUSED,
 
 /*
 **  This is the actual startup routine for the connection.  We expect
-**  that the buffers are flushed and the "382 Continue with TLS negociation"
+**  that the buffers are flushed and the "382 Continue with TLS negotiation"
 **  was sent to the client (if using STARTTLS), so that we can immediately
 **  start the TLS handshake process.
 **

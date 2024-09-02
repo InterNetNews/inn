@@ -346,7 +346,7 @@ nntp_send_line(struct nntp *nntp, const char *format, ...)
 
 
 /*
-**  The same as nntp_send_line, but don't flush after sending the repsonse.
+**  The same as nntp_send_line, but don't flush after sending the response.
 **  Used for accumulating multiline responses, mostly.
 */
 bool

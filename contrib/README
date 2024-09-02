@@ -47,7 +47,7 @@ auth_pass
 
 backlogstat
 
-    Prints informations about the current state of innfeed's backlog, if
+    Prints information about the current state of innfeed's backlog, if
     any.
 
 cleannewsgroups

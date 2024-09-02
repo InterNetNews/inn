@@ -231,7 +231,7 @@ testgen_cancel_key(void)
 
     result = gen_cancel_key("cancelling " MID, NULL, "", &canbuff);
     is_bool(false, result,
-            "no Cancel-Key generated with mispelled cancel word");
+            "no Cancel-Key generated with misspelled cancel word");
 
     result = gen_cancel_key(NULL, NULL, "", &canbuff);
     is_bool(false, result,

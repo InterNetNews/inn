@@ -729,7 +729,7 @@ ARTcheckheader(CHANNEL *cp, int size)
 
 
 /*
-**  Clean up data field where article informations are stored.
+**  Clean up data field where article information are stored.
 **  This must be called before article processing.
 */
 void

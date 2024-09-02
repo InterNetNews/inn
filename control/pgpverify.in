@@ -19,7 +19,7 @@
 # Changes from 1.30 -> 1.31
 # -- Add a $gpg_has_allow_weak_digest_algos_flag variable to specify whether
 #    gpg supports the --allow-weak-digest-algos flag.  This variable will
-#    be overriden by INN::Config, if used.  GnuPG 1.4.20 and 2.0.23 introduced
+#    be overridden by INN::Config, if used.  GnuPG 1.4.20 and 2.0.23 introduced
 #    this flag, necessary to verify the signatures of old PGP keys still in
 #    use for some hierarchies.
 # -- Using at least GnuPG 1.4.20 or 2.1.0 is no longer required; this version
@@ -210,7 +210,7 @@ $lockdir = $tmpdir;
 # /some/text/file" on a file that is not a valid news article.  The
 # "non-header at line #" error should be syslogged.
 #
-# $syslog_method = 'unix';    # Unix doman socket, Perl 5.004_03 or higher.
+# $syslog_method = 'unix';    # Unix domain socket, Perl 5.004_03 or higher.
 # $syslog_method = 'inet';    # UDP to port 514 of localhost.
 # $syslog_method = '';        # Don't ever try to do syslogging.
 $syslog_method = 'logger';    # Search for the logger program.

@@ -244,7 +244,7 @@ end_table(void)
         puts("</table><p>");
 }
 
-/* Substracting (char *) 0 for alignment purpose is supported by compilers
+/* Subtracting (char *) 0 for alignment purpose is supported by compilers
  * like GCC or Clang, but is undefined behaviour by the C Standard as it is
  * unknown whether all hardware platforms can actually process such pointer
  * arithmetic (many, if not all, can anyway). */
