@@ -421,7 +421,7 @@ file represent I<days> days of traffic.
 =item B<-h>, B<--help>
 
 Print out this documentation (which is done simply by feeding the script
-to C<perldoc -t>.
+to C<perldoc -t>).
 
 =item B<-t> I<threshold>, B<--threshold>=I<threshold>
 
@@ -470,5 +470,9 @@ recommend running this program on any sort of automated basis.
 =head1 AUTHOR
 
 Russ Allbery <eagle@eyrie.org>.
+
+=head1 SEE ALSO
+
+active(5), getlist(1), newsfeeds(5).
 
 =cut
