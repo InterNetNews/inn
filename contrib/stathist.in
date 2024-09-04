@@ -1,4 +1,4 @@
-#!/usr/bin/perl -w
+#!/usr/bin/perl
 
 # Parse log files created by innd history profiler
 # 2001/01/29 - Fabien Tassin
