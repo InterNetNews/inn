@@ -1,4 +1,4 @@
-#! /usr/bin/perl -w
+#! /usr/bin/perl
 # use lib '@LIBPERLDIR@'; use INN::Config;
 # If running inside INN, uncomment the above and point to INN::Config.
 #

@@ -1,4 +1,4 @@
-#!/usr/bin/perl -w
+#!/usr/bin/perl
 #
 # Authenticate users for INN against a MySQL database.
 # Written by Daniel Marsh.

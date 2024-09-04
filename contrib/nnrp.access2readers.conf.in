@@ -1,4 +1,4 @@
-#! /usr/bin/perl -w
+#! /usr/bin/perl
 
 ##  Convert an old-style nnrp.access file to readers.conf format.
 ##  (readers.conf replaced nnrp.access, starting with INN 2.3.0.)

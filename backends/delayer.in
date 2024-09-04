@@ -1,4 +1,4 @@
-#! /usr/bin/perl -w
+#! /usr/bin/perl
 
 ##  Delay lines for a certain number of seconds.
 ##
