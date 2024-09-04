@@ -104,7 +104,7 @@ if (!$debug) {
     open(PASSWD, ">$passwd") or die "Could not open $passwd: $!\n";
     $OUT = \*PASSWD;
 }
-while (my ($u, $p) = each %passwords) {
+while (my ($u, $p) = each %passwords) {    ## no critic (Community::Each)
     $p = crypt($p, seedchar() . seedchar());
     print $OUT "$u:$p\n";
 }
