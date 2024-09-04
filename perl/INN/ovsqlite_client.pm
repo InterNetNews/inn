@@ -4,6 +4,7 @@
 
 package INN::ovsqlite_client;
 
+use 5.008;    # For () groups in unpack
 use strict;
 use warnings;
 
