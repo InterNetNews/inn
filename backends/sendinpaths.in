@@ -33,7 +33,7 @@ $VERSION =~ s/INN //;
 my $reportdays = 32;
 my $keepdays = 0;
 
-my @emailto = ('top1000@anthologeek.net');
+my @emailto = qw(top1000@anthologeek.net);
 my $emaildef = join(' ', @emailto);
 my $debug = 0;
 

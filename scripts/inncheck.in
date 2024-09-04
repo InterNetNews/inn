@@ -1157,31 +1157,20 @@ sub intersect {
     return $i;
 }
 
-my @directories = (
-    'archive', 'badnews', 'batchdir', 'ctlprogs', 'most_logs', 'newsbin',
-    'newsetc', 'newslib', 'oldlogs', 'rnewsprogs', 'spooltemp', 'spool',
-    'spoolnews',
-);
-my @rnews_programs = ('bunbatch', 'c7unbatch', 'decode', 'encode', 'gunbatch');
-my @newsbin_public = (
-    'actmerge', 'actsync', 'actsyncd', 'archive', 'batcher', 'buffchan',
-    'cnfsstat', 'controlbatch', 'controlchan', 'convdate', 'cvtbatch',
-    'delayer', 'docheckgroups', 'fastrm',
-    'getlist', 'grephistory', 'innconfval', 'inndf', 'innmail', 'innreport',
-    'innxbatch', 'innxmit', 'mailpost', 'news2mail', 'ninpaths',
-    'nntpget', 'nntpsend', 'perl-nocem', 'pgpverify', 'pullnews',
-    'scanspool', 'send-ihave', 'sendinpaths', 'send-uucp', 'sendxbatches',
-    'shlock', 'shrinkfile', 'simpleftp', 'sm', 'tinyleaf',
-);
-my @newsbin_private = (
-    'buffindexed_d', 'cnfsheadconf', 'ctlinnd', 'expire', 'expireover',
-    'expirerm', 'gencancel', 'imapfeed', 'inncheck', 'innfeed', 'innstat',
-    'innupgrade', 'innwatch', 'makedbz',
-    'makehistory', 'mod-active', 'news.daily', 'ovdb_init', 'ovdb_monitor',
-    'ovdb_server', 'ovdb_stat', 'overchan', 'ovsqlite-server',
-    'ovsqlite-util', 'procbatch', 'prunehistory', 'rc.news', 'scanlogs',
-    'tally.control', 'tdx-util', 'writelog',
-);
+my @directories = qw(archive badnews batchdir ctlprogs most_logs newsbin
+  newsetc newslib oldlogs rnewsprogs spooltemp spool spoolnews);
+my @rnews_programs = qw(bunbatch c7unbatch decode encode gunbatch);
+my @newsbin_public = qw(actmerge actsync actsyncd archive batcher buffchan
+  cnfsstat controlbatch controlchan convdate cvtbatch delayer docheckgroups
+  fastrm getlist grephistory innconfval inndf innmail innreport innxbatch
+  innxmit mailpost news2mail ninpaths nntpget nntpsend perl-nocem pgpverify
+  pullnews scanspool send-ihave sendinpaths send-uucp sendxbatches shlock
+  shrinkfile simpleftp sm tinyleaf);
+my @newsbin_private = qw(buffindexed_d cnfsheadconf ctlinnd expire expireover
+  expirerm gencancel imapfeed inncheck innfeed innstat innupgrade innwatch
+  makedbz makehistory mod-active news.daily ovdb_init ovdb_monitor ovdb_server
+  ovdb_stat overchan ovsqlite-server ovsqlite-util procbatch prunehistory
+  rc.news scanlogs tally.control tdx-util writelog);
 
 ##  The modes (min and max) for the various programs.
 my %prog_modes = (
