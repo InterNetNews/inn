@@ -393,8 +393,8 @@ $NNTP_Args{'Timeout'} = $opt_N if defined $opt_N;
 # Protocol debugging.
 $NNTP_Args{'Debug'} = 1 if $debug >= 4;
 
-@groupsToGet = map { s!^\s*(\S+)\s*!$1!; $_ } split(",", $opt_g) if $opt_g;
-@groupsToAdd = map { s!^\s*(\S+)\s*!$1!; $_ } split(",", $opt_G) if $opt_G;
+@groupsToGet = map { s!^\s*(\S+)\s*!$1!; $_ } split(/,/, $opt_g) if $opt_g;
+@groupsToAdd = map { s!^\s*(\S+)\s*!$1!; $_ } split(/,/, $opt_G) if $opt_G;
 
 $| = 1;
 
@@ -1051,12 +1051,12 @@ sub crossFeedGroup {
                         $unfolded_art_hdr .= $more_line;
                     }
 
-                    my ($hdr_un, $val_un) = split(':', $unfolded_art_hdr, 2);
+                    my ($hdr_un, $val_un) = split(/:/, $unfolded_art_hdr, 2);
                     $val_un = '' if not defined $val_un;
                     $val_un =~ s/^\s*//;
                     my $remove_hdr = 0;
                     for my $tuple_match (@hdr_to_match) {
-                        my ($hdr_m, $val_m) = split(':', $tuple_match, 2);
+                        my ($hdr_m, $val_m) = split(/:/, $tuple_match, 2);
                         my $negate_h = ($hdr_m =~ s/^!//);
                         my $remove_h = ($hdr_m =~ s/^#//);
                         next if lc($hdr_un) ne lc($hdr_m);
@@ -1086,7 +1086,7 @@ sub crossFeedGroup {
                     push @header_nums_to_go, $idx if $remove_hdr;
                 }
 
-                if (grep({ $curr_hdr eq $_ } split(':', $skip_headers))) {
+                if (grep({ $curr_hdr eq $_ } split(/:/, $skip_headers))) {
                     print LOG "\tDEBUGGING $i\tskip_hdr $idx\t$curr_hdr\n"
                       if $debug >= 2;
                     push @header_nums_to_go, $idx;

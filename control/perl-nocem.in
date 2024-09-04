@@ -750,7 +750,7 @@ sub logmsg($;$) {
 
     # Write the message across several log lines.
     $msg =~ s/\r/ /g;
-    my @logs = split('\n', $msg);
+    my @logs = split(/\n/, $msg);
 
     if ($opt_l or not $syslog_available) {
         if ($log_open == 0) {
