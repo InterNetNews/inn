@@ -50,9 +50,14 @@ exclude = Freenode::
 [Community::DollarAB]
 extra_pair_functions = by_hierarchy DateCompare
 
-# Shlock provides a lock function.
-[Subroutines::ProhibitBuiltinHomonyms]
-allow = lock
+# INN requires at least Perl 5.6.0.
+# An optional Perl module (INN::ovsqlite_client) needs 5.8.0 though.
+[Compatibility::PerlMinimumVersionAndWhy]
+above_version = 5.006
+
+# INN requires at least Perl 5.6.0.
+[Compatibility::PodMinimumVersion]
+above_version = 5.006
 
 # We still have some qx() calls.
 [InputOutput::ProhibitBacktickOperators]
@@ -61,6 +66,10 @@ only_in_void_context = 1
 # innreport_inn.pm has long regex lines.
 [RegularExpressions::RequireExtendedFormatting]
 minimum_regex_length_to_complain_about = 62
+
+# Shlock provides a lock function.
+[Subroutines::ProhibitBuiltinHomonyms]
+allow = lock
 
 
 ###################################
