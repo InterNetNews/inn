@@ -505,7 +505,7 @@ sub check_spool {
 
                 # form an array of newsgroups, and retain them (in case of a
                 # folded Newsgroups header field)
-                push(@group, split(",", $aline));
+                push(@group, split(/,/, $aline));
                 $newsgroupsField = 1;
             } elsif ($aline =~ /^\r?\n$/o) {
                 # end of headers

@@ -31,7 +31,7 @@ $count = 0;
 
 while (<>) {
     chop;
-    ($msgid, $dates, $arts, $xtra) = split('\t');
+    ($msgid, $dates, $arts, $xtra) = split(/\t/);
     if ($xtra) {
         &tossit();    # too many fields
         next;
