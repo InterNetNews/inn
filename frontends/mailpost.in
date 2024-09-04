@@ -7,6 +7,7 @@
 use strict;
 use warnings;
 
+use File::Spec;
 use Getopt::Std;
 use IPC::Open3;
 use IO::Select;
@@ -483,7 +484,7 @@ if ($opt_c) {
     close STDERR;
     setsid();
     open(STDIN, "</dev/zero");
-    open(STDOUT, ">/dev/null");
+    open(STDOUT, ">", File::Spec->devnull());
     open(STDERR, ">&STDOUT");
 
     sleep $opt_c;
