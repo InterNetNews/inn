@@ -668,6 +668,8 @@ sub append_newsgroups($$) {
 
 }
 
+__END__
+
 =head1 NAME
 
 mailpost - Feed an e-mail message into a newsgroup
