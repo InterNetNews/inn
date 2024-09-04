@@ -46,10 +46,12 @@ use File::Spec;
 my %REQUIREMENTS = (
     '5.006' => [
         'backends', 'contrib', 'contrib/nnrp.access2readers.conf.in',
-        'control', 'frontends', 'history', 'innfeed', 'perl', 'samples',
+        'control', 'frontends', 'history', 'innfeed', 'perl/INN/Config.pm',
+        'perl/INN/Utils/Shlock.pm', 'samples',
         'scripts', 'storage', 'support', 'tests/clients/server-list',
-        'tests/docs/pod.t', 'tests/perl/minimum-version.t'
-    ]
+        'tests/docs/pod.t', 'tests/perl/minimum-version.t',
+    ],
+    '5.008' => ['perl/INN/ovsqlite_client.pm'],
 );
 
 # Red Hat's base perl package doesn't include Test::More (one has to install
@@ -91,5 +93,8 @@ chdir($root) or BAIL_OUT("cannot chdir to $root: $!");
 # in that directory.
 for my $minimum (sort keys %REQUIREMENTS) {
     my $paths_ref = $REQUIREMENTS{$minimum};
-    all_minimum_version_ok($minimum, { paths => $paths_ref });
+    all_minimum_version_ok($minimum, { paths => $paths_ref, no_plan => 1 });
 }
+
+# Tell the TAP harness that we're done.
+done_testing();
