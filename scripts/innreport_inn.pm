@@ -2759,8 +2759,8 @@ sub report_unwanted_ng($) {
     rename($file, "${file}.old");
 
     open(FILE, "> $file") && do {
-        foreach
-          my $g (sort { $inn_uw_ng{$b} <=> $inn_uw_ng{$a} } (keys(%inn_uw_ng)))
+        foreach my $g (reverse sort { $inn_uw_ng{$a} <=> $inn_uw_ng{$b} }
+            (keys(%inn_uw_ng)))
         {
             printf FILE "%d %s\n", $inn_uw_ng{$g}, $g;
         }

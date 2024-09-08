@@ -806,7 +806,7 @@ sub Rotate {
     }
     closedir DIR;
     $num = 0;
-    foreach my $filename (sort { $b cmp $a } (keys(%files))) {
+    foreach my $filename (reverse sort { $a cmp $b } (keys(%files))) {
         unlink "$rep/$filename" if $num++ >= $max && -f "$rep/$filename";
     }
     return 1;
@@ -1131,7 +1131,7 @@ sub Make_Index($$$$) {
     close DATA;
     open(DATA, "> $rep/innreport.db") || die "can't open $rep/innreport.db\n";
     $i = 0;
-    foreach (sort { $b cmp $a } (keys %data)) {
+    foreach (reverse sort { $a cmp $b } (keys %data)) {
         print DATA "$_|$data{$_}\n" if $CYCLE == 0 || $i < $CYCLE;
         $i++;
     }
@@ -1251,7 +1251,7 @@ sub Make_Index($$$$) {
     $result .= "</tr>\n<tr>$temp</tr>\n";
 
     $i = 0;
-    foreach (sort { $b cmp $a } (keys %data)) {
+    foreach (reverse sort { $a cmp $b } (keys %data)) {
         if ($CYCLE == 0 || $i < $CYCLE) {
             my @list = split /\|/, $data{$_};
             my $class = $i % 2 ? 'ir-oddRow' : 'ir-evenRow';
@@ -1533,7 +1533,7 @@ sub Graph3d {
         );
     }
     foreach my $k (
-        sort { ${ $val[0] }{$b} <=> ${ $val[0] }{$a} }
+        reverse sort { ${ $val[0] }{$a} <=> ${ $val[0] }{$b} }
         keys(%{ $val[0] })
     ) {
         $image->string(
@@ -2637,7 +2637,8 @@ sub Write_Results {
             $html = '';
             my @res;
             foreach my $key2 (
-                sort { $r_data->{$key1}{$b} <=> $r_data->{$key1}{$a} }
+                reverse
+                sort { $r_data->{$key1}{$a} <=> $r_data->{$key1}{$b} }
                 keys(%{ $r_data->{$key1} })
             ) {
                 $first = 0;
