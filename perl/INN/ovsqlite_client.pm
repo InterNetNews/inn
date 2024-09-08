@@ -104,7 +104,7 @@ BEGIN {
         0xC0, @fatal_codes,
     );
 
-    constant::->import(\%constants);
+    constant->import(\%constants);
 
     @EXPORT_OK = (@search_cols, @success_codes, @error_codes, @fatal_codes);
 
