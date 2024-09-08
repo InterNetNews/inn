@@ -18,7 +18,10 @@ use warnings;
 use Getopt::Long;
 use Math::BigInt;
 use Math::BigFloat;
-use English;
+
+# We're using $POSTMATCH so we cannot use -no_match_vars.
+# Anyway, Perl 5.20.0 fixed the speed issue.
+use English;    ## no critic (Modules::RequireNoMatchVarsWithUseEnglish)
 
 my $conffile = "$INN::Config::pathetc/cycbuff.conf";
 my $storageconf = "$INN::Config::pathetc/storage.conf";
