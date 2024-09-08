@@ -10,7 +10,7 @@ use warnings;
 
 use Compress::Zlib;
 use Getopt::Std;
-use POSIX qw(strftime locale_h);
+use POSIX qw(strftime locale_h);    ## no critic (ProhibitUnusedImport)
 
 $0 =~ s!.*/!!;
 

@@ -3084,15 +3084,17 @@ sub PrepareEval($;$) {
     # However, a few variables are defined through the enclosure.
     # $a and $b are provided by function sort.
     # So convert "%innreport_inn::prog_type" back to "%prog_type"
+    ## no critic (ProhibitSingleCharAlternation)
     $string =~ s/([\$\%\@])${CLASS}\:\:(
-    a|
-    b|
-    key\d*|
-    num|
-    prog_size|
-    prog_type|
-    sec_glob
-  )\b/$1$2/xog;
+                   a|
+                   b|
+                   key\d*|
+                   num|
+                   prog_size|
+                   prog_type|
+                   sec_glob
+                 )\b/$1$2/xog;
+    ## use critic
 
     # If expression consists of a single hash then just return a
     # reference to it.
