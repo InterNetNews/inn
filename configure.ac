@@ -282,7 +282,10 @@ dnl Embedded Perl requires 5.004.  Use of the three-arg open and the our
 dnl keyword requires 5.006, so makes 5.006 the minimum level; anyone should
 dnl really have at least that these days.
 dnl The recommendation in INSTALL and README is even a bit higher (Perl 5.8.0).
-dnl An optional Perl module (INN::ovsqlite_client) requires 5.8.0 though.
+dnl An optional Perl module (INN::ovsqlite_client) actually requires Perl 5.8.0
+dnl though.  Generating all the documentation from POD requires Perl 5.12.0
+dnl but most of it can be generated with Perl 5.6.0.  If need be, the
+dnl documentation can be fetched from the release tarball.
 dnl We also check for useful Perl modules.
 INN_PROG_PERL([5.006])
 INN_PERL_CHECK_MODULE([Encode], [],

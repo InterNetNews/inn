@@ -115,18 +115,10 @@ L<https://www.perl.org/get.html>.  Note that you may need to use the same
 compiler and options (particularly large file support and shared libraries)
 for Perl and INN.
 
-If you're using a version of Perl prior to 5.6.0, you may need to make
-sure that the Perl versions of your system header files have been
-generated in order for C<Sys::Syslog> to work properly (used by various
-utility programs, including B<controlchan>).  To do this, run the following
-two commands:
-
-    # cd /usr/include
-    # h2ph * sys/*
-
-An even better approach is to install S<Perl 5.6.1> or later, which have a
-fixed version of C<Sys::Syslog> that doesn't require this (as well as many
-other improvements over earlier versions of Perl).
+Generating all the documentation from POD requires S<B<Perl 5.12.0>> due
+to the use of C<LE<lt>E<gt>> with URL and text in some files but most of the
+documentation can be generated with S<B<Perl 5.8.0>>.  If need be, it can be
+fetched from the release tarball.
 
 =item *
 
