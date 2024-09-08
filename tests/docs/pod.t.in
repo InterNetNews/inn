@@ -77,13 +77,10 @@ chdir($root) or BAIL_OUT("cannot chdir to $root: $!");
 
 # Add some additional exclusions, useful mostly for other programs that copy
 # this test.
-## no critic (TestingAndDebugging::ProhibitNoWarnings)
-## no critic (Variables::ProhibitPackageVars)
 {
     $Test::Pod::ignore_dirs{'.libs'} = 'libraries';
     $Test::Pod::ignore_dirs{'tests'} = 'test suite';
 }
-## use critic
 
 # Check syntax of every POD file we can find.
 all_pod_files_ok(q{.});

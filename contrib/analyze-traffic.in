@@ -170,14 +170,12 @@ sub max {
     my $who;
     my ($field, $listref) = @_;
 
-    ## no critic (Community::Each)
-    while (my ($peer, $statsref) = each %{$listref}) {
+    while (my ($peer, $statsref) = each %{$listref}) {    ## no critic (Each)
         if ($statsref->{$field} > $x) {
             $x = $statsref->{$field};
             $who = $peer;
         }
     }
-    ## use critic
 
     return ($x, $who);
 }

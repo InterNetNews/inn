@@ -895,15 +895,13 @@ sub ComputeTotalDouble($) {
     if (defined($cached) && !$DEBUG) { return $cached; }
 
     my $total = 0;
-    ## no critic (Community::Each)
-    while (my ($key1, $value1) = each %$h) {
+    while (my ($key1, $value1) = each %$h) {    ## no critic (Community::Each)
         confess $key1 unless (defined($value1));
-        while (my ($key2, $value2) = each %$value1) {
+        while (my ($key2, $value2) = each %$value1) {    ## no critic (Each)
             confess $key2 unless (defined($value2));
             $total += $value2;
         }
     }
-    ## use critic
     if (defined($cached) && $cached != $total) {
         confess "ComputeTotalDouble mismatch $cached != $total";
     }
