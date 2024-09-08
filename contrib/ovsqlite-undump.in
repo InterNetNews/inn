@@ -85,7 +85,7 @@ sub server_connect {
 
         $path = "$INN::Config::pathrun/$leaf";
         if (-e $path) {
-            return INN::ovsqlite_client::->new(
+            return INN::ovsqlite_client->new(
                 path => $path,
                 mode => $mode,
             );
