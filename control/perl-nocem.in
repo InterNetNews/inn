@@ -23,7 +23,7 @@ use strict;
 use warnings;
 
 use Getopt::Std;
-use POSIX qw(locale_h strftime);
+use POSIX qw(locale_h strftime);    ## no critic (ProhibitUnusedImport)
 use Sys::Hostname;
 
 sub logmsg($;$);
