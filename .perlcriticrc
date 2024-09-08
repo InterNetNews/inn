@@ -22,8 +22,8 @@
 #     https://metacpan.org/pod/Perl::Critic::Pulp
 #     https://perlmaven.com/perl-critic
 
-# Be cruel for the time being.  All the policies are not enabled yet.
-severity = 2
+# Check all the policies.
+severity = 1
 
 # Custom output.
 verbose = %f:%l:%c: [%p] %m, near '%r' (%e, Severity: %s)\n
@@ -234,3 +234,41 @@ allow = lock
 [-ValuesAndExpressions::RequireConstantVersion]
 [-ValuesAndExpressions::RequireNumberSeparators]
 [-Variables::ProhibitPunctuationVars]
+
+
+###################################
+# Excluded policies of severity 1 #
+###################################
+
+# Maybe to look at after InputOutput::RequireCheckedOpen is enforced.
+[-InputOutput::RequireCheckedSyscalls]
+
+# May be worthwhile enforcing to improve readability.
+[-RegularExpressions::ProhibitUnusualDelimiters]
+[-RegularExpressions::RequireBracesForMultiline]
+
+# Style not followed as we prefer to homogenize with C code.
+[-CodeLayout::ProhibitParensWithBuiltins]
+
+# Already handled by the maintainers of INN.  Unknown flags from recent
+# versions of perltidy may be reported by this policy, so we exclude it.
+[-CodeLayout::RequireTidyCode]
+
+# This policy conflicts with Subroutines::ProhibitExplicitReturnUndef.
+[-Community::EmptyReturn]
+
+# We often use enumerated classes for ASCII characters or hexadecimal numbers.
+[-RegularExpressions::ProhibitEnumeratedClasses]
+
+# False positives for BEGIN blocks.
+# https://github.com/gugod/Perl-Critic-TooMuchCode/issues/40
+[-TooMuchCode::ProhibitDuplicateSub]
+
+# The following policies are mostly related to style.
+[-InputOutput::RequireBracedFileHandleWithPrint]
+[-NamingConventions::Capitalization]
+[-RegularExpressions::ProhibitEscapedMetacharacters]
+[-TooMuchCode::ProhibitDuplicateLiteral]
+[-TooMuchCode::ProhibitLargeBlock]
+[-ValuesAndExpressions::ProhibitInterpolationOfLiterals]
+[-ValuesAndExpressions::RequireInterpolationOfMetachars]
