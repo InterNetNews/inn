@@ -13,8 +13,7 @@
 package inn;
 
 # Tons of variables, also coming from innconfval run through an eval below.
-## no critic (ProhibitProlongedStrictureOverride)
-no strict;
+no strict;    ## no critic (ProhibitProlongedStrictureOverride)
 
 $ENV{'LC_CTYPE'} = "C";
 
