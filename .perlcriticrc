@@ -22,8 +22,8 @@
 #     https://metacpan.org/pod/Perl::Critic::Pulp
 #     https://perlmaven.com/perl-critic
 
-# Be harsh for the time being.  All the policies are not enabled yet.
-severity = 3
+# Be cruel for the time being.  All the policies are not enabled yet.
+severity = 2
 
 # Custom output.
 verbose = %f:%l:%c: [%p] %m, near '%r' (%e, Severity: %s)\n
@@ -45,6 +45,11 @@ exclude = Freenode::
 ##################################
 # Configuration of some policies #
 ##################################
+
+# Prefer the use of qw() to declare a list of one-word literals.
+[CodeLayout::ProhibitQuotedWordLists]
+min_elements = 1
+strict = 1
 
 # tunefeed and innreport declare specific sorting functions.
 [Community::DollarAB]
@@ -162,13 +167,16 @@ allow = lock
 [-Community::OpenArgs]
 [-Community::Prototypes]
 
+# Perl 5.14.0 fixed the underlying issue (preserving the value of $@ even if
+# destructors run at exit from the eval block).
+[-ErrorHandling::RequireCheckingReturnValueOfEval]
+
 # The following policies are mostly related to style.
 [-BuiltinFunctions::ProhibitComplexMappings]
 [-BuiltinFunctions::ProhibitVoidMap]
 [-ControlStructures::ProhibitCascadingIfElse]
 [-ControlStructures::ProhibitDeepNests]
 [-ErrorHandling::RequireCarping]
-[-ErrorHandling::RequireCheckingReturnValueOfEval]
 [-InputOutput::ProhibitJoinedReadline]
 [-Modules::ProhibitExcessMainComplexity]
 [-NamingConventions::ProhibitAmbiguousNames]
@@ -181,3 +189,48 @@ allow = lock
 [-ValuesAndExpressions::ProhibitImplicitNewlines]
 [-ValuesAndExpressions::RequireNumericVersion]
 [-Variables::ProhibitPackageVars]
+
+
+###################################
+# Excluded policies of severity 2 #
+###################################
+
+# This policy may be worthwhile enforcing when Perl 5.10.0 is the minimum
+# required version for INN as List::Util is not shipped as a core module in
+# previous versions.
+# Anyway, it won't drastically optimize the speed of programs!
+[-BuiltinFunctions::ProhibitBooleanGrep]
+
+# perltidy already takes care of it.  Besides, there are false positives in
+# innreport.
+[-CodeLayout::RequireFinalSemicolon]
+
+# Normally enforced by perltidy, but some trailing commas are still missing.
+# https://github.com/perltidy/perltidy/issues/143
+[-CodeLayout::RequireTrailingCommaAtNewline]
+
+# Getopt::Std is still used and fits our needs.
+[-Community::PreferredAlternatives]
+
+# The following policies are mostly related to style.
+[-BuiltinFunctions::ProhibitUselessTopic]
+[-ControlStructures::ProhibitCStyleForLoops]
+[-ControlStructures::ProhibitPostfixControls]
+[-ControlStructures::ProhibitUnlessBlocks]
+[-Documentation::RequirePodSections]
+[-InputOutput::RequireCheckedClose]
+[-Miscellanea::ProhibitTies]
+[-Modules::RequireVersionVar]
+[-References::ProhibitDoubleSigils]
+[-RegularExpressions::ProhibitFixedStringMatches]
+[-RegularExpressions::ProhibitUselessTopic]
+[-RegularExpressions::RequireDotMatchAnything]
+[-RegularExpressions::RequireLineBoundaryMatching]
+[-Subroutines::ProhibitAmpersandSigils]
+[-ValuesAndExpressions::ProhibitEmptyQuotes]
+[-ValuesAndExpressions::ProhibitEscapedCharacters]
+[-ValuesAndExpressions::ProhibitMagicNumbers]
+[-ValuesAndExpressions::ProhibitNoisyQuotes]
+[-ValuesAndExpressions::RequireConstantVersion]
+[-ValuesAndExpressions::RequireNumberSeparators]
+[-Variables::ProhibitPunctuationVars]
