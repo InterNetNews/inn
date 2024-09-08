@@ -378,7 +378,7 @@ Use the B<-h> flag to print the usage message.
 =item B<-l> I<logfile>
 
 The B<-l> flag may be used to specify a different log file from stderr.
-As B<innd> starts B<innfeed> with stderr attached to /dev/null, using
+As B<innd> starts B<innfeed> with stderr attached to F</dev/null>, using
 this option can be useful in catching any abnormal error messages, or any
 debugging messages (all "normal" errors messages go to syslog).
 
