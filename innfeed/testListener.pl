@@ -79,12 +79,14 @@ $monstr = "JanFebMarAprMayJunJulAugSepOctNovDec";
 $letstr = "abcdefghijklmnopqrstuvwxyz";
 
 sub createArticle {
-    local ($counter) = @_;
-    local ($filename, $msgid, $i);
-    local ($time) = $^T;
-    local ($sec, $min, $hour, $mday, $mon, $year, $wday, $yday, $isdst)
-      = gmtime($time);
-    local ($index) = $counter;
+    my ($counter) = @_;
+    my ($filename, $msgid, $i);
+    my ($time) = $^T;
+    my (
+        $sec, $min, $hour, $mday, $mon, $year, $wday_unused, $yday_unused,
+        $isdst_unused,
+    ) = gmtime($time);
+    my ($index) = $counter;
 
     if ($opt_a && ((int(rand(4)) % 2) == 0)) {
         $index = int($index / 2);

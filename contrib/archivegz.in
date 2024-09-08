@@ -60,7 +60,7 @@ if ($timeout < 1) { $timeout = 1; }
 # --------------------------------------------------------------------
 
 sub regexp_escape {
-    local ($data) = @_;
+    my ($data) = @_;
 
     $data =~ s+\\+\\\\+gi;    # replace \ with \\
     $data =~ s+\/+\\\/+gi;    # replace / with \/
@@ -71,8 +71,8 @@ sub regexp_escape {
 }
 
 sub fhbits {
-    local (@fhlist) = split(' ', $_[0]);
-    local ($bits);
+    my (@fhlist) = split(' ', $_[0]);
+    my ($bits);
     for (@fhlist) {
         vec($bits, fileno($_), 1) = 1;
     }
@@ -81,18 +81,19 @@ sub fhbits {
 
 sub timed_getline {
     my ($fileh, $timeout) = @_;
-    local (*FILEH) = *$fileh{FILEHANDLE};
 
-    local ($rin, $win, $ein);
-    local ($rout, $wout, $eout);
+    local (*FILEH) = *$fileh{FILEHANDLE};    ## no critic (ProhibitLocalVars)
+
+    my ($rin, $win, $ein);
+    my ($rout, $wout, $eout);
     $rin = $win = $ein = '';
     $rin = fhbits('FILEH');
     $ein = $rin | $win;
-    local ($nfound);
-    local ($offset) = 0;
-    local ($accum) = '';
-    local ($done) = 0;
-    local ($result);
+    my ($nfound);
+    my ($offset) = 0;
+    my ($accum) = '';
+    my ($done) = 0;
+    my ($result);
 
     $nfound = select($rout = $rin, $wout = $win, $eout = $ein, $timeout);
 

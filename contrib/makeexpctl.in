@@ -79,7 +79,7 @@ close(OUTFILE);
 exit(1);
 
 sub printline {
-    local ($grpstr, $mflag, $len) = @_;
+    my ($grpstr, $mflag, $len) = @_;
     print OUTFILE $grpstr, ":", $mflag, ":", $len * $scale, ":",
       $len * $scale, ":", $len * $scale, "\n";
 }
