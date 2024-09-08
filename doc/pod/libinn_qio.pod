@@ -8,7 +8,7 @@ qio - Quick I/O routines for reading files
 
     QIOSTATE *QIOopen(const char *name);
 
-    QIOSTATE *QIOfdopen(int> I<fd);
+    QIOSTATE *QIOfdopen(int fd);
 
     void QIOclose(QIOSTATE *qp);
 
