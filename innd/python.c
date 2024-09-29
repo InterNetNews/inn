@@ -758,7 +758,7 @@ PYsetup(void)
     /* Add path for innd module.  The environment variable PYTHONPATH
      * does it; one can also append innconf->pathfilter to sys.path once
      * Python has been initialized. */
-    setenv("PYTHONPATH", innconf->pathfilter, 1);
+    setenv(INN_ENV_PYTHONPATH, innconf->pathfilter, 1);
 
     /* Build a module interface to certain INN functions. */
     PyImport_AppendInittab("INN", &PyInit_INN);

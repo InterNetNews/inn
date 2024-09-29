@@ -1383,18 +1383,18 @@ CCxexec(char *av[])
 
     /* Restore the systemd variables which were backed up in RCsetup()
        if socket activation was set. */
-    s = getenv("INN_BACKUP_LISTEN_FDS");
+    s = getenv(INN_ENV_LISTEN_FDS_BACKUP);
     if (s != NULL) {
-        if (setenv("LISTEN_FDS", s, true) != 0)
+        if (setenv(INN_ENV_LISTEN_FDS, s, true) != 0)
             die("setenv failed for LISTEN_FDS");
-        if (unsetenv("INN_BACKUP_LISTEN_FDS") != 0)
+        if (unsetenv(INN_ENV_LISTEN_FDS_BACKUP) != 0)
             die("unsetenv failed for INN_BACKUP_LISTEN_FDS");
     }
-    s = getenv("INN_BACKUP_LISTEN_PID");
+    s = getenv(INN_ENV_LISTEN_PID_BACKUP);
     if (s != NULL) {
-        if (setenv("LISTEN_PID", s, true) != 0)
+        if (setenv(INN_ENV_LISTEN_PID, s, true) != 0)
             die("setenv failed for LISTEN_PID");
-        if (unsetenv("INN_BACKUP_LISTEN_PID") != 0)
+        if (unsetenv(INN_ENV_LISTEN_PID_BACKUP) != 0)
             die("unsetenv failed for INN_BACKUP_LISTEN_PID");
     }
 
@@ -1402,7 +1402,7 @@ CCxexec(char *av[])
        This is needed because we need to pass them to the new innd process
        and sd_listen_fds(), which was called in RCsetup(), set it on all
        passed file descriptors. */
-    s = getenv("INN_SD_LISTEN_FDS_COUNT");
+    s = getenv(INN_ENV_LISTEN_FDS_COUNT);
     if (s == NULL)
         count = 0;
     else

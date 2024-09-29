@@ -393,7 +393,7 @@ FormatUserName(struct passwd *pwp, char *node)
 
 #if !defined(DONT_MUNGE_GETENV)
     memset(outbuff, 0, SMBUF);
-    if ((p = getenv("NAME")) != NULL)
+    if ((p = getenv(INN_ENV_NAME)) != NULL)
         strlcpy(outbuff, p, SMBUF);
     if (strlen(outbuff) == 0) {
 #endif /* !defined(DONT_MUNGE_GETENV) */

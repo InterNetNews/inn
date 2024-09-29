@@ -257,31 +257,31 @@ innconf_set_defaults(void)
     char *value;
 
     /* Some environment variables override settings in inn.conf. */
-    value = getenv("FROMHOST");
+    value = getenv(INN_ENV_FROMHOST);
     if (value != NULL) {
         if (innconf->fromhost != NULL)
             free(innconf->fromhost);
         innconf->fromhost = xstrdup(value);
     }
-    value = getenv("NNTPSERVER");
+    value = getenv(INN_ENV_NNTPSERVER);
     if (value != NULL) {
         if (innconf->server != NULL)
             free(innconf->server);
         innconf->server = xstrdup(value);
     }
-    value = getenv("ORGANIZATION");
+    value = getenv(INN_ENV_ORGANIZATION);
     if (value != NULL) {
         if (innconf->organization != NULL)
             free(innconf->organization);
         innconf->organization = xstrdup(value);
     }
-    value = getenv("INND_BIND_ADDRESS");
+    value = getenv(INN_ENV_INNBINDADDR);
     if (value != NULL) {
         if (innconf->bindaddress != NULL)
             free(innconf->bindaddress);
         innconf->bindaddress = xstrdup(value);
     }
-    value = getenv("INND_BIND_ADDRESS6");
+    value = getenv(INN_ENV_INNBINDADDR6);
     if (value != NULL) {
         if (innconf->bindaddress6 != NULL)
             free(innconf->bindaddress6);
@@ -613,7 +613,7 @@ innconf_read(const char *path)
     if (innconf != NULL)
         innconf_free(innconf);
     if (path == NULL)
-        path = getenv("INNCONF");
+        path = getenv(INN_ENV_INNCONF);
     group = config_parse_file(path == NULL ? INN_PATH_CONFIG : path);
     if (group == NULL)
         return false;
@@ -626,9 +626,9 @@ innconf_read(const char *path)
 
     /* It's not clear that this belongs here, but it was done by the old
        configuration parser, so this is a convenient place to do it. */
-    tmpdir = getenv("TMPDIR");
+    tmpdir = getenv(INN_ENV_TMPDIR);
     if (tmpdir == NULL || strcmp(tmpdir, innconf->pathtmp) != 0)
-        if (setenv("TMPDIR", innconf->pathtmp, true) != 0) {
+        if (setenv(INN_ENV_TMPDIR, innconf->pathtmp, true) != 0) {
             warn("cannot set TMPDIR in the environment");
             return false;
         }
@@ -658,7 +658,7 @@ innconf_check(const char *path)
     if (innconf != NULL)
         innconf_free(innconf);
     if (path == NULL)
-        path = getenv("INNCONF");
+        path = getenv(INN_ENV_INNCONF);
     group = config_parse_file(path == NULL ? INN_PATH_CONFIG : path);
     if (group == NULL)
         return false;
