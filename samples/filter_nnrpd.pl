@@ -13,7 +13,7 @@
 ##  rejection message (make sure that such a message is properly encoded
 ##  in UTF-8 so as to comply with the NNTP protocol).
 ##
-##  When filtering is disabled, the filter_end() Perl routine is called,
+##  When filtering is disabled, the Perl routine "filter_end" is called,
 ##  if defined, prior to the deactivation of the filter.
 
 #
@@ -31,18 +31,20 @@ my %config = (
 # Sample filter
 #
 sub filter_post {
-    my $rval = "";    # assume we'll accept.
+    my $rval = "";    # Assume we'll accept.
 
 ### Uncomment this next block to reject articles that have 'make money'
 ### in their subject, or which have a "Re: " subject, but no References
 ### header field, or which have an invalid From header field.
 ##
 ##    if ($hdr{"Subject"} =~ /make.*money/i) {
-##        $rval = "Spam is not acceptable here..." ;
+##        $rval = "Spam is not acceptable here...";
 ##    } elsif ($hdr{'Subject'} =~ /^Re: /o and $hdr{'References'} eq "") {
 ##        $rval = "Followup without References header field";
-##    } elsif ($hdr{'From'} =~ /^\w*$/o or
-##        $hdr{'From'} !~ /^(.+?)\@([-\w\d]+\.)*([-\w\d]+)\.([-\w\d]{2,})$/o) {
+##    } elsif ($hdr{'From'} =~ /^\w*$/o
+##        or $hdr{'From'}
+##        !~ /^(.+?)\@([-\w\d]+\.)*([-\w\d]+)\.([-\w\d]{2,})$/o)
+##    {
 ##        $rval = "From header field is invalid, "
 ##          . "must be user\@[host.]domain.tld";
 ##    }
