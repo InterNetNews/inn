@@ -695,7 +695,7 @@ PY_load_python(void)
         ** does it; one can also append innconf->pathfilter to sys.path once
         ** Python has been initialized.
         */
-        setenv("PYTHONPATH", innconf->pathfilter, 1);
+        setenv(INN_ENV_PYTHONPATH, innconf->pathfilter, 1);
 
         /* Build a module interface to certain nnrpd functions. */
         PyImport_AppendInittab("nnrpd", &PyInit_nnrpd);

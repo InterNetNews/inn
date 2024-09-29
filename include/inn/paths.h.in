@@ -96,19 +96,42 @@
 **  ENVIRONMENT VARIABLES
 */
 
+/* What to put in the From header field body, for client posting. */
+#define INN_ENV_FROMHOST           "FROMHOST"
+
+/* Interface to bind as, for sockets. */
+#define INN_ENV_INNBINDADDR        "INND_BIND_ADDRESS"
+#define INN_ENV_INNBINDADDR6       "INND_BIND_ADDRESS6"
+
+/* Alternate inn.conf file to read. */
+#define INN_ENV_INNCONF            "INNCONF"
+
+/* For systemd and socket activation. */
+#define INN_ENV_LISTEN_FDS         "LISTEN_FDS"
+#define INN_ENV_LISTEN_FDS_BACKUP  "INN_BACKUP_LISTEN_FDS"
+#define INN_ENV_LISTEN_FDS_COUNT   "INN_SD_LISTEN_FDS_COUNT"
+#define INN_ENV_LISTEN_PID         "LISTEN_PID"
+#define INN_ENV_LISTEN_PID_BACKUP  "INN_BACKUP_LISTEN_PID"
+
+/* The name to put in the From header field body, for inews. */
+#define INN_ENV_NAME               "NAME"
+
 /* The host name of the NNTP server, for client posting. */
 #define INN_ENV_NNTPSERVER         "NNTPSERVER"
 
 /* The Organization header field body, for client posting. */
 #define INN_ENV_ORGANIZATION       "ORGANIZATION"
 
-/* What to put in the From header field body, for client posting. */
-#define INN_ENV_FROMHOST           "FROMHOST"
+/* Paths where Python looks for modules. */
+#define INN_ENV_PYTHONPATH         "PYTHONPATH"
+
+/* Variable set by some scripts from the test suite. */
+#define INN_ENV_TESTSUITE          "INN_TESTSUITE"
+
+/* Path to the temporary directory. */
+#define INN_ENV_TMPDIR             "TMPDIR"
 
 /* UUCP host, for rnews. */
 #define INN_ENV_UUCPHOST           "UU_MACHINE"
-
-/* Interface to bind as, for sockets. */
-#define INN_ENV_INNBINDADDR        "INND_BIND_ADDRESS"
 
 #endif /* INN_PATHS_H */

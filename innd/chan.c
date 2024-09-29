@@ -79,7 +79,7 @@ CHANsystemdsa(CHANNEL *cp)
     const char *s;
     int count;
 
-    s = getenv("INN_SD_LISTEN_FDS_COUNT");
+    s = getenv(INN_ENV_LISTEN_FDS_COUNT);
     if (s == NULL)
         return false;
 

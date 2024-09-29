@@ -518,17 +518,17 @@ main(int argc, char *argv[])
         tdx_index_audit(false);
         break;
     case 'F':
-        if (getenv("INN_TESTSUITE") == NULL)
+        if (getenv(INN_ENV_TESTSUITE) == NULL)
             ensure_news_user_grp(true, true);
         tdx_index_audit(true);
         break;
     case 'R':
-        if (getenv("INN_TESTSUITE") == NULL)
+        if (getenv(INN_ENV_TESTSUITE) == NULL)
             ensure_news_user_grp(true, true);
         group_rebuild(newsgroup, path);
         break;
     case 'c':
-        if (getenv("INN_TESTSUITE") == NULL)
+        if (getenv(INN_ENV_TESTSUITE) == NULL)
             ensure_news_user_grp(true, true);
         group_create(newsgroup, artlow, arthigh, flag);
         break;

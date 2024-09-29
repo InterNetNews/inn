@@ -1751,14 +1751,14 @@ RCsetup(void)
     /* If systemd socket activation is used, backup its environment variables,
        which are unset by sd_listen_fds(), to be able to restore them later in
        CCxexec() before starting a new innd process. */
-    s = getenv("LISTEN_FDS");
+    s = getenv(INN_ENV_LISTEN_FDS);
     if (s != NULL) {
-        if (setenv("INN_BACKUP_LISTEN_FDS", s, true) != 0)
+        if (setenv(INN_ENV_LISTEN_FDS_BACKUP, s, true) != 0)
             die("setenv failed for INN_BACKUP_LISTEN_FDS");
     }
-    s = getenv("LISTEN_PID");
+    s = getenv(INN_ENV_LISTEN_PID);
     if (s != NULL) {
-        if (setenv("INN_BACKUP_LISTEN_PID", s, true) != 0)
+        if (setenv(INN_ENV_LISTEN_PID_BACKUP, s, true) != 0)
             die("setenv failed for INN_BACKUP_LISTEN_PID");
     }
 
@@ -1768,7 +1768,7 @@ RCsetup(void)
         char *p;
 
         xasprintf(&p, "%u", count);
-        if (setenv("INN_SD_LISTEN_FDS_COUNT", p, true) != 0)
+        if (setenv(INN_ENV_LISTEN_FDS_COUNT, p, true) != 0)
             die("setenv failed for INN_SD_LISTEN_FDS_COUNT");
 
         free(p);

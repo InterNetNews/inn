@@ -227,11 +227,11 @@ This parameter has no effect when systemd socket activation is used.
 
 Like I<bindaddress> but for IPv6 sockets.  If only one of the I<bindaddress>
 and I<bindaddress6> parameters is used, then only the socket for the
-corresponding address family is created.  If both parameters are used
-then two sockets are created.  If neither of them is used, the list of
-sockets to listen on will be determined by the system library
-I<getaddrinfo(3)> function.  The value of the INND_BIND_ADDRESS6, if set,
-overrides this setting.  The default value is unset.
+corresponding address family is created.  If both parameters are used then
+two sockets are created.  If neither of them is used, the list of sockets to
+listen on will be determined by the system library I<getaddrinfo(3)> function.
+The value of the INND_BIND_ADDRESS6 environment variable, if set, overrides
+this setting.  The default value is unset.
 
 Note that you will generally need to put double quotes ("") around this
 value if you set it, since IPv6 addresses contain colons.
