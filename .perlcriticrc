@@ -205,10 +205,6 @@ allow = lock
 # innreport.
 [-CodeLayout::RequireFinalSemicolon]
 
-# Normally enforced by perltidy, but some trailing commas are still missing.
-# https://github.com/perltidy/perltidy/issues/143
-[-CodeLayout::RequireTrailingCommaAtNewline]
-
 # Getopt::Std is still used and fits our needs.
 [-Community::PreferredAlternatives]
 

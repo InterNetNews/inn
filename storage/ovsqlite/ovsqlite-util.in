@@ -208,10 +208,10 @@ sub get_groupid {
 
     $getgroupid = $dbh->prepare(
         q{
-select groupid from groupinfo
-    where cast(groupname as text) = ?1
-        and deleted = 0;
-}
+            select groupid from groupinfo
+                where cast(groupname as text) = ?1
+                    and deleted = 0;
+        },
     );
     ($groupid) = $dbh->selectrow_array($getgroupid, undef, $groupname);
 
@@ -280,8 +280,9 @@ sub decompress_overview {
         } else {
             my ($inflation, $status);
 
-            ($inflation, $status)
-              = inflateInit(-Dictionary => "$basedict$groupname:$artnum\r\n");
+            ($inflation, $status) = inflateInit(
+                -Dictionary => "$basedict$groupname:$artnum\r\n",
+            );
             if ($status != Z_OK) {
                 warn
                   "$groupname:$artnum: inflateInit failed with code $status\n";
@@ -312,55 +313,55 @@ sub check_groupinfo_consistency {
     pragma_foreign_keys(0);
     $dbh->do(
         q{
-create table temp.repairs (
-    groupid integer
-        primary key,
-    new_low integer
-        not null,
-    low_was_bad integer
-        not null,
-    new_high integer
-        not null,
-    high_was_bad integer
-        not null,
-    new_count integer
-        not null,
-    count_was_bad integer
-        not null,
-    expired integer
-        not null,
-    groupname blob
-        not null,
-    flag_alias blob
-        not null
-);
+            create table temp.repairs (
+                groupid integer
+                    primary key,
+                new_low integer
+                    not null,
+                low_was_bad integer
+                    not null,
+                new_high integer
+                    not null,
+                high_was_bad integer
+                    not null,
+                new_count integer
+                    not null,
+                count_was_bad integer
+                    not null,
+                expired integer
+                    not null,
+                groupname blob
+                    not null,
+                flag_alias blob
+                    not null
+            );
 
-with new_stats (groupid, new_low, new_high, new_count) as
-    (select groupid,
-            coalesce(min(artnum), low),
-            coalesce(max(artnum), high),
-            count(artnum)
-        from groupinfo
-            natural left join artinfo
-        where not deleted
-        group by groupid)
-insert into repairs
-        (groupid,
-         new_low, low_was_bad,
-         new_high, high_was_bad,
-         new_count, count_was_bad,
-         expired, groupname, flag_alias)
-    select groupid,
-            new_low, new_low != low as low_was_bad,
-            new_high, new_high > high as high_was_bad,
-            new_count, new_count != "count" as count_was_bad,
-            expired, groupname, flag_alias
-        from new_stats
-            natural join groupinfo
-        where low_was_bad
-            or high_was_bad
-            or count_was_bad;
-}
+            with new_stats (groupid, new_low, new_high, new_count) as
+                (select groupid,
+                        coalesce(min(artnum), low),
+                        coalesce(max(artnum), high),
+                        count(artnum)
+                    from groupinfo
+                        natural left join artinfo
+                    where not deleted
+                    group by groupid)
+            insert into repairs
+                    (groupid,
+                     new_low, low_was_bad,
+                     new_high, high_was_bad,
+                     new_count, count_was_bad,
+                     expired, groupname, flag_alias)
+                select groupid,
+                        new_low, new_low != low as low_was_bad,
+                        new_high, new_high > high as high_was_bad,
+                        new_count, new_count != "count" as count_was_bad,
+                        expired, groupname, flag_alias
+                    from new_stats
+                        natural join groupinfo
+                    where low_was_bad
+                        or high_was_bad
+                        or count_was_bad;
+        },
     );
 
     $statement = $dbh->prepare("select count(*) from repairs;");
@@ -375,11 +376,12 @@ insert into repairs
         # Show incoherent records (L, H and C are for Low, High, Count).
         $statement = $dbh->prepare(
             q{
-select case when low_was_bad then 'L' else '_' end
-        || case when high_was_bad then 'H' else '_' end
-        || case when count_was_bad then 'C' else '_' end as bad, groupname
-    from repairs;
-}
+                select case when low_was_bad then 'L' else '_' end
+                    || case when high_was_bad then 'H' else '_' end
+                    || case when count_was_bad then 'C' else '_' end
+                        as bad, groupname
+                    from repairs;
+            },
         );
         $statement->execute();
 
@@ -391,12 +393,13 @@ select case when low_was_bad then 'L' else '_' end
             # Fix groupinfo table.
             $result = $dbh->do(
                 q{
-insert or replace into groupinfo
-        (groupid, low, high, "count", expired, groupname, flag_alias)
-    select groupid, new_low, new_high, new_count,
-            expired, groupname, flag_alias
-        from repairs;
-}
+                    insert or replace into groupinfo
+                        (groupid, low, high, "count", expired,
+                         groupname, flag_alias)
+                        select groupid, new_low, new_high, new_count,
+                               expired, groupname, flag_alias
+                            from repairs;
+                },
             );
             $dbh->commit();
 
@@ -416,9 +419,9 @@ sub dump_overview {
 
     $statement = $dbh->prepare(
         qq{
-select artnum, overview, arrived, expires, quote(token)
-    from artinfo $sql_extraclause_artinfo;
-}
+            select artnum, overview, arrived, expires, quote(token)
+                from artinfo $sql_extraclause_artinfo;
+        },
     );
     $statement->execute();
 
@@ -441,9 +444,9 @@ sub dump_groupinfo {
 
     $statement = $dbh->prepare(
         qq{
-select groupname, high, low, count, flag_alias, expired, deleted
-    from groupinfo $sql_extraclause_groupinfo;
-}
+            select groupname, high, low, count, flag_alias, expired, deleted
+                from groupinfo $sql_extraclause_groupinfo;
+        },
     );
     $statement->execute();
 
@@ -458,9 +461,9 @@ sub dump_artinfo_clients {
 
     $statement = $dbh->prepare(
         qq{
-select overview, artnum, quote(token), arrived, expires
-    from artinfo $sql_extraclause_artinfo;
-}
+            select overview, artnum, quote(token), arrived, expires
+                from artinfo $sql_extraclause_artinfo;
+        },
     );
     $statement->execute();
 
@@ -489,9 +492,9 @@ sub dump_artinfo_overchan {
 
     $statement = $dbh->prepare(
         qq{
-select quote(token), arrived, expires, overview, artnum
-    from artinfo $sql_extraclause_artinfo;
-}
+            select quote(token), arrived, expires, overview, artnum
+                from artinfo $sql_extraclause_artinfo;
+        },
     );
     $statement->execute();
 

@@ -532,7 +532,7 @@ sub incoming_conf {
             },
             'group' => {},
             'peer'  => {},
-        }
+        },
     );
     return;
 }
@@ -658,7 +658,7 @@ sub innfeed_conf {
             '<include>' => {
                 '$INCLUDE' => 'ignore',
             },
-        }
+        },
     );
     # check some numeric values
     foreach my $group (keys %groups) {
@@ -1041,7 +1041,7 @@ sub readers_conf {
             '<include>' => {
                 'include' => 'ignore',
             },
-        }
+        },
     );
     return;
 }
@@ -1061,8 +1061,8 @@ sub storage_conf {
                 'exactmatch' => 'boolean',
                 'filtered'   => 'boolean',
                 'path'       => 'string',    # uwildmat_poison
-            }
-        }
+            },
+        },
     );
     # allowed method names include: cnfs timecaf timehash tradspool trash
     foreach my $method (keys %groups) {

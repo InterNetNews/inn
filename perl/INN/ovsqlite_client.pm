@@ -397,12 +397,12 @@ BEGIN {
             {
                 name    => "cutofflow",
                 default => 0,
-            }
+            },
         ],
         [
             {
                 name => "errmsg",
-            }
+            },
         ],
     );
 
@@ -450,7 +450,7 @@ BEGIN {
         [
             {
                 name => "errmsg",
-            }
+            },
         ],
     );
 
@@ -487,7 +487,7 @@ BEGIN {
             {
                 name     => "groupname",
                 required => 1,
-            }
+            },
         ],
         [
             {
@@ -541,12 +541,12 @@ BEGIN {
             {
                 name     => "groupname",
                 required => 1,
-            }
+            },
         ],
         [
             {
                 name => "errmsg",
-            }
+            },
         ],
     );
 
@@ -656,7 +656,7 @@ BEGIN {
         [
             {
                 name => "errmsg",
-            }
+            },
         ],
     );
 
@@ -730,7 +730,7 @@ BEGIN {
         [
             {
                 name => "errmsg",
-            }
+            },
         ],
     );
 
@@ -828,7 +828,7 @@ BEGIN {
         [
             {
                 name => "errmsg",
-            }
+            },
         ],
     );
 
@@ -1001,7 +1001,7 @@ BEGIN {
         [
             {
                 name => "errmsg",
-            }
+            },
         ],
     );
 
@@ -1052,12 +1052,12 @@ BEGIN {
             {
                 name     => "groupname",
                 required => 1,
-            }
+            },
         ],
         [
             {
                 name => "errmsg",
-            }
+            },
         ],
     );
 
@@ -1100,7 +1100,7 @@ BEGIN {
         [
             {
                 name => "errmsg",
-            }
+            },
         ],
     );
 
@@ -1138,7 +1138,7 @@ BEGIN {
         [
             {
                 name => "errmsg",
-            }
+            },
         ],
     );
 
@@ -1165,12 +1165,12 @@ BEGIN {
             {
                 name     => "callback",
                 required => 1,
-            }
+            },
         ],
         [
             {
                 name => "errmsg",
-            }
+            },
         ],
     );
 
@@ -1223,9 +1223,9 @@ INN::ovsqlite_client - Talk to ovsqlite-server from Perl
 
     use INN::ovsqlite_client qw(:all);
 
-    my $client
-      = INN::ovsqlite_client::->new(
-          port => "/usr/local/news/run/ovsqlite.sock");
+    my $client = INN::ovsqlite_client::->new(
+        port => "/usr/local/news/run/ovsqlite.sock",
+    );
 
     $client->search_group_all(
         groupname => "news.software.nntp",

@@ -247,7 +247,7 @@ sub do_nocem {
               . "(%d ids, %d skipped, %.5f s, %.1f/s)",
             $msgid, $nid, $issuer, $type, $nr, $skipped, $diff,
             ($nr + $skipped) / $diff,
-        )
+        ),
     );
 }
 
@@ -349,7 +349,7 @@ sub read_nocem {
                 "Article %s: %s notice %s by %s for %s (%d ids)",
                 $msgid, $opt_u ? "skipped" : "unwanted", $hdrs{'notice-id'},
                 $hdrs{issuer}, $hdrs{type}, $skipped,
-            )
+            ),
         );
         return;
     }
