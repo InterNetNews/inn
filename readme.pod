@@ -191,6 +191,11 @@ L<INSTALL|https://www.eyrie.org/~eagle/software/inn/docs/install.html>
 for step-by-step instructions for setting up and configuring a news
 server.
 
+If you want to create a Docker image, you can find examples of standard
+local Docker containers or GitHub Actions services in projects like
+L<apt-get-inn2-docker|https://github.com/cclauss/apt-get-inn2-docker> or
+L<inn-docker|https://github.com/greenbender/inn-docker>.
+
 =head2 Documentation
 
 INN also comes with a very complete set of man pages; there is a man page
