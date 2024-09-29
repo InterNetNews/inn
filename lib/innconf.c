@@ -447,17 +447,16 @@ innconf_validate(struct config_group *group)
     /* Checks to ensure valid Message-IDs will be generated. */
     fqdn = inn_getfqdn(innconf->domain);
     if (fqdn == NULL) {
-        warn("hostname does not resolve or domain not set in inn.conf");
-        okay = false;
+        warn("fully qualified hostname not found; see domain in inn.conf");
     }
     if (innconf->domain != NULL && !IsValidDomain(innconf->domain)) {
         warn("domain in inn.conf contains invalid characters not suitable for "
              "Message-IDs");
         okay = false;
     }
-    if (innconf->domain == NULL && !IsValidDomain(fqdn)) {
+    if (innconf->domain == NULL && fqdn != NULL && !IsValidDomain(fqdn)) {
         warn("the FQDN of the server contains invalid characters not suitable "
-             "for Message-IDs");
+             "for Message-IDs; see domain in inn.conf");
         okay = false;
     }
     free(fqdn);
