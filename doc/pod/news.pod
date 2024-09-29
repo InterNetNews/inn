@@ -18,6 +18,16 @@ as unresolved instead of unknown, statistics by domain are at a better
 granularity, totals are correctly computed, and only the top 100 entries are
 displayed by default instead of a possibly very long exhaustive list.
 
+=item *
+
+Improved Perl code readability and quality by enforcing the most interesting
+and useful C<Perl::Critic> policies.
+
+=item *
+
+Spelling fixes in documentation.  Thanks to Christian Clauss for the
+run of B<codespell>.
+
 =back
 
 =head1 Changes in 2.7.2 (2024-06-22)
