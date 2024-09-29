@@ -30,7 +30,7 @@ sub lock {
     while ($locktry < $lockretrymax) {
         if (
             system(
-                "$INN::Config::newsbin/shlock", '-p', $$, '-f', $lockfile
+                "$INN::Config::newsbin/shlock", '-p', $$, '-f', $lockfile,
             ) == 0
         ) {
             $lockfiles{$lockfile} = 1;

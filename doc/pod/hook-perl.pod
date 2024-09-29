@@ -112,7 +112,8 @@ article.
 The contents of the %hdr hash for a typical article may therefore look
 something like this:
 
-    %hdr = (Subject      => 'MAKE MONEY FAST!!',
+    %hdr = (
+        Subject      => 'MAKE MONEY FAST!!',
         From         => 'Joe Spamer <him@example.com>',
         Date         => '10 Sep 1996 15:32:28 UTC',
         Newsgroups   => 'alt.test',
@@ -122,7 +123,7 @@ something like this:
         Distribution => 'usa',
         'Message-ID' => '<6.20232.842369548@example.com>',
         __BODY__     => 'Send five dollars to ISC, c/o ...',
-        __LINES__    => 5
+        __LINES__    => 5,
     );
 
 Note that the value of C<$hdr{Lines}> is the body of the (obsolescent and
@@ -500,7 +501,10 @@ access() returns a hash, containing the desired access parameters and
 values.  Here is an untested example showing how to dynamically generate a
 list of newsgroups based on the client's username and domain.
 
-     my %hosts = ( "example.com" => "example.*", "isc.org" => "isc.*" );
+    my %hosts = (
+        "example.com" => "example.*",
+        "isc.org" => "isc.*",
+    );
 
      sub access {
         %return_hash = (
