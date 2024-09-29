@@ -236,7 +236,7 @@ getfqdn.o: getfqdn.c ../include/portable/system.h ../include/config.h \
   ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
   ../include/inn/libinn.h ../include/inn/concat.h ../include/inn/macros.h \
   ../include/inn/portable-stdbool.h ../include/inn/xmalloc.h \
-  ../include/inn/system.h ../include/inn/xwrite.h
+  ../include/inn/system.h ../include/inn/xwrite.h ../include/inn/paths.h
 getmodaddr.o: getmodaddr.c ../include/portable/system.h \
   ../include/config.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/options.h \

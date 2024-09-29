@@ -262,9 +262,14 @@ B<HashMessageID> returns hashed Message-ID using MD5.
 =head2 OTHER USEFUL FUNCTIONS
 
 B<inn_getfqdn> returns the fully qualified domain name of the local host.
-I<domain> is used to qualify the local host name if local host cannot be
-resolved in DNS.  The returned value points to newly-allocated memory that the
-caller is responsible for freeing, or NULL on error.
+B<inn_getfqdn> first tries to retrieve it from the INN_HOSTNAME environment
+variable if set, then from gethostname(3) and getaddrinfo(3) calls.  The check
+is very simple; if the retrieved hostname contains a period, then it is
+assumed to have the full domain name.  Otherwise, if I<domain> is set in
+F<inn.conf>, a dot followed with the value of I<domain> is appended to the
+retrieved hostname to qualify the local host name.  The returned value points
+to newly-allocated memory that the caller is responsible for freeing, or NULL
+on error.
 
 B<GetModeratorAddress> returns the mailing address of the moderator for
 specified I<group> or NULL on error.  I<moderatormailer> is used as its

@@ -99,6 +99,9 @@
 /* What to put in the From header field body, for client posting. */
 #define INN_ENV_FROMHOST           "FROMHOST"
 
+/* Hostname to use. */
+#define INN_ENV_HOSTNAME           "INN_HOSTNAME"
+
 /* Interface to bind as, for sockets. */
 #define INN_ENV_INNBINDADDR        "INND_BIND_ADDRESS"
 #define INN_ENV_INNBINDADDR6       "INND_BIND_ADDRESS6"

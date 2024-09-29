@@ -7,6 +7,7 @@
 #include "portable/socket.h"
 
 #include "inn/libinn.h"
+#include "inn/paths.h"
 #include "inn/xmalloc.h"
 
 
@@ -21,7 +22,13 @@ inn_getfqdn(const char *domain)
 {
     char hostname[BUFSIZ];
     struct addrinfo hints, *res;
-    char *fqdn, *canon;
+    char *canon, *env, *fqdn;
+
+    /* First, check for a hostname given as an environment variable.
+     * Return it if already fully qualified. */
+    env = getenv(INN_ENV_HOSTNAME);
+    if (env != NULL && strchr(env, '.') != NULL)
+        return xstrdup(env);
 
     /* If gethostname fails, there's nothing we can do. */
     if (gethostname(hostname, sizeof(hostname)) < 0)
@@ -48,6 +55,6 @@ inn_getfqdn(const char *domain)
     /* Fall back on canonicalizing with a provided domain. */
     if (domain == NULL || domain[0] == '\0')
         return NULL;
-    xasprintf(&fqdn, "%s.%s", hostname, domain);
+    xasprintf(&fqdn, "%s.%s", env != NULL ? env : hostname, domain);
     return fqdn;
 }
