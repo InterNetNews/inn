@@ -362,21 +362,21 @@ mere LF (B<nnrpd> will properly rewrite them as CRLF when posting).
 
 To modify the contents of the Organization header field body, you can use:
 
-  $hdr{'Organization'} = 'My new organization';
-  $modify_headers = 1;
+    $hdr{'Organization'} = 'My new organization';
+    $modify_headers = 1;
 
 To delete the Organization header field, you should not use
 C<delete $hdr{'Organization'}> (this syntax may work with
 some header fields, and not with other header fields).  Instead, you are
 encouraged to use:
 
-  $hdr{'Organization'} = undef;
-  $modify_headers = 1;
+    $hdr{'Organization'} = undef;
+    $modify_headers = 1;
 
 or:
 
-  $hdr{'Organization'} = '';
-  $modify_headers = 1;
+    $hdr{'Organization'} = '';
+    $modify_headers = 1;
 
 If filter_post() returns something other than the empty string, this
 message is normally returned to the client as an error (make sure that
@@ -506,24 +506,24 @@ list of newsgroups based on the client's username and domain.
         "isc.org" => "isc.*",
     );
 
-     sub access {
+    sub access {
         %return_hash = (
-           "max_rate" => "10000",
-           "addinjectionpostinghost" => "true",
-     #     ...
+            "max_rate" => "10000",
+            "addinjectionpostinghost" => "true",
+            # ...
         );
-        if( defined $attributes{username} &&
-            $attributes{username} =~ /.*@(.*)/ )
+        if (defined $attributes{username}
+            && $attributes{username} =~ /.*@(.*)/)
         {
-           $return_hash{"virtualhost"} = "true";
-           $return_hash{"path"} = $1;
-           $return_hash{"newsgroups"} = $hosts{$1};
+            $return_hash{"virtualhost"} = "true";
+            $return_hash{"path"} = $1;
+            $return_hash{"newsgroups"} = $hosts{$1};
         } else {
-           $return_hash{"read"} = "*";
-           $return_hash{"post"} = "local.*"
+            $return_hash{"read"} = "*";
+            $return_hash{"post"} = "local.*";
         }
         return %return_hash;
-     }
+    }
 
 Note that both the keys and values are quoted strings.  These values
 are to be returned to a C program and must be quoted strings.  For

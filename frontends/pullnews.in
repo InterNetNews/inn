@@ -519,14 +519,15 @@ close FILE;
 my @servers
   = @ARGV
   ? @ARGV
-  : sort { $servers->{$a}->{_order} <=> $servers->{$b}->{_order} }
-  keys %$servers;
+  : sort({ $servers->{$a}->{_order} <=> $servers->{$b}->{_order} }
+      keys(%$servers));
 
 die "No servers!\n" if !@servers;
 
 my $localcxn;
-my $art_total_count
-  = 0;    # The number of articles transferred during the session.
+
+# The number of articles transferred during the session.
+my $art_total_count = 0;
 
 if (not $rnews) {
     my $additionalString = "without TLS";
