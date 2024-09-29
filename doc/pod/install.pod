@@ -50,6 +50,16 @@ there are new options of interest to you.
 
 For more information about recent changes, see F<NEWS>.
 
+=head1 Packages and Docker Images
+
+Instead of building INN from sources, you may want to check that a readily
+available package does not already exist for your operating system.
+
+If you want to create a Docker image, you can find examples of standard
+local Docker containers or GitHub Actions services in projects like
+L<apt-get-inn2-docker|https://github.com/cclauss/apt-get-inn2-docker> or
+L<inn-docker|https://github.com/greenbender/inn-docker>.
+
 =head1 Supported Systems
 
 As much as possible, INN is written in portable C and should work on any
