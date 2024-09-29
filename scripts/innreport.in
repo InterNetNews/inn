@@ -93,7 +93,7 @@
 # to this file.
 
 use strict;
-use Carp qw( cluck confess );
+use Carp qw(cluck confess);
 use Time::Local;
 use Time::Piece;
 
@@ -158,7 +158,7 @@ my $start_time = time;
 # Require Perl 5.002 or greater.
 require 5.002;
 use Getopt::Long;
-use vars qw/$HAVE_GD $GD_FORMAT/;
+use vars qw($HAVE_GD $GD_FORMAT);
 
 my @old_argv = @ARGV;
 
@@ -175,24 +175,25 @@ my @old_argv = @ARGV;
 my %ref;
 GetOptions(
     \%ref,
-    qw(-h -help
-      -html!
-      -config
-      -f=s
-      -g! -graph!
-      -d=s -dir=s
-      -p=s -path=s
-      -w=s -webpath=s
-      -i=s -index=s
-      -a! -archive!
-      -c=i -cycle=i
-      -s=s -separator=s
-      -unknown!
-      -html-unknown!
-      -maxunrec=i
-      -casesensitive!
-      -notdaily!
-      -v
+    qw(
+        -h -help
+        -html!
+        -config
+        -f=s
+        -g! -graph!
+        -d=s -dir=s
+        -p=s -path=s
+        -w=s -webpath=s
+        -i=s -index=s
+        -a! -archive!
+        -c=i -cycle=i
+        -s=s -separator=s
+        -unknown!
+        -html-unknown!
+        -maxunrec=i
+        -casesensitive!
+        -notdaily!
+        -v
     ),
 ) || Usage(1);
 

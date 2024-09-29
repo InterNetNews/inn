@@ -303,8 +303,10 @@ exit 0;
 sub parse_article {
     my ($article, $hdr) = @_;
     my $buffer;
-    my %uniquehdr = map { $_ => 1 } qw(approved control date followup-to
-      from injection-date message-id newsgroups path reply-to sender subject);
+    my %uniquehdr = map { $_ => 1 } qw(
+        approved control date followup-to from injection-date message-id
+        newsgroups path reply-to sender subject
+    );
 
     my $head = $article->head;
 

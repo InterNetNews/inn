@@ -40,7 +40,7 @@ sub dump_articles {
                 print $dst join(
                     "\t",
                     "a",
-                    @{$article}{qw(artnum arrived expires)},
+                    @{$article}{ qw(artnum arrived expires) },
                     '@' . unpack("H*", $article->{token}) . '@',
                     $article->{overview},
                 );
@@ -70,7 +70,7 @@ sub dump_groups {
                     join(
                         "\t",
                         "g",
-                        @{$group}{qw(groupname low high count flag_alias)},
+                        @{$group}{ qw(groupname low high count flag_alias) },
                     ),
                     "\n",
                 );

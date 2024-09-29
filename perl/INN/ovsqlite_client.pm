@@ -628,7 +628,7 @@ BEGIN {
                 foreach my $groupix (0 .. $groupcount - 1) {
                     my (%group);
 
-                    @group{qw(groupname low high count flag_alias)}
+                    @group{ qw(groupname low high count flag_alias) }
                       = @flat[$groupix * 5 .. $groupix * 5 + 4];
                     push(@groups, \%group);
                 }

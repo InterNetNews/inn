@@ -275,10 +275,12 @@ sub HELP_MESSAGE {
     exit(0);
 }
 
-use vars qw($opt_a $opt_b $opt_B $opt_c $opt_C $opt_d $opt_f $opt_F
-  $opt_g $opt_G $opt_h $opt_H $opt_k $opt_l $opt_L $opt_m $opt_M $opt_n
-  $opt_N $opt_O $opt_p $opt_P $opt_q $opt_Q $opt_r $opt_R $opt_s
-  $opt_S $opt_t $opt_T $opt_w $opt_x $opt_z $opt_Z);
+use vars qw(
+    $opt_a $opt_b $opt_B $opt_c $opt_C $opt_d $opt_f $opt_F $opt_g $opt_G
+    $opt_h $opt_H $opt_k $opt_l $opt_L $opt_m $opt_M $opt_n $opt_N $opt_O
+    $opt_p $opt_P $opt_q $opt_Q $opt_r $opt_R $opt_s $opt_S $opt_t $opt_T
+    $opt_w $opt_x $opt_z $opt_Z
+);
 getopts("a:b:Bc:C:d:f:F:g:G:hH:k:l:L:m:M:nN:Op:P:qQ:r:Rs:S:t:T:w:xz:Z:")
   || die $usage;
 
@@ -383,7 +385,7 @@ if ($hashfeed ne '') {
         $hashfeed = '';
     } else {
         require Digest::MD5;
-        Digest::MD5->import(qw/md5/);
+        Digest::MD5->import(qw(md5));
     }
 }
 

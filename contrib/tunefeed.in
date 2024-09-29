@@ -23,8 +23,10 @@ my %big8 = map { $_ => 1 } qw(comp humanities misc news rec sci soc talk);
 
 # A list of hierarchies that are considered global and not language
 # hierarchies.
-my %global = map { $_ => 1 } qw(bionet bit biz borland ddn gnu gov ieee info
-  linux k12 microsoft netscape tnn vmsnet);
+my %global = map { $_ => 1 } qw(
+    bionet bit biz borland ddn gnu gov ieee info linux k12 microsoft netscape
+    tnn vmsnet
+);
 
 # The pattern matching local-only hierarchies (that we should disregard when
 # doing feed matching).

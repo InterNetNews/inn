@@ -57,9 +57,10 @@ sub HELP_MESSAGE {
     exit(0);
 }
 
-use vars
-  qw($opt_r $opt_f $opt_a $opt_d $opt_m $opt_b $opt_n $opt_o $opt_h $opt_c
-  $opt_x $opt_z $opt_p $opt_t);
+use vars qw(
+    $opt_a $opt_b $opt_c $opt_d $opt_f $opt_h $opt_m $opt_n $opt_o $opt_p
+    $opt_r $opt_t $opt_x $opt_z
+);
 getopts("a:b:c:d:f:hm:no:p:r:t:x:z:") || die $usage;
 HELP_MESSAGE() if defined($opt_h);
 

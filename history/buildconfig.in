@@ -12,8 +12,9 @@ use strict;
 use vars qw(@HISTORY);
 
 # History API functions.
-@HISTORY = qw(open close sync lookup check write replace expire walk remember
-  ctl);
+@HISTORY = qw(
+    open close sync lookup check write replace expire walk remember ctl
+);
 
 # Used to make heredocs more readable.
 sub unquote { my ($string) = @_; $string =~ s/^:( {0,7}|\t)//gm; $string }
