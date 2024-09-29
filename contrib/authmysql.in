@@ -49,9 +49,8 @@ $query
 
 $result = $dbh->prepare($query);
 $result->execute;
-my $query_result
-  = $result->fetchrow_array();    # This should be 1 or 0, 1 on success.
-
+my $query_result = $result->fetchrow_array();    # This should be 1 or 0,
+                                                 # 1 on success.
 $result->finish;
 
 # Need to get the return shit working now so it will reply proper

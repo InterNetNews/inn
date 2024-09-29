@@ -300,9 +300,11 @@ sub parse_config {
         my $type
           = defined $options->{ $group->{'type'} }->{$word}
           ? $options->{ $group->{'type'} }->{$word}
-          : defined $options->{'<anywhere>'}->{$word}
-          ? $options->{'<anywhere>'}->{$word}
-          : undef;
+          : (
+              defined $options->{'<anywhere>'}->{$word}
+              ? $options->{'<anywhere>'}->{$word}
+              : undef
+          );
         if ($type) {
             $parse_error = 0;
             my $value = get_config_word();
