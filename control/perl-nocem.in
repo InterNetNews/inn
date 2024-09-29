@@ -96,8 +96,9 @@ sub HELP_MESSAGE {
     exit 0;
 }
 
-use vars
-  qw($opt_b $opt_c $opt_g $opt_G $opt_h $opt_i $opt_k $opt_l $opt_u $opt_v);
+use vars qw(
+    $opt_b $opt_c $opt_g $opt_G $opt_h $opt_i $opt_k $opt_l $opt_u $opt_v
+);
 getopts("b:c:g:G:hi:k:luv:") || die $usage;
 
 HELP_MESSAGE() if defined($opt_h);
