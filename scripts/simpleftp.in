@@ -62,9 +62,10 @@ for (@ARGV) {
         $host = $3;
     }
 
-    if ($host =~ /(.*):(.*)/) {
-        $port = $1;
-        $host = $2;
+    # Do not search a port for IPv6 addresses.
+    if ($host !~ /^[\da-fA-F\:]+$/ && $host =~ /(.*):(.*)/) {
+        $host = $1;
+        $port = $2;
     }
 
     if (defined $lasthost && $host ne $lasthost) {
