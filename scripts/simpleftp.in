@@ -26,6 +26,12 @@ $0 =~ s(.*/)();
 
 my $usage = "Usage: $0 ftp-URL ...\n";
 
+# The following variables could be flags passed to simpleftp, but well,
+# better use a real FTP program for that!
+my $debug = 0;       # 1 to enable verbose output.
+my $passive = 1;     # 0 for active mode, 1 for passive mode.
+my $timeout = 10;    # Timeout in seconds.
+
 @ARGV
   or die $usage;
 
@@ -67,8 +73,14 @@ for (@ARGV) {
     }
 
     unless (defined $lasthost) {
-        $ftp = Net::FTP->new($host, Port => $port)
-          or next;
+        $ftp = Net::FTP->new(
+            Host    => $host,
+            Port    => $port,
+            Timeout => $timeout,
+            Passive => $passive,
+            Debug   => $debug,
+        ) or next;
+
         $ftp->login($user, $pass)
           or next;
     }
@@ -82,6 +94,7 @@ for (@ARGV) {
 
     $ftp->cwd($path)
       or next;
+
     $ftp->get($localfile)
       or next;
 

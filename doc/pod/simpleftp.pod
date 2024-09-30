@@ -20,6 +20,12 @@ as follows:
 
     ftp://user:password@host:port/path/file
 
+B<simpleftp> has a hard-coded timeout of 10 seconds.  It uses binary mode and
+passive mode for data transfers.
+
+It exits with status 0 on success.  Otherwise, the exit status is the number
+of failed transfers.
+
 =head1 BUGS
 
 B<simpleftp> is an extremely poor substitute for more complete programs
