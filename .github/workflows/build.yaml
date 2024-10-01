@@ -13,9 +13,83 @@ jobs:
       C_TAP_VERBOSE: 1
 
     steps:
+      - run: exit 1  # TODO(cclauss): Remove this line!!!
       - name: checkout
         uses: actions/checkout@v4
       - name: install
         run: sudo -E ci/install
       - name: test
         run: ci/test
+
+  pynntp_tests:
+    runs-on: ubuntu-latest
+
+    env:
+      AUTHOR_TESTING: 1
+      C_TAP_VERBOSE: 1
+
+    steps:
+      - run: env
+      - uses: actions/checkout@v4
+      - run: sudo -E ci/install
+      - run: ./autogen
+      - run: ./configure CC="${COMPILER:-gcc}" --prefix=$RUNNER_WORKSPACE/inn-install
+                --with-canlock --with-news-user=news --with-news-group=news --with-openssl
+                --with-perl --with-python --with-sasl --with-zlib  
+      - run: make
+      - run: mkdir -p $RUNNER_WORKSPACE/inn-install/db
+      - run: touch $RUNNER_WORKSPACE/inn-install/db/history
+      - run: echo -e "local.general 1726983313 usenet\nlocal.test 1726983317 usenet" > $RUNNER_WORKSPACE/inn-install/db/active.times
+      - run: sudo chown -R news:news $RUNNER_WORKSPACE/inn-install
+      - run: sudo INN_HOSTNAME=inn.github-action make install
+      # This fails on:
+      # > touch /home/runner/work/inn/inn-install/db/history
+      # > chmod 0664 /home/runner/work/inn/inn-install/db/history
+      # > makedbz: cannot chdir to /home/runner/work/inn/inn-install/db: Permission denied
+
+      # - run: sudo -u news make install
+
+      - run: systemctl status inn2 || true
+      - run: env
+      # - run: mkdir -p $RUNNER_WORKSPACE/inn-install/db
+      # - run: sudo chown -R news:news $RUNNER_WORKSPACE/inn-install
+      # - run: INN_HOSTNAME=inn.github-action $RUNNER_WORKSPACE/inn-install/bin/rc.news start
+      # - run: sudo -u news INN_HOSTNAME=inn.github-action $RUNNER_WORKSPACE/inn-install/bin/rc.news start
+
+      # CAUTION: Running as root is dangerous.
+      - run: sudo INN_HOSTNAME=inn.github-action $RUNNER_WORKSPACE/inn-install/bin/rc.news start
+
+
+
+
+      - run: pwd && ls -la
+      - run: ls -lR /etc 2>/dev/null | grep -E 'inn|news'
+      - run: ls -l /usr/local  # No `news` directory
+      # - run: ls -lR /usr/local/news 2>/dev/null | grep -E 'inn|news' || true
+      # - run: find /etc -name inn.conf 2>/dev/null || true
+      - run: find /home -name inn.conf 2>/dev/null || true
+      # - run: find /usr/local/news -name inn.conf 2>/dev/null || true
+      - run: ls -la $RUNNER_WORKSPACE/inn/site || true
+      - run: cat $RUNNER_WORKSPACE/inn/site/inn.conf || true  # Useful for debugging
+      # - run: cat /usr/local/news/etc/inn.conf || true  # Useful for debugging
+      # - run: ls /etc/systemd/system || true
+      # - run: systemctl --help || true
+      # - run: systemctl list-units --all || true
+      # - run: systemctl list-units --type=service --all || true
+      - run: sudo systemctl enable inn2 || true
+      - run: sudo systemctl start inn2 || true
+      # - run: systemctl show inn2 || true
+      - run: systemctl status inn2 || true
+      # - run: /usr/lib/news/bin/rc.news || true
+      # Run all pynntp tests
+      - run: ls -la
+      - uses: actions/checkout@v4
+        with:
+          repository: greenbender/pynntp
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - run: pip install --upgrade pip
+      - run: pip install pytest
+      - run: pip install --editable .
+      - run: pytest
