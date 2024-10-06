@@ -97,6 +97,7 @@ $gpg = '@GPG@';
 $pgp = '@PGP@';
 $sort = '@SORT@';
 $getftp = "@PATH_GETFTP@";
+$gethttp = "@PATH_GETHTTP@";
 $uustat = '@UUSTAT@';
 $uux = '@UUX@';
 

@@ -1,20 +1,21 @@
 #! /usr/bin/perl
 
-# simpleftp - Rudimentary FTP client.
+# simpleftp - Rudimentary FTP and HTTP(S) client.
 #
 # Author: David Lawrence <tale@isc.org>.
-#         Rewritten by Julien Elie to use Net::FTP.
+#         Rewritten by Julien Élie in 2007 to use Net::FTP.
+#
+# Various bug fixes, code and documentation improvements by Julien Élie
+# in 2007, 2009, 2011, 2021, 2022, 2024.
 #
 # Fetch files to the local machine based on URLs on the command line.
-# INN's configure searches for ncftp, wget, linx, et caetera,
-# but they're all system add-ons, so this is provided.
+# INN's configure searches for wget (as well as ncftpget or ncftp for the sole
+# scope of FTP) but they're all system add-ons, so this is provided.
 #
-# Perl 5 is already required by other parts of INN; it only took a half hour
-# to write this, so this was the easiest way to go for a backup plan.
-#
-# This script is nowhere near as flexible as libwww.  If you really need
-# that kind of power, get libwww and use it.  This is just sufficient for what
-# INN needed.
+# This script is nowhere near as flexible as libwww (Perl LWP module).  If you
+# really need that kind of power, get libwww and use it.  This script is just
+# sufficient for what INN needed.  As Perl 5 is already required by other parts
+# of INN, this was the easiest way to go for a backup plan.
 
 use strict;
 use warnings;
@@ -22,37 +23,65 @@ use warnings;
 use Net::FTP;
 use Sys::Hostname;
 
-$0 =~ s(.*/)();
+# HTTP::Tiny is only installed in Perl 5.14.0 and above as a Perl core module.
+# Besides, IO::Socket::SSL and Net::SSLeay are also required for HTTPS support.
+my $http_available = 0;
+eval { require HTTP::Tiny; $http_available = 1 };
 
-my $usage = "Usage: $0 ftp-URL ...\n";
+$0 =~ s{.*/}{};
 
-# The following variables could be flags passed to simpleftp, but well,
-# better use a real FTP program for that!
-my $debug = 0;       # 1 to enable verbose output.
-my $passive = 1;     # 0 for active mode, 1 for passive mode.
-my $timeout = 10;    # Timeout in seconds.
+my $usage = "Usage: $0 url [...]\n";
+
+# The following variables could be flags passed to simpleftp, but well, it is
+# not intended to replace a full-featured program like wget!
+my $debug = 0;       # 1 to enable verbose output for Net::FTP.
+my $passive = 1;     # 0 for active FTP mode, 1 for passive FTP mode.
+my $timeout = 30;    # Timeout in seconds for HTTP::Tiny and Net::FTP.
 
 @ARGV
   or die $usage;
 
-for (@ARGV) {
-    m(^ftp://)
-      or die $usage;
-}
-
 my ($lasthost, $ftp);
+my $ftp_session = 0;
 
 # This will keep track of how many _failed_.
 my $exit = @ARGV;
 
 for (@ARGV) {
-    my ($host, $path) = m%^ftp://([^/]+)(/.+)%;
+    my ($protocol, $host, $path) = m{^([^:]+)://([^/]+)(/.+)};
+    my $url = $_;
     my $user = 'anonymous';
     my $pass = (getpwuid($<))[0] . '@' . hostname;
-    my $port = 21;
+    my $port;
 
-    unless (defined $host && defined $path) {
-        warn "$0: bad URL: $_\n";
+    if ($protocol eq "ftp") {
+        $port = 21;
+    } elsif ($protocol eq "http") {
+        if (!$http_available) {
+            warn "$0: unsupported protocol: $protocol "
+              . "(missing HTTP::Tiny Perl package)\n";
+            next;
+        }
+        $port = 80;
+    } elsif ($protocol eq "https") {
+        if (!$http_available) {
+            warn "$0: unsupported protocol: $protocol "
+              . "(missing HTTP::Tiny Perl package)\n";
+            next;
+        }
+        if (!HTTP::Tiny::can_ssl()) {
+            warn "$0: unsupported protocol: $protocol "
+              . "(missing IO::Socket::SSL and/or Net::SSLeay Perl packages\n";
+            next;
+        }
+        $port = 443;
+    } else {
+        warn "$0: unsupported protocol: $protocol\n";
+        next;
+    }
+
+    if (not defined $host or not defined $path) {
+        warn "$0: bad URL: $url\n";
         next;
     }
 
@@ -69,41 +98,52 @@ for (@ARGV) {
     }
 
     if (defined $lasthost && $host ne $lasthost) {
-        $ftp->quit;
+        $ftp->quit if $ftp_session;
+        $ftp_session = 0;
         $lasthost = undef;
     }
 
-    unless (defined $lasthost) {
-        $ftp = Net::FTP->new(
-            Host    => $host,
-            Port    => $port,
-            Timeout => $timeout,
-            Passive => $passive,
-            Debug   => $debug,
-        ) or next;
-
-        $ftp->login($user, $pass)
-          or next;
-    }
-
     my $localfile = $path;
-    $path =~ s([^/]+$)();
-    $localfile =~ s(.*/)();
+    $path =~ s{[^/]+$}{};
+    $localfile =~ s{.*/}{};
 
-    $ftp->binary
-      or next;
+    if ($protocol eq "ftp") {
+        if (not defined $lasthost) {
+            $ftp = Net::FTP->new(
+                Host    => $host,
+                Port    => $port,
+                Timeout => $timeout,
+                Passive => $passive,
+                Debug   => $debug,
+            ) or next;
 
-    $ftp->cwd($path)
-      or next;
+            $ftp_session = 1;
 
-    $ftp->get($localfile)
-      or next;
+            $ftp->login($user, $pass)
+              or next;
+        }
+
+        $ftp->binary
+          or next;
+
+        $ftp->cwd($path)
+          or next;
+
+        $ftp->get($localfile)
+          or next;
+    } elsif ($protocol =~ /^https?$/) {
+        my $http = HTTP::Tiny->new(
+            timeout => $timeout,
+        ) or next;
+        my $response = $http->mirror($url, $localfile);
+        next if not $response->{success};
+    }
 
     $exit--;
     $lasthost = $host;
 }
 
 $ftp->quit
-  if defined $lasthost;
+  if $ftp_session && defined $lasthost;
 
 exit $exit;

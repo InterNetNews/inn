@@ -29,9 +29,28 @@ C<:bytes> and C<:lines> metadata to news clients using CAPABILITIES.
 
 =item *
 
-B<simpleftp>, mostly used by B<actsyncd>, now correctly parses the port
-number following a hostname (separated by a colon).  FTP sessions also
-default to passive mode as this mode works better behind firewalls and NAT
+B<actsyncd> now supports fetching a remote F<active> file from a web site,
+using the HTTP or HTTPS protocols.  Two new keywords, I<path> and I<protocol>,
+permit parameterizing that in the F<actsync.cfg> configuration file.  See the
+actsync(8) manual page and the updated F<actsync.cfg> sample file for more
+details.
+
+If you are currently using B<actsyncd> to synchronize your F<active> file
+with the one of an FTP server, please check that FTP access is still working
+and the remote F<active> file is up to date.  You are otherwise encouraged
+to update your F<actsync.cfg> configuration file to use an HTTPS access.
+Just adding C<protocol=https> may be enough.  The rationale behind that is
+the fact that FTP servers are considered less secure nowadays; FTP access
+to C<ftp.isc.org> was notably shut down in late 2024 in favour of HTTPS.
+The updated B<actsyncd> and B<simpleftp> programs shipped with INN go along
+with the change.
+
+=item *
+
+B<simpleftp>, only used by B<actsyncd>, now supports fetching files from
+web servers, using the HTTP(S) protocol.  It now also correctly parses a
+port number following a hostname (separated by a colon), and establishes FTP
+sessions in passive mode as this mode works better behind firewalls and NAT
 configurations.
 
 =item *
