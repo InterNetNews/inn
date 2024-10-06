@@ -138,7 +138,7 @@ lines that start with C<#>.  Any other lines may produce undefined results.
 
 The <host> setting refers to the second (remote) I<host> parameter to
 B<actsync>.  If <path-to-active> is provided, <host> is accessed as an FTP
-server, retrieving the file named.  If the filename ends in C<.gz> or
+server, retrieving the file named.  If the filename ends in C<.bz2>, C<.gz> or
 C<.Z>, it will be automatically uncompressed after retrieval.
 <ignore-file> names the ignore file used by B<actsync> (the B<-i> option).
 <actsync-options> contains any other flags that you wish to pass to B<actsync>.
