@@ -3,8 +3,8 @@ dnl
 dnl By default, INN compresses logs with gzip, but some people may want to use
 dnl compress instead, and others may want to use bzip2, or even not compress
 dnl at all their logs.  INN also needs to locate gzip regardless, since it's
-dnl used for compressed rnews batches, and needs to know how to uncompress .Z
-dnl files.
+dnl used for compressed rnews batches, actsyncd and send-uucp.  It also needs
+dnl to know how to uncompress .Z files.
 dnl
 dnl There are two macros defined here.  The first, INN_ARG_COMPRESS, sets the
 dnl command-line option that lets the user specify what compression program to

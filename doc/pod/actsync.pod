@@ -1,3 +1,5 @@
+=encoding utf8
+
 =head1 NAME
 
 actsync, actsyncd - Synchronize newsgroups
@@ -14,27 +16,28 @@ B<actsyncd> I<config> [I<debug-level> [I<debug-format>]]
 
 =head1 IN A NUTSHELL
 
-These programs permit keeping the list of newsgroups your news server carry
-synchronized with an external source.
+These programs permit keeping the list of newsgroups carried by your news
+server synchronized with an external source.
 
 For instance, you can decide to carry the same newsgroups as another news
-server or as the ones listed in a file from an external FTP site, and
-therefore synchronizing with the chosen source on a daily basis by running
-B<actsyncd> in a cron job.
+server or as listed in a file from an external FTP or web site, and then
+synchronize with the chosen source on a daily basis by running B<actsyncd> in
+a cron job.
 
 If you only want a subset of newsgroups from that source, it can be
 parameterized in the F<actsync.ign> configuration file in the I<pathetc>
 directory.
 
-INN comes with a default configuration for fetching the list of newsgroups
-from C<ftp.isc.org>.  You can read about the policies used for maintaining
-that F<active> file at L<https://ftp.isc.org/pub/usenet/CONFIG/README>.
-Just make sure F<actsync.cfg> (the configuration file) and F<actsync.ign> (the
+INN comes with a default configuration for fetching the list of
+newsgroups from C<downloads.isc.org> (also known as C<ftp.isc.org>).
+You can read about the policies used for maintaining that F<active> file
+at L<https://downloads.isc.org/pub/usenet/CONFIG/README>.  Just make
+sure F<actsync.cfg> (the configuration file) and F<actsync.ign> (the
 synchronization rules) suit your needs, and run:
 
     actsyncd <pathetc>/actsync.cfg
 
-You'll find more detailed examples of use below in this man page.
+You'll find more detailed examples of use below in this manual page.
 
 =head1 DESCRIPTION
 
@@ -57,7 +60,7 @@ your site.
 
 =item *
 
-Your F<control.ctl> may be out of date or incomplete.
+Your F<control.ctl> file may be out of date or incomplete.
 
 =item *
 
@@ -76,15 +79,11 @@ Your F<active> file may have been trashed.
 
 =back
 
-If either I<host> argument begins with C<.> or C</>, it is assumed to be
-the name of a file containing information in the active(5) format.  The
-getlist(1) utility may be used to obtain a copy of a remote system's F<active>
-file via its NNTP server, or an FTP client program can retrieve such a
-file from an FTP archive (such as ftp.isc.org available in both FTP and HTTPS
-L<https://ftp.isc.org/pub/usenet/CONFIG/active>; see more about this below).
-Newsgroup information from a file may be treated as if it was obtained
-from a host.  In this man page, the I<host> arguments on the command line
-are called hosts, even though they may be file names.
+If either I<host> argument begins with C<.> or C</>, it is assumed to be the
+name of a file containing information in the active(5) format.  Newsgroup
+information from a file may be treated as if it was obtained from a host.
+In this manual page, the I<host> arguments on the command line are called
+hosts, even though they may be file names.
 
 If a host argument does not begin with C<.> or C</>, it is assumed to be a
 hostname or Internet address.  In this case, B<actsync> will attempt to
@@ -117,31 +116,42 @@ The name may not end in a C<.> character.
 
 The B<actsyncd> daemon provides a convenient interface to configure and
 run B<actsync>.  If a host is not initially reachable, the daemon will
-retry up to 9 additional times, waiting 6 minutes before each retry.  This
-daemon runs in the foreground, sending output to standard output and
-standard error.  It then uses mod-active(8) to update the F<active> file
-if there are commands for B<ctlinnd> in its output.
+retry up to 9 additional times, waiting 6 minutes before each retry.
+This daemon runs in the foreground, sending output to standard output
+and standard error.  B<actsyncd> runs the getlist(1) utility to obtain
+a copy of a remote system's F<active> file via its NNTP server, or
+runs an FTP or web client program (B<wget> or B<ncftpget> if installed
+and found at configure time, or the simpleftp(1) program shipped with
+INN) to fetch a list of newsgroups from an external archive (such as
+L<https://downloads.isc.org/pub/usenet/CONFIG/active>; see more about this
+below).  It then uses mod-active(8) to update the F<active> file if there are
+commands for B<ctlinnd> in its output.
 
-The configuration filename for the daemon is given as a command line
-argument, usually F<actsync.cfg> in I<pathetc>.  The config file can
-contain the following options:
+The configuration filename for the daemon is given as a command line argument,
+usually F<actsync.cfg> in I<pathetc>.  This file can contain the following
+options:
 
     host=<host>
-    ftppath=<path-to-active>
-    ignore_file=<ignore-file>
+    path=<path-to-active>
+    protocol=<protocol>
     flags=<actsync-options>
+    ignore_file=<ignore-file>
 
-The C<host=>, C<ignore_file=>, and C<flags=> lines are mandatory.
+The C<host=>, C<flags=>, and C<ignore_file=> lines are mandatory.
 Each keyword must start at the beginning of the line, and there may be no
 whitespace before the C<=> character.  Blank lines are ignored, as are comment
 lines that start with C<#>.  Any other lines may produce undefined results.
 
-The <host> setting refers to the second (remote) I<host> parameter to
-B<actsync>.  If <path-to-active> is provided, <host> is accessed as an FTP
-server, retrieving the file named.  If the filename ends in C<.bz2>, C<.gz> or
-C<.Z>, it will be automatically uncompressed after retrieval.
-<ignore-file> names the ignore file used by B<actsync> (the B<-i> option).
-<actsync-options> contains any other flags that you wish to pass to B<actsync>.
+The <host> setting refers to the second (remote) I<host> parameter
+to B<actsync>.  If <path-to-active> is not provided, <protocol> is
+considered to be C<nntp>, and <host> is accessed as a remote NNTP server.
+If <path-to-active> is provided, <host> is accessed as an FTP or web server
+depending on the value of <protocol> (C<ftp>, C<http> or C<https>, defaulting
+to C<ftp> when unset), retrieving the F<active> file at the <path-to-active>
+absolute path.  If the filename ends in C<.bz2>, C<.gz> or C<.Z>, it will
+be automatically uncompressed after retrieval.  <actsync-options> contains
+any other flags that you wish to pass to B<actsync>. <ignore-file> names the
+ignore file used by B<actsync> (the B<-i> option).
 
 Note that one should not include B<-i> or B<-o> options in the C<flags=> line;
 they are automatically taken care of by B<actsyncd>.
@@ -156,16 +166,23 @@ I<debug-level> flag (overriding any B<-v> flag on the C<flags=> line),
 not make any changes to the F<active> file, write a new F<active> file to
 standard output, and write debug messages to standard error.  Note that using
 I<debug-level> is only supported when synchronizing with another news server,
-not with FTP.
+not with FTP or HTTP(S).
 
 If the I<debug-format> argument is also given to B<actsyncd>, the data
-written to standard output will be in B<-o I<debug-format>> instead of in
+written to standard output will be in C<-o I<debug-format>> instead of in
 C<-o a1> format.
 
-INN comes with default values of C<ftp.isc.org> for <host> and
-C</pub/usenet/CONFIG/active.gz> for <path-to-active>.  You can read about the
-policies used for maintaining that F<active> file at
-L<https://ftp.isc.org/pub/usenet/CONFIG/README>.  Consider synchronizing
+INN comes with default values of C<downloads.isc.org> for <host>
+and C</pub/usenet/CONFIG/active.gz> for <path-to-active>:
+
+    host=downloads.isc.org
+    path=/pub/usenet/CONFIG/active.gz
+    protocol=https
+    flags=-v 0 -p 80
+    ignore_file=actsync.ign
+
+You can read about the policies used for maintaining that F<active> file at
+L<https://downloads.isc.org/pub/usenet/CONFIG/README>.  Consider synchronizing
 from this file on a daily basis by using a cron job.
 
 =head1 OPTIONS
@@ -696,7 +713,7 @@ The command
 will operate in debug mode, not change the F<active> file, write B<ctlinnd>
 style commands to F<cmd.log>, and write debug statements to F<dbg.log>.
 (Note that using I<debug-level> is only supported when synchronizing with
-another news server, not with FTP.)
+another news server, not with FTP or HTTP(S).)
 
 To check only the major hierarchies against news.server.com, use the following
 F<actsync.ign> file:
@@ -795,9 +812,9 @@ will be issued.
 
 =head1 HISTORY
 
-Written by Landon Curt Noll <chongo@toad.com> for InterNetNews.  Updated
-to support FTP fetching by David Lawrence <tale@isc.org>.  Converted to
-POD by Russ Allbery <eagle@eyrie.org>.
+Written by Landon Curt Noll <chongo@toad.com> for InterNetNews.  Updated to
+support FTP fetching by David Lawrence <tale@isc.org>, and to HTTP(S) fetching
+by Julien Élie.  Converted to POD by Russ Allbery <eagle@eyrie.org>.
 
 By Landon Curt Noll <chongo@toad.com> (chongo was here /\../\).
 

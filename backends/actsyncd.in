@@ -15,6 +15,9 @@
 # Copyright (c) Landon Curt Noll, 1993.
 # All rights reserved.
 #
+# Various bug fixes, code and documentation improvements since then
+# in 1999-2003, 2007-2009, 2021-2024.
+#
 # Permission to use and modify is hereby granted so long as this
 # notice remains.  Use at your own risk.  No warranty is implied.
 
@@ -80,7 +83,50 @@ if [ -z "$ign" ]; then
     echo "$0: no ignore file specified in $cfg" 1>&2
     exit 5
 fi
-ftp="$(sed -n -e 's/^ftppath=[ 	]*//p' $cfg | tail -n 1)"
+
+# Keep ftppath for backwards-compatibility.
+ftp="$(sed -n -e 's/^ftppath=[ 	]*\/*//p' $cfg | tail -n 1)"
+path="$(sed -n -e 's/^path=[ 	]*\/*//p' $cfg | tail -n 1)"
+protocol="$(sed -n -e 's/^protocol=[ 	]*//p' $cfg \
+    | tr '[:upper:]' '[:lower:]' | tail -n 1)"
+
+if [ -z "$ftp" ] && [ -z "$path" ]; then
+    if [ -z "$protocol" ]; then
+        protocol="nntp"
+    else
+        if [ "$protocol" != "nntp" ]; then
+            echo "$0: path expected with protocol $protocol" 1>&2
+            exit 6
+        fi
+    fi
+fi
+
+# If not NNTP, assume FTP by default for backwards-compatibility.
+if [ -z "$protocol" ]; then
+    protocol="ftp"
+fi
+
+if [ -n "$ftp" ] && [ -n "$path" ]; then
+    echo "$0: ftppath and path cannot both be set" 1>&2
+    exit 6
+fi
+
+if [ -n "$ftp" ] || [ -n "$path" ]; then
+    if [ "$protocol" = "nntp" ]; then
+        echo "$0: cannot set a path with protocol $protocol" 1>&2
+        exit 6
+    fi
+fi
+
+if [ -n "$ftp" ] && [ -z "$path" ]; then
+    path=$ftp
+    if [ "$protocol" != "ftp" ]; then
+        echo "$0: cannot set ftppath with protocol $protocol" 1>&2
+        exit 6
+    fi
+fi
+
+# Try to find the ignore file in pathetc.
 if [ ! -f "$ign" ]; then
     ign="${PATHETC}/$ign"
 fi
@@ -96,8 +142,8 @@ if [ -z "$DEBUG" ]; then
     # Standard actsyncd output mode (commands to ctlinnd).
     flags="$flags -o c"
 else
-    if [ ! -z "$ftp" ]; then
-        echo "$0: cannot use DEBUG mode with ftp (yet)" >&2
+    if [ "$protocol" != "nntp" ]; then
+        echo "$0: DEBUG mode (still) only available with nntp" >&2
         exit 88
     fi
 
@@ -169,7 +215,7 @@ for loop in 1 2 3 4 5 6 7 8 9 10; do
         status=$?
         ;;
     *)
-        if [ -z "$ftp" ]; then
+        if [ "$protocol" = "nntp" ]; then
             port=$(expr "$host" : '.*:\(.*\)')
             if [ -n "$port" ]; then
                 port="-p $port"
@@ -182,13 +228,14 @@ for loop in 1 2 3 4 5 6 7 8 9 10; do
                 status=$NOSYNC
             fi
         else
-            echo "$GETFTP ftp://$host/$ftp" >>$out
-            $GETFTP ftp://$host/$ftp >>$out 2>&1
-            status=$?
-            if [ "$status" -ne 0 ]; then
-                status=$NOSYNC
+            if [ "$protocol" = "ftp" ]; then
+                program=$GETFTP
             else
-                case "$ftp" in
+                program=$GETHTTP
+            fi
+            echo "$program $protocol://$host/$path" >>$out
+            if $program $protocol://$host/$path >>$out 2>&1; then
+                case "$path" in
                 *.bz2)
                     echo "$BZIP2 -d active.bz2" >>$out
                     if $BZIP2 -d active.bz2 >>$out 2>&1; then
@@ -214,7 +261,14 @@ for loop in 1 2 3 4 5 6 7 8 9 10; do
                     fi
                     ;;
                 esac
+            else
+                status=$NOSYNC
             fi
+        fi
+
+        if [ ! -s "active" ]; then
+            echo "$0: active file not retrieved or empty" >>$out
+            status=1
         fi
         ;;
     esac

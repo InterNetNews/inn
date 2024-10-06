@@ -66,12 +66,14 @@ Optional (deb / rpm):
 ---
 Though not mandatory for the build, the following packages should be installed
 if you plan on using the provided features (configure will properly sets their
-path in a few variables used by INN):
+paths in a few variables used by INN):
 - gnupg / gnupg2 (for the verification of the signatures of control articles
   and NoCeM messages - GnuPG 1.x or 2.0.x preferred, as GnuPG 2.1.0 and above
   cannot verify signatures made with old PGP keys still used for some
   hierarchies)
 - uucp / uucp (for the exchange of news articles with send-uucp)
+- wget (for the synchronization of the active file against an external FTP or
+  web server with actsyncd)
 - various wide-spread programs like a modern awk implementation, grep, gzip
   (and eventually bzip2 and compress if you want to use other compression
   methods with send-uucp or rnews), sed and sort, probably already installed
@@ -478,13 +480,13 @@ AS_IF([test x"$GPG" != x],
          [AC_MSG_RESULT([no])])])
 AC_SUBST([GPG_HAS_ALLOW_WEAK_DIGEST_ALGOS_FLAG])
 
-
-dnl Look for a program that takes an ftp URL as a command line argument and
-dnl retrieves the file to the current directory.  Shame we can't also use
-dnl lynx -source; it only writes to stdout.  ncftp as of version 3 doesn't
-dnl support this any more (it comes with ncftpget instead), but if someone
-dnl has ncftp and not ncftpget they have an earlier version.
+dnl Look for a program that takes a FTP or an HTTP(S) URL as a command line
+dnl argument and retrieves the file to the current directory.  Shame we can't
+dnl also use "lynx -source"; it only writes to stdout.  ncftp as of version 3
+dnl doesn't support this any more (it comes with ncftpget instead), but if
+dnl someone has ncftp and not ncftpget, they have an earlier version.
 AC_PATH_PROGS([PATH_GETFTP], [wget ncftpget ncftp], [$bindir/simpleftp])
+AC_PATH_PROGS([PATH_GETHTTP], [wget], [$bindir/simpleftp])
 
 dnl Checks for libraries.  Use AC_SEARCH_LIBS where possible to avoid
 dnl adding libraries when the function is found in libc, and use
