@@ -3,7 +3,7 @@
 
 # actsyncd - actsync daemon
 #
-# usage:
+# Usage:
 #       actsyncd config_file [debug_level [debug_outfmt]]
 #
 #       config_file     name of file used to determine how to run actsync
@@ -21,11 +21,11 @@
 # preset vars
 #
 
-# Our lock file
+# Our lock file.
 LOCK="${LOCKS}/LOCK.actsyncd"
-# where actsync is located
+# Where actsync is located.
 ACTSYNC="${PATHBIN}/actsync"
-# exit value of actsync if unable to get an active file
+# Exit value if unable to get an active file.
 NOSYNC=127
 
 # parse args
@@ -57,7 +57,7 @@ case $# in
     ;;
 esac
 if [ ! -s "$cfg" ]; then
-    echo "$0: config_file not found or empty: $ign" 1>&2
+    echo "$0: config_file not found or empty: $cfg" 1>&2
     exit 2
 fi
 
@@ -68,23 +68,19 @@ if [ -z "$host" ]; then
     echo "$0: no host specified in $cfg" 1>&2
     exit 3
 fi
+
 flags="$(sed -n -e 's/^flags=[ 	]*//p' $cfg | tail -n 1)"
 if [ -z "$flags" ]; then
     echo "$0: no flags specified in $cfg" 1>&2
     exit 4
 fi
+
 ign="$(sed -n -e 's/^ignore_file=[ 	]*//p' $cfg | tail -n 1)"
 if [ -z "$ign" ]; then
     echo "$0: no ignore file specified in $cfg" 1>&2
     exit 5
 fi
 ftp="$(sed -n -e 's/^ftppath=[ 	]*//p' $cfg | tail -n 1)"
-spool="$(sed -n -e 's/^spool=[ 	]*//p' $cfg | tail -n 1)"
-if [ -z "$spool" ]; then
-    spool=$SPOOL
-    #echo "$0: no spool directory specified in $cfg" 1>&2
-    #exit 6
-fi
 if [ ! -f "$ign" ]; then
     ign="${PATHETC}/$ign"
 fi
@@ -93,17 +89,13 @@ if [ ! -s "$ign" ]; then
     exit 7
 fi
 
-# force -o c mode (overrides any -o argument in the command line)
+# DEBUG processing, if debug_level was given.
 #
 if [ -z "$DEBUG" ]; then
-
-    # standard actsyncd output mode
+    # Force "-o c" mode (overrides any -o argument in the command line).
+    # Standard actsyncd output mode (commands to ctlinnd).
     flags="$flags -o c"
-
-# DEBUG processing, if debug_level was given
-#
 else
-
     if [ ! -z "$ftp" ]; then
         echo "$0: cannot use DEBUG mode with ftp (yet)" >&2
         exit 88
@@ -113,7 +105,7 @@ else
     flags="$flags -v $DEBUG"
 
     # force -o level but reject -o x modes
-    if [ ! -z "$DEBUG_FMT" ]; then
+    if [ -n "$DEBUG_FMT" ]; then
         case "$DEBUG_FMT" in
         x*)
             echo "$0: do not use any of the -o x debug_outfmt modes!" 1>&2
@@ -145,6 +137,7 @@ workdir="${TMPDIR}/actsyncd"
 ctlinndcmds="cc_commands"
 out="sync.msg"
 cleanup="$SED -e 's/^/    /' < $out; cd ${origdir}; rm -rf '$workdir' '$LOCK'"
+#shellcheck disable=SC2064
 trap "eval $cleanup; exit 123" 1 2 3 15
 
 set -e
@@ -164,7 +157,6 @@ chmod 0644 "$out"
 #
 echo "=-= $(date) for $host" >>$out 2>&1
 for loop in 1 2 3 4 5 6 7 8 9 10; do
-
     # get the active file to compare against
     status=0
     case $host in
@@ -206,16 +198,16 @@ for loop in 1 2 3 4 5 6 7 8 9 10; do
                     fi
                     ;;
                 *.gz)
-                    echo "$GZIP -d active" >>$out
-                    if $GZIP -d active >>$out 2>&1; then
+                    echo "$GZIP -d active.gz" >>$out
+                    if $GZIP -d active.gz >>$out 2>&1; then
                         :
                     else
                         status=1
                     fi
                     ;;
                 *.Z)
-                    echo "$UNCOMPRESS active" >>$out
-                    if $UNCOMPRESS active >>$out 2>&1; then
+                    echo "$UNCOMPRESS active.Z" >>$out
+                    if $UNCOMPRESS active.Z >>$out 2>&1; then
                         :
                     else
                         status=1
@@ -228,7 +220,6 @@ for loop in 1 2 3 4 5 6 7 8 9 10; do
     esac
 
     if [ "$status" -ne "$NOSYNC" ]; then
-
         # detect bad status
         #
         if [ "$status" -ne 0 ]; then
@@ -239,11 +230,12 @@ for loop in 1 2 3 4 5 6 7 8 9 10; do
 
         echo "$ACTSYNC -i $ign $flags ./active" >>$out
         eval "$ACTSYNC -i $ign $flags ./active >$ctlinndcmds 2>>$out"
+        status=$?
 
-        if [ $? -ne 0 ]; then
+        if [ "$status" -ne 0 ]; then
             echo "FATAL: $(date) for $host actsync balked" >>$out
             eval $cleanup
-            exit $?
+            exit "$status"
         fi
 
         if [ ! -s $ctlinndcmds ]; then
@@ -252,11 +244,12 @@ for loop in 1 2 3 4 5 6 7 8 9 10; do
             echo "=-= $(date) for $host, updating active" >>$out
             echo "mod-active $ctlinndcmds" >>$out
             mod-active $ctlinndcmds >>$out 2>&1
+            status=$?
 
-            if [ $? -ne 0 ]; then
+            if [ "$status" -ne 0 ]; then
                 echo "FATAL: $(date) for $host mod-active FAILED" >>$out
                 eval $cleanup
-                exit 1
+                exit "$status"
             fi
         fi
 
@@ -277,6 +270,6 @@ done
 
 # give up
 #
-echo "FATAL: $(date) for $host failed to connect/sync 10 times" >>$out 2>&1
+echo "FATAL: $(date) for $host failed to connect/sync $loop times" >>$out 2>&1
 eval $cleanup
 exit 1

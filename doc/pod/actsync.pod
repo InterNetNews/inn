@@ -677,9 +677,6 @@ file:
     # Location of the ignore file.
     ignore_file=<pathetc in inn.conf>/actsync.ign
 
-    # Where news articles are kept.
-    spool=<patharticles in inn.conf>
-
     # actsync(8) flags
     #
     # Automatic execs, report if something was done,
