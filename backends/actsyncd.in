@@ -30,6 +30,8 @@ LOCK="${LOCKS}/LOCK.actsyncd"
 ACTSYNC="${PATHBIN}/actsync"
 # Exit value if unable to get an active file.
 NOSYNC=127
+# Date format.
+DATEFMT="+%Y-%m-%d %T %z"
 
 # parse args
 #
@@ -162,17 +164,17 @@ else
     fi
 
     # execute actsync directly
-    echo "DEBUG: will execute $ACTSYNC -i $ign $flags $host" 1>&2
+    echo "$(date "$DATEFMT") will execute $ACTSYNC -i $ign $flags $host" 1>&2
     eval "$ACTSYNC -i $ign $flags $host"
     status="$?"
-    echo "DEBUG: exit status $status" 1>&2
+    echo "$(date "$DATEFMT") DEBUG: exit status $status" 1>&2
     exit "$status"
 fi
 
 # Lock out others
 #
 shlock -p $$ -f "${LOCK}" || {
-    echo "$0: Locked by $(cat \"${LOCK}\")" 1>&2
+    echo "$(date "$DATEFMT") Locked by $(cat "${LOCK}")" 1>&2
     exit 9
 }
 
@@ -201,7 +203,7 @@ chmod 0644 "$out"
 # Try to sync off of the host.  If unable to connect/sync then retry
 # up to 9 more times waiting 6 minutes between each try.
 #
-echo "=-= $(date) for $host" >>$out 2>&1
+echo "$(date "$DATEFMT") for $host: start" >>$out 2>&1
 for loop in 1 2 3 4 5 6 7 8 9 10; do
     # get the active file to compare against
     status=0
@@ -221,7 +223,7 @@ for loop in 1 2 3 4 5 6 7 8 9 10; do
                 port="-p $port"
                 host=$(expr "$host" : '\(.*\):.*')
             fi
-            echo "getlist -h $host $port" >>$out
+            echo "$(date "$DATEFMT") getlist -h $host $port" >>$out
             if getlist -h $host $port >active 2>>$out; then
                 :
             else
@@ -233,11 +235,11 @@ for loop in 1 2 3 4 5 6 7 8 9 10; do
             else
                 program=$GETHTTP
             fi
-            echo "$program $protocol://$host/$path" >>$out
+            echo "$(date "$DATEFMT") $program $protocol://$host/$path" >>$out
             if $program $protocol://$host/$path >>$out 2>&1; then
                 case "$path" in
                 *.bz2)
-                    echo "$BZIP2 -d active.bz2" >>$out
+                    echo "$(date "$DATEFMT") $BZIP2 -d active.bz2" >>$out
                     if $BZIP2 -d active.bz2 >>$out 2>&1; then
                         :
                     else
@@ -245,7 +247,7 @@ for loop in 1 2 3 4 5 6 7 8 9 10; do
                     fi
                     ;;
                 *.gz)
-                    echo "$GZIP -d active.gz" >>$out
+                    echo "$(date "$DATEFMT") $GZIP -d active.gz" >>$out
                     if $GZIP -d active.gz >>$out 2>&1; then
                         :
                     else
@@ -253,7 +255,7 @@ for loop in 1 2 3 4 5 6 7 8 9 10; do
                     fi
                     ;;
                 *.Z)
-                    echo "$UNCOMPRESS active.Z" >>$out
+                    echo "$(date "$DATEFMT") $UNCOMPRESS active.Z" >>$out
                     if $UNCOMPRESS active.Z >>$out 2>&1; then
                         :
                     else
@@ -267,7 +269,7 @@ for loop in 1 2 3 4 5 6 7 8 9 10; do
         fi
 
         if [ ! -s "active" ]; then
-            echo "$0: active file not retrieved or empty" >>$out
+            echo "$(date "$DATEFMT") active file not retrieved or empty" >>$out
             status=1
         fi
         ;;
@@ -277,31 +279,32 @@ for loop in 1 2 3 4 5 6 7 8 9 10; do
         # detect bad status
         #
         if [ "$status" -ne 0 ]; then
-            echo "FATAL: $(date) for $host exit $status" >>$out
+            echo "$(date "$DATEFMT") FATAL for $host: exit $status" >>$out
             eval $cleanup
             exit "$status"
         fi
 
-        echo "$ACTSYNC -i $ign $flags ./active" >>$out
+        echo "$(date "$DATEFMT") $ACTSYNC -i $ign $flags ./active" >>$out
         eval "$ACTSYNC -i $ign $flags ./active >$ctlinndcmds 2>>$out"
         status=$?
 
         if [ "$status" -ne 0 ]; then
-            echo "FATAL: $(date) for $host actsync balked" >>$out
+            echo "$(date "$DATEFMT") FATAL for $host: actsync balked" >>$out
             eval $cleanup
             exit "$status"
         fi
 
         if [ ! -s $ctlinndcmds ]; then
-            echo "No changes need to be made" >>$out
+            echo "$(date "$DATEFMT") No changes need to be made" >>$out
         else
-            echo "=-= $(date) for $host, updating active" >>$out
-            echo "mod-active $ctlinndcmds" >>$out
+            echo "$(date "$DATEFMT") for $host: updating active" >>$out
+            echo "$(date "$DATEFMT") mod-active $ctlinndcmds" >>$out
             mod-active $ctlinndcmds >>$out 2>&1
             status=$?
 
             if [ "$status" -ne 0 ]; then
-                echo "FATAL: $(date) for $host mod-active FAILED" >>$out
+                echo "$(date "$DATEFMT") FATAL for $host: mod-active FAILED" \
+                    >>$out
                 eval $cleanup
                 exit "$status"
             fi
@@ -309,13 +312,14 @@ for loop in 1 2 3 4 5 6 7 8 9 10; do
 
         # normal exit - all done
         #
-        echo "=-= $(date) for $host, end" >>$out
+        echo "$(date "$DATEFMT") for $host: end" >>$out
         eval $cleanup
         exit 0
     fi
 
     # failed to get the remote active file
-    echo "=-= $(date) for $host failed to connect/sync, retrying" >>$out
+    echo "$(date "$DATEFMT") for $host: failed to connect/sync, retrying" \
+        >>$out
 
     # wait 6 minutes
     #
@@ -324,6 +328,7 @@ done
 
 # give up
 #
-echo "FATAL: $(date) for $host failed to connect/sync $loop times" >>$out 2>&1
+echo "$(date "$DATEFMT") FATAL for $host: failed to connect/sync $loop times" \
+    >>$out 2>&1
 eval $cleanup
 exit 1
