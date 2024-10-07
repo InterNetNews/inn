@@ -42,7 +42,7 @@ jobs:
       - run: echo -e "local.general 1726983313 usenet\nlocal.test 1726983317 usenet" > $RUNNER_WORKSPACE/inn-install/db/active.times
       - run: sudo chown -R news:news $RUNNER_WORKSPACE/inn-install
       # - run: sudo INN_HOSTNAME=inn.github-action make install
-      - run: sudo -u news INN_HOSTNAME=inn.github-action make install
+      - run: sudo INN_HOSTNAME=inn.github-action make install
       # This fails on:
       # > touch /home/runner/work/inn/inn-install/db/history
       # > chmod 0664 /home/runner/work/inn/inn-install/db/history
@@ -55,6 +55,9 @@ jobs:
       # - run: mkdir -p $RUNNER_WORKSPACE/inn-install/db
       # - run: sudo chown -R news:news $RUNNER_WORKSPACE/inn-install
       # - run: INN_HOSTNAME=inn.github-action $RUNNER_WORKSPACE/inn-install/bin/rc.news start
+      - run: sudo chown -R news:news $RUNNER_WORKSPACE/inn-install
+      - run: ls -la $RUNNER_WORKSPACE/inn/site || true  # Useful for debugging
+      - run: cat $RUNNER_WORKSPACE/inn/site/inn.conf || true  # Useful for debugging
       - run: sudo -u news INN_HOSTNAME=inn.github-action $RUNNER_WORKSPACE/inn-install/bin/rc.news start
 
       # CAUTION: Running as root is dangerous.
