@@ -30,17 +30,18 @@ jobs:
 
     steps:
       - run: env
+      - run: sudo usermod -aG news $USER
       - uses: actions/checkout@v4
       - run: sudo -E ci/install
       - run: ./autogen
       - run: ./configure CC="${COMPILER:-gcc}" --prefix=$RUNNER_WORKSPACE/inn-install
-                --with-canlock --with-news-user=news --with-news-group=news --with-openssl
+                --with-canlock --with-news-user=$USER --with-news-group=news --with-openssl
                 --with-perl --with-python --with-sasl --with-zlib  
       - run: make
       - run: mkdir -p $RUNNER_WORKSPACE/inn-install/db
       - run: touch $RUNNER_WORKSPACE/inn-install/db/history
       - run: echo -e "local.general 1726983313 usenet\nlocal.test 1726983317 usenet" > $RUNNER_WORKSPACE/inn-install/db/active.times
-      - run: sudo chown -R news:news $RUNNER_WORKSPACE/inn-install
+      - run: sudo chown -R $USER:news $RUNNER_WORKSPACE/inn-install
       # - run: sudo INN_HOSTNAME=inn.github-action make install
       - run: sudo INN_HOSTNAME=inn.github-action make install
       # This fails on:
@@ -55,10 +56,10 @@ jobs:
       # - run: mkdir -p $RUNNER_WORKSPACE/inn-install/db
       # - run: sudo chown -R news:news $RUNNER_WORKSPACE/inn-install
       # - run: INN_HOSTNAME=inn.github-action $RUNNER_WORKSPACE/inn-install/bin/rc.news start
-      - run: sudo chown -R news:news $RUNNER_WORKSPACE/inn-install
+      - run: sudo chown -R $USER:news $RUNNER_WORKSPACE/inn-install
       - run: ls -la $RUNNER_WORKSPACE/inn/site || true  # Useful for debugging
       - run: cat $RUNNER_WORKSPACE/inn/site/inn.conf || true  # Useful for debugging
-      - run: sudo -u news INN_HOSTNAME=inn.github-action $RUNNER_WORKSPACE/inn-install/bin/rc.news start
+      - run: INN_HOSTNAME=inn.github-action $RUNNER_WORKSPACE/inn-install/bin/rc.news start
 
       # CAUTION: Running as root is dangerous.
       # - run: sudo su news ; INN_HOSTNAME=inn.github-action $RUNNER_WORKSPACE/inn-install/bin/rc.news start
