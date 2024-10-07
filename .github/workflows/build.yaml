@@ -30,7 +30,9 @@ jobs:
 
     steps:
       - run: env
+      - run: echo $USER $(whoami)
       - run: sudo usermod -aG news $USER
+      - run: sudo usermod -aG news $(whoami)
       - uses: actions/checkout@v4
       - run: sudo -E ci/install
       - run: ./autogen
@@ -59,6 +61,9 @@ jobs:
       - run: sudo chown -R $USER:news $RUNNER_WORKSPACE/inn-install
       - run: ls -la $RUNNER_WORKSPACE/inn/site || true  # Useful for debugging
       - run: cat $RUNNER_WORKSPACE/inn/site/inn.conf || true  # Useful for debugging
+      - run: groups $(whoami)
+      - run: sudo chgrp news $RUNNER_WORKSPACE/inn-install/bin/rc.news
+      - run: sudo chmod g+x $RUNNER_WORKSPACE/inn-install/bin/rc.news
       - run: INN_HOSTNAME=inn.github-action $RUNNER_WORKSPACE/inn-install/bin/rc.news start
 
       # CAUTION: Running as root is dangerous.
