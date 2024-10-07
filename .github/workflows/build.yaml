@@ -57,7 +57,7 @@ jobs:
       # - run: sudo -u news INN_HOSTNAME=inn.github-action $RUNNER_WORKSPACE/inn-install/bin/rc.news start
 
       # CAUTION: Running as root is dangerous.
-      - run: sudo INN_HOSTNAME=inn.github-action $RUNNER_WORKSPACE/inn-install/bin/rc.news start
+      - run: sudo su news ; INN_HOSTNAME=inn.github-action $RUNNER_WORKSPACE/inn-install/bin/rc.news start
 
 
 
