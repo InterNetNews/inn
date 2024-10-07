@@ -64,7 +64,7 @@ jobs:
       - run: groups $(whoami)
       - run: sudo chgrp news $RUNNER_WORKSPACE/inn-install/bin/rc.news
       - run: sudo chmod g+x $RUNNER_WORKSPACE/inn-install/bin/rc.news
-      - run: INN_HOSTNAME=inn.github-action $RUNNER_WORKSPACE/inn-install/bin/rc.news start
+      - run: INN_HOSTNAME=inn.github-action $RUNNER_WORKSPACE/inn-install/bin/rc.news  # start
 
       # CAUTION: Running as root is dangerous.
       # - run: sudo su news ; INN_HOSTNAME=inn.github-action $RUNNER_WORKSPACE/inn-install/bin/rc.news start
