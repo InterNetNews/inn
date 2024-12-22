@@ -19,8 +19,7 @@ from string import *
 import sys
 
 
-##  The built-in intern() method has been in the sys module
-##  since Python 3.0.
+##  The built-in intern() method has been in the sys module since Python 3.0.
 if sys.version_info[0] >= 3:
 
     def intern(headerName):
@@ -118,12 +117,12 @@ class InndFilter:
         This is a good place to initialize variables and precompile
         regular expressions, or maybe reload stats from disk.
         """
-        self.re_newrmgroup = re.compile("(?:new|rm)group\s")
+        self.re_newrmgroup = re.compile(r"(?:new|rm)group\s")
         self.re_obsctl = re.compile("(?:sendsys|version|senduuname)")
         # Message-ID pattern from a once-common spambot.
-        self.re_none44 = re.compile("none\d+\.yet>")
+        self.re_none44 = re.compile(r"none\d+\.yet>")
         # There is a mad newgrouper who likes to meow.
-        self.re_meow = re.compile("^Meow\!", re.M)
+        self.re_meow = re.compile(r"^Meow\!", re.M)
         # One of my silly addresses.
         self.re_fluffymorph = re.compile("andruQ@myremarQ.coM", re.I)
 
