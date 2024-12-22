@@ -72,7 +72,7 @@ timehash_explaintoken(const TOKEN token)
               (unsigned int) token.class, (unsigned long) ntohl(arrival),
               (unsigned long) ntohs(seqnum), innconf->patharticles,
               token.class, (ntohl(arrival) >> 16) & 0xff,
-              (ntohl(arrival) >> 8) & 0xff, ntohs(seqnum),
+              (ntohl(arrival) >> 8) & 0xff, (unsigned int) ntohs(seqnum),
               (ntohl(arrival) >> 24) & 0xff, ntohl(arrival) & 0xff);
 
     return text;
