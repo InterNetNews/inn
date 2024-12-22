@@ -36,7 +36,7 @@ for ($level = 9; $level >= 2; --$level) {
 open(OUT, ">$outfile") || die "cant open $outfile";
 #open(OUT, ">/dev/tty");
 
-print OUT <<"EOF" ;
+print OUT <<"EOF";
 method cnfs {
         newsgroups: control,control.*
         class: 1

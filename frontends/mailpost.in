@@ -584,7 +584,7 @@ sub mailArtAndDie {
       || die "die($errmsg): sendmail: $!\n";
     # As the mail is sent in direct response to a message, it is auto-replied,
     # and not auto-generated (RFC 3834).
-    print SENDMAIL <<"EOF" ;
+    print SENDMAIL <<"EOF";
 To: $Maintainer
 Subject: mailpost failure ($newsgroups)
 Auto-Submitted: auto-replied
