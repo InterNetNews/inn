@@ -1,5 +1,11 @@
 ##  Perl module which sets up any and all variables that an
 ##  INN Perl script might need.
+##
+##  Originally written by James Brister in 1996 as innshellvars.pl, and
+##  converted to this INN::Config Perl module by Julien Élie in 2007.
+##
+##  Various bug fixes, code and documentation improvements since then
+##  in 2007-2011, 2013, 2018, 2021, 2022, 2024.
 
 package INN::Config;
 
@@ -210,6 +216,8 @@ if (-x "${pathetc}/innshellvars.pl.local") {
 
 __END__
 
+=encoding utf-8
+
 =head1 NAME
 
 INN::Config - Export all the variables an INN Perl script might need
@@ -283,7 +291,7 @@ module.
 
 F<innshellvars.pl> was written by James Brister <brister@vix.com>
 for InterNetNews in 1996.  It was converted to the INN::Config Perl
-module by Julien Elie in 2007.
+module by Julien Élie in 2007.
 
 =head1 SEE ALSO
 

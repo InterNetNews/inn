@@ -3,8 +3,12 @@
 
 ##  Submit Path header field statistics based on ninpaths.
 ##
-##  A rewrite of the sendinpaths shell script in Perl, based on Mohan Kokal's
-##  initial work.  Improved by Julien Elie.
+##  sendinpaths was originally written by Olaf Titz in shell.  This is a
+##  rewrite in Perl, based on Mohan Kokal's initial work, integrated in 2011
+##  into INN, and improved by Julien Élie.
+##
+##  Various bug fixes, code and documentation improvements since then
+##  in 2011, 2021-2024.
 ##
 ##  Prerequisites:
 ##    ninpaths dump files are in the ${INN::Config::pathlog}/path directory.
