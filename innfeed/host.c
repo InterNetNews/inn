@@ -3163,7 +3163,7 @@ hostLogStatus(void)
                 defaultParams->absMaxConnections);
         fprintf(fp, "  reconnection time: %-5u   max reconnection time: %u\n",
                 init_reconnect_period, max_reconnect_period);
-        fprintf(fp, "       close period: %-5u              max checks: %u\n",
+        fprintf(fp, "       close period: %-10u         max checks: %u\n",
                 defaultParams->closePeriod, defaultParams->maxChecks);
         fprintf(fp, "   DNS retry period: %-5u       DNS expire period: %u\n",
                 dnsRetPeriod, dnsExpPeriod);
@@ -3174,28 +3174,28 @@ hostLogStatus(void)
                 defaultParams->wantStreaming ? "true " : "false",
                 defaultParams->dynamicMethod);
         fprintf(fp,
-                "        no-check on: %-2.1f%%     dynamic backlog low: "
-                "%-2.1f%%\n",
+                "        no-check on: %-4.1f%%     dynamic backlog low: "
+                "%-4.1f%%\n",
                 defaultParams->lowPassHigh,
                 defaultParams->dynBacklogLowWaterMark);
         fprintf(fp,
-                "       no-check off: %-2.1f%%    dynamic backlog high: "
-                "%-2.1f%%\n",
+                "       no-check off: %-4.1f%%    dynamic backlog high: "
+                "%-4.1f%%\n",
                 defaultParams->lowPassLow,
                 defaultParams->dynBacklogHighWaterMark);
         fprintf(
             fp,
-            "    no-check filter: %-2.1f   dynamic backlog filter: %-2.1f\n",
+            "    no-check filter: %-4.1f   dynamic backlog filter: %-3.1f\n",
             defaultParams->lowPassFilter, defaultParams->dynBacklogFilter);
-        fprintf(fp, "  backlog limit low: %-7u         drop-deferred: %s\n",
+        fprintf(fp, "  backlog limit low: %-10u      drop-deferred: %s\n",
                 defaultParams->backlogLimit,
                 defaultParams->dropDeferred ? "true " : "false");
-        fprintf(fp, " backlog limit high: %-7u         min-queue-cxn: %s\n",
+        fprintf(fp, " backlog limit high: %-10u      min-queue-cxn: %s\n",
                 defaultParams->backlogLimitHigh,
                 defaultParams->minQueueCxn ? "true " : "false");
         fprintf(fp, " backlog feed first: %s\n",
                 defaultParams->backlogFeedFirst ? "true " : "false");
-        fprintf(fp, "     backlog factor: %1.1f\n\n",
+        fprintf(fp, "     backlog factor: %3.1f\n\n",
                 defaultParams->backlogFactor);
 
         tapeLogGlobalStatus(fp);
@@ -3359,18 +3359,18 @@ hostPrintStatus(Host host, FILE *fp)
             host->params->initialConnections);
 
     fprintf(fp,
-            "   missing: %-7ld    no-check on: %-3.1f%%      idle cxns: %u\n",
+            "   missing: %-7ld    no-check on: %-4.1f%%      idle cxns: %u\n",
             (long) host->gArtsMissing, host->params->lowPassHigh,
             host->maxConnections - (host->activeCxns + host->sleepingCxns));
 
     fprintf(
         fp,
-        "  deferred: %-7ld   no-check off: %-3.1f%%       max cxns: %u/%u\n",
+        "  deferred: %-7ld   no-check off: %-4.1f%%       max cxns: %u/%u\n",
         (long) host->gArtsDeferred, host->params->lowPassLow,
         host->maxConnections, host->params->absMaxConnections);
 
     fprintf(fp,
-            "  requeued: %-7ld  no-check fltr: %-3.1f    queue length: "
+            "  requeued: %-7ld  no-check fltr: %-4.1f    queue length: "
             "%-3.1f/%u\n",
             (long) host->gArtsCxnDrop, host->params->lowPassFilter,
             (double) host->blAccum / cnt, hostHighwater);
@@ -3382,20 +3382,20 @@ hostPrintStatus(Host host, FILE *fp)
         100.0 * host->blNone / cnt);
 
     fprintf(fp,
-            "[overflow]: %-7ld  dyn b'log low: %-3.1f%%        %s0%%-25%%: "
+            "[overflow]: %-7ld  dyn b'log low: %-4.1f%%        %s0%%-25%%: "
             "%-3.1f%%\n",
             (long) host->gArtsQueueOverflow,
             host->params->dynBacklogLowWaterMark, genHtml ? "&gt;" : ">",
             100.0 * host->blQuartile[0] / cnt);
 
     fprintf(fp,
-            "[on_close]: %-7ld dyn b'log high: %-3.1f%%        25%%-50%%: "
+            "[on_close]: %-7ld dyn b'log high: %-4.1f%%        25%%-50%%: "
             "%-3.1f%%\n",
             (long) host->gArtsHostClose, host->params->dynBacklogHighWaterMark,
             100.0 * host->blQuartile[1] / cnt);
 
     fprintf(fp,
-            "[sleeping]: %-7ld dyn b'log stat: %-3.1f%%        50%%-75%%: "
+            "[sleeping]: %-7ld dyn b'log stat: %-4.1f%%        50%%-75%%: "
             "%-3.1f%%\n",
             (long) host->gArtsHostSleep,
             host->backlogFilter * 100.0
@@ -3403,7 +3403,7 @@ hostPrintStatus(Host host, FILE *fp)
             100.0 * host->blQuartile[2] / cnt);
 
     fprintf(fp,
-            " unspooled: %-7ld dyn b'log fltr: %-3.1f       75%%-%s100%%: "
+            " unspooled: %-7ld dyn b'log fltr: %-4.1f       75%%-%s100%%: "
             "%-3.1f%%\n",
             (long) host->gArtsFromTape, host->params->dynBacklogLowWaterMark,
             genHtml ? "&lt;" : "<", 100.0 * host->blQuartile[3] / cnt);
