@@ -126,7 +126,7 @@ sub seedchar {    # From Randal Schwarz.
 
 sub usage {
     $0 =~ s!.*/!!;
-    print STDERR << "__MSG__";
+    print STDERR <<"__MSG__";
 Usage:
   $0 <nnrp.access file> [<passwd file> <readers.conf file>]
 

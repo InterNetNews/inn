@@ -73,7 +73,7 @@ sub parse {
     }
     $donesect->();
     close($fh);
-    $state->{preamble} = <<"__PREAMBLE__"
+    $state->{preamble} = <<"__PREAMBLE__";
 /*
  * DO NOT EDIT DIRECTLY.
  *
@@ -83,7 +83,6 @@ sub parse {
  * DO NOT EDIT DIRECTLY.
  */
 __PREAMBLE__
-      ;
 }
 
 sub generate_head {
