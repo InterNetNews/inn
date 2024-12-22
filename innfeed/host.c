@@ -1294,8 +1294,6 @@ printHostInfo(Host host, FILE *fp, unsigned int indentAmt)
     fprintf(fp, "%s    max-connections : %u\n", indent, host->maxConnections);
     fprintf(fp, "%s    backlog-feed-first : %s\n", indent,
             boolToString(host->params->backlogFeedFirst));
-
-
     fprintf(fp, "%s    statistics-id : %d\n", indent, host->statsId);
     fprintf(fp, "%s    ChkCxns-id : %d\n", indent, host->ChkCxnsId);
     fprintf(fp, "%s    deferred-id : %d\n", indent, host->deferredId);
@@ -1328,7 +1326,6 @@ printHostInfo(Host host, FILE *fp, unsigned int indentAmt)
     fprintf(fp, "%s    articles unspooled : %u\n", indent, host->artsFromTape);
     fprintf(fp, "%s    articles requeued from dropped connections : %u\n",
             indent, host->artsCxnDrop);
-
     fprintf(fp, "%s    process articles offered : %u\n", indent,
             host->gArtsOffered);
     fprintf(fp, "%s    process articles accepted : %u\n", indent,
@@ -1354,7 +1351,6 @@ printHostInfo(Host host, FILE *fp, unsigned int indentAmt)
     fprintf(fp,
             "%s    process articles requeued from dropped connections : %u\n",
             indent, host->gArtsCxnDrop);
-
     fprintf(fp, "%s    average (mean) defer length : %.1f\n", indent,
             (double) host->dlAccum / cnt);
     fprintf(fp, "%s    average (mean) queue length : %.1f\n", indent,
@@ -1401,7 +1397,6 @@ printHostInfo(Host host, FILE *fp, unsigned int indentAmt)
         fprintf(fp, "%s    %p\n", indent, (void *) qe->article);
 #endif
     }
-
     fprintf(fp, "%s    }\n", indent);
 
     fprintf(fp, "%s    IN PROCESS articles {\n", indent);
@@ -1422,9 +1417,7 @@ printHostInfo(Host host, FILE *fp, unsigned int indentAmt)
         fprintf(fp, "%s    %p\n", indent, (void *) qe->article);
 #endif
     }
-
     fprintf(fp, "%s    }\n", indent);
-
 
     fprintf(fp, "%s    Connections {\n", indent);
     for (i = 0; i < host->maxConnections; i++) {
