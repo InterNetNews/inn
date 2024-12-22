@@ -519,7 +519,6 @@ while (!eof()) {
             if ($first_date_cvt - $cvtdate > 253 * 24 * 60 * 60
                 && defined($first_date))
             {
-                #
                 # Detected excessive distance between log entries (see
                 # function DateCompare for magic number 253).  This means
                 # we are crossing from 31st of December to 1st of January.
@@ -535,7 +534,6 @@ while (!eof()) {
                 # possible to cross from both 31st of December to 1st of
                 # January and from 28th of February to 1st of March in the
                 # same log file.
-
                 my $first_date_cvt_tmp = $first_date_cvt;
                 $wrap_around = 1;
                 $first_date_cvt
@@ -2473,8 +2471,8 @@ sub Write_all_results {
 
         print HTML '<div class="ir-logFileLines">' if ($HTML);
         for my $l (0 .. $mm) {
-            chomp $unrecognize[$l];        # sometimes, the last line need a CR
-            print "$unrecognize[$l]\n";    # so, we always add one
+            chomp $unrecognize[$l];        # sometimes, the last line needs
+            print "$unrecognize[$l]\n";    # a CR; so, we always add one
             if ($HTML && $WANT_HTML_UNKNOWN) {
                 print HTML EscapeHTML($unrecognize[$l]), "<br/>\n";
             }
@@ -2559,7 +2557,7 @@ sub Write_Results {
           || die "Error in section $report. Need a 'data' field.\n";
         $r_data = EvalHash($t);
         @keys = keys(%$r_data);
-        return unless @keys;    # nothing to report. exit.
+        return unless @keys;    # nothing to report, exit
     }
     {
         my $t = $outputdata{$report}{'sort'};
@@ -2817,9 +2815,8 @@ sub Write_Results {
     } else {
         foreach my $key (sort $h @keys) {
             next unless defined $key;
-            next
-              unless defined $r_data->{$key}
-              ;    # to avoid problems after some undef()
+            # to avoid problems after some undef()
+            next unless defined $r_data->{$key};
             $num++;
             next
               if ($num > $TOP_HTML
@@ -2852,11 +2849,9 @@ sub Write_Results {
                     && $whtml
                     && ($num <= $TOP_HTML || $TOP_HTML == -1))
                 {
-
                     # substitute full fledged "%s" specifiers (alignment, width
                     # and precision) with a plain "%s"
                     $v1 =~ s/\%-?(?:\d+(?:\.\d+)?)?s/\%s/g;
-
                     $html .= "<th style=\"text-align:center\">$num</th>"
                       if $numbering && !$first;
                     my $temp = $first ? "right" : "left";
@@ -3125,7 +3120,9 @@ sub PrepareEval($;$) {
         );
     }
 
-    if ($DEBUG) { printf STDERR "PrepareEval - [%s]\n", $string; }
+    if ($DEBUG) {
+        printf STDERR "PrepareEval - [%s]\n", $string;
+    }
 
     # These variables are provided to the function inside the closure.
     # PrepareEval returns references to these variables.
@@ -3139,7 +3136,9 @@ sub PrepareEval($;$) {
     # $^W ... The current value of the warning switch, initially
     #         true if -w was used.
     { local $^W = $DEBUG; $sub = eval "sub { $string; }"; }
-    if ($@) { confess "PrepareEval($string) raises $@"; }
+    if ($@) {
+        confess "PrepareEval($string) raises $@";
+    }
 
     return ($sub, \$num, \$key, \$key1, \$key2);
 }
@@ -3150,7 +3149,9 @@ sub EvalHash($) {
 
     my $result;
     eval { local $^W = $DEBUG; $result = &$sub(); };
-    if ($@ && $DEBUG > 1) { confess "EvalHash($v) raises $@"; }
+    if ($@ && $DEBUG > 1) {
+        confess "EvalHash($v) raises $@";
+    }
     if (ref($result) ne 'HASH') {
         confess "EvalHash($v) does not return reference to hash.";
     }
@@ -3168,7 +3169,9 @@ sub EvalExpr($;$$$) {
 
     my $r;
     eval { local $^W = $DEBUG; ($r) = &$sub(); };
-    if ($@ && $DEBUG > 1) { confess "EvalExpr($v) raises $@"; }
+    if ($@ && $DEBUG > 1) {
+        confess "EvalExpr($v) raises $@";
+    }
     return ($r || 0);
 }
 
