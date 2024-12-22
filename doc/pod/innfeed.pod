@@ -149,7 +149,8 @@ Upon receipt of a SIGALRM, B<innfeed> will close the funnel file specified
 on the command line, and will reopen it (see funnel file description above).
 
 B<innfeed> with catch SIGINT and will write a large debugging snapshot of
-the state of the running system.
+the state of the running system into a file named F<innfeed.snapshot> in
+I<pathlog>.
 
 B<innfeed> will catch SIGHUP and will reload both the config and the
 log files.  See innfeed.conf(5) for more details.
