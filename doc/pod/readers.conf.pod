@@ -370,43 +370,50 @@ found in F<doc/hook-perl>.
 
 =item I<python_access>
 
-A Python script for dynamically generating an access group.  If an auth
-group matches successfully and contains a I<python_access> parameter, then
-the argument script (without its C<.py> extension) will be used to create
-an access group.  This group will then determine the access rights of the
-client, overriding any access groups in F<readers.conf>.  If and only if a
-successful auth group contains the I<python_access> parameter, F<readers.conf>
-access groups are ignored and the client's rights are instead determined
-dynamically.  This parameter is only valid if INN is compiled with Python
-support (B<--with-python> passed to C<configure>).  More information may be
-found in the file F<doc/hook-python>.
+A Python script for dynamically generating an access group.  If an auth group
+matches successfully and contains a I<python_access> parameter, then the
+argument script (without its C<.py> extension) located in the I<pathfilter>
+directory will be used to create an access group.  This group will then
+determine the access rights of the client, overriding any access groups in
+F<readers.conf>.
+
+If and only if a successful auth group contains the I<python_access>
+parameter, F<readers.conf> access groups are ignored and the client's rights
+are instead determined dynamically.
+
+This parameter is only valid if INN is compiled with Python support
+(B<--with-python> passed to C<configure>).  More information may be found in
+the file F<doc/hook-python>.
 
 =item I<python_auth>
 
 A Python script for authentication.  The I<python_auth> parameter works
 exactly like I<auth>, except that it calls the named script (without its
-C<.py> extension) using the Python hook rather than an external program.
-Multiple/mixed use of the I<auth>, I<perl_auth>, and I<python_auth>
-parameters is permitted within any auth group; each line is tried
-in the order it appears.  I<python_auth> has more power than I<auth>
-in that it provides the authentication program with additional information
-about the client and the ability to return an error string and a username.
+C<.py> extension) located in the I<pathfilter> directory using the Python
+hook rather than an external program.  Multiple/mixed use of the I<auth>,
+I<perl_auth>, and I<python_auth> parameters is permitted within any auth
+group; each line is tried in the order it appears.  I<python_auth> has
+more power than I<auth> in that it provides the authentication program with
+additional information about the client and the ability to return an error
+string and a username.
+
 This parameter is only valid if INN is compiled with Python support
-(B<--with-python> passed to C<configure>).  More information may be
-found in F<doc/hook-python>.
+(B<--with-python> passed to C<configure>).  More information may be found in
+F<doc/hook-python>.
 
 =item I<python_dynamic>
 
 A Python script for applying access control dynamically on a per newsgroup
-basis.  If an auth group matches successfully and contains a
-I<python_dynamic> parameter, then the argument script (without its
-C<.py> extension) will be used to determine the clients rights each time
-the user attempts to view a newsgroup, or read or post an article.  Access
-rights as determined by I<python_dynamic> override the values of access
-group parameters such as I<newsgroups>, I<read> and I<post>.  This parameter
-is only valid if INN is compiled with Python support (B<--with-python>
-passed to C<configure>).  More information may be found in the file
-F<doc/hook-python>.
+basis.  If an auth group matches successfully and contains a I<python_dynamic>
+parameter, then the argument script (without its C<.py> extension) located
+in the I<pathfilter> directory will be used to determine the clients rights
+each time the user attempts to view a newsgroup, or read or post an article.
+Access rights as determined by I<python_dynamic> override the values of access
+group parameters such as I<newsgroups>, I<read> and I<post>.
+
+This parameter is only valid if INN is compiled with Python support
+(B<--with-python> passed to C<configure>).  More information may be found in
+the file F<doc/hook-python>.
 
 =item I<require_encryption>
 
