@@ -34,6 +34,12 @@ Added bzip2 support to B<actsyncd> to uncompress downloaded F<active> files.
 
 =item *
 
+Fixed syntax warnings in the default F<filter_innd.py> Python hook so that
+B<innd> no longer logs errors with S<Python 3.12> and greater.  Thanks to
+Roberto Corrado for the patch.
+
+=item *
+
 The check for a fully qualified domain name for the local host at startup
 still produces a warning in the logs but is no longer fatal.  The installation
 of INN was otherwise failing under some circumstances like when creating a
