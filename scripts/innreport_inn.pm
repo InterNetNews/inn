@@ -1323,20 +1323,17 @@ sub collect($$$$$$) {
             $innxmit_ihfail{$server} = 1;
             if ($left =~ /436 \S+ NNTP \S+ out of space/o) {
                 $innxmit_nospace{$server}++;
-                return 1;
-            }
-            if ($left =~ /400 \S+ space/o) {
+            } elsif ($left =~ /400 \S+ space/o) {
                 $innxmit_nospace{$server}++;
-                return 1;
-            }
-            if ($left =~ /400 Bad file/o) {
+            } elsif ($left =~ /400 Bad file/o) {
                 $innxmit_crefused{$server}++;
-                return 1;
-            }
-            if ($left =~ /480 Transfer permission denied/o) {
+            } elsif ($left =~ /480 Transfer permission denied/o) {
                 $innxmit_crefused{$server}++;
-                return 1;
+            } elsif ($left =~ /400 loadav/o) {
+                # xxx ihave failed 400 loadav [innwatch:hiload] yyy gt zz
+                $innxmit_hiload{$server}++;
             }
+            return 1;
         }
         # stats (new format)
         if (
@@ -1439,15 +1436,6 @@ sub collect($$$$$$) {
             $innxmit_site{$server}++;
             return 1;
         }
-        # xxx ihave failed 400 loadav [innwatch:hiload] yyy gt zzz
-        if ($left =~ /^(\S+) ihave failed 400 loadav/o) {
-            my $server = $1;
-            $server = lc $server unless $CASE_SENSITIVE;
-            $innxmit_hiload{$server}++;
-            return 1;
-        }
-        # ihave failed
-        return 1 if ($left =~ /\S+ ihave failed/o);
         # requeued (...) 436 No space
         return 1 if ($left =~ /\S+ requeued \S+ 436 No space/o);
         # requeued (...) 400 No space
