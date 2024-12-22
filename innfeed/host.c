@@ -1319,7 +1319,7 @@ printHostInfo(Host host, FILE *fp, unsigned int indentAmt)
     fprintf(fp, "%s    articles spooled : %u\n", indent, host->artsToTape);
     fprintf(fp, "%s      because of queue overflow : %u\n", indent,
             host->artsQueueOverflow);
-    fprintf(fp, "%s      when the we closed the host : %u\n", indent,
+    fprintf(fp, "%s      when we closed the host : %u\n", indent,
             host->artsHostClose);
     fprintf(fp, "%s      because the host was asleep : %u\n", indent,
             host->artsHostSleep);
@@ -1342,7 +1342,7 @@ printHostInfo(Host host, FILE *fp, unsigned int indentAmt)
             host->gArtsToTape);
     fprintf(fp, "%s      because of queue overflow : %u\n", indent,
             host->gArtsQueueOverflow);
-    fprintf(fp, "%s      when the we closed the host : %u\n", indent,
+    fprintf(fp, "%s      when we closed the host : %u\n", indent,
             host->gArtsHostClose);
     fprintf(fp, "%s      because the host was asleep : %u\n", indent,
             host->gArtsHostSleep);
@@ -3140,13 +3140,17 @@ hostLogStatus(void)
         Default peer configuration parameters:
             article timeout: 600       initial connections: 1
            response timeout: 300           max connections: 5
+          reconnection time: 30      max reconnection time: 3600
                close period: 6000               max checks: 25
+           DNS retry period: 900         DNS expire period: 86400
+                   port num: 119                force IPv4: false
              want streaming: true           dynamic method: 1
-                no-check on: 95.0%     dynamic backlog low: 25%
-               no-check off: 90.0%    dynamic backlog high: 50%
+                no-check on: 95.0%     dynamic backlog low: 25.0%
+               no-check off: 90.0%    dynamic backlog high: 50.0%
             no-check filter: 50.0   dynamic backlog filter: 0.7
-          backlog low limit: 1024                 port num: 119
-         backlog high limit: 1280       backlog feed first: false
+          backlog limit low: 1024            drop-deferred: false
+         backlog limit high: 1280            min-queue-cxn: false
+         backlog feed first: false
              backlog factor: 1.1
         */
         fprintf(fp, "%sDefault peer configuration parameters:%s\n",
@@ -3269,20 +3273,19 @@ hostLogStatus(void)
  *  deferred: 0         no-check off: 95.0%       max cxns: 8/10
  *  requeued: 0        no-check fltr: 50.0    queue length: 0.0/200
  *   spooled: 0       dynamic method: 0              empty: 100.0%
- *[overflow]: 0        dyn b'log low: 25%          >0%-25%: 0.0%
- *[on_close]: 0       dyn b'log high: 50%          25%-50%: 0.0%
- *[sleeping]: 0       dyn b'log stat: 37%          50%-75%: 0.0%
+ *[overflow]: 0        dyn b'log low: 25.0%        >0%-25%: 0.0%
+ *[on_close]: 0       dyn b'log high: 50.0%        25%-50%: 0.0%
+ *[sleeping]: 0       dyn b'log stat: 37.0%        50%-75%: 0.0%
  * unspooled: 0       dyn b'log fltr: 0.7        75%-<100%: 0.0%
  *  no queue: 1234    avr.cxns queue: 0.0             full: 0.0%
- *accpt size: 121.1 MB drop-deferred: false   defer length: 0
+ *accpt size: 121.1 MB drop-deferred: false   defer length: 0.0
  *rejct size: 27.1 MB  min-queue-cxn: false
  *                 backlog low limit: 1000000
  *                backlog high limit: 2000000 (factor 2.0)
  *                 backlog shrinkage: 0 bytes (from current file)
- *   offered:  1.13 art/s   accepted:  0.69 art/s (101.71 KB/s)
- *   refused:  0.01 art/s   rejected:  0.42 art/s (145.11 KB/s)
+ *   offered:  1.13 art/s   accepted:  0.69 art/s, 101.71 KB/s
+ *   refused:  0.01 art/s   rejected:  0.42 art/s, 145.11 KB/s
  *   missing 0 spooled 0
- *
  */
 static void
 hostPrintStatus(Host host, FILE *fp)
