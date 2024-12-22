@@ -1,8 +1,12 @@
 #! /usr/bin/perl
 # fixscript will replace this line with code to load INN::Config
-
 ##
 ##  Perl module for wrapping the shlock program shipped with INN.
+##  Originally written by Julien Élie in 2011 from existing code duplicated
+##  and used by several INN programs.
+##
+##  Various bug fixes, code and documentation improvements since then
+##  in 2012, 2021-2024.
 ##
 package INN::Utils::Shlock;
 
@@ -79,6 +83,8 @@ our @EXPORT_OK = qw(lock unlock releaselocks);
 1;
 
 __END__
+
+=encoding utf-8
 
 =head1 NAME
 
@@ -176,7 +182,7 @@ This function returns C<1> on success, C<0> on failure.
 
 =head1 HISTORY
 
-Documentation written by Julien Elie for InterNetNews.
+Documentation and Perl module written by Julien Élie for InterNetNews.
 
 =head1 SEE ALSO
 
