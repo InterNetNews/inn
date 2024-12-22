@@ -1220,6 +1220,7 @@ gPrintHostInfo(FILE *fp, unsigned int indentAmt)
 }
 
 
+/* Send SIGINT (kill -2) to innfeed to write these data to SNAPSHOT_FILE. */
 void
 printHostInfo(Host host, FILE *fp, unsigned int indentAmt)
 {
