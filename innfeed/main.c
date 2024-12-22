@@ -477,6 +477,7 @@ usage(int val)
     fprintf(stderr, "\t            default of %s\n", CONFIG_FILE);
 
     fprintf(stderr, "\t-C          Check the config file and then exit\n");
+
     fprintf(stderr,
             "\t-d num      Set the logging level to num (an integer).\n");
     fprintf(stderr,
@@ -505,6 +506,7 @@ usage(int val)
     fprintf(stderr, "\t            (a no-op as this executable has been built "
                     "without mmap support)\n");
 #endif
+
     fprintf(stderr, "\t-o bytes    Set a limit for the maximum number of "
                     "bytes of article\n");
     fprintf(stderr,
@@ -767,14 +769,11 @@ mainConfigLoadCbk(void *data)
     if (getInteger(topScope, "debug-level", &ival, NO_INHERIT))
         loggingLevel = (unsigned int) ival;
 
-
     if (getInteger(topScope, "initial-sleep", &ival, NO_INHERIT))
         initialSleep = (unsigned int) ival;
 
-
     if (getBool(topScope, "use-mmap", &bval, NO_INHERIT))
         useMMap = (bval ? true : false);
-
 
     if (getString(topScope, "log-file", &p, NO_INHERIT)) {
         logFile = concatpath(innconf->pathlog, p);
@@ -817,7 +816,6 @@ mainConfigLoadCbk(void *data)
         /* don't need to free */
     }
 
-
     return 1;
 }
 
@@ -856,14 +854,12 @@ mainOptionsProcess(void *data UNUSED)
             addString(topScope, "status-file", xstrdup(sopt));
     }
 
-
     if (Dopt) {
         if ((v = findValue(topScope, "debug-level", NO_INHERIT)) != NULL)
             v->v.int_val = debugLevel;
         else
             addInteger(topScope, "debug-level", debugLevel);
     }
-
 
     if (eopt || talkToSelf) {
         if (talkToSelf)
@@ -875,14 +871,12 @@ mainOptionsProcess(void *data UNUSED)
             addInteger(topScope, "backlog-limit", elimit);
     }
 
-
     if (Mopt) {
         if ((v = findValue(topScope, "use-mmap", NO_INHERIT)) != NULL)
             v->v.bool_val = 0;
         else
             addBoolean(topScope, "use-mmap", 0);
     }
-
 
     if (popt != NULL) {
         if ((v = findValue(topScope, "pid-file", NO_INHERIT)) != NULL) {
