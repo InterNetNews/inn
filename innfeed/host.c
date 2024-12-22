@@ -1412,18 +1412,8 @@ printHostInfo(Host host, FILE *fp, unsigned int indentAmt)
         fprintf(fp, "%s    %p\n", indent, (void *) qe->article);
 #endif
     }
-
     fprintf(fp, "%s    }\n", indent);
-    fprintf(fp, "%s    DEFERRED articles {\n", indent);
-    for (qe = host->deferred; qe != NULL; qe = qe->next) {
-#if defined(INNFEED_DEBUG)
-        printArticleInfo(qe->article, fp, indentAmt + INDENT_INCR);
-#else
-        fprintf(fp, "%s    %p\n", indent, (void *) qe->article);
-#endif
-    }
 
-    fprintf(fp, "%s    }\n", indent);
     fprintf(fp, "%s    DEFERRED articles {\n", indent);
     for (qe = host->deferred; qe != NULL; qe = qe->next) {
 #if defined(INNFEED_DEBUG)
@@ -3598,16 +3588,6 @@ queuesToTape(Host host)
 
     while ((art = remHead(&host->queued, &host->queuedTail)) != NULL) {
         host->backlog--;
-        host->artsHostClose++;
-        host->gArtsHostClose++;
-        host->artsToTape++;
-        host->gArtsToTape++;
-        procArtsToTape++;
-        tapeTakeArticle(host->myTape, art);
-    }
-
-    while ((art = remHead(&host->deferred, &host->deferredTail)) != NULL) {
-        host->deferLen--;
         host->artsHostClose++;
         host->gArtsHostClose++;
         host->artsToTape++;
