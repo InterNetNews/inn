@@ -1018,6 +1018,34 @@ local hierarchy, and any messages containing a Supersedes header field.  This
 will keep messages posted to your public hierarchy from hurting any of the
 rest of Usenet if they leak out.
 
+For more complex cases, or if you just prefer to use a database to store
+authentication and/or authorization information, you can use Perl or Python
+scripts to dynamically authenticate the users and/or generate their access
+blocks.  You may then put all the related information (user, password,
+newsgroups for reading, newsgroups for posting, etc.) for instance in an
+SQLite database, and use an F<nnrpd_auth.pl> or F<nnrpd_auth.py> script to
+authenticate the users, and/or an F<nnrpd_access.pl> or F<nnrpd_access.py>
+script to grant the access.  Then F<readers.conf> only needs defining:
+
+    auth checkcredentials {
+        perl_auth: "/path/to/script/nnrpd_auth.pl"
+        perl_access: "/path/to/script/nnrpd_access.pl"
+    }
+
+or:
+
+    auth checkcredentials {
+        python_auth: "nnrpd_auth"
+        python_access: "nnrpd_access"
+    }
+
+The advantage of these external scripts is that you can code whatever rules
+you want, possibly based on a database shared between your news service and
+other services you may provide to your users.  You can more easily handle
+hundreds or thousands of users with external scripts than with the mere use
+of F<readers.conf> stock blocks and a flat file for the credentials of each
+listed user.
+
 =head1 SECURITY CONSIDERATIONS
 
 In general, separate passwords should be used for NNTP wherever
