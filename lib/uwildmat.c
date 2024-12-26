@@ -58,6 +58,9 @@
 **  facilitate analysis of the coverage of the test suite using purecov.
 **  Please preserve this.  As of March 11, 2001, purecov reports that the
 **  accompanying test suite achieves 100% coverage of this file.
+**
+**  Various bug fixes, code and documentation improvements since then
+**  in 2002-2004, 2006, 2009, 2010, 2014, 2019, 2021, 2022, 2024.
 */
 
 #include "portable/system.h"

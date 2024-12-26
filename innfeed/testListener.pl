@@ -14,6 +14,8 @@
 #
 #                       innfeed -s 'perl testListener.pl -t 30 -d tmp'
 #
+# Various bug fixes, code and documentation improvements since then
+# in 1997, 2009, 2021-2024.
 
 $0 =~ s!.*/!!;
 

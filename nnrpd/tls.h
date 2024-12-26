@@ -4,6 +4,9 @@
 **
 **  Author: Kenichi Okada <okada@opaopa.org>
 **  Created: 2000-02-22
+**
+**  Various bug fixes, code and documentation improvements since then
+**  in 2002-2004, 2008, 2013-2018, 2020, 2021, 2024.
 */
 
 #ifndef TLS_H

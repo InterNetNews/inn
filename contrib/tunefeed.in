@@ -3,6 +3,9 @@
 # tunefeed -- Compare active files with a remote site to tune a feed.
 #             Copyright 1998 by Russ Allbery <eagle@eyrie.org>
 #
+# Various bug fixes, code and documentation improvements since then
+# in 1999, 2001, 2014, 2021-2024.
+#
 # This program is free software; you can redistribute it and/or modify it
 # under the same terms as Perl itself.
 

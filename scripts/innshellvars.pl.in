@@ -9,6 +9,8 @@
 # Description:  Set up any and all variables that an INN perl script
 #               might need.  Also sets umask.
 #
+# Various bug fixes, code and documentation improvements since then
+# in 1998-2003, 2005, 2007-2010, 2013, 2018, 2021, 2022, 2024.
 
 package inn;
 

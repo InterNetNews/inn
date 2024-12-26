@@ -56,6 +56,9 @@
  * Copyright (c) Landon Curt Noll, 1996.
  * All rights reserved.
  *
+ * Various bug fixes, code and documentation improvements since then
+ * in 1997-2004, 2006-2011, 2014-2018, 2021, 2022, 2024.
+ *
  * Permission to use and modify is hereby granted so long as this
  * notice remains.  Use at your own risk.  No warranty is implied.
  */

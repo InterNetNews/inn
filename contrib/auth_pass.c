@@ -32,6 +32,8 @@
  *
  * Written 1996 July 6 by Douglas Wade Needham (dneedham@oucsace.cs.ohiou.edu).
  *
+ * Various bug fixes, code and documentation improvements since then
+ * in 1997, 2002, 2003, 2007, 2011, 2014, 2021, 2024.
  */
 
 #include "portable/system.h"

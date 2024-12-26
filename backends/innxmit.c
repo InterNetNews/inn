@@ -1,6 +1,10 @@
 /*
 **  Transmit articles to remote site.
+**  Originally written by Rich $alz.
 **  Modified for NNTP streaming: 1996-01-03 Jerry Aguirre.
+**
+**  Various bug fixes, code and documentation improvements since then
+**  in 1997-2007, 2009-2011, 2014, 2015, 2017, 2021, 2022, 2024.
 */
 
 #include "portable/system.h"

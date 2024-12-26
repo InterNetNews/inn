@@ -2,9 +2,12 @@
 **  New inpaths reporting program.
 **
 **  Idea, data structures and part of code based on inpaths 2.5
-**  by Brian Reid, Landon Curt Noll
+**  by Brian Reid, Landon Curt Noll.
 **
 **  This version written by Olaf Titz, Feb. 1997.  Public domain.
+**
+**  Various bug fixes, code and documentation improvements since then
+**  in 2001-2003, 2005, 2009, 2010, 2013, 2015, 2017, 2018, 2021, 2022, 2024.
 */
 
 #include "portable/system.h"

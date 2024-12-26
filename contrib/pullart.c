@@ -1,6 +1,9 @@
 /*
 June 14, 1999
 
+Various bug fixes, code and documentation improvements since then
+in 2002, 2003, 2014, 2016, 2021-2024.
+
 Recover text articles from cyclic buffers
 Articles start with  "\0Path:"
 and end with "\r\n.\r\n"

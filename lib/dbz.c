@@ -64,6 +64,9 @@
 **  1998) for dbz-3.3.2.
 **
 **  Limited can't tag warnings once per dbzinit() by Sang-yong Suh (May, 1998)
+**
+**  Various bug fixes, code and documentation improvements since then
+**  in 1999-2011, 2014-2016, 2018, 2021, 2022, 2024.
 */
 
 #include "portable/system.h"

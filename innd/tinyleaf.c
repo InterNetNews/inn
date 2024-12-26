@@ -3,6 +3,9 @@
 **
 **  Copyright 2003, 2004 Russ Allbery <eagle@eyrie.org>
 **
+**  Various bug fixes, code and documentation improvements since then
+**  in 2005, 2006, 2009, 2014, 2021, 2022, 2024.
+**
 **  Permission is hereby granted, free of charge, to any person obtaining a
 **  copy of this software and associated documentation files (the "Software"),
 **  to deal in the Software without restriction, including without limitation

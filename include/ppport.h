@@ -5,7 +5,10 @@
 /* Perl/Pollution/Portability Version 1.0003 */
 
 /* Copyright (C) 1999, Kenneth Albanowski. This code may be used and
-   distributed under the same license as any version of Perl. */
+   distributed under the same license as any version of Perl.
+
+   Various bug fixes, code and documentation improvements since then
+   in 2000, 2002, 2003, 2008, 2021, 2022, 2024. */
 
 /* For the latest version of this code, please contact the author at
    <kjahds@kjahds.com>, or check with the Perl maintainers. */

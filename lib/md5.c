@@ -31,6 +31,9 @@
 **
 **  Copyright (C) 1990, RSA Data Security, Inc.  All rights reserved.
 **
+**  Various changes for a better integration into INN
+**  in 1997, 1998, 2000, 2021, 2022, 2024.
+**
 **  License to copy and use this software is granted provided that it is
 **  identified as the "RSA Data Security, Inc. MD5 Message-Digest Algorithm"
 **  in all material mentioning or referencing this software or this

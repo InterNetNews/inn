@@ -5,6 +5,9 @@
  *
  * This program uses expire.ctl.ctl as input; please see the end of this
  * file for an example of such a file.
+ *
+ * Various bug fixes, code and documentation improvements
+ * in 2001, 2011, 2014, 2015, 2021, 2024.
  */
 
 /*

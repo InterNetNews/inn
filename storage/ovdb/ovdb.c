@@ -3,6 +3,13 @@
  * ovdb 2.00
  * Overview storage using Berkeley DB 4.4 or higher
  *
+ * Created in 1999.
+ * Various bug fixes, code and documentation improvements since then
+ * in 2000-2006, 2008, 2010, 2011, 2013-2015, 2017, 2018, 2021-2024.
+ *
+ * See the full commit history for more details.
+ * Below follows a list of the major initial changes:
+ *
  * 2004-02-17 : Need to track search cursors, since it's possible that
  *              ovdb_closesearch does not get called.  We now close
  *              any cursors still open in ovdb_close, or they'd be in
