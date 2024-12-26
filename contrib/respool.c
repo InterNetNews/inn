@@ -3,6 +3,9 @@
 ** rules, deleting articles from their old place in the spool.
 ** Written 10-09-99 by rmtodd@servalan.servalan.com
 **
+** Various bug fixes, code and documentation improvements since then
+** in 2002-2004, 2006, 2011, 2014, 2015, 2021, 2024.
+**
 ** Note that history and overview will have to be rebuilt for the moved
 ** articles to be visible after they're moved.
 */

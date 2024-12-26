@@ -4,6 +4,8 @@
  * By Ivan Shmakov, 2007.
  * This code is in the public domain.
  *
+ * Various bug fixes, code and documentation improvements since then
+ * in 2008, 2015, 2016, 2021, 2024.
  */
 
 #include "portable/system.h"

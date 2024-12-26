@@ -4,6 +4,9 @@
 **  Written by Ian Dickinson <idickins@fore.com>
 **  Wed Jul 26 10:11:38 BST 1995 (My birthday - 27 today!)
 **
+**  Various bug fixes, code and documentation improvements since then
+**  in 1998-2002, 2004-2006, 2014, 2015, 2017, 2021, 2024.
+**
 **  inndf is a replacement for 'df | awk' in innwatch.ctl and for reporting
 **  free space in other INN scripts.  It doesn't sync, it forks less, and
 **  it's generally less complicated.

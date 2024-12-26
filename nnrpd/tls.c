@@ -4,6 +4,9 @@
 **
 **  Author: Kenichi Okada <okada@opaopa.org>
 **  Created: 2000-02-22
+**
+**  Various bug fixes, code and documentation improvements since then
+**  in 2001-2004, 2006, 2008, 2009, 2011, 2013-2019, 2021-2024.
 */
 
 #include "portable/system.h"

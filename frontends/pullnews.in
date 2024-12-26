@@ -7,6 +7,9 @@
 # Project:      INN
 # File:         pullnews
 #
+# Various bug fixes, code and documentation improvements since then
+# in 1999, 2000, 2004, 2008, 2010-2015, 2021-2024.
+#
 # History:
 #               Full changelog can be found in the Git commit history of the
 #               INN project.  Major changes are:

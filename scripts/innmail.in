@@ -8,6 +8,8 @@
 # Description:  A simple replacement for UCB Mail to avoid nasty security
 #               problems.
 #
+# Various bug fixes, code and documentation improvements since then
+# in 1998, 1999, 2007, 2009, 2011, 2021-2024.
 
 use strict;
 use warnings;

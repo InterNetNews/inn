@@ -1,6 +1,9 @@
 /* newsresp.c - EUnet - bilse */
 
 /*
+ * Various bug fixes, code and documentation improvements
+ * in 2000-2003, 2014, 2017, 2021, 2024.
+ *
  * From: Koen De Vleeschauwer <koen@eu.net>
  * Subject: Re: innfeed-users: innfeed: measuring server response time
  * To: jeff.garzik@spinne.com (Jeff Garzik)

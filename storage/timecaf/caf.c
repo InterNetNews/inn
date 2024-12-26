@@ -3,6 +3,9 @@
 **  Written by Richard Todd (rmtodd@mailhost.ecn.uoknor.edu) 3/24/96,
 **  modified extensively since then.  Altered to work with storage manager
 **  in INN1.8 by rmtodd 3/27/98.
+**
+**  Various bug fixes, code and documentation improvements since then
+**  in 1999-2004, 2006, 2007, 2009, 2013, 2016, 2018-2022, 2024.
 */
 
 #include "portable/system.h"

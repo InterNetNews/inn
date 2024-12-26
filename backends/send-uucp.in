@@ -10,7 +10,10 @@
 # Copyright (C) 1995-1997 Miquel van Smoorenburg - Cistron Internet Services
 #
 # Copyright (C) 2003 Marco d'Itri <md@linux.it>
-#   Nearly rewritten. Added syslog support, real errors checking and more.
+#   Nearly rewritten.  Added syslog support, real errors checking and more.
+#
+# Various bug fixes, code and documentation improvements since then
+# in 2005, 2007-2009, 2011, 2012, 2016, 2021-2024.
 #
 # This program is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the Free
@@ -260,6 +263,8 @@ sub ctlinnd {
 }
 
 __END__
+
+=encoding utf-8
 
 =head1 NAME
 
@@ -579,9 +584,10 @@ The log file used if the syslog facility is not available.
 =head1 HISTORY
 
 This program was originally written by Edvard Tuinder <ed@elm.net> and then
-maintained and extended by Miquel van Smoorenburg <miquels@cistron.nl>.
-Marco d'Itri <md@linux.it> cleaned up the code for inclusion in INN.  This
-manual page was written by Mark Brown <broonie@sirena.org.uk>.
+maintained and extended by Miquel van Smoorenburg <miquels@cistron.nl>.  Marco
+d'Itri <md@linux.it> cleaned up the code for inclusion in INN.  This manual
+page was originally written by Mark Brown <broonie@sirena.org.uk>, and the
+detailed procedure to set up a UUCP feed added by Julien Élie.
 
 =head1 SEE ALSO
 

@@ -1,6 +1,9 @@
 /*
 ** Declarations needed for handling CAF (Crunched Article Files)
 ** Written by Richard Todd (rmtodd@mailhost.ecn.uoknor.edu) 3/24/96
+**
+** Various bug fixes, code and documentation improvements since then
+** in 1998-2000, 2002, 2004, 2009, 2021, 2022, 2024.
 */
 
 

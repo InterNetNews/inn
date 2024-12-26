@@ -7,6 +7,9 @@
 ##
 ##  Initial version written by Christian Mock <cm@tahina.priv.at> in July 1998,
 ##  and put into the public domain.
+##
+##  Various bug fixes, code and documentation improvements since then
+##  in 2001, 2003, 2022, 2024.
 
 use strict;
 use warnings;

@@ -4,6 +4,9 @@
 ##  Overview manipulation utility for ovsqlite.
 ##
 ##  Initial version written in March 2023 by Julien ÉLIE.
+##
+##  Various bug fixes, code and documentation improvements since then
+##  in 2024.
 
 use strict;
 use warnings;

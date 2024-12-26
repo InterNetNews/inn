@@ -3,6 +3,9 @@
 **
 **  Copyright (c) 2001, Thus plc
 **
+**  Various bug fixes, code and documentation improvements since then
+**  in 2002-2006, 2009, 2010, 2016, 2017, 2021, 2024.
+**
 **  Redistribution and use of the source code in source and binary
 **  forms, with or without modification, are permitted provided that
 **  the following 3 conditions are met:

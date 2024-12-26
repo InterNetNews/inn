@@ -2,6 +2,9 @@
 **  Decode seven-bit input into full binary output.
 **  From @(#)decode.c 1.3 5/15/85, distributed with B2.11 News.
 **
+**  Various bug fixes, code and documentation improvements since then
+**  in 1997, 1999, 2000, 2002, 2003, 2021, 2024.
+**
 **  Collect runs of 12 seven-bit characters.  Combine them in pairs to
 **  make six 13-bit characters.  Extract the top bit of each pair to make
 **  a 13th six-bit character, and split the remaining six 12-bit
