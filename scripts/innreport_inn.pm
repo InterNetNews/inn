@@ -308,6 +308,9 @@ our %rnews_rejected;
 our $rnews_too_old;
 our %rnews_unapproved;
 
+my @unique_hash_keys_unused
+  = ("paused", "? (can't getpeername)");    # perltidy -wuk
+
 # init innd timer
 foreach (values %timer_names) {
     $innd_time_min{$_} = $MIN;

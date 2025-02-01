@@ -19,6 +19,7 @@
 #
 # Do any initialization steps.
 #
+my @unique_hash_keys_unused = qw(__BODY__);    # perltidy -wuk
 my %config = (
     checkincludedtext => 0,
     includedcutoff    => 40,

@@ -41,7 +41,6 @@ my %paths = (
     'moderators'        => "$INN::Config::pathetc/moderators",
     'most_logs'         => "$INN::Config::pathlog",
     'newsbin'           => "$INN::Config::pathbin",
-    'newsboot'          => "$INN::Config::pathbin/rc.news",
     'newsfeeds'         => "$INN::Config::newsfeeds",
     'newsetc'           => "$INN::Config::pathetc",
     'newslib'           => "$INN::Config::newslib",

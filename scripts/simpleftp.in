@@ -6,7 +6,7 @@
 #         Rewritten by Julien Élie in 2007 to use Net::FTP.
 #
 # Various bug fixes, code and documentation improvements by Julien Élie
-# in 2007, 2009, 2011, 2021, 2022, 2024.
+# in 2007, 2009, 2011, 2021, 2022, 2024, 2025.
 #
 # Fetch files to the local machine based on URLs on the command line.
 # INN's configure searches for wget (as well as ncftpget or ncftp for the sole
@@ -41,6 +41,7 @@ my $timeout = 30;    # Timeout in seconds for HTTP::Tiny and Net::FTP.
 @ARGV
   or die $usage;
 
+my @unique_hash_keys_unused = qw(success);    # perltidy -wuk
 my ($lasthost, $ftp);
 my $ftp_session = 0;
 

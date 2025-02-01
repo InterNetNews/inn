@@ -5,6 +5,10 @@
 # The canonical version of this file is maintained in the rra-c-util package,
 # which can be found at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
 #
+# Owing to the dependency to Test::RRA of the current version of this file
+# upstream, it is locally maintained in INN, and has been updated in
+# 2018, 2020, 2021, 2024, 2025.
+#
 # Written by Russ Allbery <eagle@eyrie.org>
 # Copyright 2016 Russ Allbery <eagle@eyrie.org>
 # Copyright 2012-2014
@@ -78,6 +82,7 @@ chdir($root) or BAIL_OUT("cannot chdir to $root: $!");
 # Add some additional exclusions, useful mostly for other programs that copy
 # this test.
 {
+    my @unique_hash_keys_unused = qw(.libs tests);    # perltidy -wuk
     $Test::Pod::ignore_dirs{'.libs'} = 'libraries';
     $Test::Pod::ignore_dirs{'tests'} = 'test suite';
 }

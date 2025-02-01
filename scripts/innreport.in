@@ -9,7 +9,7 @@
 # Copyright (c) 1996-2001, Fabien Tassin <fta@sofaraway.org>.
 #
 # Various bug fixes, code and documentation improvements since then
-# in 2003, 2005-2010, 2012, 2015, 2020-2024.
+# in 2003, 2005-2010, 2012, 2015, 2020-2025.
 #
 # Checkpoints tracking was improved by Jim Dutton in 2006.
 # Lots of improvements and XHTML 1.1 conformance added
@@ -157,6 +157,7 @@ my $NOT_DAILY = "DONT";
 my %output;       # content of the configuration file.
 my $DEBUG = 0;    # set to 1 to verify the structure/content of the conf file.
 my $start_time = time;
+my @unique_hash_keys_unused = qw(factor sort unit);    # perltidy -wuk
 
 # Require Perl 5.002 or greater.
 require 5.002;
