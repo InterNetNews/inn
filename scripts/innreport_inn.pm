@@ -1,11 +1,10 @@
 ##########################################################################
 # INN module for innreport.
 #
-# (c) 1997-2001 by Fabien Tassin <fta@sofaraway.org>.
-# Enhanced by several contributors since then.
+# Copyright (c) 1997-2001 by Fabien Tassin <fta@sofaraway.org>.
 #
 # Various bug fixes, code and documentation improvements since then
-# in 2002-2011, 2013-2015, 2017, 2018, 2020-2024.
+# in 2002-2011, 2013-2015, 2017, 2018, 2020-2025.
 #
 # See innreport documentation for more information.
 ##########################################################################
@@ -1949,11 +1948,30 @@ sub collect($$$$$$) {
             $nnrpd_time_times += $1;
             my $timers = $2;
 
+            # Specifically treat the idle timer as it is not properly computed
+            # in TLS sessions.  Assume that it corresponds to the time when
+            # other timers are not in action.
+            $nnrpd_time_time{idle} += $1;
+            my $idle_time = $1;
+
             while ($timers =~ /(\S+) (\d+)\((\d+)\)\s*/g) {
                 my $name = $nnrpd_timer_names{$1} || $1;
-                $nnrpd_time_time{$name} += $2;
+                if ($name ne "idle") {
+                    $idle_time -= $2;
+                    $nnrpd_time_time{idle} -= $2;
+                }
+            }
+
+            while ($timers =~ /(\S+) (\d+)\((\d+)\)\s*/g) {
+                my $name = $nnrpd_timer_names{$1} || $1;
+                my $timer = $2;
+                if ($name eq "idle") {
+                    $timer = $idle_time;
+                } else {
+                    $nnrpd_time_time{$name} += $timer;
+                }
                 if ($3) {
-                    my $average = $2 / $3;
+                    my $average = $timer / $3;
                     $nnrpd_time_num{$name} += $3;
                     my $min = $nnrpd_time_min{$name};
                     $nnrpd_time_min{$name} = $average
