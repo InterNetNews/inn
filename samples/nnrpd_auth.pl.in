@@ -4,12 +4,11 @@
 ##
 ##  Sample code for the nnrpd Perl authentication hooks.
 ##
-##  This file is loaded when a perl_auth: parameter is reached in
-##  readers.conf.  If it defines a sub named authenticate, that
-##  function will be called during processing of a perl_auth:
-##  parameter. Attributes about the connection are passed to the
-##  program in the %attributes global variable.  It should return an
-##  array with two elements:
+##  This file is loaded when a perl_auth parameter is reached in readers.conf.
+##  If it defines a sub named authenticate, that function will be called during
+##  processing of a perl_auth parameter.  Attributes about the connection are
+##  passed to the program in the %attributes global variable.
+##  It should return an array with two elements:
 ##
 ##  1) NNTP response code.  Should be one of the codes from %authcodes
 ##  below to not risk violating the protocol.
@@ -54,8 +53,8 @@ sub authenticate {
 # contains, keyed by users, a tab-separated list of the password (in
 # crypt format), whether they can post, a wildmat matching what
 # newsgroups they have access to, and the number of bytes per second
-# they're allowed to use. This section of the code only accesses the
-# username and password fields. See the file nnrpd_access.pl for
+# they're allowed to use.  This section of the code only accesses the
+# username and password fields.  See the file nnrpd_access.pl for
 # access rights based on the other fields.
 sub checkuser {
     my $user = $attributes{'username'};
@@ -64,7 +63,7 @@ sub checkuser {
     return ($authcodes{denied}, "No username given.")
       unless defined $users{$user};
 
-    my ($password, $post_unused, $speed_unused, $subscription_unused)
+    my ($password, $post_unused, $subscription_unused, $speed_unused)
       = split(/\t/, $users{$user});
     return ($authcodes{denied}, "Incorrect password.")
       if (crypt($pass, $password) ne $password);
