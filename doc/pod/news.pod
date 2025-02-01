@@ -56,6 +56,11 @@ displayed by default instead of a possibly very long exhaustive list.
 
 =item *
 
+Fixed the computation of idle time in the B<nnrpd> timers gathered by
+B<innreport>.
+
+=item *
+
 Improved Perl code readability and quality by enforcing the most interesting
 and useful C<Perl::Critic> policies.
 
