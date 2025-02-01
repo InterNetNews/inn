@@ -8,7 +8,7 @@
 # File:         pullnews
 #
 # Various bug fixes, code and documentation improvements since then
-# in 1999, 2000, 2004, 2008, 2010-2015, 2021-2024.
+# in 1999, 2000, 2004, 2008, 2010-2015, 2021-2025.
 #
 # History:
 #               Full changelog can be found in the Git commit history of the
@@ -99,6 +99,7 @@ $pathdb = $INN::Config::pathdb
   if $INN::Config::pathdb
   && $INN::Config::runasuser
   && $INN::Config::runasuser eq getpwuid($<);
+my @unique_hash_keys_unused = qw(Reader);    # perltidy -wuk
 my $defaultConfig = "${pathdb}/pullnews.marks";
 my $defaultPort = 119;
 my $defaultHost = "localhost";

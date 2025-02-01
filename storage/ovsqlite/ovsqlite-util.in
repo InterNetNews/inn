@@ -6,7 +6,7 @@
 ##  Initial version written in March 2023 by Julien ÉLIE.
 ##
 ##  Various bug fixes, code and documentation improvements since then
-##  in 2024.
+##  in 2024, 2025.
 
 use strict;
 use warnings;
@@ -58,6 +58,9 @@ sub HELP_MESSAGE {
     print $usage;
     exit(0);
 }
+
+my @unique_hash_keys_unused
+  = qw(sqlite_allow_multiple_statements);    # perltidy -wuk
 
 my %opt;
 getopts("a:AFghioOn:p:", \%opt) || die $usage;
