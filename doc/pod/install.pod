@@ -684,12 +684,12 @@ stored on your server, makes writing programs that fiddle with the news spool
 very easy, gives you fine control over article retention times, and comes with
 the B<scanspool> support utility to perform sanity checks.
 
-Disadvantages: Takes a very fast file system and I/O system to keep up
-with current Usenet traffic volumes due to file system overhead.  Groups
-with heavy traffic tend to create a bottleneck because of inefficiencies
-in storing large numbers of article files in a single directory.  Requires
-a nightly B<expire> program to delete old articles out of the news spool, a
-process that can slow down the server for several hours or more.
+Disadvantages: Needs a faster file system and I/O system than the cnfs
+and timecaf storage methods due to file system overhead.  Groups with heavy
+traffic tend to create a bottleneck because of inefficiencies in storing large
+numbers of article files in a single directory.  It consumes more inodes and
+requires a nightly B<expire> program to delete old articles out of the news
+spool.
 
 =item timehash
 
@@ -697,13 +697,15 @@ Articles are stored as individual files as in tradspool, but are divided
 into directories based on the arrival time to ensure that no single
 directory contains so many files as to cause a bottleneck.
 
-Advantages: Heavy traffic groups do not cause bottlenecks, and fine
+Advantages: Heavy traffic groups do not cause bottlenecks, and a fine
 control of article retention time is still possible.
 
-Disadvantages: The ability to easily find all articles in a given
-newsgroup and manually fiddle with the article spool is lost, and INN
-still suffers from speed degradation due to file system overhead (creating
-and deleting individual files is a slow operation).
+Disadvantages: The ability to easily find all articles in a given newsgroup
+and manually fiddle with the article spool is lost, and INN still suffers
+from speed degradation due to file system overhead (creating and deleting
+individual files is a slow operation) and from a higher inode usage.  It also
+requires a nightly B<expire> program to delete old articles out of the news
+spool.
 
 =item timecaf
 
@@ -722,11 +724,13 @@ Advantages: Roughly four times faster than timehash for article writes,
 since much of the file system overhead is bypassed, while still retaining
 the same fine control over article retention time.
 
-Disadvantages: Even worse than timehash, and similar to CNFS (below),
-using this method means giving up all but the most careful manually
-fiddling with your article spool.  As one of the newer and least widely
-used storage types, timecaf has not been as thoroughly tested as the other
-methods.
+Disadvantages: Even worse than timehash, and similar to CNFS (below), using
+this method means giving up all but the most careful manually fiddling with
+your article spool.  As one of the newer and least widely used storage types,
+timecaf has not been as thoroughly tested as the other methods.  It requires
+running a nightly B<expire> program to delete old articles by either
+compacting CAF files if they still contain available articles, or removing
+them.
 
 =item cnfs
 
