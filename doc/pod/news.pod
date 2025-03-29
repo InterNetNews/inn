@@ -57,12 +57,15 @@ displayed by default instead of a possibly very long exhaustive list.
 =item *
 
 Fixed the computation of idle time in the B<nnrpd> timers gathered by
-B<innreport>.
+B<innreport>, and the display of non-printable characters in the section about
+unrecognized NNRP commands.  The wording and the case of the section titles
+are also more homogenized.
 
 =item *
 
 Improved Perl code readability and quality by enforcing the most interesting
-and useful C<Perl::Critic> policies.
+and useful C<Perl::Critic> policies.  A new C<make code-check> command has
+been added to run the checks against the source code.
 
 =item *
 
