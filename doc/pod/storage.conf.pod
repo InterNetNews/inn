@@ -273,8 +273,10 @@ retaining the same fine control over article retention time.
 
 Disadvantages: Using this method means giving up all but the most careful
 manually fiddling with the article spool; in this aspect, it looks like
-C<cnfs>.  As one of the newer and least widely used storage types,
-C<timecaf> has not been as thoroughly tested as the other methods.
+C<cnfs>.  As one of the newer and least widely used storage types, C<timecaf>
+has not been as thoroughly tested as the other methods.  It requires running
+a nightly B<expire> program to delete old articles by either compacting CAF
+files if they still contain available articles, or removing them.
 
 =item B<timehash>
 
@@ -297,7 +299,9 @@ of article retention time is still possible.
 Disadvantages: The ability to easily find all articles in a given newsgroup
 and manually fiddle with the article spool is lost, and INN still suffers
 from speed degradation due to file system overhead (creating and deleting
-individual files is a slow operation).
+individual files is a slow operation) and from a higher inode usage.  It also
+requires a nightly B<expire> program to delete old articles out of the news
+spool.
 
 =item B<tradspool>
 
@@ -324,12 +328,12 @@ that fiddle with the news spool very easy, gives fine control over
 article retention times, and comes with the B<scanspool> support utility
 to perform sanity checks.
 
-Disadvantages: It takes a very fast file system and I/O system to keep up with
-current Usenet traffic volumes due to file system overhead.  Groups with heavy
+Disadvantages: It needs a faster file system and I/O system than the cnfs
+and timecaf storage methods due to file system overhead.  Groups with heavy
 traffic tend to create a bottleneck because of inefficiencies in storing large
-numbers of article files in a single directory.  It requires a nightly expire
-program to delete old articles out of the news spool, a process that can slow
-down the server for several hours or more.
+numbers of article files in a single directory.  It consumes more inodes and
+requires a nightly B<expire> program to delete old articles out of the news
+spool.
 
 =item B<trash>
 
