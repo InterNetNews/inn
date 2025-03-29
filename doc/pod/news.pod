@@ -16,9 +16,9 @@ and the remote F<active> file is up to date.  You are otherwise encouraged
 to update your F<actsync.cfg> configuration file to use an HTTPS access.
 Just adding C<protocol=https> may be enough.  The rationale behind that is
 the fact that FTP servers are considered less secure nowadays; FTP access
-to C<ftp.isc.org> was notably shut down in late 2024 in favour of HTTPS.
+to C<ftp.isc.org> is doomed to be shut down one day in favour of HTTPS.
 The updated B<actsyncd> and B<simpleftp> programs shipped with INN go along
-with the change.
+with the upcoming change.
 
 =item *
 
