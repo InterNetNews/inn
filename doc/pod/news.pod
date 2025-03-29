@@ -97,6 +97,10 @@ been added to run the checks against the source code.
 Spelling fixes in documentation.  Thanks to Christian Clauss for the
 run of B<codespell>.
 
+=item *
+
+Update from GNU Libtool 2.4.7 to 2.5.4.
+
 =back
 
 =head1 Changes in 2.7.2 (2024-06-22)
