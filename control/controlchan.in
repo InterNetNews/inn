@@ -608,12 +608,14 @@ sub pgpverify {
     my $keyid = shift;
 
     if ($token =~ /^\@.+\@$/) {
-        open(PGPCHECK,
+        open(
+            PGPCHECK,
             "$INN::Config::newsbin/sm -q $token "
               . "| $INN::Config::newsbin/pgpverify --findid='$keyid' |",
         ) or goto ERROR;
     } else {
-        open(PGPCHECK,
+        open(
+            PGPCHECK,
             "$INN::Config::newsbin/pgpverify --findid='$keyid' < $token |",
         ) or goto ERROR;
     }
