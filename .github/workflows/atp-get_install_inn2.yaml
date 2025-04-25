@@ -18,7 +18,7 @@ jobs:
           echo "localhost.localdomain" > hostname
           sudo mv hostname /etc/
           cat /etc/hostname
-      # The next commands usually pass but not always!!!
+      # The next commands usually pass, but not always!!!
       - run: |
           sudo apt-get update -qq
           sudo apt-get install --yes inn2
