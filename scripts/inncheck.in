@@ -733,9 +733,10 @@ my %newsfeeds_flags = (
 
 sub newsfeeds {
     my ($next, $start, @muxes, %sites);
-    my ($site, $pats, $dists, $flags, $param, $type, $k, $v, $defsub);
+    my ($site, $pats, $dists, $flags, $param, $type, $k, $v);
     my ($bang, $nobang, $prog, $dir);
     my %variables;
+    my $defsub = '';
 
   INPUT:
     while (<$IN>) {
