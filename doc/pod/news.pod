@@ -4,6 +4,12 @@
 
 =item *
 
+An up-to-date F<moderators> file is provided with this release.  It basically
+removes the records of defunct hierarchies.  You may want to manually update
+your configuration with the new file.
+
+=item *
+
 B<actsyncd> now supports fetching a remote F<active> file from a web site,
 using the HTTP or HTTPS protocols.  Two new keywords, I<path> and I<protocol>,
 permit parameterizing that in the F<actsync.cfg> configuration file.  See the
