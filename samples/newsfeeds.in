@@ -73,7 +73,7 @@ controlchan!\
 #    :!*\
 #    :Tc,Wnm*:@bindir@/innfeed
 
-# If need be, a funnel for delayed feeds.  See delayer(1) for more details.
+# If need be, a funnel for delayed feeds.  See delayer(8) for more details.
 #innfeed-delayed!\
 #    :!*\
 #    :Tc,Wnm*,S16384:@bindir@/delayer --delay 300 -- \

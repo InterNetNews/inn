@@ -2,10 +2,10 @@ include ../../Makefile.global
 
 top	= ../..
 
-SEC1	= convdate.1 delayer.1 fastrm.1 gencancel.1 getlist.1 \
+SEC1	= convdate.1 fastrm.1 gencancel.1 getlist.1 \
 	grephistory.1 inews.1 \
 	innconfval.1 innmail.1 nntpget.1 pgpverify.1 pullnews.1 rnews.1 \
-	shlock.1 shrinkfile.1 simpleftp.1 sm.1
+	shrinkfile.1 simpleftp.1
 
 SEC3	= libinn.3 libinn_clientlib.3 libinn_dbz.3 libinn_inndcomm.3 \
 	libinn_list.3 libinn_qio.3 libinn_tst.3 libinn_uwildmat.3 \
@@ -25,7 +25,7 @@ SEC5	= active.5 active.times.5 buffindexed.conf.5 control.ctl.5 \
 
 SEC8	= actsync.8 archive.8 batcher.8 buffchan.8 ckpasswd.8 \
 	cnfsheadconf.8 cnfsstat.8 controlchan.8 ctlinnd.8 cvtbatch.8 \
-	docheckgroups.8 domain.8 expire.8 expireover.8 expirerm.8 \
+	delayer.8 docheckgroups.8 domain.8 expire.8 expireover.8 expirerm.8 \
 	ident.8 \
 	innbind.8 inncheck.8 innd.8 inndf.8 innfeed.8 innreport.8 innstat.8 \
 	innupgrade.8 innwatch.8 innxbatch.8 innxmit.8 mailpost.8 makedbz.8 \
@@ -33,8 +33,8 @@ SEC8	= actsync.8 archive.8 batcher.8 buffchan.8 ckpasswd.8 \
 	nnrpd.8 nntpsend.8 ovdb_init.8 ovdb_monitor.8 ovdb_server.8 \
 	ovdb_stat.8 overchan.8 ovsqlite-server.8 ovsqlite-util.8 perl-nocem.8 \
 	procbatch.8 prunehistory.8 radius.8 rc.news.8 \
-	scanlogs.8 scanspool.8 send-ihave.8 send-uucp.8 sendinpaths.8 \
-	tally.control.8 tdx-util.8 tinyleaf.8 writelog.8
+	scanlogs.8 scanspool.8 send-ihave.8 send-uucp.8 sendinpaths.8 shlock.8 \
+	sm.8 tally.control.8 tdx-util.8 tinyleaf.8 writelog.8
 
 all:
 clobber clean distclean:

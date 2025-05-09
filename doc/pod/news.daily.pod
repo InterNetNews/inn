@@ -84,7 +84,7 @@ the above option list for B<news.daily>.
 
 It may be run more often, but such invocations should at least use the
 B<norotate> keyword (or perhaps the B<notdaily> keyword) to prevent the log
-files from being processed and rotated too fast.  The shlock(1) program is
+files from being processed and rotated too fast.  The shlock(8) program is
 used to prevent simultaneous executions.
 
 The program specified by the given path I</path/to/a/program> is executed
@@ -260,6 +260,6 @@ converted to POD by Julien Elie.
 
 active(5), ctlinnd(8), expire(8), expire.ctl(5), expireover(8), expirerm(8),
 fastrm(1), inn.conf(5), innstat(8), newslog(5), procbatch(8), scanlogs(8),
-shlock(1).
+shlock(8).
 
 =cut

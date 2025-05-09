@@ -24,7 +24,7 @@
 **  We do not use any file locking. At worst, a batch could be transmitted
 **  twice in parallel by two independent invocations of innxbatch.
 **  To prevent this, innxbatch should be invoked by a shell script that uses
-**  shlock(1) to achieve mutual exclusion.
+**  shlock(8) to achieve mutual exclusion.
 */
 
 #include "portable/system.h"

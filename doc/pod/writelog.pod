@@ -22,7 +22,7 @@ command line, followed by standard input indented by four spaces.  When sent
 by mail, the subject is I<text> and the body is standard input without
 indentation.
 
-shlock(1) is used to avoid simultaneous updates to a single log file.
+shlock(8) is used to avoid simultaneous updates to a single log file.
 
 =head1 HISTORY
 

@@ -92,12 +92,12 @@ INN::Utils::Shlock - Wrapper around the shlock program
 
 =head1 DESCRIPTION
 
-This Perl module wraps the shlock(1) program so that it can easily be used.
+This Perl module wraps the shlock(8) program so that it can easily be used.
 Calling B<shlock> is more portable than using flock(2) and its corresponding
 Perl function because this function does not work as expected on all
 existing systems.
 
-See the shlock(1) documentation for more information.
+See the shlock(8) documentation for more information.
 
 Using INN::Utils::Shlock is straight-forward:
 
@@ -186,6 +186,6 @@ Documentation and Perl module written by Julien Élie for InterNetNews.
 
 =head1 SEE ALSO
 
-perl(1), shlock(1).
+perl(1), shlock(8).
 
 =cut

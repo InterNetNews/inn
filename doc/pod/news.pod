@@ -99,6 +99,11 @@ run of B<codespell>.
 
 =item *
 
+Move the manual pages of B<delayer>, B<shlock> and B<sm> to section 8 (system
+administration commands) instead of section 1 (user commands).
+
+=item *
+
 Update from GNU Libtool 2.4.7 to 2.5.4.
 
 =back

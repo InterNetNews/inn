@@ -116,6 +116,6 @@ POD by Russ Allbery <eagle@eyrie.org>.
 
 =head1 SEE ALSO
 
-history(5), inn.conf(5), sm(1).
+history(5), inn.conf(5), sm(8).
 
 =cut

@@ -3,13 +3,13 @@
 ##  Delay lines for a certain number of seconds.
 ##
 ##  Primarily meant to be used to generate a delayed feed with innfeed.
-##  See the delayer(1) manual page for more details, and how to set it.
+##  See the delayer(8) manual page for more details, and how to set it.
 ##
 ##  Initial version written by Christian Mock <cm@tahina.priv.at> in July 1998,
 ##  and put into the public domain.
 ##
 ##  Various bug fixes, code and documentation improvements since then
-##  in 2001, 2003, 2022, 2024.
+##  in 2001, 2003, 2022, 2024, 2025.
 
 use strict;
 use warnings;

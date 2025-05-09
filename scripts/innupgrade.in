@@ -77,15 +77,13 @@ $0 =~ s@.*/@@;
     'parsedate.3'         => '',    # -- replaced by convdate.
     'pgpverify.8'         => '',    # -- it is pgpverify(1).
     'README.readers.conf' => '',    # -- it is external-auth.
-    'sm.8'                => '',    # -- it is sm(1).
-
-    'innfeed.1' => '',              # It is innfeed(8) in INN 2.5.3.
 
     'hook-tcl'    => 'hook-tcl.OLD',      # Obsolete Tcl hooks in INN 2.5.0.
     'filter.tcl'  => 'filter.tcl.OLD',
     'startup.tcl' => 'startup.tcl.OLD',
 
     'motd.news'     => 'motd.nnrpd',          # Renamed in INN 2.5.3.
+    'innfeed.1'     => '',                    # -- it is innfeed(8).
     'radius.conf'   => 'inn-radius.conf',     # Renamed in INN 2.5.4.
     'radius.conf.5' => '',
     'clientlib.3'   => '',                    # Removed in INN 2.6.5.
@@ -106,6 +104,9 @@ $0 =~ s@.*/@@;
     'senduuname.pl' => 'senduuname.pl.OLD',
     'signcontrol'   => 'signcontrol.OLD',
     'version.pl'    => 'version.pl.OLD',
+    'delayer.1'     => '',                    # delayer(8) in INN 2.7.3.
+    'shlock.1'      => '',                    # -- it is shlock(8).
+    'sm.1'          => '',                    # -- it is sm(8).
 );
 
 # Update incoming.conf.
