@@ -792,6 +792,7 @@ dnl
 dnl   -Wcast-qual                     Some structs require casting away const.
 dnl   -Wcovered-switch-default        Does not do harm to have default cases.
 dnl   -Wdisabled-macro-expansion      Not an actual problem.
+dnl   -Wexcess-padding                Not an actual problem.
 dnl   -Wextra-semi-stmt               Useful for readability.
 dnl   -Wpacked                        Not an actual problem.
 dnl   -Wpadded                        Not an actual problem.
@@ -799,6 +800,8 @@ dnl   -Wpoison-system-directories     Not an actual problem (e.g. Xcode).
 dnl   -Wreserved-id-macro             Autoconf sets several of these normally.
 dnl   -Wreserved-identifier           False positives with FD_ZERO.
 dnl   -Wsign-conversion               Too many fiddly changes for the benefit.
+dnl   -Wstack-protector-purecap-ignored Not an actual problem (CHERI hardware).
+dnl   -Wswitch-default                Not an actual problem.
 dnl   -Wswitch-enum                   Useless noise.
 dnl   -Wtautological-pointer-compare  False positives with for loops.
 dnl   -Wundef                         Conflicts with Autoconf probe results.
@@ -840,11 +843,13 @@ m4_foreach_w(
      -Wnormalized=nfc -Wredundant-decls -Wrestrict -Wnested-externs -Winline
      -Winvalid-pch -Wvla -Wuse-after-free=3 -Wno-unused-function
      -Weverything -Wno-cast-qual -Wno-covered-switch-default
-     -Wno-disabled-macro-expansion -Wno-extra-semi-stmt
+     -Wno-disabled-macro-expansion -Wno-excess-padding -Wno-extra-semi-stmt
      -Wno-implicit-int-conversion -Wno-packed -Wno-padded
      -Wno-poison-system-directories
      -Wno-reserved-id-macro -Wno-reserved-identifier -Wno-shorten-64-to-32
-     -Wno-sign-conversion -Wno-switch-enum -Wno-tautological-pointer-compare
+     -Wno-sign-conversion -Wno-stack-protector-purecap-ignored
+     -Wno-switch-default -Wno-switch-enum
+     -Wno-tautological-pointer-compare
      -Wno-undef -Wno-unreachable-code -Wno-unreachable-code-return
      -Wno-unsafe-buffer-usage
      -Wno-unused-macros -Wno-used-but-marked-unused],
