@@ -94,6 +94,11 @@ are also more homogenized.
 
 =item *
 
+Fixed the handling of empty Message-IDs in B<perl-nocem>.  Instead of dying,
+it now just discards these invalid entries.
+
+=item *
+
 Improved Perl code readability and quality by enforcing the most interesting
 and useful C<Perl::Critic> policies.  A new C<make code-check> command has
 been added to run the checks against the source code.
