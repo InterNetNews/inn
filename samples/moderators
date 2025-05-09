@@ -19,16 +19,13 @@
 ##  The first matching entry is used.
 
 ##  Public hierarchies with exceptions.
-aioe.*:%s-newsgroup@aioe.org
 fido7.*:%s@fido7.org
-ffm.*:%s@moderators.arcornews.de
 fj.*:%s@moderators.fj-news.org
 medlux.*:%s@news.medlux.ru
 nl.*:%s@nl.news-admin.org
 perl.*:news-moderator-%s@perl.org
 relcom.*:%s@moderators.relcom.ru
 si.*:%s@arnes.si
-ukr.*:%s@sita.kiev.ua
 
 ##  Direct all other public hierarchies to the master moderator database.
 *:%s@moderators.isc.org
