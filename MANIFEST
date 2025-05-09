@@ -144,7 +144,7 @@ doc/man/convdate.1                    Manpage for convdate utility
 doc/man/ctlinnd.8                     Manpage for ctlinnd frontend
 doc/man/cvtbatch.8                    Manpage for cvtbatch utility
 doc/man/cycbuff.conf.5                Manpage for cycbuff.conf config file
-doc/man/delayer.1                     Manpage for delayer
+doc/man/delayer.8                     Manpage for delayer
 doc/man/distrib.pats.5                Manpage for distrib.pats config file
 doc/man/distributions.5               Manpage for distributions config file
 doc/man/docheckgroups.8               Manpage for docheckgroups
@@ -232,10 +232,10 @@ doc/man/scanspool.8                   Manpage for scanspool
 doc/man/send-ihave.8                  Manpage for send-ihave
 doc/man/send-uucp.8                   Manpage for send-uucp
 doc/man/sendinpaths.8                 Manpage for sendinpaths
-doc/man/shlock.1                      Manpage for shlock backend utility
+doc/man/shlock.8                      Manpage for shlock backend utility
 doc/man/shrinkfile.1                  Manpage for shrinkfile utility
 doc/man/simpleftp.1                   Manpage for simpleftp utility
-doc/man/sm.1                          Manpage for sm
+doc/man/sm.8                          Manpage for sm
 doc/man/storage.conf.5                Manpage for storage.conf config file
 doc/man/subscriptions.5               Manpage for subscriptions list
 doc/man/tally.control.8               Manpage for tally.control
@@ -351,10 +351,10 @@ doc/pod/scanlogs.pod                  Master file for scanlogs.8
 doc/pod/scanspool.pod                 Master file for scanspool.8
 doc/pod/send-ihave.pod                Master file for send-ihave.8
 doc/pod/sendinpaths.pod               Master file for sendinpaths.8
-doc/pod/shlock.pod                    Master file for shlock.1
+doc/pod/shlock.pod                    Master file for shlock.8
 doc/pod/shrinkfile.pod                Master file for shrinkfile.1
 doc/pod/simpleftp.pod                 Master file for simpleftp.1
-doc/pod/sm.pod                        Master file for sm.1
+doc/pod/sm.pod                        Master file for sm.8
 doc/pod/storage.conf.pod              Master file for storage.conf.5
 doc/pod/subscriptions.pod             Master file for subscriptions.5
 doc/pod/tally.control.pod             Master file for tally.control.8

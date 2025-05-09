@@ -1092,7 +1092,7 @@ This entry will cause B<innd> to write out a file in I<pathspool>/outgoing
 named F<remote.example.com> and containing the Message-ID and storage
 token of each message to send to that site.  (The storage token is INN's
 internal pointer to where an article is stored; to retrieve an article
-given its storage token, use sm(1)).  B<innxmit> knows how to read files
+given its storage token, use sm(8)).  B<innxmit> knows how to read files
 of this format and send those articles to the remote site.  For
 information on setting it up to run periodically, see L<Setting Up the
 Cron Jobs> below.  You will also need to set up a config file for

@@ -12,7 +12,7 @@ MAN1	= ../man/convdate.1 ../man/fastrm.1 ../man/gencancel.1 \
 	../man/getlist.1 \
 	../man/grephistory.1 ../man/inews.1 ../man/innconfval.1 \
 	../man/innmail.1 ../man/nntpget.1 ../man/pullnews.1 ../man/rnews.1 \
-	../man/shlock.1 ../man/shrinkfile.1 ../man/simpleftp.1 ../man/sm.1
+	../man/shrinkfile.1 ../man/simpleftp.1
 
 MAN3	= ../man/libinn.3 ../man/libinn_clientlib.3 ../man/libinn_dbz.3 \
 	../man/libinn_inndcomm.3 \
@@ -51,7 +51,7 @@ MAN8	= ../man/actsync.8 ../man/archive.8 ../man/auth_krb5.8 \
 	../man/ovsqlite-util.8 \
 	../man/procbatch.8 ../man/prunehistory.8 ../man/radius.8 \
 	../man/rc.news.8 ../man/scanlogs.8 ../man/scanspool.8 \
-	../man/send-ihave.8 ../man/sendinpaths.8 \
+	../man/send-ihave.8 ../man/sendinpaths.8 ../man/shlock.8 ../man/sm.8 \
 	../man/tally.control.8 ../man/tdx-util.8 \
 	../man/tinyleaf.8 ../man/writelog.8
 
@@ -84,10 +84,8 @@ maintclean: distclean
 ../man/nntpget.1:	nntpget.pod		; $(POD2MAN) -s 1 $? > $@
 ../man/pullnews.1:	pullnews.pod		; $(POD2MAN) -s 1 $? > $@
 ../man/rnews.1:		rnews.pod		; $(POD2MAN) -s 1 $? > $@
-../man/shlock.1:	shlock.pod		; $(POD2MAN) -s 1 $? > $@
 ../man/shrinkfile.1:	shrinkfile.pod		; $(POD2MAN) -s 1 $? > $@
 ../man/simpleftp.1:	simpleftp.pod		; $(POD2MAN) -s 1 $? > $@
-../man/sm.1:		sm.pod			; $(POD2MAN) -s 1 $? > $@
 
 ../man/libinn.3:	libinn.pod		; $(POD2MAN) -s 3 $? > $@
 ../man/libinnauth.3:	libinnauth.pod		; $(POD2MAN) -s 3 $? > $@
@@ -182,6 +180,8 @@ maintclean: distclean
 ../man/scanspool.8:	scanspool.pod		; $(POD2MAN) -s 8 $? > $@
 ../man/send-ihave.8:	send-ihave.pod		; $(POD2MAN) -s 8 $? > $@
 ../man/sendinpaths.8:	sendinpaths.pod		; $(POD2MAN) -s 8 $? > $@
+../man/shlock.8:	shlock.pod		; $(POD2MAN) -s 8 $? > $@
+../man/sm.8:		sm.pod			; $(POD2MAN) -s 8 $? > $@
 ../man/tally.control.8:	tally.control.pod	; $(POD2MAN) -s 8 $? > $@
 ../man/tdx-util.8:	tdx-util.pod		; $(POD2MAN) -s 8 $? > $@
 ../man/tinyleaf.8:	tinyleaf.pod		; $(POD2MAN) -s 8 $? > $@

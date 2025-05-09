@@ -152,6 +152,6 @@ Russ Allbery <eagle@eyrie.org> in POD.
 
 =head1 SEE ALSO
 
-ctlinnd(8), inn.conf(5), newsfeeds(5), rnews(1), send-uucp(8), shlock(1).
+ctlinnd(8), inn.conf(5), newsfeeds(5), rnews(1), send-uucp(8), shlock(8).
 
 =cut

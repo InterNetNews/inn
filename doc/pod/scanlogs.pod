@@ -59,7 +59,7 @@ Written by Landon Curt Noll <chongo@toad.com> and Rich $alz
 
 =head1 SEE ALSO
 
-inn.conf(5), innreport(8), news.daily(8), newslog(5), shlock(1),
+inn.conf(5), innreport(8), news.daily(8), newslog(5), shlock(8),
 tally.control(8).
 
 =cut

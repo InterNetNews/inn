@@ -223,6 +223,6 @@ Rewritten into POD by Russ Allbery <eagle@eyrie.org>.
 
 =head1 SEE ALSO
 
-ctlinnd(8), innd(8), nnrpd(8), sm(1), storage.conf(5).
+ctlinnd(8), innd(8), nnrpd(8), sm(8), storage.conf(5).
 
 =cut

@@ -58,7 +58,7 @@ which programs should be run (and what information should be sent to
 them), and then this information is used by programs like innxmit(8) and
 innfeed(8) to feed articles to remote sites.
 
-Used in conjunction with delayer(1) in the configuration of the related funnel
+Used in conjunction with delayer(8) in the configuration of the related funnel
 feed, B<innfeed> can even send a delayed feed to remote peers or to another
 local instance of B<innd>, notably to permit the rejection of spam before it
 actually arrives.
@@ -578,7 +578,7 @@ Expires header field, C<0> otherwise.
 =item f
 
 The storage API token of the article (the same as C<n>).  The article can
-be retrieved given the storage API token by using sm(1).
+be retrieved given the storage API token by using sm(8).
 
 =item g
 
@@ -598,7 +598,7 @@ The message ID of the article.
 =item n
 
 The storage API token of the article.  The article can be retrieved given
-the storage API token by using sm(1).
+the storage API token by using sm(8).
 
 =item p
 
@@ -723,7 +723,7 @@ A program feed (B<Tp>) spawns a given program for every article that the
 site receives.  The I<parameter> field must be the command line to execute,
 and should contain one instance of C<%s>, which will be replaced by the
 storage API token of the article (the actual article can be retrieved by
-the program using sm(1)).  The program will not receive anything on
+the program using sm(8)).  The program will not receive anything on
 standard input (unlike earlier versions of INN, where the article is sent
 to the program on stdin), and standard output and error from the program
 will be set to the error log (I<pathlog>/errlog).  B<innd> will try to
@@ -893,7 +893,7 @@ and rewritten in POD by Russ Allbery <eagle@eyrie.org>.
 
 =head1 SEE ALSO
 
-active(5), buffchan(8), controlchan(8), ctlinnd(8), delayer(1), inn.conf(5),
-innd(8), innfeed(8), innxmit(8), libinn_uwildmat(3), nntpsend(8).
+active(5), buffchan(8), controlchan(8), ctlinnd(8), delayer(8), inn.conf(5),
+innd(8), innfeed(8), innxmit(8), libinn_uwildmat(3), nntpsend(8), sm(8).
 
 =cut

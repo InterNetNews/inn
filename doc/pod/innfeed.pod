@@ -24,7 +24,7 @@ to B<innfeed> except for the delivery process.  The new version has two
 types of connections: an LMTP connection to deliver regular messages and
 an IMAP connection to handle control messages.
 
-Used in conjunction with delayer(1), B<innfeed> can send a delayed feed to
+Used in conjunction with delayer(8), B<innfeed> can send a delayed feed to
 remote peers or to another local instance of B<innd>, notably to permit the
 rejection of spam before it actually arrives.
 
@@ -510,6 +510,6 @@ B<innfeed> is now part of INN and shares the same version number.
 
 =head1 SEE ALSO
 
-ctlinnd(8), delayer(1), inn.conf(5), innfeed.conf(5), innd(8), procbatch(8).
+ctlinnd(8), delayer(8), inn.conf(5), innfeed.conf(5), innd(8), procbatch(8).
 
 =cut
