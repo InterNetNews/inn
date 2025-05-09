@@ -1,4 +1,4 @@
-=head1 Changes in 2.7.3 (not yet released)
+=head1 Changes in 2.7.3 (2025-05-09)
 
 =over 2
 
