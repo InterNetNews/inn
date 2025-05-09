@@ -760,7 +760,9 @@ Update F<INSTALL> with the list of supported systems.
 
 =item *
 
-Update copyright years in F<LICENSE>.
+Update copyright years in F<LICENSE>.  Ideally, all the files modified in
+this release should also have their copyright years updated accordingly, when
+present.
 
 =item *
 
