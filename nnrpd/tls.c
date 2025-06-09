@@ -485,6 +485,27 @@ eckey_from_name(char *name)
 }
 #    endif /* HAVE_OPENSSL_ECC */
 
+/* ALPN is supported since OpenSSL 1.0.2 and LibreSSL 2.1.3. */
+#    if OPENSSL_VERSION_NUMBER >= 0x010002000L \
+        || (defined(LIBRESSL_VERSION_NUMBER)   \
+            && LIBRESSL_VERSION_NUMBER > 0x02010300fL)
+static const unsigned char SUPPORTED_ALP[] = {4, 'n', 'n', 't', 'p'};
+
+static int
+alpn_select_callback(SSL *ssl UNUSED, const unsigned char **out,
+                     unsigned char *outlen, const unsigned char *in,
+                     unsigned int inlen, void *arg UNUSED)
+{
+    if (SSL_select_next_proto((unsigned char **) out, outlen, SUPPORTED_ALP,
+                              sizeof SUPPORTED_ALP, in, inlen)
+        != OPENSSL_NPN_NEGOTIATED)
+        return SSL_TLSEXT_ERR_ALERT_FATAL;
+
+    return SSL_TLSEXT_ERR_OK;
+}
+#    endif
+
+
 /*
 **  This is the setup routine for the SSL server.  As nnrpd might be called
 **  more than once, we only want to do the initialization one time.
@@ -493,7 +514,6 @@ eckey_from_name(char *name)
 **
 **  Returns -1 on error.
 */
-
 int
 tls_init_serverengine(int verifydepth, int askcert, int requirecert,
                       char *tls_CAfile, char *tls_CApath, char *tls_cert_file,
@@ -761,6 +781,13 @@ tls_init_serverengine(int verifydepth, int askcert, int requirecert,
 
     SSL_CTX_set_client_CA_list(CTX, SSL_load_client_CA_file(CAfile));
 
+    /* ALPN is supported since OpenSSL 1.0.2 and LibreSSL 2.1.3. */
+#    if OPENSSL_VERSION_NUMBER >= 0x010002000L \
+        || (defined(LIBRESSL_VERSION_NUMBER)   \
+            && LIBRESSL_VERSION_NUMBER > 0x02010300fL)
+    SSL_CTX_set_alpn_select_cb(CTX, alpn_select_callback, NULL);
+#    endif
+
     tls_serverengine = 1;
     return (0);
 }
@@ -870,6 +897,7 @@ bio_dump_cb(BIO *bio, int cmd, const char *argp, size_t len, int argi UNUSED,
     return (ret);
 }
 #    endif
+
 
 /*
 **  This is the actual startup routine for the connection.  We expect
