@@ -692,26 +692,46 @@ sub cancel_nntp {
             logmsg("connect: $!", 'err');
             goto ERR;
         }
-        if (($r = <NNTP>) !~ /^200 /) {
+        if (not defined($r = <NNTP>)) {
+            logmsg("Cannot cancel $_: No greeting from server", 'err');
+            goto ERR;
+        }
+        if ($r !~ /^200 /) {
             $r =~ s/\r\n$//;
             logmsg("Bad reply from server: $r", 'err');
             goto ERR;
         }
+
         select NNTP;
         $| = 1;
         select STDOUT;
         print NNTP "MODE CANCEL\r\n";
-        if (($r = <NNTP>) !~ /^284 /) {
+        if (not defined($r = <NNTP>)) {
+            logmsg(
+                "Cannot cancel $_: No response from server to MODE CANCEL",
+                'err',
+            );
+            goto ERR;
+        }
+        if ($r !~ /^284 /) {
             $r =~ s/\r\n$//;
             logmsg("MODE CANCEL not supported: $r", 'err');
             goto ERR;
         }
         $nntp_open = 1;
     }
+
     foreach (@$ids) {
         logmsg("Cancelling $_", 'debug');
         print NNTP "$_\r\n";
-        if (($r = <NNTP>) !~ /^289/) {
+        if (not defined($r = <NNTP>)) {
+            logmsg(
+                "Cannot cancel $_: No response from server to cancel request",
+                'err',
+            );
+            goto ERR;
+        }
+        if ($r !~ /^289/) {
             $r =~ s/\r\n$//;
             logmsg("Cannot cancel $_: $r", 'err');
             goto ERR;
