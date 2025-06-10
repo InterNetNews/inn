@@ -303,21 +303,21 @@ OLD_SYSLOG=${OLD}/${BASE}.0
 ##  Also add possible logs from perl-nocem.log to the analysis.
 BASE=$(basename ${PERLNOCEM})
 OLD_PERLNOCEM=${OLD}/${BASE}.0
-if [ -f ${OLD_PERLNOCEM} ]; then
-    cat ${OLD_PERLNOCEM} >>${OLD_SYSLOG}
+if [ ! -f ${OLD_PERLNOCEM} ]; then
+    OLD_PERLNOCEM=
 fi
-rm -f ${OLD_PERLNOCEM}
 
 INNREPORT=${TMPDIR}/innreport$$
 if [ -s ${OLD_SYSLOG} -o -s ${OLD_LOG} ]; then
-    ${PATHBIN}/innreport -f ${PATHETC}/innreport.conf ${OLD_SYSLOG} ${OLD_LOG} >${INNREPORT}
+    ${PATHBIN}/innreport -f ${PATHETC}/innreport.conf \
+        ${OLD_LOG} ${OLD_SYSLOG} ${OLD_PERLNOCEM} >${INNREPORT}
     if [ -s ${INNREPORT} ]; then
         cat ${INNREPORT}
         echo ---------
         echo ''
     fi
 fi
-rm -f ${OLD_LOG} ${OLD_SYSLOG} ${INNREPORT}
+rm -f ${OLD_LOG} ${OLD_SYSLOG} ${OLD_PERLNOCEM} ${INNREPORT}
 
 ##  Compress and rotate the logs.
 if ${ROTATE}; then
