@@ -23,6 +23,17 @@ C<:bytes> and C<:lines> metadata to news clients using CAPABILITIES.
 
 =back
 
+=head1 Changes in 2.7.4 (not yet released)
+
+=over 2
+
+=item *
+
+Added support for the ALPN TLS extension in B<nnrpd>.  Thanks to Roman
+Donchenko for this feature.
+
+=back
+
 =head1 Changes in 2.7.3 (2025-05-09)
 
 =over 2
