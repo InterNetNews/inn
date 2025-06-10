@@ -15,7 +15,7 @@
 ##  if all looks right, commit the changes.
 
 ##  URL where the files can be downloaded.
-URL_START="https://git.eyrie.org/?p=devel/c-tap-harness.git;a=blob_plain;hb=HEAD;f="
+URL_START="https://raw.githubusercontent.com/rra/c-tap-harness/refs/heads/main/"
 
 ##  This function downloads the files and copies them to the expected
 ##  location in the INN source code, after having performed a few minimal
