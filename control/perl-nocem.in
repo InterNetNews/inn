@@ -339,9 +339,9 @@ sub read_nocem {
             $inbody = 0 if /^\@\@END NCM BODY/;
             next if not $inbody or /^#/;
 
-            my ($id, $grp) = /^(<\S+>)\s+(\S+.*)$/;
+            my ($id, $grp) = /^(\S*)\s+(\S+.*)$/;
             next if not $grp;
-            $skipped++ if $id;
+            $skipped++ if $id and $id =~ /<\S+>/;
         }
 
         # innreport will parse "unwanted notice" lines.
@@ -376,7 +376,18 @@ sub read_nocem {
         $inbody = 0 if /^\@\@END NCM BODY/;
         next if not $inbody or /^#/;
 
-        my ($id, $grp) = /^(<\S+>)\s+(\S+.*)$/;
+        # Expected standard patterns:
+        # <mid> group
+        # <mid> group1 group2
+        # <mid> group1
+        #       group2
+        #       group3 group4
+        #
+        # One or more tabulations precede the list of newsgroups.
+        # perl-nocem also accepts spaces instead of tabulations, and
+        # comma-separated lists of newsgroups like in:
+        # <mid> group1,group2
+        my ($id, $grp) = /^(\S*)\s+(\S+.*)$/;
         next if not $grp;
         # Convert the whitespace-separated list of newsgroups to a
         # comma-separated list of newsgrous.
@@ -388,11 +399,13 @@ sub read_nocem {
                 } else {
                     $skipped++;
                 }
+                $lastid = '';
             }
+            next if $id !~ /<\S+>/;    # Malformatted Message-ID.
             $lastid = $id;
             $lastgrp = $grp;
         } else {
-            $lastgrp .= ',' . $grp;
+            $lastgrp .= ',' . $grp if $lastid;
         }
     }
     if ($lastid) {
