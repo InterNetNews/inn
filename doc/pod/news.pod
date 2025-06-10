@@ -29,6 +29,12 @@ C<:bytes> and C<:lines> metadata to news clients using CAPABILITIES.
 
 =item *
 
+Fixed the rotation of the F<perl-nocem.log> file generated when syslog is not
+available or the B<-l> flag used with B<perl-nocem>: the contents of this log
+file was mistakenly appended to F<news.notice> by B<scanlogs>.
+
+=item *
+
 Added support for the ALPN TLS extension in B<nnrpd>.  Thanks to Roman
 Donchenko for this feature.
 
