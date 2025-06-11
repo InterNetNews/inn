@@ -1341,7 +1341,8 @@ the server will choose following its own preferences.
 =item I<tlsprotocols>
 
 The list of TLS/SSL protocol versions to support.  Valid protocols are
-B<SSLv2>, B<SSLv3>, B<TLSv1>, B<TLSv1.1>, B<TLSv1.2> and B<TLSv1.3>.
+B<SSLv3>, B<TLSv1>, B<TLSv1.1>, B<TLSv1.2> and B<TLSv1.3>.
+For compatibility, B<SSLv2> may also be listed, but this will have no effect.
 The default value is to only allow secure TLS protocols:
 
     tlsprotocols: [ TLSv1.2 TLSv1.3 ]
@@ -1352,8 +1353,8 @@ protocols more recent than TLSv1.3, they will be automatically enabled
 (which anyway is fine regarding security, as newer protocols are supposed
 to be more secure).
 
-C<SSLv2> was formally deprecated by S<RFC 6176> in 2011, C<SSLv3>
-by S<RFC 7568> in 2015, C<TLSv1.0> and C<TLSv1.1> by S<RFC 8996> in 2021.
+C<SSLv3> was formally deprecated by S<RFC 7568> in 2015,
+C<TLSv1.0> and C<TLSv1.1> by S<RFC 8996> in 2021.
 
 =back
 

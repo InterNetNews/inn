@@ -638,13 +638,11 @@ CMDstarttls(int ac UNUSED, char *av[] UNUSED)
     }
 #    endif /* HAVE_SASL */
 
-#    if defined(HAVE_ZLIB) && OPENSSL_VERSION_NUMBER >= 0x00090800fL
-    /* Check whether a compression layer has just been added.
-     * SSL_get_current_compression() is defined in OpenSSL versions >= 0.9.8
-     * final release, as well as LibreSSL. */
+#    if defined(HAVE_ZLIB)
+    /* Check whether a compression layer has just been added. */
     tls_compression_on = (SSL_get_current_compression(tls_conn) != NULL);
     compression_layer_on = tls_compression_on;
-#    endif /* HAVE_ZLIB && OPENSSL >= v0.9.8 */
+#    endif /* HAVE_ZLIB */
 
     /* Reset our read buffer so as to prevent plaintext command injection. */
     line_reset(&NNTPline);
