@@ -6,7 +6,7 @@
 **  Created: 2000-02-22
 **
 **  Various bug fixes, code and documentation improvements since then
-**  in 2001-2004, 2006, 2008, 2009, 2011, 2013-2019, 2021-2024.
+**  in 2001-2004, 2006, 2008, 2009, 2011, 2013-2019, 2021-2025.
 */
 
 #include "portable/system.h"
@@ -22,6 +22,19 @@
 #include "tls.h"
 
 #ifdef HAVE_OPENSSL
+
+/*
+**  Supporting previous and no longer maintained versions needed many
+**  preprocessor conditionals.  We dropped their support in INN 2.8.0.
+*/
+#    if OPENSSL_VERSION_NUMBER < 0x01010100fL
+#        error "OpenSSL 1.1.1 or later is required"
+#    endif
+
+#    if defined(LIBRESSL_VERSION_NUMBER) \
+        && LIBRESSL_VERSION_NUMBER < 0x02080000fL
+#        error "LibreSSL 2.8.0 or later is required"
+#    endif
 
 /* We must keep some of the info available. */
 static bool tls_initialized = false;
@@ -84,167 +97,6 @@ apps_ssl_info_callback(const SSL *s, int where, int ret)
         }
     }
 }
-
-
-/*
-**  Now that safe prime groups have been supported since OpenSSL 1.1.0 and
-**  LibreSSL 2.1.2 (but as LIBRESSL_VERSION_NUMBER was not bumped at that time,
-**  use the 2.3.2 release which introduced the new numbering format), these
-**  groups and the following functions to deal with them are only kept for
-**  older versions.
-*/
-#    if OPENSSL_VERSION_NUMBER < 0x010100000L \
-        || (defined(LIBRESSL_VERSION_NUMBER)  \
-            && LIBRESSL_VERSION_NUMBER < 0x020302000L)
-/*
-**  Hardcoded DH parameter files.
-**  These are pre-defined DH groups recommended by RFC 7919 (Appendix A),
-**  that have been audited and therefore supposed to be more
-**  resistant to attacks than ones randomly generated.
-**  They are FIPS-140 compliant and impractical to attack by construction.
-**
-**  There isn't any need to support user-specific files because of the
-**  safe choice of these domain parameters from RFC 7919.
-**  In case they appear to no longer be secure in the future, they'll
-**  be changed in a future INN release.
-*/
-/* clang-format off */
-static const char file_ffdhe2048[] =
-"-----BEGIN DH PARAMETERS-----\n\
-MIIBCAKCAQEA//////////+t+FRYortKmq/cViAnPTzx2LnFg84tNpWp4TZBFGQz\n\
-+8yTnc4kmz75fS/jY2MMddj2gbICrsRhetPfHtXV/WVhJDP1H18GbtCFY2VVPe0a\n\
-87VXE15/V8k1mE8McODmi3fipona8+/och3xWKE2rec1MKzKT0g6eXq8CrGCsyT7\n\
-YdEIqUuyyOP7uWrat2DX9GgdT0Kj3jlN9K5W7edjcrsZCwenyO4KbXCeAvzhzffi\n\
-7MA0BM0oNC9hkXL+nOmFg/+OTxIy7vKBg8P+OxtMb61zO7X8vC7CIAXFjvGDfRaD\n\
-ssbzSibBsu/6iGtCOGEoXJf//////////wIBAg==\n\
------END DH PARAMETERS-----\n";
-
-static const char file_ffdhe4096[] =
-"-----BEGIN DH PARAMETERS-----\n\
-MIICCAKCAgEA//////////+t+FRYortKmq/cViAnPTzx2LnFg84tNpWp4TZBFGQz\n\
-+8yTnc4kmz75fS/jY2MMddj2gbICrsRhetPfHtXV/WVhJDP1H18GbtCFY2VVPe0a\n\
-87VXE15/V8k1mE8McODmi3fipona8+/och3xWKE2rec1MKzKT0g6eXq8CrGCsyT7\n\
-YdEIqUuyyOP7uWrat2DX9GgdT0Kj3jlN9K5W7edjcrsZCwenyO4KbXCeAvzhzffi\n\
-7MA0BM0oNC9hkXL+nOmFg/+OTxIy7vKBg8P+OxtMb61zO7X8vC7CIAXFjvGDfRaD\n\
-ssbzSibBsu/6iGtCOGEfz9zeNVs7ZRkDW7w09N75nAI4YbRvydbmyQd62R0mkff3\n\
-7lmMsPrBhtkcrv4TCYUTknC0EwyTvEN5RPT9RFLi103TZPLiHnH1S/9croKrnJ32\n\
-nuhtK8UiNjoNq8Uhl5sN6todv5pC1cRITgq80Gv6U93vPBsg7j/VnXwl5B0rZp4e\n\
-8W5vUsMWTfT7eTDp5OWIV7asfV9C1p9tGHdjzx1VA0AEh/VbpX4xzHpxNciG77Qx\n\
-iu1qHgEtnmgyqQdgCpGBMMRtx3j5ca0AOAkpmaMzy4t6Gh25PXFAADwqTs6p+Y0K\n\
-zAqCkc3OyX3Pjsm1Wn+IpGtNtahR9EGC4caKAH5eZV9q//////////8CAQI=\n\
------END DH PARAMETERS-----\n";
-
-static const char file_ffdhe8192[] =
-"-----BEGIN DH PARAMETERS-----\n\
-MIIECAKCBAEA//////////+t+FRYortKmq/cViAnPTzx2LnFg84tNpWp4TZBFGQz\n\
-+8yTnc4kmz75fS/jY2MMddj2gbICrsRhetPfHtXV/WVhJDP1H18GbtCFY2VVPe0a\n\
-87VXE15/V8k1mE8McODmi3fipona8+/och3xWKE2rec1MKzKT0g6eXq8CrGCsyT7\n\
-YdEIqUuyyOP7uWrat2DX9GgdT0Kj3jlN9K5W7edjcrsZCwenyO4KbXCeAvzhzffi\n\
-7MA0BM0oNC9hkXL+nOmFg/+OTxIy7vKBg8P+OxtMb61zO7X8vC7CIAXFjvGDfRaD\n\
-ssbzSibBsu/6iGtCOGEfz9zeNVs7ZRkDW7w09N75nAI4YbRvydbmyQd62R0mkff3\n\
-7lmMsPrBhtkcrv4TCYUTknC0EwyTvEN5RPT9RFLi103TZPLiHnH1S/9croKrnJ32\n\
-nuhtK8UiNjoNq8Uhl5sN6todv5pC1cRITgq80Gv6U93vPBsg7j/VnXwl5B0rZp4e\n\
-8W5vUsMWTfT7eTDp5OWIV7asfV9C1p9tGHdjzx1VA0AEh/VbpX4xzHpxNciG77Qx\n\
-iu1qHgEtnmgyqQdgCpGBMMRtx3j5ca0AOAkpmaMzy4t6Gh25PXFAADwqTs6p+Y0K\n\
-zAqCkc3OyX3Pjsm1Wn+IpGtNtahR9EGC4caKAH5eDdkCC/1ktkUDbHpOZ30sOFMq\n\
-OiO6RELK9T6mO7RUMpt2JMiRe91kscD9TLOOjDNMcBw6za0GV/zP7HGbH1w+TkYE\n\
-HziBR/tM/bR3pSRx96mpaRC4VTIu22NA2KAO8JI1BRHjCr7B//njom5/sp+MGDAj\n\
-w1h+ONoAd9m0dj5OS5Syu8GUxmUed8r5ku6qwCMqKBv2s6c5wSJhFoIK6NtYR6Z8\n\
-vvnJCRtGLVOM1ysDdGrnf15iKSwxFWKoRlBdyC24VDOK5J9SNclbkReMzy3Vys70\n\
-A+ydGBDGJysEWztx+dxrgNY/3UqOmtseaWKmlSbUMWHBpB1XDXk42tSkDjKcz/Rq\n\
-qjatAEz2AMg4HkJaMdlRrmT9sj/OyVCdQ2h/62nt0cxeC4zDvfZLEO+GtjFCo6uI\n\
-KVVbL3R8kyZlyywPHMAb1wIpOIg50q8F5FRQSseLdYKCKEbAujXDX1xZFgzARv2C\n\
-UVQfxoychrAiu3CZh2pGDnRRqKkxCXA/7hwhfmw4JuUsUappHg5CPPyZ6eMWUMEh\n\
-e2JIFs2tmpX51bgBlIjZwKCh/jB1pXfiMYP4HUo/L6RXHvyM4LqKT+i2hV3+crCm\n\
-bt7S+6v75Yow+vq+HF1xqH4vdB74wf6G/qa7/eUwZ38Nl9EdSfeoRD0IIuUGqfRh\n\
-TgEeKpSDj/iM1oyLt8XGQkz//////////wIBAg==\n\
------END DH PARAMETERS-----\n";
-/* clang-format on */
-
-
-/*
-**  Load hardcoded DH parameters.
-*/
-static DH *
-load_dh_buffer(const char *buffer, size_t len)
-{
-    BIO *bio;
-    DH *dh = NULL;
-
-    bio = BIO_new_mem_buf((char *) buffer, len);
-    if (bio == NULL)
-        return NULL;
-    dh = PEM_read_bio_DHparams(bio, NULL, NULL, NULL);
-    /* If (dh == NULL) log error? */
-    BIO_free(bio);
-
-    return dh;
-}
-
-
-/*
-**  Generate ephemeral DH key.  Because this can take a long
-**  time to compute, we use precomputed parameters of the common
-**  key sizes.
-**  Depending on OpenSSL Security Level, a minimal length for
-**  DH parameters is required:
-** <https://www.openssl.org/docs/man1.1.1/man3/SSL_CTX_set_security_level.html>
-**
-**  These values can be static (once loaded or computed) since
-**  the OpenSSL library can effectively generate random keys
-**  from the information provided.
-**
-**  EDH keying is slightly less efficient than static RSA keying,
-**  but it offers Perfect Forward Secrecy (PFS).
-*/
-static DH *
-tmp_dh_cb(SSL *s UNUSED, int export UNUSED, int keylength UNUSED)
-{
-    DH *r = NULL;
-
-    static DH *ffdhe2048 = NULL;
-    static DH *ffdhe4096 = NULL;
-    static DH *ffdhe8192 = NULL;
-    int level = 2; /* Default security level. */
-
-    /* Security levels have been introduced in OpenSSL 1.1.0 and
-     * LibreSSL 3.6.0.
-     * Well, as this part of code is no longer active for these versions,
-     * only keep it for possible future reuse. */
-#        if OPENSSL_VERSION_NUMBER >= 0x010100000L \
-            || (defined(LIBRESSL_VERSION_NUMBER)   \
-                && LIBRESSL_VERSION_NUMBER > 0x030600000L)
-    level = SSL_get_security_level(s);
-#        endif
-
-    switch (level) {
-    case 0: /* Everything is permitted. */
-    case 1: /* DH keys shorter than 1024 bits are prohibited. */
-    case 2: /* DH keys shorter than 2048 bits are prohibited. */
-        if (ffdhe2048 == NULL) {
-            ffdhe2048 = load_dh_buffer(file_ffdhe2048, sizeof(file_ffdhe2048));
-        }
-        r = ffdhe2048;
-        break;
-
-    case 3: /* DH keys shorter than 3072 bits are prohibited. */
-        if (ffdhe4096 == NULL) {
-            ffdhe4096 = load_dh_buffer(file_ffdhe4096, sizeof(file_ffdhe4096));
-        }
-        r = ffdhe4096;
-        break;
-
-    case 4: /* DH keys shorter than 7680 bits are prohibited. */
-    default:
-        if (ffdhe8192 == NULL) {
-            ffdhe8192 = load_dh_buffer(file_ffdhe8192, sizeof(file_ffdhe8192));
-        }
-        r = ffdhe8192;
-    }
-
-    return r;
-}
-#    endif /* OpenSSL < 1.1.0 */
 
 
 /*
@@ -430,65 +282,10 @@ set_cert_stuff(SSL_CTX *ctx, char *cert_file, char *key_file)
     return (1);
 }
 
-
-#    if defined(HAVE_OPENSSL_ECC)                 \
-        && (OPENSSL_VERSION_NUMBER < 0x01010100fL \
-            || (defined(LIBRESSL_VERSION_NUMBER)  \
-                && LIBRESSL_VERSION_NUMBER < 0x02050100fL))
 /*
-**  Provide an ECKEY from a curve name.
-**  Accepts a NULL pointer as the name.
-**  The EC_KEY_new_by_curve_name() function has been deprecated in
-**  OpenSSL 3.0.0; another mechanism to select groups has been available
-**  since OpenSSL 1.1.1 and LibreSSL 2.5.1.
-**
-**  Returns the key, or NULL on error.
+**  Configure the Application-Layer Protocol Negotiation (ALPN) extension
+**  for TLS.
 */
-static EC_KEY *
-eckey_from_name(char *name)
-{
-    EC_KEY *eckey;
-    size_t ncurves, nitems, i;
-    EC_builtin_curve *builtin_curves;
-    const char *sname;
-
-    if (name == NULL) {
-        return (NULL);
-    }
-
-    /* See EC_GROUP_new(3) for the details of this expressive dance. */
-    ncurves = EC_get_builtin_curves(NULL, 0); /* Number of curves. */
-
-    builtin_curves = xmalloc(ncurves * sizeof(EC_builtin_curve));
-    nitems = EC_get_builtin_curves(builtin_curves, ncurves);
-    if (nitems != ncurves) {
-        syslog(L_ERROR,
-               "got %lu curves from EC_get_builtin_curves, "
-               "expected %lu",
-               (unsigned long) nitems, (unsigned long) ncurves);
-    }
-    for (i = 0; i < nitems; i++) {
-        sname = OBJ_nid2sn(builtin_curves[i].nid);
-        if (strcmp(sname, name) == 0) {
-            break;
-        }
-    }
-    if (i == nitems) {
-        syslog(L_ERROR, "tlseccurve '%s' not found", name);
-        free(builtin_curves);
-        return (NULL);
-    }
-
-    eckey = EC_KEY_new_by_curve_name(builtin_curves[i].nid);
-    free(builtin_curves);
-    return (eckey);
-}
-#    endif /* HAVE_OPENSSL_ECC */
-
-/* ALPN is supported since OpenSSL 1.0.2 and LibreSSL 2.1.3. */
-#    if OPENSSL_VERSION_NUMBER >= 0x010002000L \
-        || (defined(LIBRESSL_VERSION_NUMBER)   \
-            && LIBRESSL_VERSION_NUMBER > 0x02010300fL)
 static const unsigned char SUPPORTED_ALP[] = {4, 'n', 'n', 't', 'p'};
 
 static int
@@ -503,7 +300,6 @@ alpn_select_callback(SSL *ssl UNUSED, const unsigned char **out,
 
     return SSL_TLSEXT_ERR_OK;
 }
-#    endif
 
 
 /*
@@ -528,7 +324,6 @@ tls_init_serverengine(int verifydepth, int askcert, int requirecert,
     char *CAfile;
     char *s_cert_file;
     char *s_key_file;
-    struct stat buf;
     size_t tls_protos = 0;
     size_t i;
 
@@ -538,19 +333,7 @@ tls_init_serverengine(int verifydepth, int askcert, int requirecert,
     if (tls_loglevel >= 2)
         syslog(L_NOTICE, "starting TLS engine");
 
-/* New functions have been introduced in OpenSSL 1.1.0 and LibreSSL 2.7.0. */
-#    if OPENSSL_VERSION_NUMBER < 0x010100000L \
-        || (defined(LIBRESSL_VERSION_NUMBER)  \
-            && LIBRESSL_VERSION_NUMBER < 0x020700000L)
-    SSL_load_error_strings();
-    SSLeay_add_ssl_algorithms();
-    CTX = SSL_CTX_new(SSLv23_server_method());
-#    else
-    OPENSSL_init_ssl(OPENSSL_INIT_LOAD_SSL_STRINGS
-                         | OPENSSL_INIT_LOAD_CRYPTO_STRINGS,
-                     NULL);
     CTX = SSL_CTX_new(TLS_server_method());
-#    endif
 
     if (CTX == NULL) {
         return (-1);
@@ -592,80 +375,28 @@ tls_init_serverengine(int verifydepth, int askcert, int requirecert,
         return (-1);
     }
 
-    /* Load some randomization data from /dev/urandom, if it exists.
-     * FIXME: should also check for ".rand" file, update it on exit. */
-    if (stat("/dev/urandom", &buf) == 0)
-        RAND_load_file("/dev/urandom", 16 * 1024);
-
-/* Safe prime groups were introduced in OpenSSL 1.1.0, and have also been
- * present since LibreSSL 2.1.2 (but as LIBRESSL_VERSION_NUMBER was not bumped
- * at that time, use the 2.3.2 release which introduced the new numbering
- * format). */
-#    if OPENSSL_VERSION_NUMBER < 0x010100000L \
-        || (defined(LIBRESSL_VERSION_NUMBER)  \
-            && LIBRESSL_VERSION_NUMBER < 0x020302000L)
-    SSL_CTX_set_tmp_dh_callback(CTX, tmp_dh_cb);
-#    else
     SSL_CTX_set_dh_auto(CTX, 1);
-#    endif
-
-    SSL_CTX_set_options(CTX, SSL_OP_SINGLE_DH_USE);
-
-#    ifdef HAVE_OPENSSL_ECC
-    SSL_CTX_set_options(CTX, SSL_OP_SINGLE_ECDH_USE);
 
     /* We set a curve here by name if provided
-     * or we use OpenSSL (>= 1.0.2) auto-selection
-     * or we default to NIST P-256. */
+     * or we use OpenSSL auto-selection. */
     if (tls_ec_curve != NULL) {
-#        if OPENSSL_VERSION_NUMBER < 0x01010100fL \
-            || (defined(LIBRESSL_VERSION_NUMBER)  \
-                && LIBRESSL_VERSION_NUMBER < 0x02050100fL)
-        /* A new mechanism to select groups has been introduced
-         * in OpenSSL 1.1.1 and LibreSSL 2.5.1. */
-        EC_KEY *eckey;
-        eckey = eckey_from_name(tls_ec_curve);
-        if (eckey != NULL) {
-            SSL_CTX_set_tmp_ecdh(CTX, eckey);
-        }
-#        else
         if (!SSL_CTX_set1_groups_list(CTX, tls_ec_curve))
             syslog(L_ERROR, "tlseccurve '%s' not found", tls_ec_curve);
-#        endif
-    } else {
-#        if OPENSSL_VERSION_NUMBER < 0x010100000L
-#            if OPENSSL_VERSION_NUMBER >= 0x01000200fL
-        /* Function supported since OpenSSL 1.0.2.
-         * Removed since OpenSSL 1.1.0, supporting ECDH by default with
-         * the most appropriate parameters. (So does LibreSSL.) */
-        SSL_CTX_set_ecdh_auto(CTX, 1);
-#            else
-        SSL_CTX_set_tmp_ecdh(CTX,
-                             EC_KEY_new_by_curve_name(NID_X9_62_prime256v1));
-#            endif /* SSL_CTX_set_ecdh_auto */
-#        endif     /* OpenSSL version < 1.1.0 */
     }
-#    endif /* HAVE_OPENSSL_ECC */
 
-#    ifdef SSL_OP_CIPHER_SERVER_PREFERENCE
     if (prefer_server_ciphers) {
         SSL_CTX_set_options(CTX, SSL_OP_CIPHER_SERVER_PREFERENCE);
     } else {
-#        if (OPENSSL_VERSION_NUMBER >= 0x0009080dfL     \
-             && OPENSSL_VERSION_NUMBER != 0x000909000L) \
-            || defined(LIBRESSL_VERSION_NUMBER)
-        /* Function first added in OpenSSL 0.9.8m and not present
-         * in OpenSSL 0.9.9-dev.  Always present in LibreSSL. */
         SSL_CTX_clear_options(CTX, SSL_OP_CIPHER_SERVER_PREFERENCE);
-#        endif
     }
-#    endif
 
     if ((tls_proto_vect != NULL) && (tls_proto_vect->count > 0)) {
         for (i = 0; i < tls_proto_vect->count; i++) {
             if (tls_proto_vect->strings[i] != NULL) {
                 if (strcmp(tls_proto_vect->strings[i], "SSLv2") == 0) {
-                    tls_protos |= INN_TLS_SSLv2;
+                    syslog(
+                        L_NOTICE,
+                        "TLS engine: cannot enable SSLv2 - support removed");
                 } else if (strcmp(tls_proto_vect->strings[i], "SSLv3") == 0) {
                     tls_protos |= INN_TLS_SSLv3;
                 } else if (strcmp(tls_proto_vect->strings[i], "TLSv1") == 0) {
@@ -691,34 +422,20 @@ tls_init_serverengine(int verifydepth, int askcert, int requirecert,
         tls_protos = (INN_TLS_TLSv1_2 | INN_TLS_TLSv1_3);
     }
 
-    if ((tls_protos & INN_TLS_SSLv2) == 0) {
-#    ifdef SSL_OP_NO_SSLv2
-        SSL_CTX_set_options(CTX, SSL_OP_NO_SSLv2);
-#    endif
-    }
-
     if ((tls_protos & INN_TLS_SSLv3) == 0) {
-#    ifdef SSL_OP_NO_SSLv3
         SSL_CTX_set_options(CTX, SSL_OP_NO_SSLv3);
-#    endif
     }
 
     if ((tls_protos & INN_TLS_TLSv1) == 0) {
-#    ifdef SSL_OP_NO_TLSv1
         SSL_CTX_set_options(CTX, SSL_OP_NO_TLSv1);
-#    endif
     }
 
     if ((tls_protos & INN_TLS_TLSv1_1) == 0) {
-#    ifdef SSL_OP_NO_TLSv1_1
         SSL_CTX_set_options(CTX, SSL_OP_NO_TLSv1_1);
-#    endif
     }
 
     if ((tls_protos & INN_TLS_TLSv1_2) == 0) {
-#    ifdef SSL_OP_NO_TLSv1_2
         SSL_CTX_set_options(CTX, SSL_OP_NO_TLSv1_2);
-#    endif
     }
 
     if ((tls_protos & INN_TLS_TLSv1_3) == 0) {
@@ -734,13 +451,9 @@ tls_init_serverengine(int verifydepth, int askcert, int requirecert,
         }
     }
 
-#    if (OPENSSL_VERSION_NUMBER >= 0x01010100fL \
-         && defined(SSL_OP_NO_TLSv1_3))         \
-        || (defined(LIBRESSL_VERSION_NUMBER)    \
-            && LIBRESSL_VERSION_NUMBER >= 0x03040100fL)
-    /* New API added in OpenSSL 1.1.1 for TLSv1.3 cipher suites.
-     * Also check that SSL_OP_NO_TLSv1_3 is defined (so as not to match
-     * with LibreSSL versions prior to 3.4.1, which introduced the function).
+#    if !defined(LIBRESSL_VERSION_NUMBER) \
+        || LIBRESSL_VERSION_NUMBER >= 0x03040100fL
+    /* In LibreSSL, SSL_CTX_set_ciphersuites was introduced in version 3.4.1.
      */
     if (tls_ciphers13 != NULL) {
         if (SSL_CTX_set_ciphersuites(CTX, tls_ciphers13) == 0) {
@@ -751,22 +464,9 @@ tls_init_serverengine(int verifydepth, int askcert, int requirecert,
 #    endif
 
     if (tls_compression) {
-#    if defined(SSL_OP_NO_COMPRESSION)                  \
-        && ((OPENSSL_VERSION_NUMBER >= 0x0009080dfL     \
-             && OPENSSL_VERSION_NUMBER != 0x000909000L) \
-            || defined(LIBRESSL_VERSION_NUMBER))
-        /* Function first added in OpenSSL 0.9.8m, and not present
-         * in OpenSSL 0.9.9-dev.  Always present in LibreSSL. */
         SSL_CTX_clear_options(CTX, SSL_OP_NO_COMPRESSION);
-#    endif
     } else {
-#    ifdef SSL_OP_NO_COMPRESSION
-        /* Option implemented in OpenSSL 1.0.0 and LibreSSL. */
         SSL_CTX_set_options(CTX, SSL_OP_NO_COMPRESSION);
-#    elif OPENSSL_VERSION_NUMBER >= 0x00090800fL
-        /* Workaround for OpenSSL 0.9.8. */
-        sk_SSL_COMP_zero(SSL_COMP_get_compression_methods());
-#    endif
     }
 
     verify_depth = verifydepth;
@@ -781,12 +481,7 @@ tls_init_serverengine(int verifydepth, int askcert, int requirecert,
 
     SSL_CTX_set_client_CA_list(CTX, SSL_load_client_CA_file(CAfile));
 
-    /* ALPN is supported since OpenSSL 1.0.2 and LibreSSL 2.1.3. */
-#    if OPENSSL_VERSION_NUMBER >= 0x010002000L \
-        || (defined(LIBRESSL_VERSION_NUMBER)   \
-            && LIBRESSL_VERSION_NUMBER > 0x02010300fL)
     SSL_CTX_set_alpn_select_cb(CTX, alpn_select_callback, NULL);
-#    endif
 
     tls_serverengine = 1;
     return (0);
@@ -839,11 +534,10 @@ tls_init(void)
 **  Taken from OpenSSL apps/lib/s_cb.c.
 **
 **  The prototype of the callback function changed with BIO_set_callback_ex()
-**  introduced in OpenSSL 1.1.1 and LibreSSL 3.5.0.
+**  introduced in LibreSSL 3.5.0.
 */
-#    if OPENSSL_VERSION_NUMBER < 0x01010100fL \
-        || (defined(LIBRESSL_VERSION_NUMBER)  \
-            && LIBRESSL_VERSION_NUMBER < 0x030500000L)
+#    if defined(LIBRESSL_VERSION_NUMBER) \
+        && LIBRESSL_VERSION_NUMBER < 0x030500000L
 static long
 bio_dump_cb(BIO *bio, int cmd, const char *argp, int argi, long argl UNUSED,
             long ret)
@@ -962,12 +656,9 @@ tls_start_servertls(int readfd, int writefd)
      * Well there is a BIO below the SSL routines that is automatically
      * created for us, so we can use it for debugging purposes. */
     if (tls_loglevel >= 3) {
-        /* BIO_set_callback() was deprecated in OpenSSL 3.0.0.
-         * BIO_set_callback_ex() was introduced in OpenSSL 1.1.1 and LibreSSL
-         * 3.5.0. */
-#    if OPENSSL_VERSION_NUMBER < 0x01010100fL \
-        || (defined(LIBRESSL_VERSION_NUMBER)  \
-            && LIBRESSL_VERSION_NUMBER < 0x030500000L)
+        /* In LibreSSL, BIO_set_callback_ex was introduced in version 3.5.0. */
+#    if defined(LIBRESSL_VERSION_NUMBER) \
+        && LIBRESSL_VERSION_NUMBER < 0x030500000L
         BIO_set_callback(SSL_get_rbio(tls_conn), bio_dump_cb);
 #    else
         BIO_set_callback_ex(SSL_get_rbio(tls_conn), bio_dump_cb);

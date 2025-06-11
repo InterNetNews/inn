@@ -1325,9 +1325,7 @@ The name of the elliptic curve to use for ephemeral key exchanges.
 To see the list of curves supported by OpenSSL, use C<openssl ecparam
 -list_curves>.
 
-The default is unset, which means an appropriate curve is auto-selected
-(if your OpenSSL version is at least 1.0.2 or you are using LibreSSL)
-or the NIST P-256 curve is used.
+The default is unset, which means an appropriate curve is auto-selected.
 
 This option is only effective if your OpenSSL version has ECDH support.
 
@@ -1341,7 +1339,10 @@ the server will choose following its own preferences.
 =item I<tlsprotocols>
 
 The list of TLS/SSL protocol versions to support.  Valid protocols are
-B<SSLv2>, B<SSLv3>, B<TLSv1>, B<TLSv1.1>, B<TLSv1.2> and B<TLSv1.3>.
+B<SSLv3>, B<TLSv1>, B<TLSv1.1>, B<TLSv1.2> and B<TLSv1.3>.  For compatibility
+with older versions of INN, B<SSLv2> may also be listed, but this will have
+no effect.
+
 The default value is to only allow secure TLS protocols:
 
     tlsprotocols: [ TLSv1.2 TLSv1.3 ]
