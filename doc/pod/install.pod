@@ -182,8 +182,8 @@ versions you'll need:
     --with-blacklist    blacklistd from FreeBSD 11 or higher base system
     --with-canlock      libcanlock 3.3.0 or higher
     --with-krb5         MIT Kerberos v5 1.6.1 or higher
-    --with-openssl      OpenSSL 0.9.6 or higher, 3.0.0+ recommended
-                        LibreSSL 2.1.0 or higher, 3.2.0+ recommended
+    --with-openssl      OpenSSL 1.1.1 or higher, 3.0.0+ recommended
+                        LibreSSL 2.8.0 or higher, 3.5.0+ recommended
     --with-perl         Perl 5.004_03 or higher, 5.8.0+ recommended
     --with-python       Python 2.3.0 or higher, 2.5.0+ recommended
                         Python 3.3.0 or higher
