@@ -54,7 +54,7 @@ files.  Specifically (but possibly not comprehensively):
 
    lib/md5.c is covered under the standard free MD5 license from RSA Data
    Security.  See the file for more details.  A clarification is also
-   provided here:  <http://www.ietf.org/ietf/IPR/RSA-MD-all>.
+   provided here: <https://datatracker.ietf.org/ipr/157/>.
 
       "Implementations of these message-digest algorithms, including
       implementations derived from the reference C code in RFC-1319,
