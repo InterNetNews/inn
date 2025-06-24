@@ -615,7 +615,7 @@ sub get_cycbuff_info {
         my $pagesize = 16384;
         my $minartoffset = int($len / ($blksz * 8)) + 512;
         # Align upwards:
-        $minartoffset = ($minartoffset + $pagesize) & ~($pagesize - 1);
+        $minartoffset = ($minartoffset + $pagesize - 1) & ~($pagesize - 1);
 
         if ($cyclenum == 0 && $free == $minartoffset) {
             # The cycbuff has no articles yet.
