@@ -1924,7 +1924,7 @@ CCreader(CHANNEL *cp)
     size_t offset;
 
     if (cp != CCchan) {
-        syslog(L_ERROR, "%s internal CCreader wrong channel 0x%p not 0x%p",
+        syslog(L_ERROR, "%s internal CCreader wrong channel %p not %p",
                LogName, (void *) cp, (void *) CCchan);
         return;
     }

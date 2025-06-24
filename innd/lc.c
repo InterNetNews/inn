@@ -28,7 +28,7 @@ LCreader(CHANNEL *cp)
     CHANNEL *new;
 
     if (cp != LCchan) {
-        syslog(L_ERROR, "%s internal LCreader wrong channel 0x%p not 0x%p",
+        syslog(L_ERROR, "%s internal LCreader wrong channel %p not %p",
                LogName, (void *) cp, (void *) LCchan);
         return;
     }
