@@ -760,8 +760,8 @@ CNFSinit_disks(CYCBUFF *cycbuff)
         /*
         ** The minimum article offset will be the size of the bitfield itself,
         ** len / (blocksize * 8), plus however many additional blocks the
-        *CYCBUFF
-        ** external header occupies ... then round up to the next block.
+        ** *CYCBUFF external header occupies... then round up to the next
+        ** block.
         */
         minartoffset = cycbuff->len / (cycbuff->blksz * 8) + CNFS_BEFOREBITF;
         tonextblock =
@@ -1002,11 +1002,10 @@ CNFSread_config(void)
 static void
 cnfs_mapcntl(void *p, size_t length, int flags)
 {
-    char *start, *end;
+    const size_t mask = ~(size_t) (pagesize - 1);
+    char *start = (char *) ((uintptr_t) p & mask);
+    char *end = (char *) (((uintptr_t) p + length + pagesize - 1) & mask);
 
-    start = (char *) ((uintptr_t) p & ~(size_t) (pagesize - 1));
-    end = (char *) (((uintptr_t) p + length + pagesize)
-                    & ~(size_t) (pagesize - 1));
     if (flags == MS_INVALIDATE) {
         msync(start, end - start, flags);
     } else {

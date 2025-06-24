@@ -35,6 +35,13 @@ to Roman Donchenko for the code simplification and cleaning.
 
 =item *
 
+Fixed very infrequent errors of memory mapping when updating the F<active>
+file or using the tradindexed overview method, as well as when updating the
+F<history> file with I<nfswriter> set to true.  Thanks to Chris Knipe for the
+bug report and to Richard Kettlewell for the patch.
+
+=item *
+
 Fixed the rotation of the F<perl-nocem.log> file generated when syslog is not
 available or the B<-l> flag used with B<perl-nocem>: the contents of this log
 file was mistakenly appended to F<news.notice> by B<scanlogs>.
