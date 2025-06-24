@@ -32,12 +32,12 @@ clean clobber distclean maintclean:
 ##  Compilation rules.
 
 NNRPDLIBS	= $(LIBSTORAGE) $(LIBHIST) $(LIBINN) $(STORAGE_LIBS) \
-		  $(PERL_LIBS) $(PYTHON_LIBS) \
 		  $(CANLOCK_LDFLAGS) $(CANLOCK_LIBS) \
 		  $(SSL_LDFLAGS) $(SSL_LIBS) \
 		  $(CRYPTO_LIBS) $(SASL_LDFLAGS) $(SASL_LIBS) \
 		  $(ZLIB_LDFLAGS) $(ZLIB_LIBS) \
 		  $(BLACKLIST_LDFLAGS) $(BLACKLIST_LIBS) \
+		  $(PERL_LIBS) $(PYTHON_LIBS) \
 		  $(LIBS)
 
 .c.o:
