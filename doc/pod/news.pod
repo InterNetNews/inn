@@ -21,6 +21,12 @@ F<readers.conf>) as the default domain name instead of I<domain>.
 The LIST OVERVIEW.FMT command now uses the preferred format to advertise
 C<:bytes> and C<:lines> metadata to news clients using CAPABILITIES.
 
+=item *
+
+Support for old insecure OpenSSL and LibreSSL versions have been dropped.
+You will have to use at least S<OpenSSL 1.1.1> or S<LibreSSL 2.8.0>.  Thanks
+to Roman Donchenko for the code simplification and cleaning.
+
 =back
 
 =head1 Changes in 2.7.4 (not yet released)
