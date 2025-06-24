@@ -467,7 +467,7 @@ RCreader(CHANNEL *cp)
         }
     }
     if (j == chanlimit) {
-        syslog(L_ERROR, "%s internal RCreader wrong channel 0x%p", LogName,
+        syslog(L_ERROR, "%s internal RCreader wrong channel %p", LogName,
                (void *) cp);
         return;
     }

@@ -286,7 +286,7 @@ CHANtracing(CHANNEL *cp, bool flag)
         notice("%s trace address %s lastactive %lu nextlog %lu", name, addr,
                (unsigned long) cp->LastActive, (unsigned long) cp->NextLog);
         if (FD_ISSET(cp->fd, &channels.sleep_set))
-            notice("%s trace sleeping %lu 0x%p", name,
+            notice("%s trace sleeping %lu %p", name,
                    (unsigned long) cp->Waketime, (void *) cp->Waker);
         if (FD_ISSET(cp->fd, &channels.read_set))
             notice("%s trace reading %lu %s", name,
