@@ -74,13 +74,13 @@ header; it will not replace it.
 
 =item B<-A>, B<-V>, B<-W>
 
-Accepted for compatibility with C News.  These options have no affect.
+Accepted for compatibility with C News.  These options have no effect.
 
 =item B<-D>, B<-N>
 
 Perform the consistency checks and add headers where appropriate, but then
 print the article to standard output rather than sending it to the server.
-B<-N> is accepted as as synonym for compatibility with C News.
+B<-N> is accepted as a synonym for compatibility with C News.
 
 =item B<-h>
 

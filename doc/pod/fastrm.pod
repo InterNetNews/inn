@@ -145,7 +145,7 @@ like:
 
     fastrm -e /usr/local/news/spool/articles < expire.list
 
-To enable all optimizations and see the affect on the order of removal
+To enable all optimizations and see the effect on the order of removal
 caused by B<-s>, use:
 
     fastrm -d -s -e -u ~news/spool/articles < expire.list
