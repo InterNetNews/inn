@@ -14,7 +14,7 @@ line, from its standard input and removes them.  Storage API tokens are
 removed via the SMcancel() interface.  B<fastrm> does not delete files
 safely or with an eye to security, but rather cuts every corner it can to
 delete files as fast as it can.  It should therefore never be run on
-publically writable directories, or in any other environment where a
+publicly writable directories, or in any other environment where a
 hostile party may control the directory structure in which it is working.
 
 If a file name is not an absolute path name, it is considered to be
