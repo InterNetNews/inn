@@ -67,7 +67,7 @@ it to listen to all IPv4 addresses as well.
 
 =item B<-b> I<address>
 
-Similar to the B<-4> flag.  B<-b> is kept for backwards compatibility.
+Similar to the B<-4> flag.  B<-b> is kept for backward compatibility.
 
 =item B<-c> I<configfile>
 

@@ -346,7 +346,7 @@ Needed Bug Fixes
   cause both tdx-util -F and innd to hang.
 
 * CNFS is insufficiently robust when corrupt buffers are encountered.
-  Setting cnfscheckfudgesize clears up issues that otherwises causes INN
+  Setting cnfscheckfudgesize clears up issues that otherwise causes INN
   to crash.
 
 * There should be a way, with the Perl authentication hooks, to either

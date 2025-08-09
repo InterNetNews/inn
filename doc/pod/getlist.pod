@@ -25,7 +25,7 @@ active.times(5), distrib.pats(5) and newsgroups(5).
 The listing files other than the F<active> file are common extensions to the
 NNTP protocol and may not be available on all servers.  For instance, C<counts>
 C<distributions>, C<headers>, C<moderators>, C<motd>, C<overview.fmt> and
-C<subscriptions>, amongst other, may be available.  Moreover, a uwildmat(3)
+C<subscriptions>, amongst others, may be available.  Moreover, a uwildmat(3)
 pattern I<pattern> may also be usable for some of these listing files.
 
 For more information on the formats of these files, see distributions(5),
