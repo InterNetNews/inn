@@ -1108,7 +1108,7 @@ and gpgv(1) commands unless I<keyring> is an empty string.
 
 =item B<-l>
 
-By default, B<perl-nocem> send logs to syslog(3).  In case the syslog facility
+By default, B<perl-nocem> sends logs to syslog(3).  In case the syslog facility
 is not available or this flag is used, logs are sent to F<perl-nocem.log>
 in I<pathlog>.  Error log level will still additionally be sent to syslog if
 available.

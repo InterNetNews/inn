@@ -77,7 +77,7 @@ the article to a specified site).
 
 =item B<-A>, B<-V>, B<-W>
 
-Accepted for compatibility with C News.  These options have no affect.
+Accepted for compatibility with C News.  These options have no effect.
 
 =item B<-i>, B<-I>, B<-L>, B<-s>, B<-v>, B<-X>
 
@@ -88,7 +88,7 @@ tin.  These options have no effect.
 
 Perform the consistency checks and add header fields where appropriate,
 but then print the article to standard output rather than sending it
-to the server.  B<-N> is accepted as as synonym for compatibility with
+to the server.  B<-N> is accepted as a synonym for compatibility with
 C News.
 
 =item B<-E>
