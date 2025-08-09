@@ -582,7 +582,7 @@ Here is an example F<storage.conf> file:
         class: 201
     }
 
-    # Expires lines are honored if they dont exceed 90 days.
+    # Expires lines are honored if they don't exceed 90 days.
     # Exempt those postings from thdexpire handling.
     method timehash {
         newsgroups: *
