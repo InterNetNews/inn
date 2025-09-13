@@ -173,7 +173,7 @@ The original I<dbz> was written by Jon Zeeff <zeeff@b-tech.ann-arbor.mi.us>.
 Later contributions by David Butler and Mark Moraes.  Extensive reworking,
 including this documentation, by Henry Spencer <henry@zoo.toronto.edu> as part
 of the C News project.  MD5 code borrowed from RSA.  Extensive reworking to
-remove backwards compatibility and to add hashes into I<dbz> files by Clayton
+remove backward compatibility and to add hashes into I<dbz> files by Clayton
 O'Neill <coneill@oneill.net>.  Rewritten into POD by Julien Elie.
 
 =head1 SEE ALSO

@@ -7,7 +7,8 @@
 **  This version written by Olaf Titz, Feb. 1997.  Public domain.
 **
 **  Various bug fixes, code and documentation improvements since then
-**  in 2001-2003, 2005, 2009, 2010, 2013, 2015, 2017, 2018, 2021, 2022, 2024.
+**  in 2001-2003, 2005, 2009, 2010, 2013, 2015, 2017, 2018, 2021, 2022, 2024,
+**  2025.
 */
 
 #include "portable/system.h"
@@ -353,7 +354,7 @@ pathline(char *c)
         for (c2 = c; *c2 && *c2 != '!'; c2++)
             ;
         if (c2 - c > MAXHOST - 1)
-            /* looks broken, dont bother with rest */
+            /* looks broken, don't bother with rest */
             return 0;
         while (*c2 == '!')
             *c2++ = '\0'; /* skip "!!" too */

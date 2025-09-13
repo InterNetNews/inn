@@ -19,7 +19,7 @@
 **    now <david.robinson@sun.com> (January, 1993).
 **
 **  Major reworking by Clayton O'Neill (coneill@oneill.net).  Removed all the
-**  C News and backwards compatible cruft.  Ripped out all the tagmask stuff
+**  C News and backward compatible cruft.  Ripped out all the tagmask stuff
 **  and replaced it with hashed .pag entries.  This removes the need for base
 **  file access.  Primary bottleneck now appears to be the hash algorithm and
 **  search().  You can change DBZ_INTERNAL_HASH_SIZE in dbz.h to increase the

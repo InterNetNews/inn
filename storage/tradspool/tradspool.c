@@ -1,5 +1,10 @@
 /*
 **  Storage manager module for traditional spool format.
+**
+**  Originally written by Richard Michael Todd <rmtodd@mailhost.ecn.ou.edu>
+**  in 1998.
+**  Various bug fixes, code and documentation improvements since then
+**  in 1998-2010, 2014, 2015, 2017, 2021-2025.
 */
 
 #include "portable/system.h"
@@ -722,7 +727,7 @@ tradspool_store(const ARTHANDLE article, const STORAGECLASS class)
     close(fd);
 
     /* Blah, this is ugly.  Have to make symlinks under other pathnames for
-     * backwards compatibility purposes. */
+     * backward compatibility purposes. */
     if (numxrefs > 1) {
         for (i = 1; i < numxrefs; ++i) {
             if ((p = strchr(xrefs[i], ':')) == NULL)
@@ -1006,7 +1011,7 @@ tradspool_cancel(TOKEN token)
 
     xrefhdr = wire_findheader(article->data, article->len, "Xref", true);
     if (xrefhdr == NULL) {
-        /* for backwards compatibility; there is no Xref unless crossposted
+        /* for backward compatibility; there is no Xref unless crossposted
            for 1.4 and 1.5 */
         if (unlink(path) < 0)
             result = false;
@@ -1261,7 +1266,7 @@ tradspool_next(ARTHANDLE *article, const RETRTYPE amount)
                 art->expires -= time(NULL);
             free(x);
         }
-        /* for backwards compatibility; assumes no Xref unless crossposted
+        /* for backward compatibility; assumes no Xref unless crossposted
            for 1.4 and 1.5: just fall through */
     }
     newpriv = (PRIV_TRADSPOOL *) art->private;
