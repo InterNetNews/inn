@@ -1,7 +1,10 @@
 /*
 **  Feed articles to an IMAP server via LMTP and IMAP.
 **
-**  Written by Tim Martin.
+**  Written by Tim Martin in 2000.
+**
+**  Various bug fixes, code and documentation improvements since then
+**  in 2000-2004, 2006-2011, 2013-2016, 2018, 2021, 2022, 2024, 2025.
 **
 **  Instead of feeding articles via nntp to another host this feeds the
 **  messages via lmtp to a host and the control messages (cancel's etc..) it
@@ -1329,7 +1332,7 @@ getsecret(sasl_conn_t *conn, void *context UNUSED, int id,
     return SASL_OK;
 }
 
-#    if __GNUC__ > 7 || LLVM_VERSION_MAJOR > 12
+#    if __GNUC__ > 7 || (defined(__clang__) && __clang_major__ > 12)
 #        pragma GCC diagnostic ignored "-Wcast-function-type"
 #    endif
 
@@ -1342,7 +1345,7 @@ static sasl_callback_t saslcallbacks[] = {
     {SASL_CB_LIST_END, NULL,                          NULL}
 };
 
-#    if __GNUC__ > 7 || LLVM_VERSION_MAJOR > 12
+#    if __GNUC__ > 7 || (defined(__clang__) && __clang_major__ > 12)
 #        pragma GCC diagnostic warning "-Wcast-function-type"
 #    endif
 
