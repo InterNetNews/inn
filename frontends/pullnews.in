@@ -426,8 +426,8 @@ if ($rnews) {
         open(RNEWS, ">$rnews")
           || die "can't open rnews-format output: $rnews: $!\n";
     }
-    $info{'rnews'}->{bytes} = 0;
-    $info{'rnews'}->{fed} = 0;
+    $info{'rnews'}{bytes} = 0;
+    $info{'rnews'}{fed} = 0;
 }
 open(LOG, $logFile) || die "can't open logfile ($logFile)!: $!\n";
 
@@ -482,38 +482,38 @@ while (<FILE>) {
     if (m!^(\S+)(\s+(\S+)\s+(\S+))?\s*$!) {
         $sname = $1;
         $servers->{$sname} = {};
-        $servers->{$sname}->{_order} = $array_order++;
+        $servers->{$sname}{_order} = $array_order++;
         $passwd{$sname} = [$3, $4] if defined $3 and $3 ne "";
 
         $upstreamParams->{$sname} = {};
 
         # Check whether we should use TLS.
         my $upstreamName = $sname;
-        $upstreamParams->{$sname}->{tls} = 0;
-        $upstreamParams->{$sname}->{tls} = 1
+        $upstreamParams->{$sname}{tls} = 0;
+        $upstreamParams->{$sname}{tls} = 1
           if ($upstreamName =~ s/_STARTTLS$//);
-        $upstreamParams->{$sname}->{tls} = 2 if ($upstreamName =~ s/_TLS$//);
+        $upstreamParams->{$sname}{tls} = 2 if ($upstreamName =~ s/_TLS$//);
         die "Missing IO::Socket::SSL Perl module for TLS with $upstreamName\n"
-          if $upstreamParams->{$sname}->{tls} > 0 && !Net::NNTP::can_ssl();
+          if $upstreamParams->{$sname}{tls} > 0 && !Net::NNTP::can_ssl();
 
         # Find a possible port at the end of the news server name.
         # Count the number of ":" to check that it is not an IPv6 address.
         my @colonsName = split(/:/, $upstreamName);
         if ((scalar(@colonsName) == 2) and ($upstreamName =~ s/:(\d+)$//)) {
-            $upstreamParams->{$sname}->{port} = $1;
+            $upstreamParams->{$sname}{port} = $1;
         } else {
-            $upstreamParams->{$sname}->{port} = $defaultPort;
+            $upstreamParams->{$sname}{port} = $defaultPort;
         }
 
-        $upstreamParams->{$sname}->{name} = $upstreamName;
+        $upstreamParams->{$sname}{name} = $upstreamName;
     } elsif (m!^\s+(\S+)\s+(\d+)\s+(\d+)!) {
         my ($group, $date, $high) = ($1, $2, $3);
-        $servers->{$sname}->{$group} = [$date, $high];
+        $servers->{$sname}{$group} = [$date, $high];
     } elsif (m!^\s+(\S+)\s*$!) {
         # Assume this is a new group.
         my ($group, $date, $high) = ($1, 0, 0);
         print LOG "Looking for new group $group on $sname\n" unless $quiet;
-        $servers->{$sname}->{$group} = [$date, $high];
+        $servers->{$sname}{$group} = [$date, $high];
     } else {
         die "Fatal error in $groupFile: $.: $_\n";
     }
@@ -523,7 +523,7 @@ close FILE;
 my @servers
   = @ARGV
   ? @ARGV
-  : sort({ $servers->{$a}->{_order} <=> $servers->{$b}->{_order} }
+  : sort({ $servers->{$a}{_order} <=> $servers->{$b}{_order} }
       keys(%$servers));
 
 die "No servers!\n" if !@servers;
@@ -585,13 +585,13 @@ my %groupsStarted = ();
 UPSTREAM:
 foreach my $server (@servers) {
     my ($username, $passwd);
-    my $upstreamName = $upstreamParams->{$server}->{name};
-    my $upstreamPort = $upstreamParams->{$server}->{port};
-    my $upstreamTLS = $upstreamParams->{$server}->{tls};
+    my $upstreamName = $upstreamParams->{$server}{name};
+    my $upstreamPort = $upstreamParams->{$server}{port};
+    my $upstreamTLS = $upstreamParams->{$server}{tls};
 
     foreach my $addGroup (@groupsToAdd) {
-        next if defined $servers->{$server}->{$addGroup};
-        $servers->{$server}->{$addGroup} = [0, 0];
+        next if defined $servers->{$server}{$addGroup};
+        $servers->{$server}{$addGroup} = [0, 0];
     }
 
     if (@groupsToGet > 0) {
@@ -674,10 +674,10 @@ foreach my $server (@servers) {
         next;
     }
 
-    $info{server}->{$server}->{bytes} = 0;
-    $info{server}->{$server}->{fed} = 0;
-    $info{server}->{$server}->{refused} = 0;
-    $info{server}->{$server}->{rejected} = 0;
+    $info{server}{$server}{bytes} = 0;
+    $info{server}{$server}{fed} = 0;
+    $info{server}{$server}{refused} = 0;
+    $info{server}{$server}{rejected} = 0;
 
     foreach my $group (sort keys %{ $servers->{$server} }) {
         next if $group eq '_order';
@@ -774,7 +774,7 @@ sub stats {
         my $server = $_;
         my $width = 0;
         print LOG "\nUpstream server "
-          . $upstreamParams->{$server}->{name} . ":\n"
+          . $upstreamParams->{$server}{name} . ":\n"
           if not $quiet;
 
         map { $width = length if length > $width; }
@@ -784,10 +784,10 @@ sub stats {
         map {
             if ($quiet) {
                 printf LOG "%s [$$] from %s $_ %s\n", localtime(),
-                  $upstreamParams->{$server}->{name},
-                  $pulled->{$server}->{$_};
+                  $upstreamParams->{$server}{name},
+                  $pulled->{$server}{$_};
             } else {
-                printf LOG "\t%${width}s %d\n", $_, $pulled->{$server}->{$_};
+                printf LOG "\t%${width}s %d\n", $_, $pulled->{$server}{$_};
             }
         } sort keys %{ $pulled->{$server} };
     } sort keys %{$pulled};
@@ -806,17 +806,17 @@ sub saveConfig {
     print FILE "# hostname[:port][_tlsmode] [username password]\n";
     print FILE "#     group date high\n";
     foreach my $server (
-        sort { $servers->{$a}->{_order} <=> $servers->{$b}->{_order} }
+        sort { $servers->{$a}{_order} <=> $servers->{$b}{_order} }
         keys %$servers
     ) {
         print FILE "$server";
         if (defined $passwd{$server}) {
-            printf FILE " %s %s", $passwd{$server}->[0], $passwd{$server}->[1];
+            printf FILE " %s %s", $passwd{$server}[0], $passwd{$server}[1];
         }
         print FILE "\n";
         foreach my $group (sort keys %{ $servers->{$server} }) {
             next if $group eq '_order';
-            my ($date, $high) = @{ $servers->{$server}->{$group} };
+            my ($date, $high) = @{ $servers->{$server}{$group} };
             printf FILE "    %s %d %d\n", $group, $date, $high;
         }
     }
@@ -1027,7 +1027,7 @@ sub crossFeedGroup {
                 $len += $line_len;
                 # Dot-stuffing already undone by Net::NNTP.
                 $tx_len += $line_len;
-                $info{server}->{$server}->{bytes} += $line_len;
+                $info{server}{$server}{bytes} += $line_len;
                 $info{bytes} += $line_len;
 
                 next if not $headers;
@@ -1167,7 +1167,7 @@ sub crossFeedGroup {
                 warn "No Xref header field found in article, adding\n";
                 my $xref_h
                   = "Xref: "
-                  . $upstreamParams->{$server}->{name}
+                  . $upstreamParams->{$server}{name}
                   . " $group:$i\r\n";
                 splice(@{$article}, $idx_blank_pre_body, 0, $xref_h);
                 $tx_len += length($xref_h);
@@ -1202,22 +1202,21 @@ sub crossFeedGroup {
                   or $hash_val > $hashfeed->{'high'};
             }
 
-            $pulled->{$server}->{$group}++;
+            $pulled->{$server}{$group}++;
 
             if ($skip_due_to_hdrs) {
                 print LOG "m" unless $quiet;
                 if ($debug >= 2) {
-                    print LOG "\tDEBUGGING $i\tskip_art: "
-                      . (
-                          $skip_due_to_hdrs == 1 ? 'hopsPath'
-                          : (
-                              $skip_due_to_hdrs == 2 ? 'hdr'
-                              : (
-                                  $skip_due_to_hdrs == 3 ? 'hashfeed'
-                                  : 'unknown'
-                              )
-                          )
-                      ) . "\n";
+                    print LOG "\tDEBUGGING $i\tskip_art: " . (
+                        $skip_due_to_hdrs == 1 ? 'hopsPath'
+                        : (
+                            $skip_due_to_hdrs == 2 ? 'hdr'
+                            : (
+                                $skip_due_to_hdrs == 3 ? 'hashfeed'
+                                : 'unknown'
+                            )
+                        )
+                    ) . "\n";
                 }
             } elsif ($rnews) {
                 # Change all trailing CRLF to LF as rnews expects articles
@@ -1233,7 +1232,7 @@ sub crossFeedGroup {
                 print RNEWS $artwithoutCR;
                 print LOG "+" unless $quiet;
                 $fed{$group}++;
-                $info{'rnews'}->{fed}++;
+                $info{'rnews'}{fed}++;
                 $info{fed}++;
             } else {
                 if ($no_op) {
@@ -1251,7 +1250,7 @@ sub crossFeedGroup {
                         print LOG "+" unless $quiet;
                         push @warns, "Post $i ok ($code): $msg";
                         $fed{$group}++;
-                        $info{server}->{$server}->{fed}++;
+                        $info{server}{$server}{fed}++;
                         $info{fed}++;
                     } elsif ($msg =~ /^435 /
                         or $msg =~ /duplicate message-id/io)
@@ -1262,7 +1261,7 @@ sub crossFeedGroup {
                           if $msg !~ /^435 $msgid$/
                           and $msg !~ /duplicate message-id/io;
                         $refused{$group}++;
-                        $info{server}->{$server}->{refused}++;
+                        $info{server}{$server}{refused}++;
                         $info{refused}++;
                     } else {
                         warn "\nPost $i to server failed ($code): $msg\n";
@@ -1289,12 +1288,12 @@ sub crossFeedGroup {
                     if ($code == 435) {
                         print LOG "." unless $quiet;
                         $refused{$group}++;
-                        $info{server}->{$server}->{refused}++;
+                        $info{server}{$server}{refused}++;
                         $info{refused}++;
                     } elsif ($code == 437) {
                         print LOG "*" unless $quiet;
                         $rejected{$group}++;
-                        $info{server}->{$server}->{rejected}++;
+                        $info{server}{$server}{rejected}++;
                         $info{rejected}++;
                     } else {
                         warn "\nTransfer to server failed ($code): $msg\n";
@@ -1314,7 +1313,7 @@ sub crossFeedGroup {
                       . join('//', split(/\r?\n/, $msg)) . ">\n"
                       if $debug >= 1;
                     $fed{$group}++;
-                    $info{server}->{$server}->{fed}++;
+                    $info{server}{$server}{fed}++;
                     $info{fed}++;
                 }
             }
@@ -1324,7 +1323,7 @@ sub crossFeedGroup {
             # this article...
             # The "." resulting treatment has already been output.
             $refused{$group}++;
-            $info{server}->{$server}->{refused}++;
+            $info{server}{$server}{refused}++;
             $info{refused}++;
             $shash->{$group} = [time, $high = $i];
         } else {
@@ -1372,7 +1371,7 @@ sub crossFeedGroup {
           = ($localServer ne $defaultHost ? " to $localServer" : '');
         print LOG localtime()
           . " [$$] "
-          . $upstreamParams->{$server}->{name}
+          . $upstreamParams->{$server}{name}
           . "$destServer $name $narticles"
           . " $first-$last : $count $prevHigh-"
           . ($high == $last ? '' : $high)

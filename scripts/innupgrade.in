@@ -2,6 +2,11 @@
 
 ##  Convert INN configuration files to the current syntax.
 ##
+##  Written by Russ Allbery <eagle@eyrie.org> in September 2002.
+##
+##  Various bug fixes, code and documentation improvements since then
+##  in 2002-2004, 2007-2011, 2013, 2021-2025.
+##
 ##  Intended to be run during a major version upgrade, this script tries to
 ##  convert existing INN configuration files to the syntax expected by the
 ##  current version, if that's changed.

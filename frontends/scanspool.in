@@ -199,7 +199,7 @@ sub parse_active {
         # watch for duplicate entries
         if (defined $realgname{$name}) {
             problem("WARNING: ignoring duplicate group: $name"
-                  . ", at active line $linenum");
+                . ", at active line $linenum");
             next;
         }
 
@@ -428,7 +428,7 @@ sub check_spool {
         {
             if ($preverrgrp ne $artgrp) {
                 problem("$artgrp: not an active group directory (probably "
-                      . "a removed newsgroup; see articles with -v)");
+                    . "a removed newsgroup; see articles with -v)");
                 $preverrgrp = $artgrp;
             }
             if (defined $opt{'v'}) {
@@ -451,14 +451,14 @@ sub check_spool {
                 next if defined $opt{'r'};
             } elsif ($artnum < $lowart{$artgrp}) {
                 problem("$filename: article number is too low "
-                      . "(first article has number $lowart{$artgrp} "
-                      . "in the active file)");
+                    . "(first article has number $lowart{$artgrp} "
+                    . "in the active file)");
                 rm_file($filename);
                 next if defined $opt{'r'};
             } elsif ($artnum > $highart{$artgrp}) {
                 problem("$filename: article number is too high "
-                      . "(last article has number $highart{$artgrp} "
-                      . "in the active file");
+                    . "(last article has number $highart{$artgrp} "
+                    . "in the active file");
                 rm_file($filename);
                 next if defined $opt{'r'};
             }
@@ -540,7 +540,7 @@ sub check_spool {
             if ($found == 0) {
                 # no group or group alias was found
                 problem("$filename: does not belong in $artgrp"
-                      . " according to its Newsgroups header field");
+                    . " according to its Newsgroups header field");
                 $remove++;
             }
         }

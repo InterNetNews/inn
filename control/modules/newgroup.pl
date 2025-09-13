@@ -2,6 +2,9 @@
 ##
 ##  Copyright 2001 by Marco d'Itri <md@linux.it>
 ##
+##  Various bug fixes, code and documentation improvements since then
+##  in 2006-2011, 2021, 2022, 2024, 2025.
+##
 ##  Redistribution and use in source and binary forms, with or without
 ##  modification, are permitted provided that the following conditions
 ##  are met:
@@ -173,7 +176,7 @@ sub control_newgroup {
             );
         } else {
             logmsg("skipping newgroup $groupname $modcmd $sender"
-                  . " (would $status): $errmsg");
+                . " (would $status): $errmsg");
         }
         return;
     }
@@ -207,7 +210,7 @@ END
             );
         } else {
             logmsg("skipping newgroup $groupname $modcmd $sender"
-                  . " (would $status)");
+                . " (would $status)");
         }
     } elsif ($action eq 'doit' and $status ne 'be unapproved') {
         if ($status ne 'not change') {

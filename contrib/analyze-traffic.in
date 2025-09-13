@@ -4,12 +4,15 @@
 #
 # analyze-traffic
 #
-# Written by Jeffrey M. Vinocur <jeff@litech.org>
-# This work is hereby placed in the public domain by its author.
-#
 # Script for keeping track of which newsgroups are receiving the most
 # traffic (by article count or byte usage), and which peer is most
 # responsible for the traffic in each high-traffic group.
+#
+# Written by Jeffrey M. Vinocur <jeff@litech.org> in 2003.
+# This work is hereby placed in the public domain by its author.
+#
+# Various bug fixes, code and documentation improvements since then
+# in 2021, 2022, 2024, 2025.
 #
 ########################################################################
 #
@@ -130,14 +133,14 @@ while (<>) {
 
         $s->{count}++;
         $s->{bytes} += $bytes;
-        $s->{peers}->{$peer}->{count}++;
-        $s->{peers}->{$peer}->{bytes} += $bytes;
+        $s->{peers}{$peer}{count}++;
+        $s->{peers}{$peer}{bytes} += $bytes;
     }
 }
 
 my $f = $SORT_BY_SIZE ? 'bytes' : 'count';
 
-foreach (sort { $stats{$a}->{$f} <=> $stats{$b}->{$f} } (keys %stats)) {
+foreach (sort { $stats{$a}{$f} <=> $stats{$b}{$f} } (keys %stats)) {
     my %s = %{ $stats{$_} };
 
     my ($topcount, $topcountwho) = &max('count', $s{peers});

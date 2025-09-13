@@ -1215,7 +1215,8 @@ sub collect($$$$$$) {
     ## innxmit
     if ($prog eq "innxmit") {
         # 437 Duplicate article
-        if ($left
+        if (
+            $left
             =~ /(\S+) rejected [^\s]+ \(.*?\) (?:437|439) Duplicate article$/o
         ) {
             my $server = $1;
@@ -1238,7 +1239,8 @@ sub collect($$$$$$) {
             return 1;
         }
         # 437 Too old -- ...
-        if ($left
+        if (
+            $left
             =~ /(\S+) rejected [^\s]+ \(.*\) (?:437|439) Too old -- \".*?\"$/o
         ) {
             my $server = $1;
@@ -1830,7 +1832,8 @@ sub collect($$$$$$) {
             return 1;
         }
         # times
-        if ($left
+        if (
+            $left
             =~ /(\S+) times user (.+) system (\S+) idle (\S+) elapsed (\S+)$/o
         ) {
             my ($cust, $user, $system, $idle, $elapsed) = ($1, $2, $3, $4, $5);
@@ -2112,7 +2115,8 @@ sub collect($$$$$$) {
             return 1;
         }
         # rejected 437 No colon-space ...
-        if ($left
+        if (
+            $left
             =~ /rejected (?:437|439) No colon-space in \"(.*)\" header field$/o
         ) {
             $rnews_no_colon_space++;

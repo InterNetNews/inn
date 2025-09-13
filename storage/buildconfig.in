@@ -5,6 +5,10 @@
 ##  Goes through all subdirectories of the current directory and finds
 ##  directories that are either storage methods or overview methods.  Builds
 ##  methods.[ch] and ovmethods.[ch] as well as makefile stubs.
+##
+##  Created by James Brister in 1998.
+##  Various bug fixes, code and documentation improvements since then
+##  in 1998-2002, 2004, 2009, 2020-2022, 2024, 2025.
 
 require 5.003;
 
@@ -69,7 +73,7 @@ sub parse_config {
             my $ix = $filelistix{$1};
             my $files = $2;
             my @files = sort(split(" ", $files));
-            push(@{ $$makefile{filelists}->[$ix] }, map({ "$dir/$_" } @files));
+            push(@{ $$makefile{filelists}[$ix] }, map({ "$dir/$_" } @files));
         } else {
             warn "$dir/$file: ignoring unknown line: $_\n";
         }
@@ -230,7 +234,7 @@ sub write_makefile {
     for (0 .. $#filelistnames) {
         print MAKE makefile_var(
             $filelistnames[$_],
-            @{ $makefile->{filelists}->[$_] },
+            @{ $makefile->{filelists}[$_] },
         );
     }
     for (@{ $makefile->{makefiles} }) {
