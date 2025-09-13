@@ -377,11 +377,12 @@ sub read_storageconf {
 
             $key{'SIZE'} .= ",0" unless $key{'SIZE'} =~ /,/;
             $key{'SIZE'} =~ s/,/:/;
-            $key{'FILTERED'}
-              = defined $key{'FILTERED'}
-              ? $key{'FILTERED'} =~ /^(true|yes|on)$/i
+            $key{'FILTERED'} = defined $key{'FILTERED'}
+              ? (
+                  $key{'FILTERED'} =~ /^(true|yes|on)$/i
                   ? 1
                   : 0
+              )
               : 0;
 
             if (!defined $stor{ $key{'OPTIONS'} }) {
