@@ -5,7 +5,7 @@
  * which can be found at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
  *
  * Written by Russ Allbery <eagle@eyrie.org>
- * Copyright 2015, 2022 Russ Allbery <eagle@eyrie.org>
+ * Copyright 2015, 2022, 2025 Russ Allbery <eagle@eyrie.org>
  * Copyright 2008, 2011-2012
  *     The Board of Trustees of the Leland Stanford Junior University
  *
@@ -32,11 +32,7 @@
 #endif
 
 /*
- * We use __alloc_size__, but it was only available in fairly recent versions
- * of GCC.  Suppress warnings about the unknown attribute if GCC is too old.
- * We know that we're GCC at this point, so we can use the GCC variadic macro
- * extension, which will still work with versions of GCC too old to have C99
- * variadic macro support.
+ * __alloc_size__ was introduced in GCC 4.3.
  */
 #if !defined(__attribute__) && !defined(__alloc_size__)
 #    if (__GNUC__ < 4 || (__GNUC__ == 4 && __GNUC_MINOR__ < 3)) \
@@ -46,8 +42,20 @@
 #endif
 
 /*
- * Suppress the argument to __malloc__ in Clang (not supported in at least
- * version 13) and GCC versions prior to 11.
+ * __fd_arg__ and company were introduced in GCC 13 and is not supported in
+ * Clang 19.
+ */
+#if !defined(__attribute__) && !defined(__fd_arg__)
+#    if __GNUC__ < 13 && !defined(__clang__)
+#        define __fd_arg__(arg)       /* empty */
+#        define __fd_arg_read__(arg)  /* empty */
+#        define __fd_arg_write__(arg) /* empty */
+#    endif
+#endif
+
+/*
+ * Suppress the argument to __malloc__ in Clang and in GCC versions prior to
+ * 11.
  */
 #if !defined(__attribute__) && !defined(__malloc__)
 #    if defined(__clang__) || __GNUC__ < 11
@@ -57,8 +65,8 @@
 
 /*
  * LLVM and Clang pretend to be GCC but don't support all of the __attribute__
- * settings that GCC does.  For them, suppress warnings about unknown
- * attributes on declarations.  This unfortunately will affect the entire
+ * settings that GCC does. For them, suppress warnings about unknown
+ * attributes on declarations. This unfortunately will affect the entire
  * compilation context, but there's no push and pop available.
  */
 #if !defined(__attribute__) && (defined(__llvm__) || defined(__clang__))
@@ -66,8 +74,8 @@
 #endif
 
 /*
- * BEGIN_DECLS is used at the beginning of declarations so that C++
- * compilers don't mangle their names.  END_DECLS is used at the end.
+ * BEGIN_DECLS is used at the beginning of declarations so that C++ compilers
+ * don't mangle their names. END_DECLS is used at the end.
  */
 #undef BEGIN_DECLS
 #undef END_DECLS
