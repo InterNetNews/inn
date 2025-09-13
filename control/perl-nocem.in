@@ -14,7 +14,7 @@
 # Documentation improved by Jeffrey M. Vinocur (2002), Russ Allbery (2006)
 # and Julien Élie (2007).
 # Various bug fixes, code and documentation improvements by Julien Élie
-# in 2007-2009, 2013, 2014, 2016, 2018, 2020-2024.
+# in 2007-2009, 2013, 2014, 2016, 2018, 2020-2025.
 ##############################################################################
 
 require 5.00403;
@@ -248,7 +248,7 @@ sub do_nocem {
               . "(%d ids, %d skipped, %.5f s, %.1f/s)",
             $msgid, $nid, $issuer, $type, $nr, $skipped, $diff,
             ($nr + $skipped) / $diff,
-        ),
+        )
     );
 }
 
@@ -350,7 +350,7 @@ sub read_nocem {
                 "Article %s: %s notice %s by %s for %s (%d ids)",
                 $msgid, $opt_u ? "skipped" : "unwanted", $hdrs{'notice-id'},
                 $hdrs{issuer}, $hdrs{type}, $skipped,
-            ),
+            )
         );
         return;
     }
