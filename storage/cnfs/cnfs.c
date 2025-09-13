@@ -1,5 +1,10 @@
 /*
 **  Storage manager module for Cyclic News File System method.
+**
+**  Rewritten and cleaned by Scott Fritchie from its INN 1.5.1 incarnation
+**  in 1998.
+**  Various bug fixes, code and documentation improvements since then
+**  in 1998-2011, 2014, 2015, 2017-2025.
 */
 
 #include "portable/system.h"
@@ -8,9 +13,7 @@
 #include <ctype.h>
 #include <errno.h>
 #include <fcntl.h>
-#if HAVE_LIMITS_H
-#    include <limits.h>
-#endif
+#include <limits.h>
 #include <netinet/in.h>
 #include <sys/stat.h>
 #include <sys/uio.h>

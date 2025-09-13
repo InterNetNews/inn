@@ -21,9 +21,7 @@
 #include <assert.h>
 #include <errno.h>
 #include <fcntl.h>
-#if HAVE_LIMITS_H
-#    include <limits.h>
-#endif
+#include <limits.h>
 #include <sys/stat.h>
 #include <syslog.h>
 

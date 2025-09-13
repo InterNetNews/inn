@@ -13,14 +13,11 @@
 #include <ctype.h>
 #include <errno.h>
 #include <float.h>
+#include <limits.h>
 #include <math.h>
 #include <netdb.h>
 #include <sys/param.h>
 #include <syslog.h>
-
-#ifdef HAVE_LIMITS_H
-#    include <limits.h>
-#endif
 
 #include "inn/innconf.h"
 #include "inn/libinn.h"

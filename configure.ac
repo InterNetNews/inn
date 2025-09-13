@@ -592,7 +592,7 @@ dnl Special checks for header files.
 AC_HEADER_STDBOOL
 
 dnl Generic checks for header files.
-AC_CHECK_HEADERS([crypt.h inttypes.h limits.h \
+AC_CHECK_HEADERS([crypt.h inttypes.h \
                   stdint.h strings.h sys/bitypes.h sys/filio.h sys/loadavg.h \
                   sys/select.h sys/time.h sys/uio.h syslog.h unistd.h])
 

@@ -1,18 +1,22 @@
 /*
 **  Overview buffer and index method.
+**
+**  Originally written in 1999.
+**  Various bug fixes, code and documentation improvements since then
+**  in 1999-2010, 2013-2017, 2019-2025.
 */
 
 /*
-** Buffindexed using shared memory on ovbuff by Sang-yong Suh
+**  Buffindexed using shared memory on ovbuff by Sang-yong Suh.
 **
-** During the recent discussions in inn-workers, Alex Kiernan found
-** that inn_lock_range() is not working for MMAPed file.  This explains
-** why buffindexed has long outstanding bugs such as "could not MMAP...".
+**  During the discussions in inn-workers in 2003, Alex Kiernan found
+**  that inn_lock_range() is not working for MMAPed file.  This explains
+**  why buffindexed has long outstanding bugs such as "could not MMAP...".
 **
-** This version corrects the file locking error by using shared memory.
-** The bitfield of each buffer file is loaded into memory, and is shared
-** by all programs such as innd, expireover, makehistory, and overchan.
-** The locking problem is handled by semaphore.
+**  This version corrects the file locking error by using shared memory.
+**  The bitfield of each buffer file is loaded into memory, and is shared
+**  by all programs such as innd, expireover, makehistory, and overchan.
+**  The locking problem is handled by semaphore.
 */
 
 #include "portable/system.h"
@@ -22,9 +26,7 @@
 #include <ctype.h>
 #include <errno.h>
 #include <fcntl.h>
-#if HAVE_LIMITS_H
-#    include <limits.h>
-#endif
+#include <limits.h>
 #include <sys/stat.h>
 #include <time.h>
 
