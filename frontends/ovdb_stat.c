@@ -1,6 +1,10 @@
 /*
  * ovdb_stat.c
  * print information about ovdb database
+ *
+ * Created by Heath Kehoe in 2000.
+ * Various bug fixes, code and documentation improvements since then
+ * in 2000-2004, 2006, 2008, 2013-2015, 2018, 2021-2025.
  */
 
 #include "portable/system.h"
@@ -248,7 +252,7 @@ end_table(void)
  * like GCC or Clang, but is undefined behaviour by the C Standard as it is
  * unknown whether all hardware platforms can actually process such pointer
  * arithmetic (many, if not all, can anyway). */
-#    if LLVM_VERSION_MAJOR > 12
+#    if defined(__clang__) && __clang_major__ > 12
 #        pragma GCC diagnostic ignored "-Wnull-pointer-subtraction"
 #    endif
 #    define OFFSETOF(type, f) ((char *) &(((type *) 0)->f) - (char *) 0)
