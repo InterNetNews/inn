@@ -292,7 +292,7 @@ main(int ac, char *av[])
         Cookie = ftello(stdin) - length;
 
         /* Get lines like "name size".  Note that we ignore size but accept
-         * it for backwards compatibility. */
+         * it for backward compatibility. */
         if ((p = strchr(line, '\n')) == NULL) {
             warn("%s skipping %.40s: too long", Host, line);
             continue;

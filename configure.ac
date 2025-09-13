@@ -888,7 +888,8 @@ AS_IF([test x"$inn_enable_hardening_flags" = xyes],
      INN_PROG_LD_FLAG([-Wl,-z,now],
                       [LDFLAGS="${LDFLAGS} -Wl,-z,now"], [])])
 
-dnl Now that compiler flags have been checked, remove -Werror from CFLAGS.
+dnl Now that compiler flags have been checked, remove -Wunknown-warning-option
+dnl from CFLAGS.
 CFLAGS=`AS_ECHO(["${CFLAGS}"]) | sed 's/ -Werror=unknown-warning-option//'`
 
 dnl Clean up our LIBS, just for grins.

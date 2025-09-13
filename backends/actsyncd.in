@@ -16,7 +16,7 @@
 # All rights reserved.
 #
 # Various bug fixes, code and documentation improvements since then
-# in 1999-2003, 2007-2009, 2021-2024.
+# in 1999-2003, 2007-2009, 2021-2025.
 #
 # Permission to use and modify is hereby granted so long as this
 # notice remains.  Use at your own risk.  No warranty is implied.
@@ -86,7 +86,7 @@ if [ -z "$ign" ]; then
     exit 5
 fi
 
-# Keep ftppath for backwards-compatibility.
+# Keep ftppath for backward compatibility.
 ftp="$(sed -n -e 's/^ftppath=[ 	]*\/*//p' $cfg | tail -n 1)"
 path="$(sed -n -e 's/^path=[ 	]*\/*//p' $cfg | tail -n 1)"
 protocol="$(sed -n -e 's/^protocol=[ 	]*//p' $cfg \
@@ -103,7 +103,7 @@ if [ -z "$ftp" ] && [ -z "$path" ]; then
     fi
 fi
 
-# If not NNTP, assume FTP by default for backwards-compatibility.
+# If not NNTP, assume FTP by default for backward compatibility.
 if [ -z "$protocol" ]; then
     protocol="ftp"
 fi

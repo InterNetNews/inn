@@ -42,7 +42,7 @@ $opt_f = 50000;    # required space in kilobytes
 $opt_i = 5000;     # required space in inodes
 $opt_m = 7;        # minimum normal (class 100) time in days
 $opt_x = 86400;    # absolute minimum hold time in seconds
-$opt_N = 0;        # dont actually delete articles
+$opt_N = 0;        # don't actually delete articles
 $opt_v = 0;        # verbosity level
 $opt_M = 0;        # install man page
 getopts("f:i:m:MNrt:v:x:") || usage();

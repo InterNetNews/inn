@@ -406,7 +406,7 @@ CMDauthinfo(int ac, char *av[])
             return;
         }
 
-        /* For backwards compatibility, we return 481 instead of 502 (which had
+        /* For backward compatibility, we return 481 instead of 502 (which had
          * the same meaning as 481 in RFC 2980). */
         if (code == NNTP_ERR_ACCESS) {
             code = NNTP_FAIL_AUTHINFO_BAD;
