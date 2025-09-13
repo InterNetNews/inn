@@ -2,6 +2,11 @@
 
 ##  Synchronize INN files maintained in c-tap-harness with upstream.
 ##
+##  Initial version written in September 2014 by Julien ÉLIE.
+##
+##  Various bug fixes, code and documentation improvements since then
+##  in 2014-2016, 2018, 2021, 2022, 2024, 2025.
+##
 ##  This script downloads the latest version of the files maintained
 ##  in the C TAP Harness package that INN uses for its test driver suite.
 ##  These files are available at

@@ -20,7 +20,8 @@
  * which can be found at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
  *
  * Written by Russ Allbery <eagle@eyrie.org>
- * Copyright 2003-2005, 2016-2017, 2019-2020 Russ Allbery <eagle@eyrie.org>
+ * Copyright 2003-2005, 2016-2017, 2019-2020, 2025
+ *     Russ Allbery <eagle@eyrie.org>
  * Copyright 2015 Julien ÉLIE <julien@trigofacile.com>
  * Copyright 2008, 2011, 2013-2014
  *     The Board of Trustees of the Leland Stanford Junior University
@@ -120,13 +121,6 @@ static const char *const gai_errors[] = {
     "System error",                     /*  9 EAI_SYSTEM */
     "Supplied buffer too small",        /* 10 EAI_OVERFLOW */
 };
-
-/* Macro to set the len attribute of sockaddr_in. */
-#if HAVE_STRUCT_SOCKADDR_SA_LEN
-#    define sin_set_length(s) ((s)->sin_len = sizeof(struct sockaddr_in))
-#else
-#    define sin_set_length(s) /* empty */
-#endif
 
 /*
  * Used for iterating through arrays.  ARRAY_SIZE returns the number of
@@ -230,7 +224,9 @@ gai_addrinfo_new(int socktype, const char *canonical, struct in_addr addr,
     sin->sin_family = AF_INET;
     sin->sin_addr = addr;
     sin->sin_port = htons(port);
-    sin_set_length(sin);
+#if HAVE_STRUCT_SOCKADDR_SA_LEN
+    sin->sin_len = sizeof(struct sockaddr_in);
+#endif
     ai->ai_addr = (struct sockaddr *) sin;
     ai->ai_addrlen = sizeof(struct sockaddr_in);
     return ai;

@@ -2,6 +2,11 @@
 
 ##  Synchronize INN files maintained in rra-c-util with upstream.
 ##
+##  Initial version written in November 2013 by Julien ÉLIE.
+##
+##  Various bug fixes, code and documentation improvements since then
+##  in 2014-2018, 2020-2025.
+##
 ##  This script downloads the latest version of the files maintained
 ##  in the rra-c-util package that INN uses for most of its utility and
 ##  portability functions.  These files are available at
@@ -83,7 +88,7 @@ AC_DEFUN([_INN_LIB_SQLITE3_INTERNAL],\
     [AS_IF([test x"$1" = xtrue],\
         [AC_MSG_ERROR([cannot find usable SQLite v3 library])])])])\
 ' \
-                    -e '49,69d' \
+                    -e '49,71d' \
                     ${TEMP}
             fi
         elif [ "$2" = "include/inn" ] || [ "$2" = "include/portable" ] \

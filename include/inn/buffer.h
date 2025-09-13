@@ -16,7 +16,7 @@
  * which can be found at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
  *
  * Written by Russ Allbery <eagle@eyrie.org>
- * Copyright 2014-2015, 2022 Russ Allbery <eagle@eyrie.org>
+ * Copyright 2014-2015, 2022, 2025 Russ Allbery <eagle@eyrie.org>
  * Copyright 2011-2012
  *     The Board of Trustees of the Leland Stanford Junior University
  * Copyright 2004-2006 Internet Systems Consortium, Inc. ("ISC")
@@ -125,20 +125,23 @@ bool buffer_find_string(struct buffer *, const char *, size_t start,
  * error or after any successful read.  Returns -1 on an error reading from
  * the file descriptor and sets errno.
  */
-ssize_t buffer_read(struct buffer *, int fd) __attribute__((__nonnull__));
+ssize_t buffer_read(struct buffer *, int fd)
+    __attribute__((__fd_arg_read__(2), __nonnull__));
 
 /*
  * Read from a file descriptor into a buffer until end of file is reached.
  * Returns true on success and false (setting errno) on error.
  */
-bool buffer_read_all(struct buffer *, int fd) __attribute__((__nonnull__));
+bool buffer_read_all(struct buffer *, int fd)
+    __attribute__((__fd_arg_read__(2), __nonnull__));
 
 /*
  * Read the contents of a file into a buffer.  This should be used instead of
  * buffer_read_all when fstat can be called on the file descriptor.  Returns
  * true on success and false (setting errno) on error.
  */
-bool buffer_read_file(struct buffer *, int fd) __attribute__((__nonnull__));
+bool buffer_read_file(struct buffer *, int fd)
+    __attribute__((__fd_arg_read__(2), __nonnull__));
 
 END_DECLS
 

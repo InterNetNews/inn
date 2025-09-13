@@ -5,6 +5,7 @@
  * which can be found at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
  *
  * Written by Russ Allbery <eagle@eyrie.org>
+ * Copyright 2025 Russ Allbery <eagle@eyrie.org>
  * Copyright 2008, 2010, 2013
  *     The Board of Trustees of the Leland Stanford Junior University
  * Copyright 2004-2006 Internet Systems Consortium, Inc. ("ISC")
@@ -46,11 +47,11 @@ BEGIN_DECLS
  * writes and EINTR/EAGAIN errors.
  */
 ssize_t xpwrite(int fd, const void *buffer, size_t size, off_t offset)
-    __attribute__((__nonnull__));
+    __attribute__((__fd_arg_write__(1), __nonnull__));
 ssize_t xwrite(int fd, const void *buffer, size_t size)
-    __attribute__((__nonnull__));
+    __attribute__((__fd_arg_write__(1), __nonnull__));
 ssize_t xwritev(int fd, const struct iovec *iov, int iovcnt)
-    __attribute__((__nonnull__));
+    __attribute__((__fd_arg_write__(1), __nonnull__));
 
 END_DECLS
 
