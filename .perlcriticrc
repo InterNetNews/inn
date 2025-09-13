@@ -205,6 +205,12 @@ allow = lock
 # innreport.
 [-CodeLayout::RequireFinalSemicolon]
 
+# perltidy takes care of the preferred formatting with regards to trailing
+# commas.  Its -dwic flag omits the comma if there is a single argument so that
+# the call will be collapsed to a single line if it will fit whereas this
+# policy always wants it.
+[-CodeLayout::RequireTrailingCommaAtNewline]
+
 # Getopt::Std is still used and fits our needs.
 [-Community::PreferredAlternatives]
 

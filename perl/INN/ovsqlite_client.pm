@@ -400,12 +400,12 @@ BEGIN {
             {
                 name    => "cutofflow",
                 default => 0,
-            },
+            }
         ],
         [
             {
                 name => "errmsg",
-            },
+            }
         ],
     );
 
@@ -453,7 +453,7 @@ BEGIN {
         [
             {
                 name => "errmsg",
-            },
+            }
         ],
     );
 
@@ -490,7 +490,7 @@ BEGIN {
             {
                 name     => "groupname",
                 required => 1,
-            },
+            }
         ],
         [
             {
@@ -544,12 +544,12 @@ BEGIN {
             {
                 name     => "groupname",
                 required => 1,
-            },
+            }
         ],
         [
             {
                 name => "errmsg",
-            },
+            }
         ],
     );
 
@@ -659,7 +659,7 @@ BEGIN {
         [
             {
                 name => "errmsg",
-            },
+            }
         ],
     );
 
@@ -733,7 +733,7 @@ BEGIN {
         [
             {
                 name => "errmsg",
-            },
+            }
         ],
     );
 
@@ -831,7 +831,7 @@ BEGIN {
         [
             {
                 name => "errmsg",
-            },
+            }
         ],
     );
 
@@ -1004,7 +1004,7 @@ BEGIN {
         [
             {
                 name => "errmsg",
-            },
+            }
         ],
     );
 
@@ -1055,12 +1055,12 @@ BEGIN {
             {
                 name     => "groupname",
                 required => 1,
-            },
+            }
         ],
         [
             {
                 name => "errmsg",
-            },
+            }
         ],
     );
 
@@ -1103,7 +1103,7 @@ BEGIN {
         [
             {
                 name => "errmsg",
-            },
+            }
         ],
     );
 
@@ -1141,7 +1141,7 @@ BEGIN {
         [
             {
                 name => "errmsg",
-            },
+            }
         ],
     );
 
@@ -1168,12 +1168,12 @@ BEGIN {
             {
                 name     => "callback",
                 required => 1,
-            },
+            }
         ],
         [
             {
                 name => "errmsg",
-            },
+            }
         ],
     );
 

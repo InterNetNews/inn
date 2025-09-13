@@ -28,6 +28,8 @@
 -wtc=m          # add trailing commas to all multi-line lists
 -atc            # add trailing commas where needed
 -dtc            # delete trailing commas where needed
+-altc           # add trailing comma to long arguments (perlcritic needs this)
+-dwic           # delete commas that interfere with welding
 -dia            # delete interbracket arrows
 -viu            # align trailing unless with if
 
