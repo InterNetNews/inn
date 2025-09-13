@@ -180,18 +180,18 @@ while (<STDIN>) {
 
         if ($articledate > $maxdate) {
             logmsg('Control article injected or posted in the future ('
-                  . convdate('-d', '-c', "$articledate")
-                  . ')');
+                . convdate('-d', '-c', "$articledate")
+                . ')');
             $parser->filer->purge;
             next;
         }
 
         if ($INN::Config::artcutoff > 0 && $articledate < $mindate) {
             logmsg('Control article too old ('
-                  . convdate('-d', '-c', "$articledate")
-                  . '), artcutoff set to '
-                  . $INN::Config::artcutoff
-                  . ' days');
+                . convdate('-d', '-c', "$articledate")
+                . '), artcutoff set to '
+                . $INN::Config::artcutoff
+                . ' days');
             $parser->filer->purge;
             next;
         }
@@ -252,7 +252,7 @@ while (<STDIN>) {
                 }
             }
             logmsg("skipping $progname $type$sender"
-                  . " (pgpverify failed) in $curmsgid");
+                . " (pgpverify failed) in $curmsgid");
             next;
         }
 
@@ -275,11 +275,11 @@ while (<STDIN>) {
         my $approved = $hdr{'approved'} ? 1 : 0;
         $approved = -1 if $i > 0;
         logmsg("$subname, "
-              . join(' ', @progparams)
-              . " $sender $replyto $token, $exclusionpats, $droppats,"
-              . " $charset_to, $sitepath, $action"
-              . ($logname ? "=$logname" : '')
-              . ", $approved");
+            . join(' ', @progparams)
+            . " $sender $replyto $token, $exclusionpats, $droppats,"
+            . " $charset_to, $sitepath, $action"
+            . ($logname ? "=$logname" : '')
+            . ", $approved");
 
         if ($action ne 'drop') {
             &$subfind(

@@ -3,7 +3,7 @@
 ##
 ##  Original implementation written by Bo Lindbergh in December 2023.
 ##  Various bug fixes, code and documentation improvements since then
-##  in 2024.
+##  in 2024, 2025.
 
 package INN::ovsqlite_client;
 
@@ -1039,7 +1039,7 @@ BEGIN {
             };
             $code == response_artlist_done
               and last;
-            $low = $articles->[-1]->{artnum} + 1;
+            $low = $articles->[-1]{artnum} + 1;
         }
         $search_group_all_out->(
             $errmsg,

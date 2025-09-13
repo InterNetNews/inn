@@ -1,29 +1,34 @@
 # Configuration for proper Perl code automated reformatting.  -*- conf -*-
 #
-# This configuration requires perltidy 20240903.01 or later.
+# This configuration requires perltidy 20250105 or later.
 
 -b              # modify the file in place
 -bext='/'       # ...without backuping the file (Git permits restoring it)
 -w              # report warning messages as errors
 -bal=1          # put line breaks after a label
 -bbao           # put line breaks before any operator
+-cpb            # put opening brace on same line as closing paren
+-ce             # cuddle braces around else
 -bfvt=2         # no newline before "or" after closing brace
+-nwn            # do not weld for multiline formatting (closer to Python black)
 -nbbc           # don't force blank lines before comments (bad for else blocks)
 -boc            # do not re-break lists, since perltidy is awful at this
--cpb            # put opening brace on same line as closing parenthese
--ce             # cuddle braces around else
+-kbb=')'        # please, please stop trying to cuddle closing function parens
 -l=79           # default is 80 but INN coding style is 79 for all languages
 -nlop           # disable vertical alignment of logical and ternary expressions
 -vil='=>'       # enable vertical alignment for hash definitions
 -pt=2           # don't add extra whitespace around parentheses
 -sbt=2          # ...or square brackets
 -nsfs           # no space before semicolon in for
+-nwrs='A'       # don't add a space between a colon and an attribute
 -xci            # improve indentation of nested structures
--qwaf           # format qw lists like function calls
+-mci            # minimize continuation indentation
+-qwaf           # format qw lists using parentheses like function calls
 -drc            # delete repeated commas in a list
 -wtc=m          # add trailing commas to all multi-line lists
 -atc            # add trailing commas where needed
 -dtc            # delete trailing commas where needed
+-dia            # delete interbracket arrows
 -viu            # align trailing unless with if
 
 # Uncomment to generate .LOG files.

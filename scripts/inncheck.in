@@ -281,7 +281,7 @@ sub parse_config {
         }
 
         # include-file hack: ignore; user needs to check it separately
-        if (defined $options->{'<include>'}->{$word}) {
+        if (defined $options->{'<include>'}{$word}) {
             $parse_error = 0;
             my $includefile_unused = get_config_word();
             next;
@@ -294,14 +294,14 @@ sub parse_config {
         eprint "$file:$line: duplicate option $word "
           . "in $group->{'type'} $group->{'name'}\n"
           if exists $group->{$word}
-          and not defined $options->{'<multi>'}->{$word};
+          and not defined $options->{'<multi>'}{$word};
 
         my $type
           = defined $options->{ $group->{'type'} }->{$word}
           ? $options->{ $group->{'type'} }->{$word}
           : (
-              defined $options->{'<anywhere>'}->{$word}
-              ? $options->{'<anywhere>'}->{$word}
+              defined $options->{'<anywhere>'}{$word}
+              ? $options->{'<anywhere>'}{$word}
               : undef
           );
         if ($type) {
@@ -665,16 +665,16 @@ sub innfeed_conf {
     foreach my $group (keys %groups) {
         eprint "$file:$groups{$group}->{'type'} $groups{$group}->{'name'}:"
           . " dynamic-method must be between 0 and 3\n"
-          if (defined $groups{$group}->{'dynamic-method'}
-              && $groups{$group}->{'dynamic-method'} > 3);
+          if (defined $groups{$group}{'dynamic-method'}
+              && $groups{$group}{'dynamic-method'} > 3);
         eprint "$file:$groups{$group}->{'type'} $groups{$group}->{'name'}:"
           . " dynamic-backlog-filter must be between 0.0 and 1.0\n"
-          if (defined $groups{$group}->{'dynamic-backlog-filter'}
-              && $groups{$group}->{'dynamic-backlog-filter'} > 1.0);
+          if (defined $groups{$group}{'dynamic-backlog-filter'}
+              && $groups{$group}{'dynamic-backlog-filter'} > 1.0);
         eprint "$file:$groups{$group}->{'type'} $groups{$group}->{'name'}:"
           . " backlog-factor must be larger than 1.0\n"
-          if (defined $groups{$group}->{'backlog-factor'}
-              && $groups{$group}->{'backlog-factor'} <= 1.0);
+          if (defined $groups{$group}{'backlog-factor'}
+              && $groups{$group}{'backlog-factor'} <= 1.0);
     }
     return;
 }

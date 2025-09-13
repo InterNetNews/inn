@@ -7,7 +7,7 @@
 # permitted under the same terms as the INN package.
 #
 # Various bug fixes, code and documentation improvements since then
-# in 2001, 2007, 2011, 2012, 2021-2024.
+# in 2001, 2007, 2011, 2012, 2021-2025.
 
 use warnings;
 

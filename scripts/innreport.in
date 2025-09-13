@@ -1116,7 +1116,8 @@ sub Make_Index($$$$) {
             $res .= (
                 $val eq 'date'
                 ? "|$first_date -- $last_date"
-                : "|" . &EvalExpr($val)
+                : "|"
+                  . &EvalExpr($val)
             );
         }
         $i++;
