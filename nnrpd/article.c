@@ -5,10 +5,8 @@
 #include "portable/system.h"
 
 #include <assert.h>
-#if HAVE_LIMITS_H
-#    include <limits.h>
-#endif
 #include <ctype.h>
+#include <limits.h>
 #include <sys/uio.h>
 
 #include "cache.h"

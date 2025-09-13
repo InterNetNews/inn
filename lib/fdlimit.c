@@ -15,6 +15,10 @@
 **  Note that on some versions of Linux (2.2.x reported), sysconf may return
 **  the wrong value for the maximum file descriptors.  getrlimit is correct,
 **  so always prefer it.
+**
+**  Written by Russ Allbery in 2000.
+**  Various bug fixes, code and documentation improvements since then
+**  in 2000, 2001, 2006, 2011, 2014, 2021, 2023, 2025.
 */
 
 #include "portable/system.h"
@@ -118,9 +122,7 @@ getfdlimit(void)
 }
 
 #else /* no function mechanism available */
-#    if HAVE_LIMITS_H
-#        include <limits.h>
-#    endif
+#    include <limits.h>
 #    include <sys/param.h>
 
 int

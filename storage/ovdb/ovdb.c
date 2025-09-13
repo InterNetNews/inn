@@ -5,7 +5,7 @@
  *
  * Created in 1999.
  * Various bug fixes, code and documentation improvements since then
- * in 2000-2006, 2008, 2010, 2011, 2013-2015, 2017, 2018, 2021-2024.
+ * in 2000-2006, 2008, 2010, 2011, 2013-2015, 2017, 2018, 2021-2025.
  *
  * See the full commit history for more details.
  * Below follows a list of the major initial changes:
@@ -82,9 +82,7 @@
 #include "portable/socket.h"
 #include <errno.h>
 #include <fcntl.h>
-#ifdef HAVE_LIMITS_H
-#    include <limits.h>
-#endif
+#include <limits.h>
 #include <signal.h>
 #ifdef HAVE_SYS_SELECT_H
 #    include <sys/select.h>

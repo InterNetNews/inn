@@ -19,14 +19,11 @@
 #include <assert.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <limits.h>
 #include <signal.h>
 #include <sys/stat.h>
 #include <sys/uio.h>
 #include <syslog.h>
-
-#ifdef HAVE_LIMITS_H
-#    include <limits.h>
-#endif
 
 #ifdef HAVE_SYS_SELECT_H
 #    include <sys/select.h>

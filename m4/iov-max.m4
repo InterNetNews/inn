@@ -1,5 +1,9 @@
 dnl Probe for the maximum number of iovecs accepted by writev.
 dnl
+dnl Written by Russ Allbery in 2003.
+dnl Various bug fixes, code and documentation improvements since then
+dnl in 2009, 2019, 2021, 2022, 2025.
+dnl
 dnl Check for the maximum number of elements in an iovec (IOV_MAX).  SVr4
 dnl systems appear to use that name for this limit (checked Solaris 2.6, IRIX
 dnl 6.5, and HP-UX 11.00).  Linux doesn't have it, but instead has UIO_MAXIOV
@@ -16,14 +20,12 @@ dnl Source used by INN_MACRO_IOV_MAX.
 AC_DEFUN([_INN_MACRO_IOV_MAX_SOURCE], [[
 #include <errno.h>
 #include <fcntl.h>
+#include <limits.h>
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/uio.h>
 #ifdef HAVE_UNISTD_H
 # include <unistd.h>
-#endif
-#ifdef HAVE_LIMITS_H
-# include <limits.h>
 #endif
 
 int
@@ -60,9 +62,7 @@ main()
 
 dnl Headers to use for checking for an IOV_MAX definition.
 AC_DEFUN([_INN_MACRO_IOV_MAX_HEADERS], [AC_INCLUDES_DEFAULT] [[
-#ifdef HAVE_LIMITS_H
-# include <limits.h>
-#endif
+#include <limits.h>
 ]])
 
 dnl Do the actual check.
