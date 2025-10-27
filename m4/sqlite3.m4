@@ -47,27 +47,27 @@ dnl INN_LIB_SQLITE3_SWITCH was called.
 AC_DEFUN([INN_LIB_SQLITE3_RESTORE], [INN_LIB_HELPER_RESTORE([SQLITE3])])
 
 dnl Checks if SQLite v3 is present. The single argument, if "true", says to
-dnl fail if the SQLite library could not be found. Prefer probing with
-dnl pkg-config if available and the --with flags were not given.
+dnl fail if the SQLite library could not be found. We do not use pkg-config
+dnl like the upstream version of this file as we have a specific check to
+dnl ensure that SQLite v3 meets our minimum version requirement.
 AC_DEFUN([_INN_LIB_SQLITE3_INTERNAL],
-[INN_LIB_HELPER_PATHS([SQLITE3])
- AS_IF([test x"$SQLITE3_CPPFLAGS" = x && test x"$SQLITE3_LDFLAGS" = x],
-    [PKG_PROG_PKG_CONFIG([], [PKG_CONFIG=false])
-     AS_IF([test x"$PKG_CONFIG" = x], [PKG_CONFIG=false])
-     PKG_CHECK_EXISTS([sqlite3],
-        [PKG_CHECK_MODULES([SQLITE3], [sqlite3])
-         SQLITE3_CPPFLAGS="$SQLITE3_CFLAGS"])])
- AS_IF([test x"$SQLITE3_LIBS" = x],
-    [INN_LIB_SQLITE3_SWITCH
-     LIBS=
-     AC_SEARCH_LIBS([sqlite3_open_v2], [sqlite3],
-        [SQLITE3_LIBS="$LIBS"],
-        [AS_IF([test x"$1" = xtrue],
-            [AC_MSG_ERROR([cannot find usable libsqlite3 library])])])
+[AC_CACHE_CHECK([for a sufficiently recent SQLite],
+    [inn_cv_have_sqlite3],
+    [INN_LIB_HELPER_PATHS([SQLITE3])
+     INN_LIB_SQLITE3_SWITCH
+     LIBS="-lsqlite3 $LIBS"
+     AC_COMPUTE_INT([_INN_LIB_SQLITE3_VERSION], [SQLITE_VERSION_NUMBER],
+        [#include <sqlite3.h>])
+     AS_IF([test "x$_INN_LIB_SQLITE3_VERSION" != x],
+        [AS_IF([test "$_INN_LIB_SQLITE3_VERSION" -ge 3008002],
+            [inn_cv_have_sqlite3=yes],
+            [inn_cv_have_sqlite3=no])],
+        [inn_cv_have_sqlite3=no])
      INN_LIB_SQLITE3_RESTORE])
- INN_LIB_SQLITE3_SWITCH
- AC_CHECK_HEADERS([sqlite3.h])
- INN_LIB_SQLITE3_RESTORE])
+ AS_IF([test x"$inn_cv_have_sqlite3" = xyes],
+    [SQLITE3_LIBS="-lsqlite3"],
+    [AS_IF([test x"$1" = xtrue],
+        [AC_MSG_ERROR([cannot find usable SQLite v3 library])])])])
 
 dnl The main macro for packages with mandatory SQLite v3 support.
 AC_DEFUN([INN_LIB_SQLITE3],
