@@ -60,36 +60,6 @@ download() {
                     -e '/test x"$CLANG" = xyes/,+1d' \
                     ${TEMP}
                 sed -i -e '$d' ${TEMP}
-            elif [ "$3" = "sqlite3.m4" ]; then
-                sed -i -e '49 i \
-dnl Ensures SQLite v3 meets our minimum version requirement.\
-AC_DEFUN([_INN_LIB_SQLITE3_SOURCE], [[\
-#include <sqlite3.h>\
-\
-int main(void) {\
-    return sqlite3_libversion_number() < 3008002;\
-}\
-]])\
-\
-dnl Checks if SQLite v3 is present.  The single argument, if "true", says to\
-dnl fail if the SQLite library could not be found.\
-AC_DEFUN([_INN_LIB_SQLITE3_INTERNAL],\
-[AC_CACHE_CHECK([for a sufficiently recent SQLite],\
-    [inn_cv_have_sqlite3],\
-    [INN_LIB_HELPER_PATHS([SQLITE3])\
-     INN_LIB_SQLITE3_SWITCH\
-     LIBS="-lsqlite3 $LIBS"\
-     AC_RUN_IFELSE([AC_LANG_SOURCE([_INN_LIB_SQLITE3_SOURCE])],\
-        [inn_cv_have_sqlite3=yes],\
-        [inn_cv_have_sqlite3=no])\
-     INN_LIB_SQLITE3_RESTORE])\
- AS_IF([test x"$inn_cv_have_sqlite3" = xyes],\
-    [SQLITE3_LIBS="-lsqlite3"],\
-    [AS_IF([test x"$1" = xtrue],\
-        [AC_MSG_ERROR([cannot find usable SQLite v3 library])])])])\
-' \
-                    -e '49,71d' \
-                    ${TEMP}
             fi
         elif [ "$2" = "include/inn" ] || [ "$2" = "include/portable" ] \
             || [ "$2" = "include" ] || [ "$2" = "lib" ] || [ "$2" = "tests/lib" ] \
