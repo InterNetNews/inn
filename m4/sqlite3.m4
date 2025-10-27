@@ -46,25 +46,22 @@ dnl Restore CPPFLAGS, LDFLAGS, and LIBS to their previous values before
 dnl INN_LIB_SQLITE3_SWITCH was called.
 AC_DEFUN([INN_LIB_SQLITE3_RESTORE], [INN_LIB_HELPER_RESTORE([SQLITE3])])
 
-dnl Ensures SQLite v3 meets our minimum version requirement.
-AC_DEFUN([_INN_LIB_SQLITE3_SOURCE], [[
-#include <sqlite3.h>
-
-int main(void) {
-    return sqlite3_libversion_number() < 3008002;
-}
-]])
-
-dnl Checks if SQLite v3 is present.  The single argument, if "true", says to
-dnl fail if the SQLite library could not be found.
+dnl Checks if SQLite v3 is present. The single argument, if "true", says to
+dnl fail if the SQLite library could not be found. We do not use pkg-config
+dnl like the upstream version of this file as we have a specific check to
+dnl ensure that SQLite v3 meets our minimum version requirement.
 AC_DEFUN([_INN_LIB_SQLITE3_INTERNAL],
 [AC_CACHE_CHECK([for a sufficiently recent SQLite],
     [inn_cv_have_sqlite3],
     [INN_LIB_HELPER_PATHS([SQLITE3])
      INN_LIB_SQLITE3_SWITCH
      LIBS="-lsqlite3 $LIBS"
-     AC_RUN_IFELSE([AC_LANG_SOURCE([_INN_LIB_SQLITE3_SOURCE])],
-        [inn_cv_have_sqlite3=yes],
+     AC_COMPUTE_INT([_INN_LIB_SQLITE3_VERSION], [SQLITE_VERSION_NUMBER],
+        [#include <sqlite3.h>])
+     AS_IF([test "x$_INN_LIB_SQLITE3_VERSION" != x],
+        [AS_IF([test "$_INN_LIB_SQLITE3_VERSION" -ge 3008002],
+            [inn_cv_have_sqlite3=yes],
+            [inn_cv_have_sqlite3=no])],
         [inn_cv_have_sqlite3=no])
      INN_LIB_SQLITE3_RESTORE])
  AS_IF([test x"$inn_cv_have_sqlite3" = xyes],
