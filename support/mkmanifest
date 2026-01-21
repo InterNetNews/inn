@@ -71,6 +71,7 @@ __DATA__
 
 # The following additional files should be ignored.  The file names are
 # relative to the root of the tree.  Shell wildcards are supported.
+.github/workflows/atp-get_install_inn2.yaml
 BOOTSTRAP
 LIST.*
 Makefile.global
@@ -123,6 +124,7 @@ contrib/count_overview
 contrib/expirectl
 contrib/findreadgroups
 contrib/fixhist
+contrib/inn_article_001.txt
 contrib/innconfcheck
 contrib/makeexpctl
 contrib/makestorconf
