@@ -789,19 +789,29 @@ default is true.
 
 =item I<xrefslave>
 
-Whether to act as the slave of another server.  If set, INN attempts
-to duplicate exactly the article numbering of the server feeding
-it by looking at the Xref header field body of incoming articles and
-assigning the same article numbers to articles as was noted in the Xref
-header field body from the upstream server.  The result is that clients
-should be able to point at either server interchangeably (using some
-load balancing scheme, for example) and see the same internal article
-numbering.  Servers with this parameter set should generally only have
-one upstream feed, and should always have I<nnrpdposthost> set to hand
-locally posted articles off to the master server.  The upstream should be
-careful to always feed articles in order (innfeed(8) can have problems
-with this in the event of a backlog).  This is a boolean value and the
-default is false.
+Whether to act as the slave of another server.  If set, INN duplicates exactly
+the article numbering of the server feeding it by looking at the Xref header
+field body of incoming articles and assigning the same article numbers
+to articles as was noted in the Xref header field body from the upstream
+server.  If there is no Xref header field or it is unparseable, the article is
+rejected.  The result is that clients should be able to point at either server
+interchangeably (using some load balancing scheme, for example) and see the
+same internal article numbering.
+
+Servers with this parameter set should generally only have one upstream
+feed, and should always have I<nnrpdposthost> set to hand locally posted
+articles off to the master server.  The upstream server should be careful
+to feed articles in order so as to keep the history file of the slave server
+chronologically ordered as the expiration process is based on the arrival time
+of the articles (unless the B<-p> flag is given to B<expire> and B<expireover>
+to make expiration decisions relative to posting dates instead, but
+self-expiring storage methods like CNFS will wrap anyway and remove articles
+in the same order they have arrived).  This is a boolean value and the default
+is false.
+
+See F<doc/FAQ> (subject 6.4) for an example of use of this parameter
+when feeding all articles on a server to another server, keeping their
+chronological ordering.
 
 =back
 
