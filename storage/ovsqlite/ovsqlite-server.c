@@ -547,6 +547,9 @@ open_db(void)
     bool init;
     char sqltext[64];
 
+    status = sqlite3_initialize();
+    if (status != SQLITE_OK)
+        die("SQLite3 initialization failed");
     path = concatpath(innconf->pathoverview, OVSQLITE_DB_FILE);
     init = stat(path, &sb) == -1;
     if (init) {
@@ -663,6 +666,7 @@ close_db(void)
     sqlite_helper_term(&sql_main_helper, (sqlite3_stmt **) &sql_main);
     sqlite3_close_v2(connection);
     connection = NULL;
+    sqlite3_shutdown();
 #    ifdef HAVE_ZLIB
     if (use_compression) {
         inflateEnd(&inflation);
