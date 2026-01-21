@@ -370,7 +370,6 @@ AS_IF([`AS_ECHO(["=head1 test"]) | pod2text --guesswork=none > /dev/null 2>&1`],
 AC_SUBST(POD2TEXT_OPTION)
 
 dnl Checks for programs.
-AC_PROG_GCC_TRADITIONAL
 AC_PROG_LEX([noyywrap])
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
