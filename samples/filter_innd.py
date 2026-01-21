@@ -18,7 +18,6 @@ import re
 from string import *
 import sys
 
-
 ##  The built-in intern() method has been in the sys module since Python 3.0.
 if sys.version_info[0] >= 3:
 
