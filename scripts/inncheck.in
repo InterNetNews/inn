@@ -1063,7 +1063,7 @@ sub storage_conf {
                 'exactmatch' => 'boolean',
                 'filtered'   => 'boolean',
                 'path'       => 'string',    # uwildmat_poison
-            }
+            },
         }
     );
     # allowed method names include: cnfs timecaf timehash tradspool trash
