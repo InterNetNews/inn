@@ -226,19 +226,19 @@ ParseTime(char *tmbuf)
     startnum = tmbuf;
     while (*tmbuf) {
         if (!isdigit((unsigned char) *tmbuf)) {
-            tmp = atol(startnum);
+            tmp = atoi(startnum);
             switch (*tmbuf) {
             case 'M':
-                ret += tmp * 60 * 60 * 24 * 31;
+                ret += tmp * 60LL * 60 * 24 * 31;
                 break;
             case 'd':
-                ret += tmp * 60 * 60 * 24;
+                ret += tmp * 60LL * 60 * 24;
                 break;
             case 'h':
-                ret += tmp * 60 * 60;
+                ret += tmp * 60LL * 60;
                 break;
             case 'm':
-                ret += tmp * 60;
+                ret += tmp * 60LL;
                 break;
             case 's':
                 ret += tmp;
