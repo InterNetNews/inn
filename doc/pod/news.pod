@@ -671,12 +671,12 @@ inn.conf> in case you're passing that flag to B<innd>).
 
 =item *
 
-Andreas Kempe has implemented blacklistd support in B<nnrpd>.  This daemon,
+Andreas Kempe has implemented blocklistd support in B<nnrpd>.  This daemon,
 available notably in FreeBSD and NetBSD, can be used to prevent brute force
 attacks by blocking attackers after a number of failed login attempts.
 When B<nnrpd> is run with the new B<-B> flag, and INN has been configured
-with the new B<--with-blacklist> option, it will report login attempts to the
-blacklistd daemon for potential blocking.
+with the new B<--with-blocklist> option, it will report login attempts to the
+blocklistd daemon for potential blocking.
 
 =item *
 

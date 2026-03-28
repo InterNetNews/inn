@@ -719,7 +719,7 @@ B<--enable-tagged-hash>, B<--enable-keywords>, B<--enable-largefiles>
 and B<--enable-reduced-depends>).
 
 Ideally, ensure INN builds fine with the latest versions of external libraries
-it has support for (S<Berkeley DB>, blacklistd, Cyrus SASL, libcanlock,
+it has support for (S<Berkeley DB>, blocklistd, Cyrus SASL, libcanlock,
 LibreSSL, MIT S<Kerberos v5>, OpenSSL, Perl, Python, SQLite, zlib).
 
 =item 4.
