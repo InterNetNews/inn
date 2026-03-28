@@ -48,6 +48,12 @@ file was mistakenly appended to F<news.notice> by B<scanlogs>.
 
 =item *
 
+Following upstream rename from blacklist to blocklist, the B<--with-blacklist>
+configure flag is renamed B<--with-blocklist> for blocklistd support in
+S<FreeBSD 15> and S<NetBSD 10>.  Thanks to Jose Luis Duran for the patch.
+
+=item *
+
 Added support for the ALPN TLS extension in B<nnrpd>.  Thanks to Roman
 Donchenko for this feature.
 

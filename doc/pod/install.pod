@@ -179,7 +179,7 @@ of configure options enabling optional features and the software and
 versions you'll need:
 
     --with-bdb          Berkeley DB 4.4 or higher, 4.7+ recommended
-    --with-blacklist    blacklistd from FreeBSD 11 or higher base system
+    --with-blocklist    blocklistd from FreeBSD 11 or higher base system
     --with-canlock      libcanlock 3.3.0 or higher
     --with-krb5         MIT Kerberos v5 1.6.1 or higher
     --with-openssl      OpenSSL 1.1.1 or higher, 3.0.0+ recommended
@@ -542,18 +542,19 @@ If the libcanlock library is found at configure time, INN will be built with
 Cancel-Lock support unless the B<--without-canlock> flag is explicitly passed
 to C<configure>.
 
-=item B<--with-blacklist>=PATH
+=item B<--with-blocklist>=PATH
 
-Enables B<nnrpd> integration with FreeBSD's or NetBSD's blacklistd(8)
-for blocking of brute force attacks.  blacklistd and its client library
-libblacklist have been available in the FreeBSD base system since S<FreeBSD
+Enables B<nnrpd> integration with FreeBSD's or NetBSD's blocklistd(8)
+for blocking of brute force attacks.  blocklistd and its client library
+libblocklist have been available in the FreeBSD base system since S<FreeBSD
 11> and should be automatically detected if PATH is not given.  They have also
-been in the NetBSD base system since S<NetBSD 7>.
+been in the NetBSD base system since S<NetBSD 7>.  Formerly known as blacklist
+back then, it was renamed to blocklist in S<FreeBSD 15> and S<NetBSD 10>.
 
 For this feature to have any effect, B<nnrpd> needs to be started with the
-B<-B> flag, and blacklistd needs to be configured and running.  See the
+B<-B> flag, and blocklistd needs to be configured and running.  See the
 B<nnrpd> documentation for a short configuration snippet and/or read the
-blacklistd(8) documentation.
+blocklistd(8) documentation.
 
 =back
 

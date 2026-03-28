@@ -80,11 +80,11 @@ Similar to the B<-4> flag.  B<-b> is kept for backward compatibility.
 
 =item B<-B>
 
-If specified, B<nnrpd> will report login attempts to blacklistd(8)
+If specified, B<nnrpd> will report login attempts to blocklistd(8)
 for automatic blocking after a number of failed attempts.  To use this
-flag, the blacklist library must have been found at configure time, or
-B<--with-blacklist> specified at configure time.  For more information, see
-L<BLACKLISTD SUPPORT> below.
+flag, the blocklist library must have been found at configure time, or
+B<--with-blocklist> specified at configure time.  For more information, see
+L<BLOCKLISTD SUPPORT> below.
 
 =item B<-c> I<configfile>
 
@@ -288,21 +288,21 @@ I<tlsprotocols> parameters in F<inn.conf> to fine-tune the behaviour
 of the TLS/SSL negotiation whenever a new attack on the TLS protocol
 or some supported cipher suite is discovered.
 
-=head1 BLACKLISTD SUPPORT
+=head1 BLOCKLISTD SUPPORT
 
-blacklistd(8) is a FreeBSD/NetBSD daemon for preventing brute force attacks by
+blocklistd(8) is a FreeBSD/NetBSD daemon for preventing brute force attacks by
 blocking attackers after a number of failed login attempts.  When B<nnrpd> is
-built with blacklistd support, it will report login attempts to the blacklistd
+built with blocklistd support, it will report login attempts to the blocklistd
 daemon for potential blocking.
 
-Adding the configuration below to F</etc/blacklistd.conf> under the C<[local]>
+Adding the configuration below to F</etc/blocklistd.conf> under the C<[local]>
 section, assuming B<nnrpd> is listening on port 563, would lead to attackers
 being blocked for 10 minutes after 5 failed login attempts.
 
     # adr/mask:port type    proto owner name nfail disable
     563             stream  *     *     *    5     10m
 
-See the blacklistd(8) documentation for more information.
+See the blocklistd(8) documentation for more information.
 
 =head1 PROTOCOL DIFFERENCES
 
@@ -384,7 +384,7 @@ Febuary 1998.
 
 =head1 SEE ALSO
 
-blacklistd(8), ctlinnd(8), innd(8), inn.conf(5), inn-secrets.conf(5),
+blocklistd(8), ctlinnd(8), innd(8), inn.conf(5), inn-secrets.conf(5),
 libinn_uwildmat(3), nnrpd.track(5), passwd.nntp(5), readers.conf(5),
 signal(2).
 

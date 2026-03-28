@@ -132,7 +132,7 @@ m4_define_default([AM_CONDITIONAL], [:])
 dnl Lots of our macros are stored in separate files for ease of maintenance.
 m4_include([m4/aux-libs.m4])
 m4_include([m4/bdb.m4])
-m4_include([m4/blacklist.m4])
+m4_include([m4/blocklist.m4])
 m4_include([m4/canlock.m4])
 m4_include([m4/cc-c-o.m4])
 m4_include([m4/cc-flags.m4])
@@ -543,7 +543,7 @@ fi
 dnl Handle optional libraries and probing for their locations and component
 dnl libraries if needed.
 INN_LIB_BDB_OPTIONAL
-INN_LIB_BLACKLIST_OPTIONAL
+INN_LIB_BLOCKLIST_OPTIONAL
 INN_LIB_CANLOCK_OPTIONAL
 INN_LIB_KRB5_OPTIONAL
 INN_LIB_OPENSSL_OPTIONAL
