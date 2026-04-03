@@ -1481,7 +1481,7 @@ handleSignals(void)
             if (sigprocmask(SIG_SETMASK, &oset, (sigset_t *) NULL) != 0)
                 die("sigprocmask failed: %s", strerror(errno));
 #else
-                /* hope for the best */
+            /* hope for the best */
 #endif
         }
     }

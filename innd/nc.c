@@ -53,17 +53,9 @@ static void NCwritedone(CHANNEL *cp);
 /* Set up the dispatch table for all of the commands. */
 #define NC_any -1
 #define COMMAND(name, func, auth, min, max, strip, help) \
-    {                                                    \
-        name, func, auth, min, max, strip, help          \
-    }
-#define COMMAND_READER(name)                          \
-    {                                                 \
-        name, NC_reader, false, 1, NC_any, true, NULL \
-    }
-#define COMMAND_UNIMP(name)                          \
-    {                                                \
-        name, NC_unimp, false, 1, NC_any, true, NULL \
-    }
+    {name, func, auth, min, max, strip, help}
+#define COMMAND_READER(name) {name, NC_reader, false, 1, NC_any, true, NULL}
+#define COMMAND_UNIMP(name)  {name, NC_unimp, false, 1, NC_any, true, NULL}
 
 /* clang-format off */
 static NCDISPATCH NCcommands[] = {

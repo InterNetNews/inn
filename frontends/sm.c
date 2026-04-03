@@ -337,7 +337,7 @@ main(int argc, char *argv[])
         die("-i cannot be used with -r or -d");
     if (options.artinfo && (options.header || options.raw || options.rnews))
         die("-i cannot be used with -H, -R, or -S");
-    if (options.delete &&(options.header || options.rnews))
+    if (options.delete && (options.header || options.rnews))
         die("-r or -d cannot be used with -H or -S");
     if (options.raw && options.rnews)
         die("-R cannot be used with -S");

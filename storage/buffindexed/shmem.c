@@ -276,7 +276,7 @@ smcClose(smcd_t *this)
             syswarn("cant delete shmid %d", this->shmid);
         else
             debug("shmid %d deleted", this->shmid);
-            /* Delete the semaphore too */
+        /* Delete the semaphore too */
 #ifdef HAVE_UNION_SEMUN
         {
             union semun semArg;

@@ -844,7 +844,7 @@ expire_one(char const *group, int *low, struct history *h)
             } else {
                 delete = !OVhisthasmsgid(h, overview);
             }
-            if (!delete &&innconf->groupbaseexpiry) {
+            if (!delete && innconf->groupbaseexpiry) {
                 delete = OVgroupbasedexpire(token, group, overview,
                                             overview_len, arrived, expires);
             }

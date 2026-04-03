@@ -153,12 +153,12 @@ x_realloc(void *p, size_t size, const char *file, int line)
     if (size == 0)
         return newp;
 
-        /*
-         * GCC 13.2.0 (and some earlier versions) misdiagnose this error
-         * handling as a use-after-free of p, but the C standard guarantees
-         * that if realloc fails (which is true in every case when it returns
-         * NULL when size > 0), p is unchanged and still valid.
-         */
+    /*
+     * GCC 13.2.0 (and some earlier versions) misdiagnose this error
+     * handling as a use-after-free of p, but the C standard guarantees
+     * that if realloc fails (which is true in every case when it returns
+     * NULL when size > 0), p is unchanged and still valid.
+     */
 #if __GNUC__ >= 12 && !defined(__clang__)
 #    pragma GCC diagnostic push
 #    pragma GCC diagnostic ignored "-Wuse-after-free"
@@ -183,13 +183,13 @@ x_reallocarray(void *p, size_t n, size_t size, const char *file, int line)
     if (size == 0 || n == 0)
         return newp;
 
-        /*
-         * GCC 13.2.0 (and some earlier versions) misdiagnose this error
-         * handling as a use-after-free of p, but the documentation of
-         * reallocarray guarantees that if reallocarray fails (which is true in
-         * every case when it returns NULL when size > 0 and n > 0), p is
-         * unchanged and still valid.
-         */
+    /*
+     * GCC 13.2.0 (and some earlier versions) misdiagnose this error
+     * handling as a use-after-free of p, but the documentation of
+     * reallocarray guarantees that if reallocarray fails (which is true in
+     * every case when it returns NULL when size > 0 and n > 0), p is
+     * unchanged and still valid.
+     */
 #if __GNUC__ >= 12 && !defined(__clang__)
 #    pragma GCC diagnostic push
 #    pragma GCC diagnostic ignored "-Wuse-after-free"
