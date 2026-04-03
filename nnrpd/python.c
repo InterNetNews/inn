@@ -616,10 +616,8 @@ PY_syslog(PyObject *self UNUSED, PyObject *args)
 **  definitions, so we have to add casts for all of the string parameters that
 **  we're initializing with constant strings.
 */
-#    define METHOD(name, func, flags, help)                   \
-        {                                                     \
-            (char *) (name), (func), (flags), (char *) (help) \
-        }
+#    define METHOD(name, func, flags, help) \
+        {(char *) (name), (func), (flags), (char *) (help)}
 
 /* clang-format off */
 static PyMethodDef nnrpdPyMethods[] = {

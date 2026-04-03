@@ -306,9 +306,8 @@ AnAdministrator(void)
     if (getuid() == news_uid)
         return true;
 
-        /* See if we are in the right group and examine process
-         * supplementary groups, rather than the group(5) file entry.
-         */
+    /* See if we are in the right group and examine process
+     * supplementary groups, rather than the group(5) file entry. */
 #ifdef HAVE_GETGROUPS
     {
         int ngroups = getgroups(0, 0);

@@ -2879,11 +2879,11 @@ ovdb_expiregroup(const char *group, int *lo, struct history *h)
                     } else
                         SMfreearticle(ah);
                 } else {
-                    if (!delete &&!OVhisthasmsgid(h, p)) {
+                    if (!delete && !OVhisthasmsgid(h, p)) {
                         delete = 1;
                     }
                 }
-                if (!delete &&innconf->groupbaseexpiry
+                if (!delete && innconf->groupbaseexpiry
                     && OVgroupbasedexpire(ovd.token, group, p, sz, ovd.arrived,
                                           ovd.expires)) {
                     delete = 1;

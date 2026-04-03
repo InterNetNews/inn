@@ -59,22 +59,19 @@ typedef struct {
 } ARTHANDLE;
 
 /* Initializer for the ARTHANDLE structure. */
-#define ARTHANDLE_INITIALIZER                       \
-    {                                               \
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 \
-    }
+#define ARTHANDLE_INITIALIZER {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 
-#define SMERR_NOERROR    0
-#define SMERR_INTERNAL   1
-#define SMERR_UNDEFINED  2
-#define SMERR_NOENT      3
-#define SMERR_TOKENSHORT 4
-#define SMERR_NOBODY     5
-#define SMERR_UNINIT     6
-#define SMERR_CONFIG     7
-#define SMERR_BADHANDLE  8
-#define SMERR_BADTOKEN   9
-#define SMERR_NOMATCH    10
+#define SMERR_NOERROR         0
+#define SMERR_INTERNAL        1
+#define SMERR_UNDEFINED       2
+#define SMERR_NOENT           3
+#define SMERR_TOKENSHORT      4
+#define SMERR_NOBODY          5
+#define SMERR_UNINIT          6
+#define SMERR_CONFIG          7
+#define SMERR_BADHANDLE       8
+#define SMERR_BADTOKEN        9
+#define SMERR_NOMATCH         10
 
 extern int SMerrno;
 extern char *SMerrorstr;

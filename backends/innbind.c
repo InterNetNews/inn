@@ -227,14 +227,14 @@ create_socket(struct binding *binding, const char *spec)
     if (fd < -1)
         sysdie("cannot create socket for %s", spec);
 
-        /* Mark it reusable if possible. */
+    /* Mark it reusable if possible. */
 #ifdef SO_REUSEADDR
     flag = 1;
     if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof(flag)) < 0)
         sysdie("cannot mark socket reusable for %s", spec);
 #endif
 
-        /* Mark it IPv6 only if possible. */
+    /* Mark it IPv6 only if possible. */
 #ifdef IPV6_V6ONLY
     flag = 1;
     if (binding->family == AF_INET6
