@@ -5,7 +5,7 @@
  */
 
 #ifndef INN_NETWORK_INNBIND_H
-#define INN_NETWORK_INNBIND_H 1
+#define INN_NETWORK_INNBIND_H
 
 #include "inn/portable-macros.h"
 #include "inn/portable-socket.h"

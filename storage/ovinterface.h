@@ -3,7 +3,7 @@
 */
 
 #ifndef OVINTERFACE_H
-#define OVINTERFACE_H 1
+#define OVINTERFACE_H
 
 #include "config.h"
 #include "inn/history.h"

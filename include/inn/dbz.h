@@ -1,5 +1,5 @@
 #ifndef INN_DBZ_H
-#define INN_DBZ_H 1
+#define INN_DBZ_H
 
 /* Need the definition of HASH. */
 #include "inn/libinn.h"

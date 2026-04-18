@@ -3,7 +3,7 @@
 */
 
 #ifndef INN_LIBINN_H
-#define INN_LIBINN_H 1
+#define INN_LIBINN_H
 
 #include "inn/concat.h"
 #include "inn/macros.h"

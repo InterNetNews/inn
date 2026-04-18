@@ -18,7 +18,7 @@
  */
 
 #ifndef PORTABLE_MACROS_H
-#define PORTABLE_MACROS_H 1
+#define PORTABLE_MACROS_H
 
 /*
  * __attribute__ is available in gcc 2.5 and later, but only with gcc 2.7

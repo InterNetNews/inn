@@ -2,8 +2,8 @@
 **  Storage manager module header for timehash method.
 */
 
-#ifndef __TIMEHASH_H__
-#define __TIMEHASH_H__ 1
+#ifndef TIMEHASH_H
+#define TIMEHASH_H
 
 #include "config.h"
 #include "interface.h"

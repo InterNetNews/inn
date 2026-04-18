@@ -2,8 +2,8 @@
 **  Storage manager module header for traditional spool format.
 */
 
-#ifndef __TRADSPOOL_H__
-#define __TRADSPOOL_H__ 1
+#ifndef TRADSPOOL_H
+#define TRADSPOOL_H
 
 #include "config.h"
 #include "interface.h"

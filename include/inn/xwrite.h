@@ -30,7 +30,7 @@
  */
 
 #ifndef INN_XWRITE_H
-#define INN_XWRITE_H 1
+#define INN_XWRITE_H
 
 #include "inn/portable-macros.h"
 

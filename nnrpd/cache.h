@@ -3,7 +3,7 @@
 */
 
 #ifndef CACHE_H
-#define CACHE_H 1
+#define CACHE_H
 
 #include "inn/libinn.h"
 #include "inn/storage.h"

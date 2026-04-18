@@ -30,7 +30,7 @@
  */
 
 #ifndef TAP_PROCESS_H
-#define TAP_PROCESS_H 1
+#define TAP_PROCESS_H
 
 #include "config.h"
 #include "tap/macros.h"

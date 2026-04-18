@@ -6,7 +6,7 @@
 */
 
 #ifndef INN_PATHS_H
-#define INN_PATHS_H                1
+#define INN_PATHS_H
 
 /*
 **  PATHS TO FILES AND SOCKETS

@@ -3,7 +3,7 @@
 */
 
 #ifndef CNFS_PRIVATE_H
-#define CNFS_PRIVATE_H 1
+#define CNFS_PRIVATE_H
 
 #include <sys/types.h>
 #if HAVE_UNISTD_H

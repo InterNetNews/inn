@@ -40,7 +40,7 @@
 */
 
 #ifndef INN_TST_H
-#define INN_TST_H 1
+#define INN_TST_H
 
 #include "inn/macros.h"
 

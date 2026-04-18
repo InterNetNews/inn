@@ -183,6 +183,8 @@ void ok_double(int n, double wanted, double seen);\
 
         case "$3" in
         *.c | *.h)
+            # Remove values in header guards (for clang-format recognition).
+            sed -i -e 's/^\(#define .*_H\) 1/\1/' ../$2/$3
             clang-format --style=file -i ../$2/$3
             ;;
         *.sh)

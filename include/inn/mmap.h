@@ -5,7 +5,7 @@
 */
 
 #ifndef INN_MMAP_H
-#define INN_MMAP_H 1
+#define INN_MMAP_H
 
 #include "inn/macros.h"
 #include "inn/portable-stdbool.h"

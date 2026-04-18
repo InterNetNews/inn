@@ -31,7 +31,7 @@
  */
 
 #ifndef TESTS_INN_FAKEWRITE_H
-#define TESTS_INN_FAKEWRITE_H 1
+#define TESTS_INN_FAKEWRITE_H
 
 #include "config.h"
 #include "portable/macros.h"

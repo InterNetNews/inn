@@ -8,7 +8,7 @@
 */
 
 #ifndef INN_WIRE_H
-#define INN_WIRE_H 1
+#define INN_WIRE_H
 
 #include "inn/macros.h"
 #include "inn/portable-stdbool.h"

@@ -19,7 +19,7 @@
 */
 
 #ifndef CONNECTION_H
-#define CONNECTION_H 1
+#define CONNECTION_H
 
 #include "misc.h"
 #include <stdio.h>

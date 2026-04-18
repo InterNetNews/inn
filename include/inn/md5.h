@@ -31,7 +31,7 @@
 */
 
 #ifndef INN_MD5_H
-#define INN_MD5_H 1
+#define INN_MD5_H
 
 #include "inn/macros.h"
 #include "inn/portable-stdbool.h"

@@ -7,7 +7,7 @@
 */
 
 #ifndef INN_DISPATCH_H
-#define INN_DISPATCH_H 1
+#define INN_DISPATCH_H
 
 #include "inn/portable-macros.h"
 

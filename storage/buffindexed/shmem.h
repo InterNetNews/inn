@@ -3,7 +3,7 @@
 */
 
 #ifndef SHMEM_H
-#define SHMEM_H 1
+#define SHMEM_H
 
 #include <sys/types.h>
 

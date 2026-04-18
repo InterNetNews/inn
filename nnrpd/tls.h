@@ -10,7 +10,7 @@
 */
 
 #ifndef TLS_H
-#define TLS_H 1
+#define TLS_H
 
 #ifdef HAVE_OPENSSL
 

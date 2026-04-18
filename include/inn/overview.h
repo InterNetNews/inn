@@ -8,7 +8,7 @@
 */
 
 #ifndef INN_OVERVIEW_H
-#define INN_OVERVIEW_H 1
+#define INN_OVERVIEW_H
 
 #include <stdio.h> /* FILE */
 

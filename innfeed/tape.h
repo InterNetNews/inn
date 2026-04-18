@@ -14,7 +14,7 @@
 */
 
 #ifndef TAPE_H
-#define TAPE_H 1
+#define TAPE_H
 
 #include "misc.h"
 #include <stdio.h>

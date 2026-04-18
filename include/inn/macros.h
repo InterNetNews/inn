@@ -18,7 +18,7 @@
  */
 
 #ifndef INN_MACROS_H
-#define INN_MACROS_H 1
+#define INN_MACROS_H
 
 #include "inn/portable-macros.h"
 

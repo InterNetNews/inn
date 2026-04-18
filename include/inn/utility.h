@@ -9,7 +9,7 @@
 */
 
 #ifndef INN_UTILITY_H
-#define INN_UTILITY_H 1
+#define INN_UTILITY_H
 
 #include "inn/macros.h"
 #include <sys/types.h> /* size_t */

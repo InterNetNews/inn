@@ -9,7 +9,7 @@
 */
 
 #ifndef INN_OPTIONS_H
-#define INN_OPTIONS_H   1
+#define INN_OPTIONS_H
 
 /*
 **  GENERAL SETTINGS

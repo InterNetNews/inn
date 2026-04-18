@@ -25,7 +25,7 @@
  */
 
 #ifndef INN_VECTOR_H
-#define INN_VECTOR_H 1
+#define INN_VECTOR_H
 
 #include "inn/portable-macros.h"
 

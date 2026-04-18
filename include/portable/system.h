@@ -38,7 +38,7 @@
  */
 
 #ifndef PORTABLE_SYSTEM_H
-#define PORTABLE_SYSTEM_H 1
+#define PORTABLE_SYSTEM_H
 
 /* Make sure we have our configuration information. */
 #include "config.h"

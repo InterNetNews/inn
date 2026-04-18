@@ -31,7 +31,7 @@
  */
 
 #ifndef TAP_STRING_H
-#define TAP_STRING_H 1
+#define TAP_STRING_H
 
 #include "config.h"
 #include "tap/macros.h"

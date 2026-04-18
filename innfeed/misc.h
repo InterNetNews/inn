@@ -5,7 +5,7 @@
 */
 
 #ifndef MISC_H
-#define MISC_H 1
+#define MISC_H
 
 #include "config.h"
 #include "portable/macros.h"

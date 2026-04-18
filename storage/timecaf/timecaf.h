@@ -4,8 +4,8 @@
 **  single file.
 */
 
-#ifndef __TIMECAF_H__
-#define __TIMECAF_H__ 1
+#ifndef TIMECAF_H
+#define TIMECAF_H
 
 #include "config.h"
 #include "interface.h"

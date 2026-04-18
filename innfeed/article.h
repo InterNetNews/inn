@@ -15,7 +15,7 @@
 */
 
 #ifndef ARTICLE_H
-#define ARTICLE_H 1
+#define ARTICLE_H
 
 #include "misc.h"
 #include <stdio.h>

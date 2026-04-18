@@ -21,7 +21,7 @@
  */
 
 #ifndef PORTABLE_STDBOOL_H
-#define PORTABLE_STDBOOL_H 1
+#define PORTABLE_STDBOOL_H
 
 #include "config.h"
 

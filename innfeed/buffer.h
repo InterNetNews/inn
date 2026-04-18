@@ -13,7 +13,7 @@
 */
 
 #ifndef BUFFER_H
-#define BUFFER_H 1
+#define BUFFER_H
 
 #include "misc.h"
 #include <stdio.h>

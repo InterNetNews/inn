@@ -1,5 +1,5 @@
 #ifndef INN_OV_H
-#define INN_OV_H 1
+#define INN_OV_H
 
 #include "inn/history.h"
 #include "inn/portable-macros.h"

@@ -3,7 +3,7 @@
 */
 
 #ifndef LIBINNAUTH_H
-#define LIBINNAUTH_H 1
+#define LIBINNAUTH_H
 
 #include "config.h"
 
