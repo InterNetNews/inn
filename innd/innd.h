@@ -136,45 +136,45 @@ typedef struct _HDRCONTENT {
 /*
 **  A way to index into the header table.
 */
-#define HDR_FOUND(_x)                     (hc[(_x)].Length > 0)
-#define HDR_LASTCHAR_SAVE(_x)             hc[(_x)].LastChar = hc[(_x)].Value[hc[_x].Length]
-#define HDR_PARSE_START(_x)               hc[(_x)].Value[hc[_x].Length] = '\0'
-#define HDR(_x)                           (hc[(_x)].Value)
+#define HDR_FOUND(_x)         (hc[(_x)].Length > 0)
+#define HDR_LASTCHAR_SAVE(_x) hc[(_x)].LastChar = hc[(_x)].Value[hc[_x].Length]
+#define HDR_PARSE_START(_x)   hc[(_x)].Value[hc[_x].Length] = '\0'
+#define HDR(_x)               (hc[(_x)].Value)
 /* HDR_LEN does not includes trailing "\r\n" */
-#define HDR_LEN(_x)                       (hc[(_x)].Length)
-#define HDR_PARSE_END(_x)                 hc[(_x)].Value[hc[_x].Length] = hc[(_x)].LastChar
+#define HDR_LEN(_x)           (hc[(_x)].Length)
+#define HDR_PARSE_END(_x)     hc[(_x)].Value[hc[_x].Length] = hc[(_x)].LastChar
 
 
-#define HDR__APPROVED                     0
-#define HDR__CONTROL                      1
-#define HDR__DATE                         2
-#define HDR__DISTRIBUTION                 3
-#define HDR__EXPIRES                      4
-#define HDR__FROM                         5
-#define HDR__LINES                        6
-#define HDR__MESSAGE_ID                   7
-#define HDR__NEWSGROUPS                   8
-#define HDR__PATH                         9
-#define HDR__REPLY_TO                     10
-#define HDR__SENDER                       11
-#define HDR__SUBJECT                      12
-#define HDR__SUPERSEDES                   13
-#define HDR__BYTES                        14
-#define HDR__ALSOCONTROL                  15
-#define HDR__REFERENCES                   16
-#define HDR__XREF                         17
-#define HDR__KEYWORDS                     18
-#define HDR__XTRACE                       19
-#define HDR__DATERECEIVED                 20
-#define HDR__POSTED                       21
-#define HDR__POSTINGVERSION               22
-#define HDR__RECEIVED                     23
-#define HDR__RELAYVERSION                 24
-#define HDR__NNTPPOSTINGHOST              25
-#define HDR__FOLLOWUPTO                   26
-#define HDR__ORGANIZATION                 27
-#define HDR__CONTENTTYPE                  28
-#define HDR__CONTENTBASE                  29
+#define HDR__APPROVED         0
+#define HDR__CONTROL          1
+#define HDR__DATE             2
+#define HDR__DISTRIBUTION     3
+#define HDR__EXPIRES          4
+#define HDR__FROM             5
+#define HDR__LINES            6
+#define HDR__MESSAGE_ID       7
+#define HDR__NEWSGROUPS       8
+#define HDR__PATH             9
+#define HDR__REPLY_TO         10
+#define HDR__SENDER           11
+#define HDR__SUBJECT          12
+#define HDR__SUPERSEDES       13
+#define HDR__BYTES            14
+#define HDR__ALSOCONTROL      15
+#define HDR__REFERENCES       16
+#define HDR__XREF             17
+#define HDR__KEYWORDS         18
+#define HDR__XTRACE           19
+#define HDR__DATERECEIVED     20
+#define HDR__POSTED           21
+#define HDR__POSTINGVERSION   22
+#define HDR__RECEIVED         23
+#define HDR__RELAYVERSION     24
+#define HDR__NNTPPOSTINGHOST  25
+#define HDR__FOLLOWUPTO       26
+#define HDR__ORGANIZATION     27
+#define HDR__CONTENTTYPE      28
+#define HDR__CONTENTBASE      29
 #define HDR__CONTENTDISPOSITION           30
 #define HDR__XNEWSREADER                  31
 #define HDR__XMAILER                      32
