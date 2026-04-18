@@ -25,7 +25,7 @@
  */
 
 #ifndef PORTABLE_GETNAMEINFO_H
-#define PORTABLE_GETNAMEINFO_H 1
+#define PORTABLE_GETNAMEINFO_H
 
 #include "config.h"
 #include "portable/macros.h"

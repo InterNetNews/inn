@@ -1,5 +1,5 @@
-#ifndef _OVDB_H_
-#define _OVDB_H_ 1
+#ifndef OVDB_H
+#define OVDB_H
 
 #include "config.h"
 

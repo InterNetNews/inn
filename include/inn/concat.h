@@ -17,7 +17,7 @@
  */
 
 #ifndef INN_CONCAT_H
-#define INN_CONCAT_H 1
+#define INN_CONCAT_H
 
 #include "inn/macros.h"
 

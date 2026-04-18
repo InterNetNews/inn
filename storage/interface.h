@@ -2,8 +2,8 @@
 **  Storage Manager interface header
 */
 
-#ifndef __INTERFACE_H__
-#define __INTERFACE_H__ 1
+#ifndef INTERFACE_H
+#define INTERFACE_H
 
 #include "config.h"
 #include "inn/storage.h"

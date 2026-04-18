@@ -7,7 +7,7 @@
 */
 
 #ifndef PORTABLE_SETPROCTITLE_H
-#define PORTABLE_SETPROCTITLE_H 1
+#define PORTABLE_SETPROCTITLE_H
 
 #include "config.h"
 #include "portable/macros.h"

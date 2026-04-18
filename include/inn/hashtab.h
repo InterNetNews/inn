@@ -18,7 +18,7 @@
 */
 
 #ifndef INN_HASHTAB_H
-#define INN_HASHTAB_H 1
+#define INN_HASHTAB_H
 
 #include "inn/macros.h"
 #include "inn/portable-stdbool.h"

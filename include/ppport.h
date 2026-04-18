@@ -1,6 +1,6 @@
 
 #ifndef PPPORT_H
-#define PPPORT_H 1
+#define PPPORT_H
 
 /* Perl/Pollution/Portability Version 1.0003 */
 

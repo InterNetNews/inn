@@ -3,7 +3,7 @@
 */
 
 #ifndef INN_STORAGE_H
-#define INN_STORAGE_H 1
+#define INN_STORAGE_H
 
 #include "inn/macros.h"
 #include "inn/options.h"

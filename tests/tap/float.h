@@ -28,7 +28,7 @@
  */
 
 #ifndef TAP_FLOAT_H
-#define TAP_FLOAT_H 1
+#define TAP_FLOAT_H
 
 #include <tap/macros.h>
 

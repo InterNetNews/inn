@@ -1,5 +1,5 @@
-#ifndef _BUFFINDEXED_H_
-#define _BUFFINDEXED_H_ 1
+#ifndef BUFFINDEXED_H
+#define BUFFINDEXED_H
 
 #include "config.h"
 

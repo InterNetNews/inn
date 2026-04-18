@@ -7,7 +7,7 @@
 */
 
 #ifndef INN_SEQUENCE_H
-#define INN_SEQUENCE_H 1
+#define INN_SEQUENCE_H
 
 #include "inn/macros.h"
 

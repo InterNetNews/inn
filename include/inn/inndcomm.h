@@ -4,7 +4,7 @@
 */
 
 #ifndef INN_INNDCOMM_H
-#define INN_INNDCOMM_H 1
+#define INN_INNDCOMM_H
 
 #include "inn/portable-macros.h"
 #include "inn/system.h"

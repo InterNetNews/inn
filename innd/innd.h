@@ -24,7 +24,7 @@
 */
 
 #ifndef INND_H
-#define INND_H 1
+#define INND_H
 
 #include "config.h"
 #include "portable/macros.h"

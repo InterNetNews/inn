@@ -6,7 +6,7 @@
 */
 
 #ifndef INN_SECRETS_H
-#define INN_SECRETS_H 1
+#define INN_SECRETS_H
 
 #include "inn/macros.h"
 #include "inn/portable-stdbool.h"

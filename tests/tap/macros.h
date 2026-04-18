@@ -32,7 +32,7 @@
  */
 
 #ifndef TAP_MACROS_H
-#define TAP_MACROS_H 1
+#define TAP_MACROS_H
 
 /*
  * __attribute__ is available in gcc 2.5 and later, but only with gcc 2.7

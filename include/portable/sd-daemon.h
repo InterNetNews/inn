@@ -31,7 +31,7 @@
  */
 
 #ifndef PORTABLE_SD_DAEMON_H
-#define PORTABLE_SD_DAEMON_H 1
+#define PORTABLE_SD_DAEMON_H
 
 #include "config.h"
 #include "portable/macros.h"

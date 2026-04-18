@@ -11,7 +11,7 @@
 */
 
 #ifndef HOST_H
-#define HOST_H 1
+#define HOST_H
 
 #include "misc.h"
 #include <stdio.h>

@@ -30,7 +30,7 @@
  */
 
 #ifndef INN_XMALLOC_H
-#define INN_XMALLOC_H 1
+#define INN_XMALLOC_H
 
 #include "inn/portable-macros.h"
 #include "inn/system.h"

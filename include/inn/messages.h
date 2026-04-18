@@ -30,7 +30,7 @@
  */
 
 #ifndef INN_MESSAGES_H
-#define INN_MESSAGES_H 1
+#define INN_MESSAGES_H
 
 #include "inn/portable-macros.h"
 

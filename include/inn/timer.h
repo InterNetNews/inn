@@ -8,7 +8,7 @@
 */
 
 #ifndef INN_TIMER_H
-#define INN_TIMER_H 1
+#define INN_TIMER_H
 
 #include "inn/macros.h"
 

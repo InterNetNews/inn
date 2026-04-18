@@ -1,5 +1,5 @@
 #ifndef OVSQLITE_H
-#define OVSQLITE_H 1
+#define OVSQLITE_H
 
 #include "config.h"
 

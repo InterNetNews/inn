@@ -5,7 +5,7 @@
 */
 
 #ifndef CONFIGFILE_H
-#define CONFIGFILE_H 1
+#define CONFIGFILE_H
 
 /* pointer to function taking void-star param and returning int. */
 typedef int (*PFIVP)(void *);

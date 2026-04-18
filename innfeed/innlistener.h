@@ -13,7 +13,7 @@
 */
 
 #ifndef INNLISTENER_H
-#define INNLISTENER_H 1
+#define INNLISTENER_H
 
 #include "misc.h"
 #include <stdio.h>

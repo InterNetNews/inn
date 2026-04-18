@@ -9,7 +9,7 @@
 */
 
 #ifndef INN_NNTP_H
-#define INN_NNTP_H 1
+#define INN_NNTP_H
 
 #include "inn/macros.h"
 #include "inn/portable-stdbool.h"

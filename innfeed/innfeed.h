@@ -9,7 +9,7 @@
 */
 
 #ifndef INNFEED_H
-#define INNFEED_H 1
+#define INNFEED_H
 
 #include "inn/timer.h"
 #include "portable/stdbool.h"

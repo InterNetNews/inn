@@ -31,7 +31,7 @@
  */
 
 #ifndef TAP_BASIC_H
-#define TAP_BASIC_H 1
+#define TAP_BASIC_H
 
 #include <stdarg.h> /* va_list */
 #include <stddef.h> /* size_t */

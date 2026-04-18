@@ -41,7 +41,7 @@
  */
 
 #ifndef PORTABLE_SOCKET_H
-#define PORTABLE_SOCKET_H 1
+#define PORTABLE_SOCKET_H
 
 #include "config.h"
 #include "portable/macros.h"

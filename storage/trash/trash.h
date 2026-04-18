@@ -2,8 +2,8 @@
 **  Storage manager module header for trash method.
 */
 
-#ifndef __TRASH_H__
-#define __TRASH_H__ 1
+#ifndef TRASH_H
+#define TRASH_H
 
 #include "config.h"
 #include "interface.h"

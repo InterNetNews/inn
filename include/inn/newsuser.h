@@ -6,7 +6,7 @@
 */
 
 #ifndef INN_NEWSUSER_H
-#define INN_NEWSUSER_H 1
+#define INN_NEWSUSER_H
 
 #include "inn/portable-macros.h"
 #include "inn/portable-stdbool.h"

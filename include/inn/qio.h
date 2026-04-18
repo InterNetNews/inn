@@ -7,7 +7,7 @@
 */
 
 #ifndef INN_QIO_H
-#define INN_QIO_H 1
+#define INN_QIO_H
 
 #include "inn/macros.h"
 

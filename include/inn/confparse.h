@@ -3,7 +3,7 @@
 */
 
 #ifndef INN_CONFPARSE_H
-#define INN_CONFPARSE_H 1
+#define INN_CONFPARSE_H
 
 #include "inn/macros.h"
 #include "inn/portable-stdbool.h"

@@ -26,7 +26,7 @@
  */
 
 #ifndef PORTABLE_GETADDRINFO_H
-#define PORTABLE_GETADDRINFO_H 1
+#define PORTABLE_GETADDRINFO_H
 
 #include "config.h"
 #include "portable/macros.h"

@@ -7,7 +7,7 @@
 */
 
 #ifndef TRADINDEXED_H
-#define TRADINDEXED_H 1
+#define TRADINDEXED_H
 
 #include "config.h"
 #include <sys/types.h>

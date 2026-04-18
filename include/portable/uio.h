@@ -21,7 +21,7 @@
  */
 
 #ifndef PORTABLE_UIO_H
-#define PORTABLE_UIO_H 1
+#define PORTABLE_UIO_H
 
 #include <sys/types.h>
 

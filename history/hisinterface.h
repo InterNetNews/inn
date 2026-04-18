@@ -3,7 +3,7 @@
 */
 
 #ifndef HISINTERFACE_H
-#define HISINTERFACE_H 1
+#define HISINTERFACE_H
 
 #include "config.h"
 #include <sys/types.h>

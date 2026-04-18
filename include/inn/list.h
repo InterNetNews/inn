@@ -1,5 +1,5 @@
 #ifndef INN_LIST_H
-#define INN_LIST_H 1
+#define INN_LIST_H
 
 #include "inn/macros.h"
 #include "inn/portable-stdbool.h"

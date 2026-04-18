@@ -1,5 +1,5 @@
 #ifndef SQLITE_HELPER_H
-#define SQLITE_HELPER_H 1
+#define SQLITE_HELPER_H
 
 #include "config.h"
 

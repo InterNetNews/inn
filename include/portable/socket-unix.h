@@ -19,7 +19,7 @@
  */
 
 #ifndef PORTABLE_SOCKET_UNIX_H
-#define PORTABLE_SOCKET_UNIX_H 1
+#define PORTABLE_SOCKET_UNIX_H
 
 #include "config.h"
 #include <sys/un.h>

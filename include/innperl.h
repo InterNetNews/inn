@@ -7,7 +7,7 @@
 */
 
 #ifndef INNPERL_H
-#define INNPERL_H 1
+#define INNPERL_H
 
 /* Skip this entire file if DO_PERL (./configure --with-perl) isn't set. */
 #if DO_PERL

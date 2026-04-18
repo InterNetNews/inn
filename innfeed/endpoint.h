@@ -13,7 +13,7 @@
 */
 
 #ifndef ENDPOINT_H
-#define ENDPOINT_H 1
+#define ENDPOINT_H
 
 #include "misc.h"
 

@@ -31,7 +31,7 @@
  */
 
 #ifndef TAP_MESSAGES_H
-#define TAP_MESSAGES_H 1
+#define TAP_MESSAGES_H
 
 #include "config.h"
 #include "tap/macros.h"

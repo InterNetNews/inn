@@ -41,7 +41,7 @@
  */
 
 #ifndef INN_BUFFER_H
-#define INN_BUFFER_H 1
+#define INN_BUFFER_H
 
 #include "inn/portable-macros.h"
 #include "inn/portable-stdbool.h"

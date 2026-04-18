@@ -44,7 +44,7 @@
 */
 
 #ifndef INN_TDX_STRUCTURE_H
-#define INN_TDX_STRUCTURE_H 1
+#define INN_TDX_STRUCTURE_H
 
 #include "config.h"
 #include <sys/types.h>

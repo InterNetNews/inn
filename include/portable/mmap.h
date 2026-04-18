@@ -7,7 +7,7 @@
 */
 
 #ifndef PORTABLE_MMAP_H
-#define PORTABLE_MMAP_H 1
+#define PORTABLE_MMAP_H
 
 #include "config.h"
 #include <sys/mman.h>

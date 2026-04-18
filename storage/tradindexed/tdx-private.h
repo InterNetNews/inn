@@ -3,7 +3,7 @@
 */
 
 #ifndef INN_TDX_PRIVATE_H
-#define INN_TDX_PRIVATE_H 1
+#define INN_TDX_PRIVATE_H
 
 #include "config.h"
 #include <stdio.h>

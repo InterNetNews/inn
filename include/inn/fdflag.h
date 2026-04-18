@@ -29,7 +29,7 @@
  */
 
 #ifndef INN_FDFLAG_H
-#define INN_FDFLAG_H 1
+#define INN_FDFLAG_H
 
 #include "inn/portable-macros.h"
 #include "inn/portable-socket.h"

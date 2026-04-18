@@ -2,8 +2,8 @@
 **  Storage manager module header for Cyclic News File System method.
 */
 
-#ifndef __CNFS_H__
-#define __CNFS_H__ 1
+#ifndef CNFS_H
+#define CNFS_H
 
 bool cnfs_init(SMATTRIBUTE *attr);
 TOKEN cnfs_store(const ARTHANDLE article, const STORAGECLASS class);
