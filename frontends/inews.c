@@ -31,7 +31,7 @@
 #define FLUSH_ERROR(F) (fflush((F)) == EOF || ferror((F)))
 #define LPAREN         '(' /* For vi :-) */
 #define HEADER_DELTA   20
-#define GECOSTERM(c)   ((c) == ',' || (c) == ';' || (c) == ':' || (c) == LPAREN)
+#define GECOSTERM(c) ((c) == ',' || (c) == ';' || (c) == ':' || (c) == LPAREN)
 
 typedef enum _HEADERTYPE {
     HTobs,
