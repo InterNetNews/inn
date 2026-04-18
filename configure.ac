@@ -33,8 +33,11 @@ AC_CONFIG_AUX_DIR([support])
 dnl Mention dependencies at the beginning of the configure output so that
 dnl people do not waste too much time finding the right packages to install.
 AC_MSG_NOTICE([Building INN requires the following dependencies to be met,
-besides a working compiler, a POSIX shell and GNU make, as well as Autoconf
-if you're bootstrapping the source code.
+besides a working compiler, a POSIX-compliant shell and GNU make, as well as
+Autoconf if you're bootstrapping the source code.
+POSIX-compliant tools like tail, head or sed are required by some checks
+during configure.  Please ensure they are present in the default PATH (for
+instance on Solaris, /usr/xpg4/bin or /opt/csw/bin should be added to PATH).
 ---
 *******************************************
 ** Debian and RedHat-based distributions **
