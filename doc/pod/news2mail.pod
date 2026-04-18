@@ -20,6 +20,18 @@ F<inn.conf>) to queue the messages for later delivery (to avoid DOS attacks
 by mass postings).  You must run C<sendmail -q> periodically to get the queue
 processed.
 
+If the gatewaying is being set up with a software like Mailman which has the
+feature of pulling and posting news articles on its own, you should just rely
+on that feature (and grant Mailman read and post access to the newsgroup),
+and do not use B<news2mail> at all.  It will indeed save you the time of
+configuring it correctly and investigating possible circular loops or rejects.
+
+There is also another possibility to gate a newsgroup to a mailing-list,
+that is making the newsgroup a moderated newsgroup, and setting the Mailman
+list address as the moderator address of the newsgroup in the moderators(5)
+configuration file, and having everything go through Mailman.  In this setup,
+Mailman can even be used as a moderation interface.
+
 =head1 CONFIGURATION FILE
 
 The configuration file format is simple: comments (starting with a hash sign

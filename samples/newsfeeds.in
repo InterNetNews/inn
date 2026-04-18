@@ -137,6 +137,9 @@ controlchan!\
 # listed in @sysconfdir@/news2mail.cf for list-big-red-ants.
 # Posts from the domain list owner are excluded (path for that example:
 # lists.ucsd.edu).
+# Note that news2mail is *not* needed if the gatewaying is entirely managed
+# by another software like Mailman which can be configured to check for new
+# news articles and send them to mailing list subscribers itself.
 #news2mail!:!*:Ac,Tc,Wn*:@bindir@/news2mail
 #list-big-red-ants/lists.ucsd.edu:!*,rec.pets.red-ants:Ap,Tm:news2mail!
 
