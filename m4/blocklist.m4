@@ -25,6 +25,9 @@ dnl Depends on the lib-helper.m4 framework.
 dnl
 dnl Written in 2022 by Andreas Kempe for the InterNetNews (INN) news server
 dnl
+dnl Various bug fixes, code and documentation improvements since then
+dnl in 2026.
+dnl
 dnl This file is free software; the authors give unlimited permission to copy
 dnl and/or distribute it, with or without modifications, as long as this
 dnl notice is preserved.

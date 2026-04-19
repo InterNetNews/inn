@@ -24,6 +24,12 @@ dnl instead of the compile if what you're checking for is missing, don't
 dnl bother checking for it.  Compile-time errors often produce a lot more
 dnl useful information for someone debugging a problem than configure-time
 dnl errors.
+dnl
+dnl Originally written by Forrest J. Cavalier III <mibsoft@epix.net> in 1998.
+dnl Rewritten for Autoconf 2.57 by Russ Allbery in 2003.
+dnl
+dnl Various bug fixes, code and documentation improvements since its creation
+dnl in 1998-2018, 2020-2026.
 
 AC_INIT([INN], [2.7.4], [inn-workers@lists.isc.org],
     [inn], [https://www.isc.org/othersoftware/])

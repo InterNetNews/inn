@@ -5,7 +5,7 @@
 **  <2bfjdsla52kztwejndzdstsxl9athp@gmail.com>
 **
 **  Various bug fixes, code and documentation improvements since then
-**  in 2021-2024.
+**  in 2021-2024, 2026.
 */
 
 #include "ovsqlite.h"

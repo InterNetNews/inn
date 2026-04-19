@@ -1,7 +1,10 @@
 /*
 **  Message-ID to storage token cache.
 **
-**  Written by Alex Kiernan (alex.kiernan@thus.net).
+**  Written by Alex Kiernan (alex.kiernan@thus.net) in 2002.
+**
+**  Various bug fixes, code and documentation improvements since then
+**  in 2003, 2006, 2008, 2009, 2021, 2026.
 **
 **  Implementation of a Message-ID to storage token cache which can be
 **  built during (X)OVER/(X)HDR/XPAT/NEWNEWS.  If we hit in the cache when

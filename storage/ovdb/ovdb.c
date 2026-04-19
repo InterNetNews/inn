@@ -5,7 +5,7 @@
  *
  * Created in 1999.
  * Various bug fixes, code and documentation improvements since then
- * in 2000-2006, 2008, 2010, 2011, 2013-2015, 2017, 2018, 2021-2025.
+ * in 2000-2006, 2008, 2010, 2011, 2013-2015, 2017, 2018, 2021-2026.
  *
  * See the full commit history for more details.
  * Below follows a list of the major initial changes:

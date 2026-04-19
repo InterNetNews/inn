@@ -9,7 +9,7 @@
 **  All rights reserved.
 **
 **  Various bug fixes, code and documentation improvements since then
-**  in 2021, 2022, 2024.
+**  in 2021, 2022, 2024, 2026.
 **
 **  Redistribution and use in source and binary forms, with or without
 **  modification, are permitted provided that the following conditions are

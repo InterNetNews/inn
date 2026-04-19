@@ -1,9 +1,16 @@
-/* Global symbols and tables required for innd-related files to link. */
-
-/* This file is required in order to test various portions of innd from
-   outside of innd itself.  We have to omit innd.c since it defines main, so
-   we have to provide everything that innd.c provides.  This is also a good
-   list of globals in innd that need to be dealt with in some other way. */
+/*
+**  Global symbols and tables required for innd-related files to link.
+**
+**  Written by Russ Allbery in 2004.
+**
+**  Various bug fixes, code and documentation improvements since then
+**  in 2008, 2009, 2011, 2017, 2018, 2021-2023, 2026.
+**
+**  This file is required in order to test various portions of innd from
+**  outside of innd itself.  We have to omit innd.c since it defines main, so
+**  we have to provide everything that innd.c provides.  This is also a good
+**  list of globals in innd that need to be dealt with in some other way.
+*/
 
 /* Silent this warning because of the way we deal with EXTERN. */
 #if defined(__llvm__) || defined(__clang__)

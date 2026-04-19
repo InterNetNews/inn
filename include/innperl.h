@@ -3,7 +3,7 @@
 **
 **  Put into a separate header file in 2002.
 **  Various bug fixes, code and documentation improvements since then
-**  in 2002, 2003, 2015, 2021, 2024, 2025.
+**  in 2002, 2003, 2015, 2021, 2024-2026.
 */
 
 #ifndef INNPERL_H
