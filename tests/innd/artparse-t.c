@@ -1,4 +1,11 @@
-/* Test suite for ARTparse. */
+/*
+**  Test suite for ARTparse.
+**
+**  Written by Russ Allbery in 2004.
+**
+**  Various bug fixes, code and documentation improvements since then
+**  in 2004-2007, 2009, 2010, 2014, 2015, 2021, 2022, 2024, 2026.
+*/
 
 #include "portable/system.h"
 
