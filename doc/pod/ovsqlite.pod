@@ -67,6 +67,17 @@ is consulted only when creating a new database.  Enabling compression
 saves about S<55 %> of disk space on standard overview data.  The default
 value is false.
 
+=item I<mmapsize>
+
+The maximum number of bytes of the database file that SQLite will
+memory-map.  When set, SQLite reads data directly from the operating
+system's page cache via mmap instead of copying it into its own page
+cache, which can significantly improve read performance for large
+databases.  A good starting value is the size of the database file
+or the amount of available memory, whichever is smaller.  For example,
+a value of C<4294967296> allows up to S<4 GB> to be memory-mapped.
+The default value of 0 disables memory-mapped I/O.
+
 =item I<pagesize>
 
 The SQLite database page size in bytes.  Must be a power of 2, minimum 512,
