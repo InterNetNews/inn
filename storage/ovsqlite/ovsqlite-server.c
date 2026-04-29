@@ -117,6 +117,7 @@ static sqlite3 *connection;
 static sql_main_t sql_main;
 
 static bool use_compression;
+static bool use_wal;
 static unsigned long pagesize;
 static unsigned long cachesize;
 static struct timeval transaction_time_limit = {10, 0};
@@ -384,6 +385,7 @@ load_config(void)
     free(path);
     if (top) {
         config_param_boolean(top, "compress", &use_compression);
+        config_param_boolean(top, "walmode", &use_wal);
         config_param_unsigned_number(top, "pagesize", &pagesize);
         config_param_unsigned_number(top, "cachesize", &cachesize);
         if (config_param_real(top, "transtimelimit", &timelimit)) {
@@ -656,13 +658,28 @@ open_db(void)
             sqlite3_free(errmsg);
         }
     }
+    if (use_wal) {
+        status = sqlite3_exec(connection,
+                              "pragma journal_mode = 'WAL';"
+                              "pragma synchronous = 'NORMAL';",
+                              0, NULL, &errmsg);
+        if (status != SQLITE_OK) {
+            warn("cannot enable WAL mode: %s", errmsg);
+            sqlite3_free(errmsg);
+        }
+    }
 }
 
 static void
 close_db(void)
 {
-    sqlite3_step(sql_main.delete_journal);
-    sqlite3_reset(sql_main.delete_journal);
+    if (use_wal) {
+        sqlite3_step(sql_main.checkpoint_wal);
+        sqlite3_reset(sql_main.checkpoint_wal);
+    } else {
+        sqlite3_step(sql_main.delete_journal);
+        sqlite3_reset(sql_main.delete_journal);
+    }
     sqlite_helper_term(&sql_main_helper, (sqlite3_stmt **) &sql_main);
     sqlite3_close_v2(connection);
     connection = NULL;
