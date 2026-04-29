@@ -40,6 +40,9 @@ rollback to savepoint article_group;
 -- .delete_journal
 pragma journal_mode = 'DELETE';
 
+-- .checkpoint_wal
+pragma wal_checkpoint(TRUNCATE);
+
 -- .add_group
 insert into groupinfo (groupname, flag_alias, low, high)
     values(?1, ?2, ?3, ?4);
