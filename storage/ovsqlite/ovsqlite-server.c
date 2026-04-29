@@ -119,6 +119,7 @@ static sql_main_t sql_main;
 static bool use_compression;
 static unsigned long pagesize;
 static unsigned long cachesize;
+static unsigned long mmapsize;
 static struct timeval transaction_time_limit = {10, 0};
 static unsigned long transaction_row_limit = 10000;
 
@@ -386,6 +387,7 @@ load_config(void)
         config_param_boolean(top, "compress", &use_compression);
         config_param_unsigned_number(top, "pagesize", &pagesize);
         config_param_unsigned_number(top, "cachesize", &cachesize);
+        config_param_unsigned_number(top, "mmapsize", &mmapsize);
         if (config_param_real(top, "transtimelimit", &timelimit)) {
             transaction_time_limit.tv_sec = (long) timelimit;
             transaction_time_limit.tv_usec =
@@ -653,6 +655,15 @@ open_db(void)
         status = sqlite3_exec(connection, sqltext, 0, NULL, &errmsg);
         if (status != SQLITE_OK) {
             warn("cannot set cache size: %s", errmsg);
+            sqlite3_free(errmsg);
+        }
+    }
+    if (mmapsize) {
+        snprintf(sqltext, sizeof sqltext, "pragma mmap_size = %lu;",
+                 mmapsize);
+        status = sqlite3_exec(connection, sqltext, 0, NULL, &errmsg);
+        if (status != SQLITE_OK) {
+            warn("cannot set mmap size: %s", errmsg);
             sqlite3_free(errmsg);
         }
     }
