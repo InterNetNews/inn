@@ -327,6 +327,9 @@ tests/lib/xwrite.t
 tests/nnrpd/auth-ext.t
 tests/overview/api.t
 tests/overview/buffindexed.t
+tests/overview/ovsqlite.t
+tests/overview/ovsqlite-read.t
+tests/overview/ovsqlite-write.t
 tests/overview/tradindexed.t
 tests/overview/xref.t
 tests/perl/minimum-version.t

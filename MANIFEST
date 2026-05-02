@@ -791,6 +791,9 @@ storage/ovsqlite/sql-init.sql         SQLite code for database setup
 storage/ovsqlite/sql-main.c           Generated daily operation implementation
 storage/ovsqlite/sql-main.h           Generated daily operation interface
 storage/ovsqlite/sql-main.sql         SQLite code for daily operation
+storage/ovsqlite/sql-read.c           Generated read-only query implementation
+storage/ovsqlite/sql-read.h           Generated read-only query interface
+storage/ovsqlite/sql-read.sql         SQLite code for direct reader queries
 storage/ovsqlite/sqlite-helper-gen.in Package SQLite code for convenient use
 storage/ovsqlite/sqlite-helper.c      SQLite code package implementation
 storage/ovsqlite/sqlite-helper.h      SQLite code package interface
@@ -991,6 +994,10 @@ tests/overview                        Test suite for overview (Directory)
 tests/overview/api-t.c                Basic tests for overview API
 tests/overview/overchan.t             Tests for backends/overchan
 tests/overview/overview-t.c           Basic tests for overview methods
+tests/overview/ovsqlite-integ.t       Integration test for ovsqlite direct reader
+tests/overview/ovsqlite-read-t.c      Direct reader verification for integration test
+tests/overview/ovsqlite-t.c           Unit tests for ovsqlite direct reader
+tests/overview/ovsqlite-write-t.c     Writer helper for ovsqlite integration test
 tests/overview/xref-t.c               Test storing overview data by Xref
 tests/perl                            Test suite for Perl scripts (Directory)
 tests/perl/minimum-version.t.in       Tests for not too-new features of Perl

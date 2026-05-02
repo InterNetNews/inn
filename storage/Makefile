@@ -60,6 +60,10 @@ maintclean: distclean
 	rm -f Make.methods methods.c methods.h ovmethods.c ovmethods.h
 	rm -f $(RM_MAINTCLEAN)
 
+# ovsqlite.c includes sql-read.h which is generated from sql-read.sql.
+# Ensure the header exists before compiling any objects.
+$(OBJECTS) $(LOBJECTS): ovsqlite/sql-read.h
+
 libinnstorage.la: $(OBJECTS) $(LOBJECTS) $(LIBINN)
 	$(LIBLD) $(LDFLAGS) -o $@ $(LOBJECTS) \
 	    $(LIBINN) $(STORAGE_LIBS) $(LIBS) \
@@ -261,12 +265,20 @@ ovsqlite/ovsqlite.o: ovsqlite/ovsqlite.c ovsqlite/ovsqlite.h ../include/config.h
   ../include/inn/buffer.h ../include/portable/socket.h \
   ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
   ../include/portable/socket-unix.h ../include/conffile.h \
-  ../include/portable/macros.h ../include/inn/fdflag.h \
-  ../include/inn/portable-socket.h ../include/inn/innconf.h \
-  ../include/inn/libinn.h ../include/inn/concat.h ../include/inn/xmalloc.h \
-  ../include/inn/system.h ../include/inn/xwrite.h \
+  ../include/portable/macros.h ../include/inn/confparse.h \
+  ../include/inn/fdflag.h ../include/inn/portable-socket.h \
+  ../include/inn/innconf.h ../include/inn/libinn.h ../include/inn/concat.h \
+  ../include/inn/xmalloc.h ../include/inn/system.h ../include/inn/xwrite.h \
   ../include/inn/newsuser.h ../include/inn/paths.h \
-  ovsqlite/../ovinterface.h
+  ovsqlite/../ovinterface.h ovsqlite/sql-read.h ovsqlite/sqlite-helper.h
+ovsqlite/sql-read.o: ovsqlite/sql-read.c ovsqlite/sql-read.h \
+  ovsqlite/sqlite-helper.h ../include/config.h ../include/inn/macros.h \
+  ../include/inn/portable-macros.h ../include/inn/options.h \
+  ../include/inn/system.h ../include/portable/stdbool.h
+ovsqlite/sqlite-helper.o: ovsqlite/sqlite-helper.c ovsqlite/sqlite-helper.h \
+  ../include/config.h ../include/inn/macros.h \
+  ../include/inn/portable-macros.h ../include/inn/options.h \
+  ../include/inn/system.h ../include/portable/stdbool.h
 timecaf/caf.o: timecaf/caf.c ../include/portable/system.h ../include/config.h \
   ../include/inn/macros.h ../include/inn/portable-macros.h \
   ../include/inn/options.h ../include/inn/system.h \
@@ -401,10 +413,6 @@ ovsqlite/sql-init.o: ovsqlite/sql-init.c ovsqlite/sql-init.h \
   ../include/inn/system.h ../include/portable/stdbool.h
 ovsqlite/sql-main.o: ovsqlite/sql-main.c ovsqlite/sql-main.h \
   ovsqlite/sqlite-helper.h ../include/config.h ../include/inn/macros.h \
-  ../include/inn/portable-macros.h ../include/inn/options.h \
-  ../include/inn/system.h ../include/portable/stdbool.h
-ovsqlite/sqlite-helper.o: ovsqlite/sqlite-helper.c ovsqlite/sqlite-helper.h \
-  ../include/config.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/options.h \
   ../include/inn/system.h ../include/portable/stdbool.h
 tradindexed/tdx-util.o: tradindexed/tdx-util.c ../include/portable/system.h \

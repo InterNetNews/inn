@@ -183,6 +183,8 @@
 /storage/ovsqlite/sql-init.h
 /storage/ovsqlite/sql-main.c
 /storage/ovsqlite/sql-main.h
+/storage/ovsqlite/sql-read.c
+/storage/ovsqlite/sql-read.h
 /storage/ovsqlite/sqlite-helper-gen
 /storage/tradindexed/tdx-util
 /support/fixconfig
@@ -240,6 +242,9 @@
 /tests/nnrpd/auth-ext.t
 /tests/overview/api.t
 /tests/overview/buffindexed.t
+/tests/overview/ovsqlite.t
+/tests/overview/ovsqlite-read.t
+/tests/overview/ovsqlite-write.t
 /tests/overview/tradindexed.t
 /tests/overview/xref.t
 /tests/perl/minimum-version.t

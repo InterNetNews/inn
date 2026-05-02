@@ -87,11 +87,12 @@ BDB_LDFLAGS    = @BDB_LDFLAGS@ $(ZLIB_LDFLAGS)
 BDB_LIBS       = @BDB_LIBS@ $(ZLIB_LIBS)
 
 ##  SQLite support.  Additional flags and libraries used when compiling or
-##  linking code that contains SQLite support.
+##  linking code that contains SQLite support.  zlib is bundled in because
+##  ovsqlite direct readers need decompression support.
 
-SQLITE3_CPPFLAGS = @SQLITE3_CPPFLAGS@
-SQLITE3_LDFLAGS  = @SQLITE3_LDFLAGS@
-SQLITE3_LIBS     = @SQLITE3_LIBS@
+SQLITE3_CPPFLAGS = @SQLITE3_CPPFLAGS@ $(ZLIB_CPPFLAGS)
+SQLITE3_LDFLAGS  = @SQLITE3_LDFLAGS@ $(ZLIB_LDFLAGS)
+SQLITE3_LIBS     = @SQLITE3_LIBS@ $(ZLIB_LIBS)
 
 ##  INN libraries.  Nearly all INN programs are linked with libinn, and any
 ##  INN program that reads from or writes to article storage or overview is
@@ -101,7 +102,7 @@ SQLITE3_LIBS     = @SQLITE3_LIBS@
 LIBINN		= $(abs_builddir)/lib/libinn$(LIBSUFFIX).$(EXTLIB)
 LIBHIST		= $(abs_builddir)/history/libinnhist$(LIBSUFFIX).$(EXTLIB)
 LIBSTORAGE	= $(abs_builddir)/storage/libinnstorage$(LIBSUFFIX).$(EXTLIB)
-STORAGE_LIBS	= $(BDB_LDFLAGS) $(BDB_LIBS)
+STORAGE_LIBS	= $(BDB_LDFLAGS) $(BDB_LIBS) $(SQLITE3_LDFLAGS) $(SQLITE3_LIBS)
 
 DBM_CPPFLAGS	= @DBM_CPPFLAGS@
 DBM_LIBS	= @DBM_LIBS@
