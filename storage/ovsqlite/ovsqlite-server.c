@@ -674,8 +674,26 @@ static void
 close_db(void)
 {
     if (use_wal) {
-        sqlite3_step(sql_main.checkpoint_wal);
-        sqlite3_reset(sql_main.checkpoint_wal);
+        int wal_frames, checkpointed;
+        int rc;
+
+        /* Use PASSIVE checkpoint first — it never blocks and is safe even
+         * when direct reader processes (nnrpd) still have the database open.
+         * The prepared statement uses TRUNCATE which would hang waiting for
+         * all readers to disconnect (busy_timeout is ~31 years). */
+        rc = sqlite3_wal_checkpoint_v2(connection, NULL,
+                                       SQLITE_CHECKPOINT_PASSIVE,
+                                       &wal_frames, &checkpointed);
+        if (rc == SQLITE_OK && wal_frames == checkpointed) {
+            /* All frames checkpointed (no readers holding pins).
+             * Safe to truncate the WAL file for a clean shutdown. */
+            sqlite3_wal_checkpoint_v2(connection, NULL,
+                                      SQLITE_CHECKPOINT_TRUNCATE,
+                                      NULL, NULL);
+        } else if (rc == SQLITE_OK && wal_frames > checkpointed) {
+            notice("WAL checkpoint: %d/%d frames checkpointed"
+                   " (readers still connected)", checkpointed, wal_frames);
+        }
     } else {
         sqlite3_step(sql_main.delete_journal);
         sqlite3_reset(sql_main.delete_journal);

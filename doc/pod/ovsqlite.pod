@@ -57,8 +57,9 @@ configuration file:
 
 =item I<cachesize>
 
-The SQLite in-memory page cache size in kilobytes.  The default value is
-left up to the SQLite library and seems to be stable at S<2000 KB>.
+The SQLite in-memory page cache size in kilobytes for the B<ovsqlite-server>
+write daemon.  The default value is left up to the SQLite library and seems
+to be stable at S<2000 KB>.
 
 =item I<compress>
 
@@ -85,6 +86,22 @@ network filesystems such as NFS.  Do not enable this parameter if
 I<pathoverview> is on a network filesystem.
 
 The default value is false.
+
+=item I<readercachesize>
+
+The SQLite in-memory page cache size in kilobytes for each B<nnrpd> reader
+process.  When I<walmode> is enabled, B<nnrpd> processes open the overview
+database directly for read-only access, bypassing B<ovsqlite-server>.
+This eliminates the IPC overhead and allows reads to scale with the number
+of reader processes.  Each B<nnrpd> process gets its own cache, so this
+value should typically be smaller than I<cachesize>.  The operating system's
+file cache (or ZFS ARC) serves as a shared second-level cache across all
+readers.
+
+Direct reader mode is only activated when I<walmode> is enabled.  Without
+WAL, writers take exclusive locks that would block direct readers during
+commits, so the server path is used instead.  The default value
+is S<8000 KB> (about S<8 MB>).
 
 =item I<pagesize>
 
@@ -121,10 +138,17 @@ change much on fast systems.
 
 =head1 RUNNING
 
-All overview database access goes through the B<ovsqlite-server> daemon.
-For ordinary operation, B<rc.news> will start and stop it automatically.
-If you want to touch the overview database while B<innd> isn't running, you'll
-have to start B<ovsqlite-server> manually first.  See ovsqlite-server(8).
+Write operations (article ingest, expiration) go through the
+B<ovsqlite-server> daemon.  For ordinary operation, B<rc.news> will start
+and stop it automatically.  If you want to touch the overview database while
+B<innd> isn't running, you'll have to start B<ovsqlite-server> manually
+first.  See ovsqlite-server(8).
+
+When I<walmode> is enabled, B<nnrpd> reader processes open the overview
+database directly with read-only access, bypassing B<ovsqlite-server>
+for read operations.  This eliminates the IPC round-trip and server
+serialization bottleneck, allowing read performance to scale with the
+number of concurrent readers.
 
 =head1 HISTORY
 

@@ -52,6 +52,8 @@ lib/xwrite
 nnrpd/auth-ext
 overview/api
 overview/buffindexed
+overview/ovsqlite
+overview/ovsqlite-integ
 overview/overchan
 overview/tradindexed
 overview/xref

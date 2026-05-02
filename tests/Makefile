@@ -30,12 +30,13 @@ TESTS	= authprogs/ident.t innd/artparse.t innd/chan.t lib/artnumber.t \
 	lib/setenv.t lib/snprintf.t lib/strlcat.t \
 	lib/strlcpy.t lib/tst.t lib/uwildmat.t lib/vector.t lib/wire.t \
 	lib/xwrite.t nnrpd/auth-ext.t overview/api.t overview/buffindexed.t \
-	overview/tradindexed.t overview/xref.t util/innbind.t
+	overview/ovsqlite.t overview/tradindexed.t overview/xref.t util/innbind.t
 
 ##  Extra stuff that needs to be built before tests can be run.
 
 EXTRA	= runtests clients/server-list docs/pod.t lib/xmalloc \
-	  perl/minimum-version.t
+	  perl/minimum-version.t overview/ovsqlite-write.t \
+	  overview/ovsqlite-read.t
 
 all check test tests: $(TESTS) $(EXTRA)
 	./runtests -l TESTS
@@ -293,6 +294,15 @@ overview/api.t: overview/api-t.o tap/basic.o $(STORAGEDEPS)
 
 overview/buffindexed-t.o: overview/overview-t.c
 	$(CC) $(CFLAGS) -DOVTYPE=buffindexed -c -o $@ overview/overview-t.c
+
+overview/ovsqlite.t: overview/ovsqlite-t.o tap/basic.o $(STORAGEDEPS)
+	$(LINKDEPS) overview/ovsqlite-t.o tap/basic.o $(STORAGELIBS) $(LIBS)
+
+overview/ovsqlite-write.t: overview/ovsqlite-write-t.o tap/basic.o $(STORAGEDEPS)
+	$(LINKDEPS) overview/ovsqlite-write-t.o tap/basic.o $(STORAGELIBS) $(LIBS)
+
+overview/ovsqlite-read.t: overview/ovsqlite-read-t.o tap/basic.o $(STORAGEDEPS)
+	$(LINKDEPS) overview/ovsqlite-read-t.o tap/basic.o $(STORAGELIBS) $(LIBS)
 
 overview/buffindexed.t: overview/buffindexed-t.o tap/basic.o $(STORAGEDEPS)
 	$(LINKDEPS) overview/buffindexed-t.o tap/basic.o $(STORAGELIBS) $(LIBS)

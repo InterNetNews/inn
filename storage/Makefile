@@ -60,6 +60,10 @@ maintclean: distclean
 	rm -f Make.methods methods.c methods.h ovmethods.c ovmethods.h
 	rm -f $(RM_MAINTCLEAN)
 
+# ovsqlite.c includes sql-read.h which is generated from sql-read.sql.
+# Ensure the header exists before compiling any objects.
+$(OBJECTS) $(LOBJECTS): ovsqlite/sql-read.h
+
 libinnstorage.la: $(OBJECTS) $(LOBJECTS) $(LIBINN)
 	$(LIBLD) $(LDFLAGS) -o $@ $(LOBJECTS) \
 	    $(LIBINN) $(STORAGE_LIBS) $(LIBS) \
