@@ -39,7 +39,8 @@ Plan on needing at least S<0.93 KB> for every article in your spool
 need at least S<4.65 GB> of disk space for ovsqlite.  With compression
 enabled, this estimate changes to S<0.4 KB> per article, so you'll
 need at least S<2 GB> of disk space for 5 million articles.  Plus,
-you'll need additional space for transaction logs (a few MB).
+you'll need additional space for transaction logs (a few MB, or up to
+a few hundred MB temporarily with I<walmode> enabled).
 
 =head1 CONFIGURATION
 
@@ -56,8 +57,9 @@ configuration file:
 
 =item I<cachesize>
 
-The SQLite in-memory page cache size in kilobytes.  The default value is
-left up to the SQLite library and seems to be stable at S<2000 KB>.
+The SQLite in-memory page cache size in kilobytes for the B<ovsqlite-server>
+write daemon.  The default value is left up to the SQLite library and seems
+to be stable at S<2000 KB>.
 
 =item I<compress>
 
@@ -66,6 +68,40 @@ will compress overview records whenever this saves space.  This parameter
 is consulted only when creating a new database.  Enabling compression
 saves about S<55 %> of disk space on standard overview data.  The default
 value is false.
+
+=item I<walmode>
+
+If this parameter is true, ovsqlite will use SQLite's WAL (Write-Ahead
+Logging) journal mode instead of the default PERSIST mode.  WAL mode
+allows concurrent readers and writers without blocking, which significantly
+improves read performance when multiple B<nnrpd> processes access the
+overview database simultaneously.  It also sets C<synchronous> to
+C<NORMAL>, which is safe with WAL and reduces unnecessary fsync overhead.
+
+On shutdown, the WAL is checkpointed back into the main database file
+and truncated.
+
+B<Note:> WAL mode requires shared-memory support and does not work on
+network filesystems such as NFS.  Do not enable this parameter if
+I<pathoverview> is on a network filesystem.
+
+The default value is false.
+
+=item I<readercachesize>
+
+The SQLite in-memory page cache size in kilobytes for each B<nnrpd> reader
+process.  When I<walmode> is enabled, B<nnrpd> processes open the overview
+database directly for read-only access, bypassing B<ovsqlite-server>.
+This eliminates the IPC overhead and allows reads to scale with the number
+of reader processes.  Each B<nnrpd> process gets its own cache, so this
+value should typically be smaller than I<cachesize>.  The operating system's
+file cache (or ZFS ARC) serves as a shared second-level cache across all
+readers.
+
+Direct reader mode is only activated when I<walmode> is enabled.  Without
+WAL, writers take exclusive locks that would block direct readers during
+commits, so the server path is used instead.  The default value
+is S<8000 KB> (about S<8 MB>).
 
 =item I<pagesize>
 
@@ -102,10 +138,17 @@ change much on fast systems.
 
 =head1 RUNNING
 
-All overview database access goes through the B<ovsqlite-server> daemon.
-For ordinary operation, B<rc.news> will start and stop it automatically.
-If you want to touch the overview database while B<innd> isn't running, you'll
-have to start B<ovsqlite-server> manually first.  See ovsqlite-server(8).
+Write operations (article ingest, expiration) go through the
+B<ovsqlite-server> daemon.  For ordinary operation, B<rc.news> will start
+and stop it automatically.  If you want to touch the overview database while
+B<innd> isn't running, you'll have to start B<ovsqlite-server> manually
+first.  See ovsqlite-server(8).
+
+When I<walmode> is enabled, B<nnrpd> reader processes open the overview
+database directly with read-only access, bypassing B<ovsqlite-server>
+for read operations.  This eliminates the IPC round-trip and server
+serialization bottleneck, allowing read performance to scale with the
+number of concurrent readers.
 
 =head1 HISTORY
 
