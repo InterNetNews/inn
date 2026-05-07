@@ -399,6 +399,9 @@ OVctl(OVCTLTYPE type, void *val)
     case OVSTATALL:
         OVstatall = *(bool *) val;
         return true;
+    case OVTOKENCACHE:
+        OVtokencache = *(struct bloom_filter **) val;
+        return true;
     default:
         return ((*ov.ctl)(type, val));
     }

@@ -526,6 +526,26 @@ will run much faster, but reading news from the system will be impossible
 true, I<ovmethod> must also be set.  This is a boolean value and the
 default is true.
 
+=item I<expirebloomfp>
+
+Controls the bloom filter used by B<expireover> to accelerate overview
+expiration.  The value is the reciprocal of the desired false positive
+rate: for example, C<10000> means a 1-in-10,000 (0.01%) false positive
+rate.  Higher values use more memory but produce fewer false positives.
+At the default of C<10000>, memory usage is approximately 20 bits per
+article in the history file (e.g., 48S<MB> for 20 million articles,
+2.4S<GB> for 1 billion articles).
+
+Setting this to C<0> disables the bloom filter entirely, falling back
+to per-article history lookups (the pre-existing behavior).  This is
+not recommended for large spools as it results in random I/O into the
+history file for every article in the overview database.
+
+The bloom filter has no effect when B<expireover> is run with the B<-s>
+flag (which forces a filesystem stat of every article).
+
+This is a non-negative integer and the default is C<10000>.
+
 =item I<extraoverviewadvertised>
 
 Besides the seven standard overview fields (which are in order C<Subject>,

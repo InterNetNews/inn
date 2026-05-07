@@ -5,6 +5,7 @@
 #ifndef INN_HISTORY_H
 #define INN_HISTORY_H
 
+#include "inn/libinn.h"
 #include "inn/macros.h"
 #include "inn/portable-stdbool.h"
 #include <sys/types.h>
@@ -96,7 +97,8 @@ bool HISexpire(struct history *, const char *, const char *, bool, void *,
                time_t,
                bool (*)(void *, time_t, time_t, time_t, struct token *));
 bool HISwalk(struct history *, const char *, void *,
-             bool (*)(void *, time_t, time_t, time_t, const struct token *));
+             bool (*)(void *, const HASH *, time_t, time_t, time_t,
+                      const struct token *));
 struct histstats HISstats(struct history *);
 const char *HISerror(struct history *);
 bool HISctl(struct history *, int, void *);

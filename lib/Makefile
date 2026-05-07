@@ -12,8 +12,8 @@ top	= ..
 CFLAGS  = $(GCFLAGS)
 
 # The base library files that are always compiled and included.
-SOURCES       = argparse.c artnumber.c buffer.c cleanfrom.c clientactive.c \
-	        clientlib.c                                                \
+SOURCES       = argparse.c artnumber.c bloom.c buffer.c cleanfrom.c        \
+	        clientactive.c clientlib.c                                 \
 	        commands.c concat.c conffile.c confparse.c                 \
 	      	date.c dbz.c defdist.c dispatch.c fdflag.c fdlimit.c	   \
 	      	getfqdn.c getmodaddr.c hash.c hashtab.c headers.c hex.c	   \

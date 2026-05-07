@@ -64,7 +64,8 @@ struct hisv6 {
 struct hisv6_walkstate {
     union {
         bool (*expire)(void *, time_t, time_t, time_t, TOKEN *);
-        bool (*walk)(void *, time_t, time_t, time_t, const TOKEN *);
+        bool (*walk)(void *, const HASH *, time_t, time_t, time_t,
+                     const TOKEN *);
     } cb;
     void *cookie;
     bool paused;

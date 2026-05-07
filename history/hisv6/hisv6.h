@@ -5,6 +5,8 @@
 #ifndef HISV6_H
 #define HISV6_H
 
+#include "inn/libinn.h"
+
 struct token;
 struct histopts;
 struct history;
@@ -32,7 +34,7 @@ bool hisv6_expire(void *, const char *, const char *, bool, void *,
                                  struct token *));
 
 bool hisv6_walk(void *, const char *, void *,
-                bool (*)(void *, time_t, time_t, time_t,
+                bool (*)(void *, const HASH *, time_t, time_t, time_t,
                          const struct token *));
 
 const char *hisv6_error(void *);

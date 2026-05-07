@@ -14,6 +14,10 @@
 #include <syslog.h>
 #include <time.h>
 
+#include <sys/stat.h>
+
+#include "inn/bloom.h"
+#include "inn/history.h"
 #include "inn/innconf.h"
 #include "inn/libinn.h"
 #include "inn/messages.h"
@@ -45,6 +49,22 @@ fatal_signal(int sig)
 }
 
 
+/*
+**  Callback for HISwalk that adds history entries with storage tokens to the
+**  bloom filter.  Entries without tokens (remembered message-IDs) are skipped
+**  so that OVhisthasmsgid correctly identifies them as missing.
+*/
+static bool
+build_bloom_cb(void *cookie, const HASH *hash,
+               time_t arrived UNUSED, time_t posted UNUSED,
+               time_t expires UNUSED, const TOKEN *token)
+{
+    if (token != NULL)
+        bloom_add(cookie, hash);
+    return true;
+}
+
+
 int
 main(int argc, char *argv[])
 {
@@ -60,6 +80,8 @@ main(int argc, char *argv[])
     bool purge_deleted = false;
     bool always_stat = false;
     struct history *history;
+    struct bloom_filter *bloom = NULL;
+    struct bloom_filter *null_bloom = NULL;
 
     /* First thing, set up logging and our identity. */
     openlog("expireover", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
@@ -181,11 +203,42 @@ main(int argc, char *argv[])
     if (!OVctl(OVSTATALL, &always_stat))
         die("can't configure overview stat behavior");
 
-    /* We want to be careful about being interrupted from this point on, so
-       set up our signal handlers. */
+    /* Set up signal handlers before the bloom walk, which can take several
+       minutes on very large history files. */
     xsignal(SIGTERM, fatal_signal);
     xsignal(SIGINT, fatal_signal);
     xsignal(SIGHUP, fatal_signal);
+
+    /* Build a bloom filter from the history file for fast existence checks.
+       This replaces millions of random pread() calls into the history file
+       with a single sequential read, making expireover feasible on large
+       spools (1B+ articles).  The bloom filter is used as a positive-only
+       cache: hits skip the slow history lookup, misses fall through to
+       HISlookup for correctness (handles articles added after the walk). */
+    if (innconf->expirebloomfp > 0 && !always_stat) {
+        struct stat st;
+        char *histpath;
+        size_t estimated = 0;
+        /* Minimum history line: 34 (hash) + 1 (tab) + 1 (arrived)
+         * + 1 (newline).  Dividing file size by this gives a conservative
+         * overestimate of entries, which is what we want for bloom sizing. */
+        const size_t min_history_line = 37;
+
+        histpath = concatpath(innconf->pathdb, INN_PATH_HISTORY);
+        if (stat(histpath, &st) == 0)
+            estimated = st.st_size / min_history_line;
+        else
+            warn("can't stat %s, bloom filter will be undersized", histpath);
+        bloom = bloom_create(estimated, innconf->expirebloomfp);
+        if (!HISwalk(history, NULL, bloom, build_bloom_cb)) {
+            warn("can't walk history for bloom filter, using per-article"
+                 " lookups");
+            bloom_free(bloom);
+            bloom = NULL;
+        }
+        OVctl(OVTOKENCACHE, &bloom);
+        free(histpath);
+    }
 
     /* Loop through each line of the input file and process each group,
        writing data to the lowmark file if desired. */
@@ -212,6 +265,10 @@ main(int argc, char *argv[])
             warn("can't expire deleted newsgroups");
 
     /* Close everything down in an orderly fashion. */
+    if (bloom) {
+        OVctl(OVTOKENCACHE, &null_bloom);
+        bloom_free(bloom);
+    }
     QIOclose(qp);
     OVclose();
     SMshutdown();

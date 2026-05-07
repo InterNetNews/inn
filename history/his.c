@@ -328,7 +328,8 @@ HISreplace(struct history *h, const char *key, time_t arrived, time_t posted,
 
 bool
 HISwalk(struct history *h, const char *reason, void *cookie,
-        bool (*callback)(void *, time_t, time_t, time_t, const TOKEN *))
+        bool (*callback)(void *, const HASH *, time_t, time_t, time_t,
+                         const TOKEN *))
 {
     bool r;
 

@@ -6,6 +6,7 @@
 #define HISINTERFACE_H
 
 #include "config.h"
+#include "inn/libinn.h"
 #include <sys/types.h>
 
 struct token;
@@ -27,7 +28,7 @@ typedef struct hismethod {
     bool (*expire)(void *, const char *, const char *, bool, void *, time_t,
                    bool (*)(void *, time_t, time_t, time_t, struct token *));
     bool (*walk)(void *, const char *, void *,
-                 bool (*)(void *, time_t, time_t, time_t,
+                 bool (*)(void *, const HASH *, time_t, time_t, time_t,
                           const struct token *));
     bool (*remember)(void *, const char *, time_t, time_t);
     bool (*ctl)(void *, int, void *);
