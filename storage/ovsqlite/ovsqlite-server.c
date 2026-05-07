@@ -719,6 +719,13 @@ open_db(void)
             sqlite3_free(errmsg);
         }
         sqlite3_wal_hook(connection, wal_hook, NULL);
+    } else {
+        status = sqlite3_exec(connection, "pragma journal_mode = 'PERSIST';",
+                              0, NULL, &errmsg);
+        if (status != SQLITE_OK) {
+            warn("cannot set PERSIST journal mode: %s", errmsg);
+            sqlite3_free(errmsg);
+        }
     }
 }
 
