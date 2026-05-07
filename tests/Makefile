@@ -17,7 +17,8 @@ LIBM_LDFLAGS    = '-lm'
 ##  added to EXTRA.
 
 TESTS	= authprogs/ident.t innd/artparse.t innd/chan.t lib/artnumber.t \
-	lib/asprintf.t lib/buffer.t lib/canlock.t lib/concat.t lib/conffile.t \
+	lib/asprintf.t lib/bloom.t lib/bloom-hiswalk.t lib/buffer.t \
+	lib/canlock.t lib/concat.t lib/conffile.t \
 	lib/confparse.t lib/daemon.t lib/date.t \
 	lib/dispatch.t lib/fdflag.t \
 	lib/getaddrinfo.t lib/getnameinfo.t lib/hash.t \
@@ -106,6 +107,12 @@ lib/asprintf.o: ../lib/asprintf.c
 
 lib/asprintf.t: lib/asprintf.o lib/asprintf-t.o tap/basic.o $(LIBINN)
 	$(LINK) lib/asprintf.o lib/asprintf-t.o tap/basic.o $(LIBINN) $(LIBS)
+
+lib/bloom.t: lib/bloom-t.o tap/basic.o $(LIBINN)
+	$(LINK) lib/bloom-t.o tap/basic.o $(LIBINN)
+
+lib/bloom-hiswalk.t: lib/bloom-hiswalk-t.o tap/basic.o $(STORAGEDEPS)
+	$(LINKDEPS) lib/bloom-hiswalk-t.o tap/basic.o $(STORAGELIBS) $(LIBS)
 
 lib/buffer.t: lib/buffer-t.o tap/basic.o $(LIBINN)
 	$(LINK) lib/buffer-t.o tap/basic.o $(LIBINN)

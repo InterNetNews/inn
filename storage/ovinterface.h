@@ -35,10 +35,12 @@ typedef struct overview_method {
 
 bool OVgroupbasedexpire(TOKEN token, const char *group, const char *data,
                         int len, time_t arrived, time_t expires);
+struct bloom_filter;
 bool OVhisthasmsgid(struct history *, const char *data);
 void OVEXPremove(TOKEN token, bool deletedgroups, char **xref, int ngroups);
 void OVEXPcleanup(void);
 
+extern struct bloom_filter *OVtokencache;
 extern time_t OVnow;
 extern FILE *EXPunlinkfile;
 extern bool OVignoreselfexpire;

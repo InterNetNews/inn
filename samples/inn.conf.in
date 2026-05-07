@@ -64,6 +64,7 @@ wipexpire:                   10
 
 cnfscheckfudgesize:          0
 enableoverview:              true
+expirebloomfp:               10000
 extraoverviewadvertised:     [ ]
 extraoverviewhidden:         [ ]
 groupbaseexpiry:             true

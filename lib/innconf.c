@@ -205,6 +205,7 @@ static const struct config config_table[] = {
     /* The following settings are specific to the storage subsystem. */
     {K(articlemmap),                BOOL(true)        },
     {K(cnfscheckfudgesize),         UNUMBER(0)        },
+    {K(expirebloomfp),              UNUMBER(10000)    },
     {K(immediatecancel),            BOOL(false)       },
     {K(keepmmappedthreshold),       UNUMBER(1024)     },
     {K(nfswriter),                  BOOL(false)       },

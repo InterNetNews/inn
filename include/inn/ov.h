@@ -19,7 +19,8 @@ typedef enum {
     OVSTATICSEARCH,
     OVSTATALL,
     OVCACHEKEEP,
-    OVCACHEFREE
+    OVCACHEFREE,
+    OVTOKENCACHE
 } OVCTLTYPE;
 #define OV_NOSPACE 100
 typedef enum {
