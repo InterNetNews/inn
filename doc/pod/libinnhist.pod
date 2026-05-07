@@ -67,8 +67,9 @@ his - routines for managing INN history
 
     bool HISwalk(struct history *history, const char *reason,
                  void *cookie,
-                 bool (*callback)(void *cookie, time_t arrived,
-                                  time_t posted, time_t expires,
+                 bool (*callback)(void *cookie, const HASH *hash,
+                                  time_t arrived, time_t posted,
+                                  time_t expires,
                                   const TOKEN *token));
 
     struct histstats HISstats(struct history *history);
@@ -210,10 +211,12 @@ unspecified.
 
 B<HISwalk> provides an iteration function for the specified I<history>
 database.  For every entry in the history database, I<callback> is
-invoked, passing the I<cookie>, arrival, posting, and expiry times, in
-addition to the token associated with the entry.  If the I<callback>()
-returns B<false> the iteration is aborted and B<HISwalk> returns
-B<false> to the caller.
+invoked, passing the I<cookie>, the message-ID I<hash>, arrival,
+posting, and expiry times, in addition to the token associated with
+the entry.  If the entry has no storage token (a remembered
+message-ID), I<token> is B<NULL>.  If the I<callback>() returns
+B<false> the iteration is aborted and B<HISwalk> returns B<false> to
+the caller.  Malformed history lines are silently skipped.
 
 To process the entire database in the presence of a running server,
 I<reason> may be passed; if this argument is not B<NULL>, it is used

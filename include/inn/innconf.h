@@ -72,6 +72,7 @@ struct innconf {
     /* Article Storage */
     unsigned long cnfscheckfudgesize; /* Additional CNFS integrity checking */
     bool enableoverview;              /* Store overview info for articles? */
+    unsigned long expirebloomfp; /* Bloom filter FP rate 1/N (0 = disabled) */
     struct vector *extraoverviewadvertised; /* Extra overview fields for LIST
                                                OVERVIEW.FMT */
     struct vector

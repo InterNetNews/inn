@@ -7,6 +7,8 @@ innd/artparse
 innd/chan
 lib/artnumber
 lib/asprintf
+lib/bloom
+lib/bloom-hiswalk
 lib/buffer
 lib/canlock
 lib/concat

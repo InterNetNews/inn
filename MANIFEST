@@ -412,6 +412,7 @@ include/Makefile                      Makefile for header files
 include/conffile.h                    Header file for reading *.conf files
 include/config.h.in                   Template configuration data
 include/inn                           Installed header files (Directory)
+include/inn/bloom.h                   Header file for bloom filter
 include/inn/buffer.h                  Header file for reusable counted buffers
 include/inn/concat.h                  Header file for string concatenation
 include/inn/confparse.h               Header file for configuration parser
@@ -518,6 +519,7 @@ lib/Makefile                          Makefile for library
 lib/argparse.c                        Functions for parsing arguments
 lib/artnumber.c                       Manipulation of article numbers
 lib/asprintf.c                        asprintf replacement
+lib/bloom.c                           Bloom filter implementation
 lib/buffer.c                          Reusable counted buffer
 lib/canlock.c                         Routines for Cancel-Lock
 lib/cleanfrom.c                       Clean out a From line
@@ -941,6 +943,8 @@ tests/innd/fakeinnd.c                 Provide symbols defined by innd/innd.c
 tests/lib                             Test suite for libinn (Directory)
 tests/lib/artnumber-t.c               Tests for lib/artnumber.c
 tests/lib/asprintf-t.c                Tests for lib/asprintf.c
+tests/lib/bloom-hiswalk-t.c           Integration test for bloom filter with HISwalk
+tests/lib/bloom-t.c                   Tests for lib/bloom.c
 tests/lib/buffer-t.c                  Tests for lib/buffer.c
 tests/lib/canlock-t.c                 Tests for lib/canlock.c
 tests/lib/concat-t.c                  Tests for lib/concat.c

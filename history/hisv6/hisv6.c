@@ -1071,14 +1071,14 @@ fail:
 **  parameters the user callback expects
 **/
 static bool
-hisv6_traversecb(struct hisv6 *h UNUSED, void *cookie, const HASH *hash UNUSED,
+hisv6_traversecb(struct hisv6 *h UNUSED, void *cookie, const HASH *hash,
                  time_t arrived, time_t posted, time_t expires,
                  const TOKEN *token)
 {
     struct hisv6_walkstate *hiscookie = cookie;
 
-    return (*hiscookie->cb.walk)(hiscookie->cookie, arrived, posted, expires,
-                                 token);
+    return (*hiscookie->cb.walk)(hiscookie->cookie, hash, arrived, posted,
+                                 expires, token);
 }
 
 
@@ -1087,7 +1087,8 @@ hisv6_traversecb(struct hisv6 *h UNUSED, void *cookie, const HASH *hash UNUSED,
 */
 bool
 hisv6_walk(void *history, const char *reason, void *cookie,
-           bool (*callback)(void *, time_t, time_t, time_t, const TOKEN *))
+           bool (*callback)(void *, const HASH *, time_t, time_t, time_t,
+                            const TOKEN *))
 {
     struct hisv6 *h = history;
     struct hisv6_walkstate hiscookie;
@@ -1099,7 +1100,11 @@ hisv6_walk(void *history, const char *reason, void *cookie,
     hiscookie.cookie = cookie;
     hiscookie.new = NULL;
     hiscookie.paused = false;
-    hiscookie.ignore = false;
+    /* Ignore malformed history lines during walk.  The walk is a read-only
+       operation (e.g., building a bloom filter for expireover); aborting
+       over one corrupt line in a potentially 180 GB file would be
+       catastrophic.  expire is what fixes corrupt history entries. */
+    hiscookie.ignore = true;
 
     r = hisv6_traverse(h, &hiscookie, reason, hisv6_traversecb);
 
