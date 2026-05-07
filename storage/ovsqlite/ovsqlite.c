@@ -726,40 +726,40 @@ ovsqlite_groupstats(const char *group, int *low, int *high, int *count,
         return false;
     }
     groupname_len = strlen(group);
-        start_request(request_get_groupinfo);
-        pack_now(request, &groupname_len, sizeof groupname_len);
-        pack_now(request, group, groupname_len);
-        finish_request();
-        if (!write_request())
-            return false;
+    start_request(request_get_groupinfo);
+    pack_now(request, &groupname_len, sizeof groupname_len);
+    pack_now(request, group, groupname_len);
+    finish_request();
+    if (!write_request())
+        return false;
 
-        if (!read_response())
-            return false;
-        code = start_response();
-        if (code != response_groupinfo)
-            return false;
-        if (!unpack_now(response, &r_low, sizeof r_low))
-            return false;
-        if (!unpack_now(response, &r_high, sizeof r_high))
-            return false;
-        if (!unpack_now(response, &r_count, sizeof r_count))
-            return false;
-        if (!unpack_now(response, &flag_alias_len, sizeof flag_alias_len))
-            return false;
-        flag_alias = unpack_later(response, flag_alias_len);
-        if (!flag_alias)
-            return false;
-        if (!finish_response())
-            return false;
-        if (low)
-            *low = r_low;
-        if (high)
-            *high = r_high;
-        if (count)
-            *count = r_count;
-        if (flag)
-            *flag = *flag_alias;
-        return true;
+    if (!read_response())
+        return false;
+    code = start_response();
+    if (code != response_groupinfo)
+        return false;
+    if (!unpack_now(response, &r_low, sizeof r_low))
+        return false;
+    if (!unpack_now(response, &r_high, sizeof r_high))
+        return false;
+    if (!unpack_now(response, &r_count, sizeof r_count))
+        return false;
+    if (!unpack_now(response, &flag_alias_len, sizeof flag_alias_len))
+        return false;
+    flag_alias = unpack_later(response, flag_alias_len);
+    if (!flag_alias)
+        return false;
+    if (!finish_response())
+        return false;
+    if (low)
+        *low = r_low;
+    if (high)
+        *high = r_high;
+    if (count)
+        *count = r_count;
+    if (flag)
+        *flag = *flag_alias;
+    return true;
 }
 
 bool
