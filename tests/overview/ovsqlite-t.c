@@ -49,8 +49,10 @@ create_db(const char *dbpath, bool enable_wal)
 
     status = sqlite3_open_v2(dbpath, &db,
                              SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL);
-    if (status != SQLITE_OK)
+    if (status != SQLITE_OK) {
+        sqlite3_close_v2(db);
         return false;
+    }
 
     status = sqlite3_exec(db, schema, 0, NULL, &errmsg);
     if (status != SQLITE_OK) {
