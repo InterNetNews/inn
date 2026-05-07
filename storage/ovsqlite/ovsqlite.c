@@ -278,6 +278,7 @@ direct_open(void)
         if (status != SQLITE_CANTOPEN)
             warn("ovsqlite: cannot open database for reading: %s",
                  sqlite3_errstr(status));
+        sqlite3_close_v2(read_connection);
         read_connection = NULL;
         return false;
     }
