@@ -114,6 +114,20 @@ WAL, writers take exclusive locks that would block direct readers during
 commits, so the server path is used instead.  The default value
 is S<8000 KB> (about S<8 MB>).
 
+=item I<walcheckpointthreshold>
+
+The WAL page count at which B<ovsqlite-server> forces a checkpoint.
+When the WAL grows beyond this many pages, the server performs a
+TRUNCATE checkpoint during its next idle period, waiting up to
+10 seconds for readers to finish their current queries before flushing
+WAL content back to the database file.  This prevents unbounded WAL
+growth and is no worse than the non-WAL path where every commit takes
+an exclusive lock.  If readers do not finish within the timeout, the
+checkpoint is skipped and retried on the next idle cycle.
+
+This parameter is only effective when I<walmode> is enabled.  The default
+value is 1000 pages.
+
 =item I<pagesize>
 
 The SQLite database page size in bytes.  Must be a power of 2, minimum 512,
