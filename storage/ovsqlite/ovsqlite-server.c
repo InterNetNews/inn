@@ -44,7 +44,9 @@
 #    include "sql-init.h"
 #    include "sql-main.h"
 
-#    define OVSQLITE_DB_FILE "ovsqlite.db"
+#    define OVSQLITE_DB_FILE          "ovsqlite.db"
+#    define OVSQLITE_BUSY_TIMEOUT_MS  999999999
+#    define CHECKPOINT_BUSY_TIMEOUT_MS 10000
 
 #    ifdef HAVE_ZLIB
 
@@ -122,10 +124,12 @@ static unsigned long pagesize;
 static unsigned long cachesize;
 static struct timeval transaction_time_limit = {10, 0};
 static unsigned long transaction_row_limit = 10000;
+static unsigned long wal_checkpoint_threshold = 1000;
 
 static bool in_transaction;
 static unsigned int transaction_rowcount;
 static struct timeval next_commit;
+static int wal_pages;
 
 
 static void
@@ -398,6 +402,8 @@ load_config(void)
         }
         config_param_unsigned_number(top, "transrowlimit",
                                      &transaction_row_limit);
+        config_param_unsigned_number(top, "walcheckpointthreshold",
+                                     &wal_checkpoint_threshold);
 
         config_free(top);
     }
@@ -539,6 +545,40 @@ make_dict(char const *groupname, int groupname_len, uint64_t artnum)
 
 #    endif /* HAVE_ZLIB */
 
+static int
+wal_hook(void *data UNUSED, sqlite3 *db UNUSED, const char *dbname UNUSED,
+         int pages)
+{
+    wal_pages = pages;
+    return SQLITE_OK;
+}
+
+static void
+checkpoint_wal(void)
+{
+    int rc;
+
+    /* Force a TRUNCATE checkpoint: wait for readers to finish, then write
+     * all WAL content back to the database file and reset the WAL.  This
+     * is no worse than the non-WAL path where every commit takes an
+     * exclusive lock.  Use a short busy_timeout so the server doesn't
+     * stall indefinitely, the normal timeout is ~31 years for writer
+     * locks. */
+    sqlite3_busy_timeout(connection, CHECKPOINT_BUSY_TIMEOUT_MS);
+    rc = sqlite3_wal_checkpoint_v2(connection, NULL,
+                                   SQLITE_CHECKPOINT_TRUNCATE, NULL, NULL);
+    sqlite3_busy_timeout(connection, OVSQLITE_BUSY_TIMEOUT_MS);
+    if (rc == SQLITE_OK) {
+        wal_pages = 0;
+    } else if (rc == SQLITE_BUSY) {
+        notice("WAL checkpoint: readers did not finish within timeout"
+               " (%d pages)", wal_pages);
+    } else {
+        warn("WAL checkpoint failed: %s (%d pages)",
+             sqlite3_errstr(rc), wal_pages);
+    }
+}
+
 static void
 open_db(void)
 {
@@ -667,6 +707,7 @@ open_db(void)
             warn("cannot enable WAL mode: %s", errmsg);
             sqlite3_free(errmsg);
         }
+        sqlite3_wal_hook(connection, wal_hook, NULL);
     }
 }
 
@@ -679,8 +720,8 @@ close_db(void)
 
         /* Use PASSIVE checkpoint first — it never blocks and is safe even
          * when direct reader processes (nnrpd) still have the database open.
-         * The prepared statement uses TRUNCATE which would hang waiting for
-         * all readers to disconnect (busy_timeout is ~31 years). */
+         * Avoid TRUNCATE directly here as it would hang waiting for all
+         * readers to disconnect (busy_timeout is ~31 years). */
         rc = sqlite3_wal_checkpoint_v2(connection, NULL,
                                        SQLITE_CHECKPOINT_PASSIVE,
                                        &wal_frames, &checkpointed);
@@ -2129,6 +2170,9 @@ mainloop(void)
             }
             nap = &delta;
         } else {
+            /* Idle: no active transaction.  Checkpoint WAL if needed. */
+            if (use_wal && wal_pages >= (int) wal_checkpoint_threshold)
+                checkpoint_wal();
             nap = NULL;
         }
         read_fds_out = read_fds;
@@ -2183,10 +2227,12 @@ main(int argc, char **argv)
         }
     }
     if (debug) {
+        message_handlers_notice(1, message_log_stderr);
         message_handlers_warn(1, message_log_stderr);
         message_handlers_die(1, message_log_stderr);
     } else {
         openlog("ovsqlite-server", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
+        message_handlers_notice(1, message_log_syslog_notice);
         message_handlers_warn(1, message_log_syslog_err);
         message_handlers_die(1, message_log_syslog_err);
     }
