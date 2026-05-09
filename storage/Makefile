@@ -12,7 +12,7 @@ top	      = ..
 CFLAGS	      = $(GCFLAGS) -I. $(BDB_CPPFLAGS) $(SQLITE3_CPPFLAGS)
 
 SOURCES	      = expire.c interface.c methods.c ov.c overdata.c overview.c \
-		ovmethods.c $(METHOD_SOURCES)
+		ovmethods.c tombstone.c $(METHOD_SOURCES)
 OBJECTS	      = $(SOURCES:.c=.o)
 LOBJECTS      = $(OBJECTS:.o=.lo)
 

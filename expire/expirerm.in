@@ -16,17 +16,38 @@ if [ -z "$1" ]; then
         | eval ${MAIL}
     exit 0
 fi
-if [ ! -f $1 ]; then
+if [ ! -f "$1" ]; then
     echo "Expire called with no files to expire on $(hostname)" \
         | eval ${MAIL}
     exit 0
 fi
 
 eval "cd ${SPOOL} \
-    && ${RMPROC} <$1 \
-    && mv $1 ${MOST_LOGS}/expire.list"
-if [ -f $1 ]; then
+    && ${RMPROC} <\"$1\" \
+    && mv \"$1\" ${MOST_LOGS}/expire.list"
+if [ -f "$1" ]; then
     echo "Expire had problems removing articles on $(hostname)" \
         | eval ${MAIL}
     exit 1
+fi
+
+##  If expireover wrote a tombstone log for delayed-removal mode, the
+##  .NEW file holds the tokens it scheduled for cancellation.  Now that
+##  fastrm has succeeded, promote it to its final name so the next
+##  expire run can consume it.
+##
+##  A failed promotion is a degradation, not a hard failure: the
+##  articles are already gone from disk, so news.daily can continue.
+##  The next expire just falls back to its slow per-article
+##  SMretrieve check for whatever was supposed to be in this batch.
+##  Email the newsmaster but exit 0 so the surrounding pipeline keeps
+##  going.
+TOMBSTONE_NEW="${PATHDB}/expireover.tombstone.NEW"
+TOMBSTONE="${PATHDB}/expireover.tombstone"
+if [ -f "${TOMBSTONE_NEW}" ]; then
+    mv "${TOMBSTONE_NEW}" "${TOMBSTONE}" || {
+        echo "Expire could not promote ${TOMBSTONE_NEW} on $(hostname);" \
+            "next expire will run the slow path for this batch" \
+            | eval ${MAIL}
+    }
 fi

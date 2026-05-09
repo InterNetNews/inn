@@ -211,6 +211,7 @@ static const struct config config_table[] = {
     {K(articlemmap),                BOOL(true)        },
     {K(cnfscheckfudgesize),         UNUMBER(0)        },
     {K(expirebloomfp),              UNUMBER(10000)    },
+    {K(expiretombstone),            BOOL(false)       },
     {K(immediatecancel),            BOOL(false)       },
     {K(keepmmappedthreshold),       UNUMBER(1024)     },
     {K(nfswriter),                  BOOL(false)       },

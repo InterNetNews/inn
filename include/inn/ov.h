@@ -59,6 +59,7 @@ typedef struct _OVGE {
 } OVGE;
 
 extern bool OVstatall;
+
 bool OVopen(int mode);
 bool OVgroupstats(char *group, int *lo, int *hi, int *count, int *flag);
 bool OVgroupadd(char *group, ARTNUM lo, ARTNUM hi, char *flag);

@@ -82,6 +82,9 @@ struct innconf {
                                                OVERVIEW.FMT */
     struct vector
         *extraoverviewhidden;    /* Extra overview fields silently generated */
+    bool expiretombstone;        /* Use expireover -> expire tombstone log
+                                    to skip per-article SMretrieve in
+                                    expire? */
     bool groupbaseexpiry;        /* Do expiry by newsgroup? */
     bool mergetogroups;          /* Refile articles from to.* into to */
     bool nfswriter;              /* Use NFS writer functionality */

@@ -3,6 +3,9 @@ authprogs/domain
 authprogs/ident
 clients/getlist
 docs/pod
+expire/tombstone
+expire/tombstone-e2e
+expire/tombstone-hisexpire
 innd/artparse
 innd/chan
 lib/artnumber
@@ -61,6 +64,7 @@ overview/tradindexed
 overview/xref
 perl/minimum-version
 storage/archive
+storage/cancel-tombstone
 storage/makehistory
 storage/sm
 util/convdate

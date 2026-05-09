@@ -10,6 +10,8 @@
 #include "inn/innconf.h"
 #include "inn/libinn.h"
 #include "inn/messages.h"
+#include "inn/newsuser.h"
+#include "inn/paths.h"
 #include "inn/qio.h"
 #include "inn/storage.h"
 #include "inn/wire.h"
@@ -259,6 +261,10 @@ process_token(const char *id, const struct options *options)
             warn("could not remove %s: %s", id, SMerrorstr);
             return false;
         }
+        /* Record the cancel so a later expire run can drop the history
+         * entry without an SMretrieve.  Best-effort; no-op when
+         * expiretombstone is disabled. */
+        SMcanceltombstone(token);
     } else {
         article = SMretrieve(token, options->header ? RETR_HEAD : RETR_ALL);
         if (article == NULL) {
@@ -360,6 +366,17 @@ main(int argc, char *argv[])
         if (!SMsetup(SM_RDWR, &value))
             die("cannot set up storage manager");
     }
+
+    /* On the -r/-d path with the cancel tombstone enabled, drop to
+     * the news user/group so cancels.tombstone is created (or
+     * appended) with ownership consistent with innd's writes.
+     * Bypassed under the INN_TESTSUITE env var so the test harness
+     * can run sm without a real news user on the system.  All other
+     * sm modes (-i, -c, -H, -R, -s, retrieval) preserve the
+     * historical behaviour of running as the invoking user. */
+    if (options.delete && innconf->expiretombstone
+        && getenv(INN_ENV_TESTSUITE) == NULL)
+        ensure_news_user_grp(true, true);
     if (!SMinit())
         die("cannot initialize storage manager: %s", SMerrorstr);
 
