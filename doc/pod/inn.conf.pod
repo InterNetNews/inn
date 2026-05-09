@@ -550,6 +550,81 @@ flag (which forces a filesystem stat of every article).
 
 This is a non-negative integer, and the default is C<10000>.
 
+=item I<expiretombstone>
+
+Whether INN tools record cancellation tombstones so a subsequent
+B<expire> run can skip per-article storage existence checks.  When
+enabled (and I<groupbaseexpiry> is also true), two log files in
+I<pathdb> capture every cancellation:
+
+=over 4
+
+=item F<expireover.tombstone>
+
+Written by B<expireover> after each successful C<SMcancel> in
+group-based expiry, atomically renamed into place on a clean run.
+When B<expireover> runs with the B<-z> flag (delayed removal), the
+C<SMcancel> calls are deferred to B<fastrm> via B<expirerm>;
+B<expireover> writes the entries up front and B<expirerm> performs
+the atomic rename after B<fastrm> succeeds, so the same speedup
+applies to delayrm setups.  After B<expire> has consumed this file, it
+is unlinked and re-seeded as a header-only successor, matching
+the on-disk presence of F<cancels.tombstone>; the next
+B<expireover> run overwrites the seeded file with its full
+content.
+
+=item F<cancels.tombstone>
+
+Appended continuously by B<innd> when it processes cancel control
+messages, and by B<sm -r> for manual cancellations.  Appenders take
+a shared fcntl POSIX lock; B<expire> snapshots the file by atomic
+rename to F<cancels.tombstone.processing> under an exclusive fcntl
+lock, unlinks the snapshot after a successful consume, then recreates
+F<cancels.tombstone> as a header-only file under an exclusive lock
+so B<nnrpd>'s per-connection fast path stays active through quiet
+inter-cancel periods.  An appender that raced a cancel into a new live
+file between the rename and the recreate has its content preserved
+verbatim below the restored header.  Append atomicity relies on
+POSIX guaranteeing that each C<write(2)> to a regular file opened
+with C<O_APPEND> is atomic with respect to other writers; this holds
+for any size of single C<write> on local filesystems.  Cross-client
+atomicity over NFS is not guaranteed: if I<pathdb> is on NFS, lines
+from concurrent writers on different clients can in theory interleave.
+In practice INN's cancel sources (B<innd> on a single host plus
+occasional B<sm -r> on the same host) write from one client.
+
+=back
+
+The next B<expire> invocation loads both files into a single hashset
+and treats every article in either log as already gone, avoiding an
+C<SMretrieve(RETR_STAT)> call per history entry.  For storage methods
+where the stat is a file-system call (tradspool, timehash) this turns
+a billion C<access(2)> calls into a few thousand hash lookups; for
+storage methods that self-expire (CNFS), the stat call remains because
+articles can vanish through wrap-around without going through
+C<SMcancel>.
+
+In normal operation, every cancellation path participates in
+tombstone tracking, so all articles removed from the spool are
+recorded.  Residual orphans can only accumulate from events outside
+the tracked paths: a process crash in the narrow window between
+C<SMcancel> and the tombstone append, manual filesystem-level
+deletes that bypass B<sm -r>, or filesystem corruption.  When such
+orphans do appear, they are harmless (B<nnrpd> returns "no such
+article" to readers that hit them) and exist only as small history
+entries.  No regular reconciliation cadence is needed.  If an
+operator suspects orphan accumulation after admin intervention or a
+storage incident, B<expire> can be re-run with this option disabled
+in F<inn.conf> to perform an exhaustive C<SMretrieve(RETR_STAT)>
+scan; this is an exceptional operation, not a scheduled one.
+
+Footprint: S<~38 bytes> per entry on disk, S<~50 bytes> in expire's
+hash table.  For instance, 1 million cancels per run needs S<~38 MB>
+for the tombstone and S<~50 MB> for the hash.
+
+This is a boolean value and the default is false; sites should opt in
+after validating the option's behaviour against their workload.
+
 =item I<extraoverviewadvertised>
 
 Besides the seven standard overview fields (which are in order C<Subject>,

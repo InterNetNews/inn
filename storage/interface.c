@@ -6,6 +6,7 @@
 
 #include <ctype.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <time.h>
 
 #include "conffile.h"
@@ -815,6 +816,139 @@ SMcancel(TOKEN token)
         return false;
     }
     return storage_methods[typetoindex[token.type]].cancel(token);
+}
+
+
+/*
+**  Append a token to the out-of-band cancel tombstone log.  Best-effort:
+**  failures are logged but do not affect the caller.  Safe for concurrent
+**  use across processes via inn_lock_file (fcntl POSIX locks; NFS-correct).
+**
+**  Used by callers (innd, sm) that cancel articles outside the
+**  expireover/expirerm pipeline.  expire reads this log alongside the
+**  expireover.tombstone so it can drop history entries for articles
+**  cancelled out-of-band without per-article SMretrieve(RETR_STAT).
+**
+**  No-op when innconf->expiretombstone is false.  No-op for TOKEN_EMPTY.
+**
+**  Locking model: shared (F_RDLCK) for appenders, exclusive (F_WRLCK)
+**  for the consumer's read+rename phase (see tombstone_rename_for_
+**  processing).  The lock type names "read" and "write" here describe
+**  reader-vs-truncator coordination, not file access pattern; both
+**  innd and sm write the file under the shared lock.  POSIX guarantees
+**  that each write(2) to a regular file opened with O_APPEND is
+**  atomic with respect to other writers, so single-line tokens
+**  interleave correctly without per-write serialization.  POSIX
+**  requires F_RDLCK only on a descriptor open for reading, so we
+**  open O_RDWR even though we only write here.
+**
+**  Lock is acquired non-blocking.  innd's main loop must never wait
+**  on filesystem locking (NFS lockd outages, expire's brief
+**  rename hold).  If the lock is contested, we skip this tombstone
+**  write rather than block.  Concurrent appenders do not contend
+**  because shared locks coexist; only expire's exclusive lock
+**  briefly excludes them, during the consumer's rename of cancels.
+**  tombstone to .processing and during the post-consume header
+**  re-seeding shift (tombstone_ensure_header).  Both windows
+**  scale with the file size at the moment they fire; for a
+**  typical site (a few KiB of tokens) the combined hold is well
+**  under a millisecond and the EAGAIN retry below absorbs it.
+*/
+bool
+SMcanceltombstone(TOKEN token)
+{
+    char *path;
+    int fd;
+    FILE *fp;
+    const char *text;
+    bool ok = true;
+
+    /* Both knobs are required: expire only consumes the log when
+     * groupbaseexpiry is also true, so writing without that gate
+     * would leak entries forever and bloat nnrpd's per-connection
+     * cache. */
+    if (!innconf->expiretombstone || !innconf->groupbaseexpiry)
+        return true;
+    if (token.type == TOKEN_EMPTY)
+        return true;
+
+    path = concatpath(innconf->pathdb, "cancels.tombstone");
+    /* O_RDWR (not O_WRONLY) so we can take F_RDLCK below; POSIX
+     * mandates lock-mode-matches-fd-mode. */
+    fd = open(path, O_RDWR | O_CREAT | O_APPEND, 0664);
+    if (fd < 0) {
+        syswarn("can't open %s for tombstone append", path);
+        free(path);
+        return false;
+    }
+    /* Shared, non-blocking.  Multiple appenders coexist; only blocked
+     * by expire's exclusive consumer lock during its brief rename.
+     *
+     * Race window: between our open() and our lock(), expire may
+     * rename(cancels.tombstone, cancels.tombstone.processing),
+     * leaving us with a fd pointing at the renamed (doomed) inode.
+     * If we acquired the lock on that fd and wrote, our entry would
+     * be consumed only by expire's already-loaded snapshot -- and
+     * our writes appended after the rename are not in that snapshot,
+     * so they would be unlinked when expire finishes.
+     *
+     * Resolution: on EAGAIN/EACCES (lock held by expire's rename
+     * window), close and reopen the path.  After expire releases
+     * its exclusive lock, the path resolves to a fresh inode (or
+     * nothing, in which case O_CREAT makes a new one).  Either way,
+     * the second open lands on the live file the next consumer
+     * will see.  A 1ms sleep is more than enough for expire to
+     * complete its rename and release. */
+    if (!inn_lock_file(fd, INN_LOCK_READ, false)) {
+        if (errno == EAGAIN || errno == EACCES) {
+            struct timespec ts = {0, 1000000L}; /* 1ms */
+            close(fd);
+            nanosleep(&ts, NULL);
+            fd = open(path, O_RDWR | O_CREAT | O_APPEND, 0664);
+            if (fd < 0) {
+                syswarn("can't reopen %s for tombstone append", path);
+                free(path);
+                return false;
+            }
+            if (!inn_lock_file(fd, INN_LOCK_READ, false)) {
+                syswarn("can't lock %s after retry; skipping"
+                        " tombstone entry",
+                        path);
+                close(fd);
+                free(path);
+                return false;
+            }
+        } else {
+            syswarn("can't lock %s; skipping tombstone entry", path);
+            close(fd);
+            free(path);
+            return false;
+        }
+    }
+    fp = fdopen(fd, "a");
+    if (fp == NULL) {
+        syswarn("can't fdopen %s", path);
+        inn_lock_file(fd, INN_LOCK_UNLOCK, true);
+        close(fd);
+        free(path);
+        return false;
+    }
+    text = TokenToText(token);
+    /* Single fprintf + fflush keeps the kernel-visible write to one
+     * syscall (~38-byte payload) so the per-write O_APPEND atomicity
+     * guarantee holds for concurrent shared-lock appenders. */
+    if (fprintf(fp, "%s\n", text) < 0 || fflush(fp) == EOF) {
+        syswarn("can't write to %s", path);
+        ok = false;
+    }
+    /* fclose closes the underlying fd, which releases the fcntl
+     * POSIX lock; no separate INN_LOCK_UNLOCK needed. */
+    if (fclose(fp) == EOF) {
+        syswarn("can't close %s", path);
+        ok = false;
+    }
+    free(path);
+    return ok;
 }
 
 bool

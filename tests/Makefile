@@ -16,7 +16,8 @@ LIBM_LDFLAGS    = '-lm'
 ##  list.  If they need other things compiled, those other things should be
 ##  added to EXTRA.
 
-TESTS	= authprogs/ident.t innd/artparse.t innd/chan.t lib/artnumber.t \
+TESTS	= authprogs/ident.t expire/tombstone.t expire/tombstone-hisexpire.t \
+	innd/artparse.t innd/chan.t lib/artnumber.t \
 	lib/asprintf.t lib/bloom.t lib/bloom-hiswalk.t lib/buffer.t \
 	lib/canlock.t lib/concat.t lib/conffile.t \
 	lib/confparse.t lib/daemon.t lib/date.t \
@@ -32,7 +33,7 @@ TESTS	= authprogs/ident.t innd/artparse.t innd/chan.t lib/artnumber.t \
 	lib/strlcpy.t lib/tst.t lib/uwildmat.t lib/vector.t lib/wire.t \
 	lib/xwrite.t nnrpd/auth-ext.t overview/api.t overview/buffindexed.t \
 	overview/ovsqlite.t overview/tradindexed.t overview/xref.t \
-	util/innbind.t
+	storage/cancel-tombstone.t util/innbind.t
 
 ##  Extra stuff that needs to be built before tests can be run.
 
@@ -91,6 +92,14 @@ docs/pod.t: docs/pod.t.in $(FIXSCRIPT)
 
 authprogs/ident.t: authprogs/ident-t.o tap/basic.o $(LIBINN)
 	$(LINK) authprogs/ident-t.o tap/basic.o $(LIBINN) $(LIBS)
+
+expire/tombstone.t: expire/tombstone-t.o tap/basic.o $(STORAGEDEPS)
+	$(LINKDEPS) expire/tombstone-t.o tap/basic.o $(STORAGELIBS) $(LIBS)
+
+expire/tombstone-hisexpire.t: expire/tombstone-hisexpire-t.o tap/basic.o \
+	    $(STORAGEDEPS)
+	$(LINKDEPS) expire/tombstone-hisexpire-t.o tap/basic.o \
+	    $(STORAGELIBS) $(LIBS)
 
 innd/artparse.t: innd/artparse-t.o innd/fakeinnd.o tap/basic.o $(INNOBJS)
 	$(LINK) innd/artparse-t.o innd/fakeinnd.o tap/basic.o $(INNOBJS) \
@@ -327,6 +336,11 @@ overview/xref.t: overview/xref-t.o tap/basic.o $(STORAGEDEPS)
 
 perl/minimum-version.t: perl/minimum-version.t.in $(FIXSCRIPT)
 	$(FIX) -i perl/minimum-version.t.in
+
+storage/cancel-tombstone.t: storage/cancel-tombstone-t.o tap/basic.o \
+	    $(STORAGEDEPS)
+	$(LINKDEPS) storage/cancel-tombstone-t.o tap/basic.o \
+	    $(STORAGELIBS) $(LIBS)
 
 util/innbind.t: util/innbind-t.o tap/basic.o $(LIBINN)
 	$(LINK) util/innbind-t.o tap/basic.o $(LIBINN) $(LIBS)

@@ -10,6 +10,7 @@
 #include <syslog.h>
 #include <time.h>
 
+#include "inn/hashtab.h"
 #include "inn/history.h"
 #include "inn/innconf.h"
 #include "inn/inndcomm.h"
@@ -18,6 +19,7 @@
 #include "inn/newsuser.h"
 #include "inn/paths.h"
 #include "inn/storage.h"
+#include "inn/tombstone.h"
 
 
 typedef struct _EXPIRECLASS {
@@ -48,6 +50,7 @@ static char *EXPgraph;
 static int EXPverbose;
 static long EXPprocessed;
 static long EXPunlinked;
+static long EXPtombstoned;
 static long EXPallgone;
 static long EXPstillhere;
 static struct history *History;
@@ -370,23 +373,209 @@ EXPremove(const TOKEN *token)
         warn("cannot unlink %s", TokenToText(*token));
 }
 
+
+/*
+**  Load both tombstone logs into a hashset:
+**    - ${pathdb}/expireover.tombstone : written by expireover/expirerm
+**      (atomic .NEW -> final rename); unlinked after a successful
+**      expire run
+**    - ${pathdb}/cancels.tombstone    : appended continuously by innd
+**      and sm for cancels outside the expireover pipeline; renamed
+**      to .processing at load time and unlinked after a successful
+**      expire run (rename-and-process avoids the read/truncate race
+**      that drops cancels arriving during HISexpire)
+**
+**  At startup, also recovers any leftover .processing snapshot from a
+**  previous expire run that crashed before unlinking.
+**
+**  consuming=true means this is a real run that will replace the
+**  history file; we rename cancels.tombstone to .processing under
+**  the consumer's lock so concurrent appenders cannot lose cancels
+**  written between our read and the eventual unlink.
+**  consuming=false (dry-run, tracing, or alternate-output expire) skips
+**  the rename and reads the live file directly: no consume happens, so
+**  there is nothing to atomically detach.  This avoids both the
+**  TOCTOU race in restoring the snapshot and the operator surprise
+**  of cancels.tombstone disappearing for the duration of a -x run.
+**
+**  Returns NULL if no tombstone could be loaded (no file present or
+**  all reads failed); that is not an error, and expire just falls back
+**  to the per-article SMretrieve check.
+**  *out_expireover_path and *out_cancels_snapshot are set to the file
+**  paths (caller frees and unlinks after a successful run); both are
+**  NULL when consuming is false.
+*/
+static struct hash *
+EXPloadtombstone(bool consuming, char **out_expireover_path,
+                 char **out_cancels_snapshot)
+{
+    char *expireover_path = NULL;
+    char *cancels_path = NULL;
+    char *cancels_snapshot = NULL;
+    char *leftover = NULL;
+    struct hash *h = NULL;
+    struct stat sb;
+    unsigned long n_expireover = 0;
+    unsigned long n_cancels = 0;
+    unsigned long n_leftover = 0;
+    bool expireover_present = false;
+    bool leftover_present = false;
+    bool cancels_present = false;
+
+    /* Default outputs to NULL; only set on the success-return path
+       below.  This avoids double-frees if a future maintainer adds an
+       early return between here and that single point. */
+    *out_expireover_path = NULL;
+    *out_cancels_snapshot = NULL;
+
+    expireover_path = concatpath(innconf->pathdb, "expireover.tombstone");
+    cancels_path = concatpath(innconf->pathdb, "cancels.tombstone");
+    leftover = concat(cancels_path, ".processing", (char *) 0);
+
+    /* Probe each file's presence (independent of content) so we can
+       distinguish "tombstone subsystem is actively tracking but had
+       no cancels this cycle" (trust the empty hashset, skip
+       SMretrieve for everything) from "no files at all" (subsystem
+       not in use, fall back to slow path).  Without this, a cycle
+       with zero cancels would needlessly run SMretrieve on every
+       history entry. */
+    if (stat(expireover_path, &sb) == 0)
+        expireover_present = true;
+    if (stat(leftover, &sb) == 0)
+        leftover_present = true;
+    if (stat(cancels_path, &sb) == 0)
+        cancels_present = true;
+
+    /* Initial size: tokens are typically ~38 bytes per line; we let the
+       hash expand if we underestimate.  4096 covers the common case. */
+    h = tombstone_hash_create(4096);
+
+    /* Recover a leftover .processing from a previous run that crashed
+       between rename and unlink. */
+    n_leftover = tombstone_read(h, leftover, NULL);
+
+    /* On a real run, atomically snapshot the live cancels.tombstone,
+       then read it.  On dry-run / tracing / alt-output, just read
+       the live file directly: no consume happens, so there is no
+       need to detach it (and detach-then-restore has a TOCTOU race
+       with concurrent appenders). */
+    if (consuming) {
+        cancels_snapshot = tombstone_rename_for_processing(cancels_path);
+        if (cancels_snapshot != NULL)
+            n_cancels = tombstone_read(h, cancels_snapshot, NULL);
+    } else {
+        n_cancels = tombstone_read(h, cancels_path, NULL);
+    }
+
+    /* Read the expireover-side log. */
+    n_expireover = tombstone_read(h, expireover_path, NULL);
+
+    if (EXPverbose)
+        printf("Loaded %lu + %lu + %lu tombstone entries (%lu unique)\n",
+               n_expireover, n_cancels, n_leftover, hash_count(h));
+
+    /* Reconcile the leftover with the active snapshot.  Only relevant
+       on a real consuming run; dry-run leaves the leftover where it
+       is for the next consuming run to pick up.
+       (a) leftover empty: just free the path string
+       (b) leftover non-empty + no live snapshot: promote leftover to
+           be the snapshot so the caller's single unlink covers it
+       (c) leftover non-empty + live snapshot: unlink the leftover now
+           (its contents are already in the hashset); the snapshot
+           remains and is unlinked on success */
+    if (consuming) {
+        if (n_leftover > 0 && cancels_snapshot == NULL) {
+            cancels_snapshot = leftover;
+            leftover = NULL;
+        } else if (n_leftover > 0) {
+            if (unlink(leftover) < 0)
+                syswarn("can't unlink %s", leftover);
+        } else if (leftover_present && cancels_snapshot == NULL) {
+            /* Leftover existed but was empty.  Treat it as the
+               snapshot so the caller cleans it up after a
+               successful run. */
+            cancels_snapshot = leftover;
+            leftover = NULL;
+        } else if (leftover_present) {
+            /* Both leftover and live snapshot existed; leftover
+               empty.  Unlink it now; snapshot will be cleaned up
+               on success. */
+            if (unlink(leftover) < 0)
+                syswarn("can't unlink %s", leftover);
+        }
+    }
+    free(leftover);
+    leftover = NULL;
+
+    /* Decide between "fall back to slow path" (return NULL) and
+       "trust the (possibly empty) tombstone".  A file that exists
+       (regardless of content) is taken as evidence the tombstone
+       subsystem is active for this site: innd/sm/expireover are
+       writing it.  An empty active tombstone correctly says "nothing
+       was cancelled in the last cycle"; trust it.  In dry-run mode
+       cancels.tombstone is not renamed, so cancels_snapshot stays
+       NULL; use the cancels_present probe instead. */
+    if (!expireover_present && !leftover_present && !cancels_present
+        && cancels_snapshot == NULL) {
+        hash_free(h);
+        free(expireover_path);
+        free(cancels_path);
+        return NULL;
+    }
+
+    /* Single success-return: hand both paths to the caller for
+       cleanup after a successful run. */
+    free(cancels_path);
+    *out_expireover_path = expireover_path;
+    *out_cancels_snapshot = cancels_snapshot;
+    return h;
+}
+
+
 /*
 **  Do the work of expiring one line.
 **  Returns true when the article should be kept for the time being.
 */
 static bool
-EXPdoline(void *cookie UNUSED, time_t arrived, time_t posted, time_t expires,
+EXPdoline(void *cookie, time_t arrived, time_t posted, time_t expires,
           TOKEN *token)
 {
+    struct hash *tombstone = (struct hash *) cookie;
     time_t when;
     bool HasSelfexpire = false;
     bool Selfexpired = false;
+    bool selfexpiring;
     ARTHANDLE *article;
     enum KR kr;
     bool r;
 
-    if (innconf->groupbaseexpiry || SMprobe(SELFEXPIRE, token, NULL)) {
-        if ((article = SMretrieve(*token, RETR_STAT)) == (ARTHANDLE *) NULL) {
+    /* Tombstone fast path: if expireover already cancelled this article,
+       drop the history entry without doing any storage I/O.  Bump
+       EXPunlinked too so the news.daily summary's "Articles dropped"
+       count matches the slow path's accounting (EXPremove also bumps
+       it). */
+    if (tombstone != NULL && hash_lookup(tombstone, token) != NULL) {
+        EXPprocessed++;
+        if (EXPverbose > 3)
+            printf("%s (tombstoned by expireover)\n", TokenToText(*token));
+        EXPallgone++;
+        EXPunlinked++;
+        EXPtombstoned++;
+        return false;
+    }
+
+    selfexpiring = SMprobe(SELFEXPIRE, token, NULL);
+
+    if (innconf->groupbaseexpiry || selfexpiring) {
+        if (tombstone != NULL && !selfexpiring) {
+            /* Backend does not self-expire and the tombstone log is
+               complete: not in the log means the article still exists.
+               Skip the SMretrieve to avoid a per-article syscall (the
+               main speedup for tradspool / timehash / timecaf). */
+            HasSelfexpire = true;
+            Selfexpired = false;
+        } else if ((article = SMretrieve(*token, RETR_STAT))
+                   == (ARTHANDLE *) NULL) {
             HasSelfexpire = true;
             Selfexpired = true;
         } else {
@@ -470,6 +659,8 @@ CleanupAndExit(bool Server, bool Paused, int x)
         printf("Entries expired         %8ld\n", EXPallgone);
         if (!innconf->groupbaseexpiry)
             printf("Articles dropped        %8ld\n", EXPunlinked);
+        if (innconf->expiretombstone && innconf->groupbaseexpiry)
+            printf("Tombstone hits          %8ld\n", EXPtombstoned);
     }
 
     /* Append statistics to a summary file */
@@ -535,6 +726,16 @@ main(int ac, char *av[])
 
     if (!innconf_read(NULL))
         exit(1);
+
+    /* Warn about expiretombstone-without-groupbaseexpiry: in that
+       configuration there is no consumable tombstone since OVEXPremove
+       (which writes one of the two logs) is never called.  The
+       cancels.tombstone written by innd/sm could still be loaded, but
+       only with groupbaseexpiry to make the result coherent with
+       expire's overall semantics. */
+    if (innconf->expiretombstone && !innconf->groupbaseexpiry)
+        notice("expiretombstone has no effect when groupbaseexpiry"
+               " is false - check your inn.conf configuration");
 
     HistoryText = concatpath(innconf->pathdb, INN_PATH_HISTORY);
 
@@ -694,9 +895,70 @@ main(int ac, char *av[])
         CleanupAndExit(Server, false, 1);
     }
 
-    Bad = HISexpire(History, NHistory, EXPreason, Writing, NULL, EXPremember,
-                    EXPdoline)
-          == false;
+    /* Consume the tombstone logs produced since the last expire run.
+       Lets EXPdoline drop history entries for articles cancelled by
+       expireover, expirerm, innd, or sm without per-article SMretrieve
+       calls.  Gated on groupbaseexpiry as well: if the admin flipped
+       that off since the last expireover, a stale tombstone written
+       under the old config could drop history entries for articles
+       still alive. */
+    {
+        bool consuming = Writing && !EXPtracing && NHistory == NULL;
+        char *expireover_path = NULL;
+        char *cancels_snapshot = NULL;
+        struct hash *tombstone = NULL;
+
+        if (innconf->expiretombstone && innconf->groupbaseexpiry)
+            tombstone = EXPloadtombstone(consuming, &expireover_path,
+                                         &cancels_snapshot);
+
+        Bad = HISexpire(History, NHistory, EXPreason, Writing, tombstone,
+                        EXPremember, EXPdoline)
+              == false;
+
+        if (tombstone != NULL)
+            hash_free(tombstone);
+
+        /* On a successful real run, unlink both consumed snapshots
+           and seed header-only successors.  Dry-run / tracing /
+           alt-output skipped the rename in the loader so there are
+           no snapshot paths to clean up. */
+        if (!Bad && consuming) {
+            if (expireover_path != NULL) {
+                if (unlink(expireover_path) < 0 && errno != ENOENT)
+                    syswarn("can't unlink %s", expireover_path);
+            }
+            if (cancels_snapshot != NULL) {
+                if (unlink(cancels_snapshot) < 0 && errno != ENOENT)
+                    syswarn("can't unlink %s", cancels_snapshot);
+            }
+
+            /* Leave header-only successors behind so both tombstone
+               files exist symmetrically in pathdb after every
+               successful expire.  For cancels.tombstone this keeps
+               nnrpd's per-connection fast path active through quiet
+               inter-cycle periods.  For expireover.tombstone, it is
+               cosmetic but matches the file's documented presence;
+               expireover will overwrite the header-only file the
+               next time it runs.  Runs every consuming cycle when
+               the feature is enabled, including the brand-new-
+               install case where EXPloadtombstone returned NULL and
+               there was no snapshot to consume.  Idempotent when
+               the file already starts with the header. */
+            if (innconf->expiretombstone && innconf->groupbaseexpiry) {
+                char *path;
+
+                path = concatpath(innconf->pathdb, "cancels.tombstone");
+                tombstone_ensure_header(path);
+                free(path);
+                path = concatpath(innconf->pathdb, "expireover.tombstone");
+                tombstone_ensure_header(path);
+                free(path);
+            }
+        }
+        free(expireover_path);
+        free(cancels_snapshot);
+    }
 
     if (UnlinkFile && EXPunlinkfile == NULL)
         /* Got -z but file was closed; oops. */

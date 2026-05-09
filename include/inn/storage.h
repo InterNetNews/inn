@@ -106,6 +106,28 @@ ARTHANDLE *SMretrieve(const TOKEN token, const RETRTYPE amount);
 ARTHANDLE *SMnext(ARTHANDLE *article, const RETRTYPE amount);
 void SMfreearticle(ARTHANDLE *article);
 bool SMcancel(TOKEN token);
+
+/*
+ * Best-effort: append a token to the out-of-band cancel tombstone log
+ * (${pathdb}/cancels.tombstone) so a later expire run can drop the
+ * matching history entry without an SMretrieve(RETR_STAT).  Intended
+ * for callers that cancel articles outside the expireover/expirerm
+ * pipeline (innd's ARTcancel and sm -r).  No-op when
+ * innconf->expiretombstone is false or token has type TOKEN_EMPTY.
+ *
+ * Concurrency: appenders take a non-blocking shared (F_RDLCK) fcntl
+ * lock; expire's consumer takes an exclusive lock briefly during
+ * snapshot/rename.  POSIX O_APPEND atomicity for sub-PIPE_BUF
+ * writes keeps single-line tokens from interleaving across
+ * concurrent appenders.
+ *
+ * Returns true on success (token appended, flushed, file closed),
+ * false on any failure path.  Failures are logged via syswarn;
+ * callers can ignore the return value (the cancel itself has
+ * already succeeded by the time this is called).
+ */
+bool SMcanceltombstone(TOKEN token);
+
 bool SMprobe(PROBETYPE type, TOKEN *token, void *value);
 bool SMflushcacheddata(FLUSHTYPE type);
 void SMprintfiles(FILE *file, TOKEN token, char **xref, int ngroups);
