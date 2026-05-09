@@ -30,7 +30,9 @@ TESTS	= authprogs/ident.t innd/artparse.t innd/chan.t lib/artnumber.t \
 	lib/setenv.t lib/snprintf.t lib/strlcat.t \
 	lib/strlcpy.t lib/tst.t lib/uwildmat.t lib/vector.t lib/wire.t \
 	lib/xwrite.t nnrpd/auth-ext.t overview/api.t overview/buffindexed.t \
-	overview/tradindexed.t overview/xref.t util/innbind.t
+	overview/tradindexed.t overview/xref.t util/innbind.t \
+	expire/tombstone.t expire/tombstone-hisexpire.t \
+	storage/cancel-tombstone.t
 
 ##  Extra stuff that needs to be built before tests can be run.
 
@@ -305,6 +307,19 @@ overview/tradindexed.t: overview/tradindexed-t.o tap/basic.o $(STORAGEDEPS)
 
 overview/xref.t: overview/xref-t.o tap/basic.o $(STORAGEDEPS)
 	$(LINKDEPS) overview/xref-t.o tap/basic.o $(STORAGELIBS) $(LIBS)
+
+expire/tombstone.t: expire/tombstone-t.o tap/basic.o $(STORAGEDEPS)
+	$(LINKDEPS) expire/tombstone-t.o tap/basic.o $(STORAGELIBS) $(LIBS)
+
+expire/tombstone-hisexpire.t: expire/tombstone-hisexpire-t.o tap/basic.o \
+	    $(STORAGEDEPS)
+	$(LINKDEPS) expire/tombstone-hisexpire-t.o tap/basic.o \
+	    $(STORAGELIBS) $(LIBS)
+
+storage/cancel-tombstone.t: storage/cancel-tombstone-t.o tap/basic.o \
+	    $(STORAGEDEPS)
+	$(LINKDEPS) storage/cancel-tombstone-t.o tap/basic.o \
+	    $(STORAGELIBS) $(LIBS)
 
 perl/minimum-version.t: perl/minimum-version.t.in $(FIXSCRIPT)
 	$(FIX) -i perl/minimum-version.t.in

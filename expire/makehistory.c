@@ -287,6 +287,15 @@ FlushOverTmpFile(void)
             arrived = (time_t) atoll(line);
             expires = (time_t) atoll(p);
         }
+        /* Validate before TextToToken: that function returns an
+         * all-zero TOKEN on malformed input rather than an error
+         * sentinel, so a bad line would silently insert a bogus
+         * overview entry. */
+        if (!IsToken(q)) {
+            warn("sorted overview file %s has a malformed token at %d",
+                 SortedTmpPath, count);
+            continue;
+        }
         token = TextToToken(q);
         if (OVadd(token, r, strlen(r), arrived, expires) == OVADDFAILED) {
             if (OVctl(OVSPACE, (void *) &f)

@@ -71,6 +71,7 @@ static const struct config config_table[] = {
     {K(enableoverview),             BOOL(true)        },
     {K(extraoverviewadvertised),    LIST(NULL)        },
     {K(extraoverviewhidden),        LIST(NULL)        },
+    {K(expiretombstone),            BOOL(false)       },
     {K(fromhost),                   STRING(NULL)      },
     {K(groupbaseexpiry),            BOOL(true)        },
     {K(mailcmd),                    STRING(NULL)      },

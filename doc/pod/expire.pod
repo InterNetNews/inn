@@ -175,6 +175,18 @@ is specified, the file I<pathetc>/expire.ctl is read.
 
 =back
 
+=head1 TOMBSTONE LOG
+
+When I<expiretombstone> is enabled in F<inn.conf>, B<expire> consumes
+the per-cycle deletion log produced by B<expireover>, B<innd>, and
+B<sm -r> (F<I<pathdb>/expireover.tombstone> and
+F<I<pathdb>/cancels.tombstone>) so it can drop history entries for
+those articles without doing a per-article C<SMretrieve(RETR_STAT)>
+syscall.  An empty tombstone is treated as "no cancels this cycle"
+and the slow scan is skipped entirely.  See inn.conf(5) under
+I<expiretombstone> for the file lifecycle, locking model, and
+recovery story.
+
 =head1 HISTORY
 
 Written by Rich $alz <rsalz@uunet.uu.net> for InterNetNews.  Converted to

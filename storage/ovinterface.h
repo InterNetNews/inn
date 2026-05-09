@@ -5,6 +5,8 @@
 #ifndef OVINTERFACE_H
 #define OVINTERFACE_H
 
+#include <stdio.h>
+
 #include "config.h"
 #include "inn/history.h"
 #include "inn/ov.h"
@@ -41,6 +43,17 @@ void OVEXPcleanup(void);
 
 extern time_t OVnow;
 extern FILE *EXPunlinkfile;
+
+/* Tombstone log: when set, OVEXPremove appends the textual form of each
+ * successfully cancelled token to this stream.  A subsequent expire run
+ * consumes the log to drop history entries for those articles without
+ * doing per-article SMretrieve(RETR_STAT) calls.  Set by expireover (and
+ * by fastrm when called via expirerm in delayrm mode).  Internal --
+ * managed via direct extern access by expireover/fastrm, not via OVctl,
+ * because the file lifecycle (atomic .NEW -> final rename on success)
+ * does not fit the per-call OVctl pattern. */
+extern FILE *OVtombstonefile;
+
 extern bool OVignoreselfexpire;
 extern bool OVusepost;
 extern bool OVkeep;

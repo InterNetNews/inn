@@ -21,6 +21,14 @@ F<expire.ctl>.  Otherwise it only removes overview entries for articles
 that have already been removed by some other process, and B<-e>, B<-k>,
 B<-N>, B<-p>, B<-q>, B<-w>, and B<-z> are all ignored.
 
+When I<expiretombstone> is enabled in F<inn.conf>, B<expireover>
+appends each cancelled token to F<I<pathdb>/expireover.tombstone.NEW>
+under an exclusive POSIX lock and atomically renames the file into
+place on a clean run.  In delayrm mode (B<-z>), the rename is
+performed by B<expirerm> after B<fastrm> succeeds.  The next
+B<expire> run consumes this log to skip per-article storage existence
+checks.  See inn.conf(5) under I<expiretombstone>.
+
 When I<groupbaseexpiry> is set, the default behavior of B<expireover> is
 to remove the article from the spool once it expires out of all of the
 newsgroups to which it was crossposted.  The article is, however, removed

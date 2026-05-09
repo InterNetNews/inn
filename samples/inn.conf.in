@@ -66,6 +66,7 @@ cnfscheckfudgesize:          0
 enableoverview:              true
 extraoverviewadvertised:     [ ]
 extraoverviewhidden:         [ ]
+expiretombstone:             false
 groupbaseexpiry:             true
 mergetogroups:               false
 nfswriter:                   false

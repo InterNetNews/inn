@@ -441,6 +441,7 @@ include/inn/secrets.h                 Header file for the secrets struct
 include/inn/sequence.h                Header file for sequence space arithmetic
 include/inn/storage.h                 Header file for storage API
 include/inn/timer.h                   Header file for generic timers
+include/inn/tombstone.h               Header file for cancel tombstone log
 include/inn/tst.h                     Header file for ternary search tries
 include/inn/utility.h                 Header file for utility functions
 include/inn/vector.h                  Header file for vectors of strings
@@ -805,6 +806,7 @@ storage/timehash                      timehash storage method (Directory)
 storage/timehash/method.config        buildconfig definition
 storage/timehash/timehash.c           timehash storage routines
 storage/timehash/timehash.h           Header for timehash
+storage/tombstone.c                   Cancel tombstone log helpers
 storage/tradindexed                   tradindexed overview method (Directory)
 storage/tradindexed/ovmethod.config   buildconfig definition
 storage/tradindexed/ovmethod.mk       Make rules for tradindexed overview
@@ -931,6 +933,10 @@ tests/data/upgrade/readers.conf.ok    Fixed readers.conf file
 tests/data/upgrade/sasl.conf          Obsolete sasl.conf config file
 tests/docs                            Test suite for documentation (Directory)
 tests/docs/pod.t.in                   Tests for POD formatting
+tests/expire                          Test suite for expire (Directory)
+tests/expire/tombstone-e2e.t          End-to-end tests for tombstone log
+tests/expire/tombstone-hisexpire-t.c  HISexpire integration test for tombstone
+tests/expire/tombstone-t.c            Tests for tombstone library
 tests/innd                            Test suite for innd (Directory)
 tests/innd/artparse-t.c               Tests for ARTparse in innd
 tests/innd/chan-t.c                   Tests for CHAN functions in innd
@@ -997,6 +1003,7 @@ tests/perl/minimum-version.t.in       Tests for not too-new features of Perl
 tests/runtests.c                      The test suite driver program
 tests/storage                         Test suite for storage (Directory)
 tests/storage/archive.t               Tests for backends/archive
+tests/storage/cancel-tombstone-t.c    Tests for SMcanceltombstone
 tests/storage/makehistory.t           Tests for expire/makehistory
 tests/storage/sm.t                    Tests for frontends/sm
 tests/tap                             Helper scripts for TAP (Directory)

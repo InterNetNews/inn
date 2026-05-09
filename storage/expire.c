@@ -14,6 +14,7 @@
 
 #include "inn/innconf.h"
 #include "inn/libinn.h"
+#include "inn/messages.h"
 #include "inn/ov.h"
 #include "inn/overview.h"
 #include "inn/paths.h"
@@ -100,6 +101,7 @@ static char *ACTIVE;
    This should be cleaned up with a better internal interface. */
 time_t OVnow;
 FILE *EXPunlinkfile;
+FILE *OVtombstonefile;
 bool OVignoreselfexpire;
 bool OVusepost;
 bool OVkeep;
@@ -522,16 +524,53 @@ OVEXPremove(TOKEN token, bool deletedgroups, char **xref, int ngroups)
     }
     if (EXPunlinkfile && xref != NULL) {
         SMprintfiles(EXPunlinkfile, token, xref, ngroups);
-        if (!ferror(EXPunlinkfile))
+        if (!ferror(EXPunlinkfile)) {
+            /* Deferred-removal path: actual SMcancel happens later via
+             * expirerm/fastrm.  Record the token in the tombstone log
+             * now so the eventual expire run can consume it.  The
+             * .NEW -> final rename is performed by expirerm after
+             * fastrm succeeds (see expirerm.in); if expirerm fails or
+             * is skipped, the .NEW file is wiped by the next
+             * expireover and never consumed, so a partial rmfile
+             * never lets expire drop history for live articles. */
+            if (OVtombstonefile != NULL) {
+                fprintf(OVtombstonefile, "%s\n", TokenToText(token));
+                if (ferror(OVtombstonefile)) {
+                    syswarn("can't write tombstone log; ignoring it"
+                            " for rest of run");
+                    fclose(OVtombstonefile);
+                    OVtombstonefile = NULL;
+                }
+            }
             return;
-        fprintf(stderr, "Can't write to -z file, %s\n", strerror(errno));
-        fprintf(stderr, "(Will ignore it for rest of run.)\n");
+        }
+        syswarn("can't write to -z file; ignoring it for rest of run");
         fclose(EXPunlinkfile);
         EXPunlinkfile = NULL;
     }
-    if (!SMcancel(token) && SMerrno != SMERR_NOENT && SMerrno != SMERR_UNINIT)
-        fprintf(stderr, "Can't unlink %s: %s\n", TokenToText(token),
-                SMerrorstr);
+    /* Inline-cancel path.  Tombstone is written only on a successful
+     * SMcancel (or NOENT, where the article is already gone): the log
+     * must be a strict subset of articles actually removed.  Otherwise
+     * a non-NOENT/UNINIT failure (EIO, EBUSY, fs permission, etc.)
+     * would let the next expire drop the history entry while the
+     * article remains on disk: an undetectable permanent orphan.
+     * The inverse risk (cancelled but not logged on a crash between
+     * SMcancel and fprintf) leaves a history entry pointing at a
+     * missing article, which is recoverable by a periodic non-tombstone
+     * reconciliation run. */
+    if (SMcancel(token) || SMerrno == SMERR_NOENT) {
+        if (OVtombstonefile != NULL) {
+            fprintf(OVtombstonefile, "%s\n", TokenToText(token));
+            if (ferror(OVtombstonefile)) {
+                syswarn("can't write tombstone log; ignoring it for"
+                        " rest of run");
+                fclose(OVtombstonefile);
+                OVtombstonefile = NULL;
+            }
+        }
+    } else if (SMerrno != SMERR_UNINIT) {
+        warn("can't unlink %s: %s", TokenToText(token), SMerrorstr);
+    }
 }
 
 /*

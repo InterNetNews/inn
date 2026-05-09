@@ -278,6 +278,8 @@ tests/runtests
 tests/authprogs/ident.t
 tests/clients/server-list
 tests/docs/pod.t
+tests/expire/tombstone-hisexpire.t
+tests/expire/tombstone.t
 tests/innd/artparse.t
 tests/innd/chan.t
 tests/lib/artnumber.t
@@ -330,4 +332,5 @@ tests/overview/buffindexed.t
 tests/overview/tradindexed.t
 tests/overview/xref.t
 tests/perl/minimum-version.t
+tests/storage/cancel-tombstone.t
 tests/util/innbind.t

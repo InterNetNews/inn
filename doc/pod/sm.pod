@@ -51,6 +51,13 @@ will delete the article out of the news spool and it will not subsequently
 be retrievable by any part of INN.  It's equivalent to C<ctlinnd cancel>
 except it takes a storage API token instead of a message-ID.
 
+When the I<expiretombstone> setting in F<inn.conf> is true, B<sm -r>
+also appends the cancelled token to F<I<pathdb>/cancels.tombstone>
+so a later B<expire> run can drop the corresponding history entry
+without a per-article storage check.  Append failures are logged
+but do not affect the cancellation itself.  See inn.conf(5) under
+I<expiretombstone> for the full mechanism.
+
 =item B<-H>
 
 Retrieve only the headers of the article rather than the entire article.

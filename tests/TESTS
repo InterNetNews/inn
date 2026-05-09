@@ -52,6 +52,10 @@ lib/xwrite
 nnrpd/auth-ext
 overview/api
 overview/buffindexed
+expire/tombstone
+expire/tombstone-e2e
+expire/tombstone-hisexpire
+storage/cancel-tombstone
 overview/overchan
 overview/tradindexed
 overview/xref

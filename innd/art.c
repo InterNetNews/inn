@@ -1280,9 +1280,15 @@ ARTcancel(const ARTDATA *data, const char *MessageID, const bool Trusted)
     /* Get stored message and zap them. */
     if (innconf->enableoverview)
         OVcancel(token);
-    if (!SMcancel(token) && SMerrno != SMERR_NOENT && SMerrno != SMERR_UNINIT)
+    if (SMcancel(token) || SMerrno == SMERR_NOENT) {
+        /* Record the out-of-band cancel so a later expire run can drop
+         * the history entry without an SMretrieve(RETR_STAT).  Best-
+         * effort and a no-op when expiretombstone is disabled. */
+        SMcanceltombstone(token);
+    } else if (SMerrno != SMERR_UNINIT) {
         syslog(L_ERROR, "%s cant cancel %s (SMerrno %d)", LogName,
                TokenToText(token), SMerrno);
+    }
     if (innconf->immediatecancel && !SMflushcacheddata(SM_CANCELLEDART))
         syslog(L_ERROR, "%s cant cancel cached %s", LogName,
                TokenToText(token));
