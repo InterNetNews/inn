@@ -7,13 +7,16 @@
 #include <assert.h>
 #include <ctype.h>
 #include <limits.h>
+#include <sys/stat.h>
 #include <sys/uio.h>
 
 #include "cache.h"
 #include "inn/innconf.h"
+#include "inn/libinn.h"
 #include "inn/messages.h"
 #include "inn/ov.h"
 #include "inn/overview.h"
+#include "inn/tombstone.h"
 #include "inn/wire.h"
 #include "nnrpd.h"
 #include "tls.h"
@@ -260,17 +263,131 @@ ARTclose(void)
     }
 }
 
+/*
+**  Cancel-tombstone fast path for ARTinstorebytoken.  When both
+**  innconf->expiretombstone and PERMaccessconf->nnrpdcheckart are true,
+**  consult ${pathdb}/cancels.tombstone before falling through to the
+**  per-article SMretrieve syscall.  The tombstone records cancels
+**  written by innd's ARTcancel and by sm -r, the out-of-band paths
+**  that can leave overview entries pointing at gone storage in the
+**  brief race window before overview cleanup propagates, or until the
+**  next expireover for sm -r.
+**
+**  Lazy per-connection: loaded on first call, refreshed on mtime
+**  change.  Memory cost is ~50 bytes per cancel; typical sites have
+**  hundreds of entries.  Falls through to SMretrieve on load failure.
+*/
+static struct hash *nnrpd_tombstone = NULL;
+static char *nnrpd_tombstone_path = NULL;
+static time_t nnrpd_tombstone_mtime = 0;
+static off_t nnrpd_tombstone_size = 0;
+
+/*
+**  Bring the per-connection tombstone cache up to date.  Returns true
+**  if a usable hashset is loaded after the call (caller may then
+**  consult tombstone_present), false otherwise (file missing or load
+**  failed; caller should fall through to the slow path).
+**
+**  Stat'd on every call so a cancel recorded by another process
+**  becomes visible to readers immediately.  The cost is one stat()
+**  on a fixed path that stays hot in the dentry cache, which is
+**  trivially cheap compared to the per-article SMretrieve syscalls
+**  the fast path elides.  Reload only happens when mtime or size
+**  changes, so the read+parse cost is paid at most once per cancel.
+**
+**  Freshness is keyed on both mtime and size: mtime alone has 1-
+**  second granularity, so a rename-and-recreate within the same
+**  second can land a fresh inode with the cached mtime; size is
+**  monotonic-append between rotations and so changes whenever a
+**  new line is added.  Together they catch every modification.
+**
+**  If tombstone_read reports a partial read (mid-file ferror), the
+**  cached mtime/size are not updated, so the next call retries the
+**  read instead of trusting a partial hashset.
+*/
+static bool
+nnrpd_tombstone_refresh(void)
+{
+    /* Initial hash bucket count for the per-connection tombstone cache.
+     * Sized for the typical case (hundreds of cancels per cycle); the
+     * hashset auto-expands when the load factor is exceeded. */
+    static const size_t initial_buckets = 256;
+    struct stat sb;
+    bool read_error = false;
+
+    if (nnrpd_tombstone_path == NULL)
+        nnrpd_tombstone_path =
+            concatpath(innconf->pathdb, "cancels.tombstone");
+
+    /* If the file has gone away since our last load, drop our cache
+     * and fall through to the slow path. */
+    if (stat(nnrpd_tombstone_path, &sb) < 0) {
+        if (nnrpd_tombstone != NULL) {
+            hash_free(nnrpd_tombstone);
+            nnrpd_tombstone = NULL;
+            nnrpd_tombstone_mtime = 0;
+            nnrpd_tombstone_size = 0;
+        }
+        return false;
+    }
+
+    /* Fresh enough? */
+    if (nnrpd_tombstone != NULL && sb.st_mtime == nnrpd_tombstone_mtime
+        && sb.st_size == nnrpd_tombstone_size)
+        return true;
+
+    /* (Re)load. */
+    if (nnrpd_tombstone != NULL)
+        hash_free(nnrpd_tombstone);
+    nnrpd_tombstone = tombstone_hash_create(initial_buckets);
+    tombstone_read(nnrpd_tombstone, nnrpd_tombstone_path, &read_error);
+    if (read_error) {
+        /* Partial parse; do not advance the freshness key so the
+         * next call retries.  The hashset still holds whatever lines
+         * we did parse, which is not wrong (those are real cancels),
+         * just incomplete. */
+        return true;
+    }
+    nnrpd_tombstone_mtime = sb.st_mtime;
+    nnrpd_tombstone_size = sb.st_size;
+    return true;
+}
+
+
 bool
 ARTinstorebytoken(TOKEN token)
 {
     ARTHANDLE *art;
     struct timeval stv, etv;
 
-    if (PERMaccessconf->nnrpdoverstats) {
-        gettimeofday(&stv, NULL);
+    /* Fast path: if both expiretombstone and nnrpdcheckart are
+     * enabled and the cache loads, the cancels.tombstone log
+     * records out-of-band cancels (innd ARTcancel, sm -r) that may
+     * not yet be reflected in overview.  Tombstone hit means the
+     * article is gone; tombstone miss on a non-self-expiring
+     * backend means it is alive and we can skip the SMretrieve
+     * syscall.  Self-expiring backends (CNFS) still need the slow
+     * path because wrap-around bypasses SMcancel and the tombstone.
+     *
+     * The nnrpdcheckart gate matches the documented contract:
+     * tombstone-driven existence checks are an alternative
+     * implementation of nnrpdcheckart's existence verification, so
+     * we should not run them when the operator has explicitly
+     * disabled article-existence checking.
+     *
+     * SMprobe(SELFEXPIRE) is checked first so pure-CNFS sites pay
+     * only that probe (a static per-method attribute, no I/O) and
+     * skip both the hash lookup and the cache refresh. */
+    if (innconf->expiretombstone && PERMaccessconf->nnrpdcheckart
+        && !SMprobe(SELFEXPIRE, &token, NULL)
+        && nnrpd_tombstone_refresh()) {
+        return !tombstone_present(nnrpd_tombstone, &token);
     }
-    art = SMretrieve(token, RETR_STAT);
+
     /* XXX This isn't really overstats, is it? */
+    if (PERMaccessconf->nnrpdoverstats)
+        gettimeofday(&stv, NULL);
+    art = SMretrieve(token, RETR_STAT);
     if (PERMaccessconf->nnrpdoverstats) {
         gettimeofday(&etv, NULL);
         OVERartcheck += (etv.tv_sec - stv.tv_sec) * 1000;

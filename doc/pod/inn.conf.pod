@@ -966,10 +966,50 @@ Whether B<nnrpd> should check the existence of an article before listing it
 as present in response to an NNTP command (HDR, LISTGROUP, NEWNEWS, OVER,
 XPAT).  The primary use of this setting is to prevent B<nnrpd> from returning
 information about articles which are no longer present on the server but which
-still have overview data available.  Checking the existence of articles before
-returning overview information slows down the overview commands, but reduces
-the number of "article is missing" errors seen by the client.  This is a
-boolean value and the default is true.
+still have overview data available.  Checking existence with an unconditional
+C<SMretrieve> slows down the overview commands; with I<expiretombstone> also
+enabled (see below) the check uses an in-memory hash lookup instead and is
+cheaper than disabling the check on tradspool/timehash/timecaf backends.
+The trade-off remains: enabling this reduces the number of "article is
+missing" errors seen by the client.  This is a boolean value and the default
+is true.
+
+When I<expiretombstone> is also enabled, B<nnrpd> consults the
+F<I<pathdb>/cancels.tombstone> log on the article-existence check
+path: a token recorded as cancelled is reported as gone without an
+C<SMretrieve> call, and a token absent from the tombstone is
+trusted to still exist (skipping the syscall) for storage methods
+that do not self-expire.  Self-expiring backends (CNFS) still go
+through C<SMretrieve> because cyclic-buffer wrap-around bypasses
+the tombstone.  The tombstone is loaded lazily on first use per
+connection and refreshed by C<stat> on each call; the parsed
+hashset is rebuilt only when the file's mtime or size changes.
+Statting the same path is dentry-cache resident and far cheaper
+than the per-article syscalls the fast path elides, so cancellations
+recorded by other processes become visible to long-lived
+connections on the next existence check.
+
+Each B<nnrpd> connection holds an independent copy of the parsed
+hashset, costing roughly 50 bytes per cancel; sites with very large
+cancel volumes between B<expire> runs and many concurrent readers
+should size memory accordingly.  Loss relative to the unconditional
+C<SMretrieve> path is bounded to out-of-band events the tombstone
+cannot see (manual filesystem deletes that bypass B<sm -r>,
+filesystem corruption); admin-initiated B<sm -r> and B<innd>
+cancels are tracked.
+
+Important: on non-self-expiring backends the fast path treats a
+tombstone-miss as proof that the article is still on disk, without
+verifying.  Admins must remove articles via B<sm -r> (which records
+the cancel in the tombstone), not by direct C<rm> on the spool, or
+readers will be told a deleted article still exists until the next
+B<expireover> reconciles overview.
+
+Note that the fast path is also gated on I<expiretombstone>; both
+must be true to take effect.  The B<nnrpdoverstats> C<artcheck>
+counter reflects only the slow C<SMretrieve> path, so the syslog
+field will appear smaller when the fast path is doing most of the
+work.
 
 You may also want to see the I<groupexactcount> parameter in readers.conf(5)
 which controls the computing of the estimated article count returned in NNTP
