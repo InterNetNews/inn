@@ -190,12 +190,16 @@ Only one check can currently be enabled/disabled:
 
 =item I<laxmid> / I<no-laxmid>
 
-When I<laxmid> is set, Message-IDs containing C<..> in the left part
-are accepted, as well as Message-IDs with two C<@>.  Some non-compliant
-news posters generate such syntactically invalid Message-IDs, especially
-in binary newsgroups.  The default is I<no-laxmid>, that is to say INN
-strictly follows the standard regarding syntax checks (it will neither
-accept these articles nor propagate them to remote peers).
+When I<laxmid> is set, Message-IDs containing C<..> in the left part are
+accepted, as well as Message-IDs with two C<@> or no C<@> at all.  Some
+non-compliant news posters generate such syntactically invalid Message-IDs,
+especially in binary newsgroups.  Even with I<laxmid> set, B<nnrpd> will still
+ensure that Message-IDs contain an C<@> though.
+
+The default is I<no-laxmid>, that is to say INN strictly follows the standard
+regarding syntax checks (it will neither accept these articles nor propagate
+them to remote peers).  Note that if I<laxmid> is set, remote peers may reject
+articles with a syntactically invalid Message-ID.
 
 =back
 

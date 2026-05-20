@@ -127,8 +127,8 @@ InitializeMessageIDcclass(void)
 **  When stripspaces is true, whitespace at the beginning and at the end
 **  of MessageID are discarded.
 **
-**  When laxsyntax is true, '@' can occur twice in MessageID, and '..' is
-**  also accepted in the left part of MessageID.
+**  When laxsyntax is true, '@' can occur twice in MessageID, or never occur,
+**  and '..' is also accepted in the left part of MessageID.
 */
 bool
 IsValidMessageID(const char *MessageID, bool stripspaces, bool laxsyntax)
@@ -155,6 +155,12 @@ IsValidMessageID(const char *MessageID, bool stripspaces, bool laxsyntax)
     /* Scan local-part: "< dot-atom-text". */
     if (*p++ != '<')
         return false;
+
+    /* In case there's no '@' in the Message-ID and laxsyntax is set, just
+     * check the syntax of the Message-ID as though it had no left part. */
+    if (laxsyntax && strchr((const char *) p, '@') == NULL)
+        return IsValidRightPartMessageID((const char *) p, stripspaces, true);
+
     for (;; p++) {
         if (midatomchar(*p)) {
             while (midatomchar(*++p))

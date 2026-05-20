@@ -10,6 +10,11 @@ enhancement.
 
 =item *
 
+When I<laxmid> is set in the I<syntaxchecks> parameter in F<inn.conf>,
+Message-IDs without any C<@> character are now accepted by B<innd>.
+
+=item *
+
 Fixed very infrequent errors of memory mapping when updating the F<active>
 file or using the tradindexed overview method, as well as when updating the
 F<history> file with I<nfswriter> set to true.  Thanks to Chris Knipe for the
