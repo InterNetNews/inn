@@ -471,6 +471,10 @@ ProcessHeaders(char *idbuff, bool needmoderation)
     if (!IsValidMessageID(HDR(HDR__MESSAGEID), true, laxmid)) {
         return "Can't parse Message-ID header field body";
     }
+    /* Do not accept a Message-ID without an '@', even if laxmid is set. */
+    if (laxmid && strchr(HDR(HDR__MESSAGEID), '@') == NULL) {
+        return "Missing @ in Message-ID header field body";
+    }
 
     /* Set the Path header field. */
     if (HDR(HDR__PATH) == NULL || PERMaccessconf->strippath) {

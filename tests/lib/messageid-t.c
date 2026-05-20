@@ -27,7 +27,8 @@ testMessageIDs(bool strip, bool lax)
             "bad ID 6");
     is_bool(false, IsValidMessageID("<invalid@te\tst>", strip, lax),
             "bad ID 7");
-    is_bool(false, IsValidMessageID("<invalid>", strip, lax), "bad ID 8");
+    is_bool(false, IsValidMessageID("<invalid@te...st>", strip, lax),
+            "bad ID 8");
     is_bool(false, IsValidMessageID("<inva\r\nlid@test>", strip, lax),
             "bad ID 9");
     is_bool(false, IsValidMessageID("<inva(lid@test>", strip, lax),
@@ -107,7 +108,7 @@ testDomains(void)
 int
 main(void)
 {
-    plan(4 * (26 + 6) + (7 + 4) + 2 + 5);
+    plan(4 * (26 + 6) + (7 + 4) + 2 + 7);
 
     /* Test several message-IDs with and without stripping spaces and lax
      * syntax. */
@@ -136,6 +137,10 @@ main(void)
             "bad ID laxsyntax 2");
     is_bool(false, IsValidMessageID("<invalid@te..st>", false, true),
             "bad ID laxsyntax 3");
+    is_bool(true, IsValidMessageID("<valid>", false, true),
+            "good ID laxsyntax 4");
+    is_bool(false, IsValidMessageID("<invalid>", false, false),
+            "bad ID laxsyntax 4");
 
     return 0;
 }
