@@ -35,6 +35,12 @@ to Roman Donchenko for the code simplification and cleaning.
 
 =item *
 
+Added a new I<mmapsize> parameter to F<ovsqlite.conf> to parameter the use
+of mmap with the ovsqlite overview method.  Thanks to Kevin Bowling for this
+enhancement.
+
+=item *
+
 Fixed very infrequent errors of memory mapping when updating the F<active>
 file or using the tradindexed overview method, as well as when updating the
 F<history> file with I<nfswriter> set to true.  Thanks to Chris Knipe for the
