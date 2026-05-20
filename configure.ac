@@ -111,6 +111,7 @@ Optional FreeBSD packages:
 - db18 (--with-bdb --with-bdb-lib=/usr/local/lib/db18
         --with-bdb-include=/usr/local/include/db18, the "18" indicates version
         and can be replaced with another version, for ovdb overview)
+- libcanlock (--with-canlock)
 - krb5 (--with-krb5)
 - python3 (--with-python)
 - cyrus-sasl (--with-sasl)
@@ -127,10 +128,6 @@ Runtime optionals (see Linux equivalents above for descriptions):
 - p5-GD
 - p5-Encode, p5-MIME-Tools
 - p5-DBD-SQLite
----
-Unavailable packages (but may now be?):
-- libcanlock (libcanlock is not yet available in the ports tree and needs
-              manual compilation)
 ---
 Happy building!])
 
