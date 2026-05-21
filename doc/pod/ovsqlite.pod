@@ -78,7 +78,7 @@ cache, which can significantly improve read performance for large
 databases.  A good starting value is the size of the database file
 or the amount of available memory, whichever is smaller.  For example,
 a value of C<4294967296> allows up to S<4 GB> to be memory-mapped.
-The default value of 0 disables memory-mapped I/O.
+The default value of C<0> disables memory-mapped I/O.
 
 =item I<walmode>
 
@@ -112,7 +112,7 @@ readers.
 Direct reader mode is only activated when I<walmode> is enabled.  Without
 WAL, writers take exclusive locks that would block direct readers during
 commits, so the server path is used instead.  The default value
-is S<8000 KB> (about S<8 MB>).
+is C<8000> (about S<8 MB>).
 
 =item I<walcheckpointthreshold>
 
@@ -126,7 +126,7 @@ an exclusive lock.  If readers do not finish within the timeout, the
 checkpoint is skipped and retried on the next idle cycle.
 
 This parameter is only effective when I<walmode> is enabled.  The default
-value is 1000 pages.
+value is C<1000>.
 
 =item I<pagesize>
 
@@ -139,12 +139,12 @@ library and varies between versions.
 =item I<transrowlimit>
 
 The maximum number of article rows that can be inserted or deleted in a
-single SQL transaction.  The default value is 10000 articles.
+single SQL transaction.  The default value is C<10000>.
 
 =item I<transtimelimit>
 
 The maximum SQL transaction lifetime in seconds.  The default value is
-10 seconds.
+C<10>.
 
 =back
 
