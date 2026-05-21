@@ -604,7 +604,9 @@ open_db(void)
             sqlite3_open_v2(path, &connection,
                             SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL);
         if (status != SQLITE_OK)
-            die("cannot create database: %s", sqlite3_errstr(status));
+            die("cannot create database: %s", connection
+                                                  ? sqlite3_errmsg(connection)
+                                                  : sqlite3_errstr(status));
         sqlite3_extended_result_codes(connection, 1);
         status =
             sqlite_helper_init(&sql_init_helper, (sqlite3_stmt **) &sql_init,
@@ -633,7 +635,9 @@ open_db(void)
         status =
             sqlite3_open_v2(path, &connection, SQLITE_OPEN_READWRITE, NULL);
         if (status != SQLITE_OK)
-            die("cannot open database: %s", sqlite3_errstr(status));
+            die("cannot open database: %s", connection
+                                                ? sqlite3_errmsg(connection)
+                                                : sqlite3_errstr(status));
         sqlite3_extended_result_codes(connection, 1);
     }
     status =
