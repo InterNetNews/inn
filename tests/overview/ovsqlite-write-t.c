@@ -3,6 +3,8 @@
  * Opens overview in OV_READ|OV_WRITE mode (connects to ovsqlite-server),
  * creates groups and inserts articles via the standard OV API, then closes.
  * The server creates the real database schema and handles compression.
+ *
+ * Written by Kevin Bowling in 2026.
  */
 
 #include "portable/system.h"

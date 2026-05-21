@@ -3,6 +3,8 @@
  * Tests behavior that can't be exercised by the integration test
  * (ovsqlite-integ.t) which requires a running ovsqlite-server.
  * These tests create a database directly via the sqlite3 API.
+ *
+ * Written by Kevin Bowling in 2026.
  */
 
 #include "portable/system.h"

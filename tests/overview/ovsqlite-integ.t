@@ -5,6 +5,8 @@
 # Starts a real ovsqlite-server, writes test data through it via the
 # writer program, kills the server, then verifies the reader program
 # can read the WAL-mode database directly without the server.
+#
+# Written by Kevin Bowling in 2026.
 
 count=1
 printcount() {

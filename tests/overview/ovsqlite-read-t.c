@@ -9,6 +9,8 @@
  * articles these match, but some test articles intentionally differ
  * (e.g., file says news.groups:260 but Xref says news.groups:60).
  * We must parse Xref to know what was actually stored.
+ *
+ * Written by Kevin Bowling in 2026.
  */
 
 #include "portable/system.h"

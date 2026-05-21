@@ -7,10 +7,10 @@
 **  Various bug fixes, code and documentation improvements since then
 **  in 2021-2024, 2026.
 **
-**  Direct reader mode added in 2026 to allow nnrpd processes to read the
-**  overview database directly via SQLite, bypassing ovsqlite-server for
-**  read-only access.  This improves read performance by eliminating the
-**  IPC round-trip and server serialization bottleneck.
+**  Direct reader mode added in 2026 by Kevin Bowling to allow nnrpd
+**  processes to read the overview database directly via SQLite, bypassing
+**  ovsqlite-server for read-only access.  This improves read performance
+**  by eliminating the IPC round-trip and server serialization bottleneck.
 */
 
 #include "ovsqlite.h"
