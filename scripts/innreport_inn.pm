@@ -1709,6 +1709,10 @@ sub collect($$$$$$) {
         return 1 if $left =~ /^\S+ auth also-log: /o;
         return 1 if $left =~ /^\S+ res also-log: /o;
         return 1 if $left =~ /^\S+ rejected by rule /o;
+        # for ovsqlite WAL mode
+        return 1
+          if $left =~ /^ovsqlite: direct reader not available, using server$/o;
+        return 1 if $left =~ /^WAL checkpoint: /o;
         # connect
         if ($left =~ /(\S+) (\([0-9a-fA-F:.]*\) )?connect(?: - port \d+)?$/o) {
             my $cust = $1;
