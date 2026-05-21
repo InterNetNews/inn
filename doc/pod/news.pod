@@ -4,9 +4,15 @@
 
 =item *
 
-Added a new I<mmapsize> parameter to F<ovsqlite.conf> to parameter the use
-of mmap with the ovsqlite overview method.  Thanks to Kevin Bowling for this
-enhancement.
+Added four new parameters to F<ovsqlite.conf> for the ovsqlite overview
+method: I<mmapsize> to have SQLite read data via mmap instead of copying
+into its own page cache, I<readercachesize> to set the SQLite in-memory
+page cache size for each B<nnrpd> reader process, I<walmode> to enable
+SQLite's Write-Ahead Logging journal mode and improve read performace when
+multiple B<nnrpd> processes access the overview database simultaneously,
+and I<walcheckpointthreshold> to parameterize when to perform checkpoints.
+See the ovsqlite(5) manual page for more details.  Thanks to Kevin Bowling for
+all these enhancements!
 
 =item *
 
