@@ -249,7 +249,9 @@ direct_open(void)
     int version;
     int compress_flag;
     char sqltext[64];
+#    ifdef HAVE_ZLIB
     bool have_inflate = false;
+#    endif
     bool have_stmts = false;
 
     /* Load config.  Direct reader mode requires WAL; without WAL, writers
