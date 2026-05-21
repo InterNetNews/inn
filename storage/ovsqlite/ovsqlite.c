@@ -245,7 +245,7 @@ direct_open(void)
     char *errmsg;
     char *journal_mode = NULL;
     bool use_wal = false;
-    unsigned long reader_cachesize = 8000; /* default 8 MB */
+    unsigned long reader_cachesize = 2000; /* default 2 MB */
     int version;
     int compress_flag;
     char sqltext[64];
