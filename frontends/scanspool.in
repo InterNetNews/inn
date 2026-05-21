@@ -491,7 +491,6 @@ sub check_spool {
         $remove = 0;
 
         # read until the Newsgroups header field is found
-      AREADLINE:
         while ($aline = <$ARTICLE>) {
             # catch the Newsgroups header field
             if ($aline =~ /^Newsgroups:/io

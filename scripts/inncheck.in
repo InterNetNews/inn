@@ -823,7 +823,6 @@ sub newsfeeds {
         ##  Check distributions.
         if (($dists) = $pats =~ m@.*/(.*)@) {
             $bang = $nobang = 0;
-          DIST:
             foreach my $d (split(/,/, $dists, -1)) {
                 if ($d =~ /^!/) {
                     $bang++;
@@ -1032,14 +1031,13 @@ sub readers_conf {
                 'log'     => 'string',
                 'program' => 'string',
             },
-            '<multi>' =>
-              {    # hack: "don't warn about duplicates for these keys"
-                  'res'         => 1,
-                  'auth'        => 1,
-                  'perl_auth'   => 1,
-                  'python_auth' => 1,
-                  'log'         => 1,
-              },
+            '<multi>' => { # hack: "don't warn about duplicates for these keys"
+                'res'         => 1,
+                'auth'        => 1,
+                'perl_auth'   => 1,
+                'python_auth' => 1,
+                'log'         => 1,
+            },
             '<include>' => {
                 'include' => 'ignore',
             },
