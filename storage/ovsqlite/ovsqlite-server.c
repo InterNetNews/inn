@@ -577,7 +577,8 @@ checkpoint_wal(void)
                " (%d pages)",
                wal_pages);
     } else {
-        warn("WAL checkpoint failed: %s (%d pages)", sqlite3_errstr(rc),
+        warn("WAL checkpoint failed: %s (%d pages)",
+             connection ? sqlite3_errmsg(connection) : sqlite3_errstr(rc),
              wal_pages);
     }
 }
