@@ -1,8 +1,8 @@
-/* Integration test: HISwalk + bloom filter for expireover token cache.
+/* Integration test: HISwalk + Bloom filter for expireover token cache.
  *
  * Creates a temporary history file with a mix of entries (some with tokens,
- * some remembered-only), builds a bloom filter via HISwalk, and verifies
- * that the bloom filter correctly identifies articles with tokens vs.
+ * some remembered-only), builds a Bloom filter via HISwalk, and verifies
+ * that the Bloom filter correctly identifies articles with tokens vs.
  * remembered entries.
  *
  * Written by Kevin Bowling in 2026.
@@ -38,7 +38,7 @@ make_msgid(unsigned long n)
 
 
 /*
-**  HISwalk callback: add entries with tokens to the bloom filter.
+**  HISwalk callback: add entries with tokens to the Bloom filter.
 **  Same logic as build_bloom_cb in expireover.c.
 */
 static bool
@@ -107,13 +107,13 @@ main(void)
         bail("can't reopen history at %s", histpath);
     ok(2, true); /* history reopened */
 
-    /* Build the bloom filter via HISwalk. */
+    /* Build the Bloom filter via HISwalk. */
     bloom = bloom_create(N_WITH_TOKEN + N_REMEMBERED, 10000);
     walk_ok = HISwalk(h, NULL, bloom, build_bloom_cb);
     ok(3, walk_ok);                            /* HISwalk succeeded */
     ok(4, bloom_count(bloom) == N_WITH_TOKEN); /* only token entries added */
 
-    /* Verify: all token entries should be bloom hits. */
+    /* Verify: all token entries should be Bloom hits. */
     false_negatives = 0;
     for (i = 0; i < N_WITH_TOKEN; i++) {
         char *msgid = make_msgid(i);
@@ -126,7 +126,7 @@ main(void)
     if (false_negatives > 0)
         diag("false negatives: %lu out of %d", false_negatives, N_WITH_TOKEN);
 
-    /* Verify: remembered entries should NOT be in the bloom filter.
+    /* Verify: remembered entries should NOT be in the Bloom filter.
      * (Some may be false positives, but most should miss.) */
     bloom_misses = 0;
     for (i = N_WITH_TOKEN; i < N_WITH_TOKEN + N_REMEMBERED; i++) {
@@ -137,7 +137,7 @@ main(void)
         free(msgid);
     }
     ok(6, bloom_misses > N_REMEMBERED * 9 / 10); /* >90% should miss */
-    diag("remembered entries: %lu/%d were bloom misses (expected most)",
+    diag("remembered entries: %lu/%d were Bloom misses (expected most)",
          bloom_misses, N_REMEMBERED);
 
     /* Verify: entries not in history at all should mostly miss. */
@@ -151,7 +151,7 @@ main(void)
         free(msgid);
     }
     ok(7, bloom_misses > N_NOT_IN_HIST * 9 / 10); /* >90% should miss */
-    diag("not-in-history entries: %lu/%d were bloom misses (expected most)",
+    diag("not-in-history entries: %lu/%d were Bloom misses (expected most)",
          bloom_misses, N_NOT_IN_HIST);
 
     bloom_free(bloom);

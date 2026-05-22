@@ -814,10 +814,10 @@ OVhisthasmsgid(struct history *h, const char *data)
     if ((p = OVERGetHeader(data, Messageidindex)) == NULL)
         return false;
 
-    /* Fast path: if article is in the bloom filter, it (probably) exists.
+    /* Fast path: if article is in the Bloom filter, it (probably) exists.
      * Bloom hits skip the slow history lookup.  Bloom misses fall through
      * to HISlookup to handle articles added after the filter was built.
-     * False positives (bloom says "yes" for an expired article) are benign:
+     * False positives (Bloom says "yes" for an expired article) are benign:
      * the orphaned overview entry is cleaned up on the next run. */
     if (OVtokencache) {
         HASH hash = HashMessageID(p);
@@ -826,7 +826,7 @@ OVhisthasmsgid(struct history *h, const char *data)
     }
 
     /* Slow path: per-article history lookup (original behavior).
-     * Only reached for bloom misses or when no bloom filter is loaded. */
+     * Only reached for Bloom misses or when no Bloom filter is loaded. */
     return HISlookup(h, p, NULL, NULL, NULL, NULL);
 }
 

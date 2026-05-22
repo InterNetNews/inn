@@ -86,7 +86,7 @@ static const struct {
 #define BLOOM_NPARAMS   (sizeof(bloom_params) / sizeof(bloom_params[0]))
 #define BLOOM_MAX_NHASH 24 /* must match max nhash in bloom_params table */
 
-/* Maximum bloom filter size on 32-bit platforms where size_t overflow
+/* Maximum Bloom filter size on 32-bit platforms where size_t overflow
  * is a real concern.  On 64-bit, there is no cap, xmalloc will die if
  * the system doesn't have enough memory, which is the correct behavior
  * for a batch job.  On 32-bit, cap at SIZE_MAX/16 so that the conversion
@@ -134,7 +134,7 @@ bloom_create(size_t estimated_entries, unsigned long fp_inv)
 #if SIZE_MAX <= UINT32_MAX
         nbits = BLOOM_MAX_BITS;
 #else
-        die("bloom filter: entry count too large for size_t");
+        die("Bloom filter: entry count too large for size_t");
 #endif
     else
         nbits = (size_t) bits_per_entry * estimated_entries;

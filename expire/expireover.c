@@ -51,7 +51,7 @@ fatal_signal(int sig)
 
 /*
 **  Callback for HISwalk that adds history entries with storage tokens to the
-**  bloom filter.  Entries without tokens (remembered message-IDs) are skipped
+**  Bloom filter.  Entries without tokens (remembered message-IDs) are skipped
 **  so that OVhisthasmsgid correctly identifies them as missing.
 */
 static bool
@@ -202,16 +202,16 @@ main(int argc, char *argv[])
     if (!OVctl(OVSTATALL, &always_stat))
         die("can't configure overview stat behavior");
 
-    /* Set up signal handlers before the bloom walk, which can take several
+    /* Set up signal handlers before the Bloom walk, which can take several
        minutes on very large history files. */
     xsignal(SIGTERM, fatal_signal);
     xsignal(SIGINT, fatal_signal);
     xsignal(SIGHUP, fatal_signal);
 
-    /* Build a bloom filter from the history file for fast existence checks.
+    /* Build a Bloom filter from the history file for fast existence checks.
        This replaces millions of random pread() calls into the history file
        with a single sequential read, making expireover feasible on large
-       spools (1B+ articles).  The bloom filter is used as a positive-only
+       spools (1B+ articles).  The Bloom filter is used as a positive-only
        cache: hits skip the slow history lookup, misses fall through to
        HISlookup for correctness (handles articles added after the walk). */
     if (innconf->expirebloomfp > 0 && !always_stat) {
@@ -220,17 +220,17 @@ main(int argc, char *argv[])
         size_t estimated = 0;
         /* Minimum history line: 34 (hash) + 1 (tab) + 1 (arrived)
          * + 1 (newline).  Dividing file size by this gives a conservative
-         * overestimate of entries, which is what we want for bloom sizing. */
+         * overestimate of entries, which is what we want for Bloom sizing. */
         const size_t min_history_line = 37;
 
         histpath = concatpath(innconf->pathdb, INN_PATH_HISTORY);
         if (stat(histpath, &st) == 0)
             estimated = st.st_size / min_history_line;
         else
-            warn("can't stat %s, bloom filter will be undersized", histpath);
+            warn("can't stat %s, Bloom filter will be undersized", histpath);
         bloom = bloom_create(estimated, innconf->expirebloomfp);
         if (!HISwalk(history, NULL, bloom, build_bloom_cb)) {
-            warn("can't walk history for bloom filter, using per-article"
+            warn("can't walk history for Bloom filter, using per-article"
                  " lookups");
             bloom_free(bloom);
             bloom = NULL;

@@ -40,19 +40,19 @@ that have been removed from the server; this behavior is suppressed if
 B<-f> is given.
 
 To speed up the existence check for each article, B<expireover> builds
-a bloom filter from the history file at startup.  This replaces
-per-article random I/O into the history file with a single sequential
-read, which is critical for large spools.  The bloom filter is a
+a Bloom filter from the F<history> file at startup.  This replaces
+per-article random I/O into the F<history> file with a single sequential
+read, which is critical for large spools.  The Bloom filter is a
 positive-only cache: if it reports an article probably exists, the
 slow history lookup is skipped.  If it reports the article is not found,
 B<expireover> falls back to a direct history lookup for correctness.
-False positives (the bloom filter incorrectly reporting an article
+False positives (the Bloom filter incorrectly reporting an article
 exists) are benign; the orphaned overview entry will be cleaned up on
 the next expiration run.
 
-The false positive rate and memory usage of the bloom filter are
+The false positive rate and memory usage of the Bloom filter are
 controlled by the I<expirebloomfp> setting in F<inn.conf>.  Setting it
-to C<0> disables the bloom filter.  The bloom filter is also disabled
+to C<0> disables the Bloom filter.  The Bloom filter is also disabled
 when the B<-s> flag is used.
 
 =head1 OPTIONS

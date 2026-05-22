@@ -412,7 +412,7 @@ include/Makefile                      Makefile for header files
 include/conffile.h                    Header file for reading *.conf files
 include/config.h.in                   Template configuration data
 include/inn                           Installed header files (Directory)
-include/inn/bloom.h                   Header file for bloom filter
+include/inn/bloom.h                   Header file for Bloom filter
 include/inn/buffer.h                  Header file for reusable counted buffers
 include/inn/concat.h                  Header file for string concatenation
 include/inn/confparse.h               Header file for configuration parser
@@ -943,7 +943,7 @@ tests/innd/fakeinnd.c                 Provide symbols defined by innd/innd.c
 tests/lib                             Test suite for libinn (Directory)
 tests/lib/artnumber-t.c               Tests for lib/artnumber.c
 tests/lib/asprintf-t.c                Tests for lib/asprintf.c
-tests/lib/bloom-hiswalk-t.c           Integration test for bloom filter with HISwalk
+tests/lib/bloom-hiswalk-t.c           Integration test for Bloom filter with HISwalk
 tests/lib/bloom-t.c                   Tests for lib/bloom.c
 tests/lib/buffer-t.c                  Tests for lib/buffer.c
 tests/lib/canlock-t.c                 Tests for lib/canlock.c
