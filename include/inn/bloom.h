@@ -8,6 +8,8 @@
 **
 **  Uses enhanced double hashing (Kirsch & Mitzenmacher 2006) to derive
 **  multiple hash positions from a single HASH value.
+**
+**  Written by Kevin Bowling in 2026.
 */
 
 #ifndef INN_BLOOM_H

@@ -1,3 +1,10 @@
+/*
+**  Written by Katsuhiro Kondou in 1999.
+**
+**  Various bug fixes, code and documentation improvements since then
+**  in 1999-2004, 2006, 2009, 2015, 2017, 2021, 2022, 2026.
+*/
+
 #ifndef INN_OV_H
 #define INN_OV_H
 

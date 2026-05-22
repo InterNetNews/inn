@@ -17,6 +17,8 @@
 **    fp_inv = 1000    =>  0.1% FP, ~15 bits/entry, k=10
 **    fp_inv = 10000   =>  0.01% FP, ~20 bits/entry, k=14
 **    fp_inv = 100000  =>  0.001% FP, ~24 bits/entry, k=17
+**
+**  Written by Kevin Bowling in 2026.
 */
 
 #include "portable/system.h"

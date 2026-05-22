@@ -5,6 +5,11 @@
 **  appropriate underlying overview method, as well as implementing those
 **  portions of the overview subsystem that are independent of storage
 **  method.
+**
+**  Written by Katsuhiro Kondou in 1999.
+**
+**  Various bug fixes, code and documentation improvements since then
+**  in 1999-2006, 2008-2011, 2021, 2022, 2024, 2026.
 */
 
 #include "portable/system.h"

@@ -1,4 +1,7 @@
-/* Test suite for lib/bloom.c. */
+/* Test suite for lib/bloom.c.
+ *
+ * Written by Kevin Bowling in 2026.
+ */
 
 #include "portable/system.h"
 

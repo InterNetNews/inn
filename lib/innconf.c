@@ -20,6 +20,11 @@
 **  which is used in this file.  The order in this file is documentation of
 **  where each parameter is used, for later work at breaking up this mess
 **  of parameters into separate configuration groups for each INN subsystem.
+**
+**  Written by Russ Allbery in 2002.
+**
+**  Various bug fixes, code and documentation improvements since then
+**  in 2002-2011, 2013-2018, 2021-2024, 2026.
 */
 
 #include "portable/system.h"
