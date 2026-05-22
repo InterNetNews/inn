@@ -112,6 +112,15 @@ artnumber.o: artnumber.c ../include/portable/system.h ../include/config.h \
   ../include/inn/concat.h ../include/inn/macros.h \
   ../include/inn/portable-stdbool.h ../include/inn/xmalloc.h \
   ../include/inn/system.h ../include/inn/xwrite.h
+bloom.o: bloom.c ../include/portable/system.h ../include/config.h \
+  ../include/inn/macros.h ../include/inn/portable-macros.h \
+  ../include/inn/options.h ../include/inn/system.h \
+  ../include/portable/stdbool.h ../include/portable/macros.h \
+  ../include/portable/stdbool.h ../include/inn/bloom.h \
+  ../include/inn/libinn.h ../include/inn/concat.h ../include/inn/macros.h \
+  ../include/inn/portable-stdbool.h ../include/inn/xmalloc.h \
+  ../include/inn/system.h ../include/inn/xwrite.h \
+  ../include/inn/messages.h
 buffer.o: buffer.c ../include/config.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/options.h \
   ../include/inn/system.h ../include/portable/stdbool.h \
