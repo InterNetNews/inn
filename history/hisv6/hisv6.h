@@ -1,5 +1,10 @@
 /*
-** Internal history API interface exposed to HISxxx
+**  Internal history API interface exposed to HISxxx
+**
+**  Written by Alex Kiernan in 2001.
+**
+**  Various bug fixes, code and documentation improvements since then
+**  in 2001, 2009, 2020, 2021, 2026.
 */
 
 #ifndef HISV6_H

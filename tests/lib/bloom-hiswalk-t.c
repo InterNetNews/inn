@@ -3,7 +3,10 @@
  * Creates a temporary history file with a mix of entries (some with tokens,
  * some remembered-only), builds a bloom filter via HISwalk, and verifies
  * that the bloom filter correctly identifies articles with tokens vs.
- * remembered entries. */
+ * remembered entries.
+ *
+ * Written by Kevin Bowling in 2026.
+ */
 
 #include "portable/system.h"
 

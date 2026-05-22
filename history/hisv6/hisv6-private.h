@@ -1,3 +1,10 @@
+/*
+**  Written by Alex Kiernan in 2001.
+**
+**  Various bug fixes, code and documentation improvements since then
+**  in 2001-2003, 2005, 2006, 2020-2022, 2026.
+*/
+
 #ifndef HISV6_PRIVATE_H
 #define HISV6_PRIVATE_H
 

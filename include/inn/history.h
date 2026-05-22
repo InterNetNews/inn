@@ -1,5 +1,10 @@
 /*
-**  Interface to history API
+**  Interface to history API.
+**
+**  Written by Alex Kiernan in 2001.
+**
+**  Various bug fixes, code and documentation improvements since then
+**  in 2001, 2004, 2009, 2010, 2021, 2022, 2026.
 */
 
 #ifndef INN_HISTORY_H

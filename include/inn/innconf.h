@@ -3,6 +3,11 @@
 **
 **  The interface to reading inn.conf configuration files and managing the
 **  resulting innconf struct.
+**
+**  Written by Russ Allbery in 2002.
+**
+**  Various bug fixes, code and documentation improvements since then
+**  in 2002-2004, 2007-2011, 2013-2018, 2021-2024, 2026.
 */
 
 #ifndef INN_INNCONF_H

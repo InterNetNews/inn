@@ -6,6 +6,11 @@
 ##  certain files according to built-in rules and a list at the end of this
 ##  file.  It is intended to be used to support make check-manifest from the
 ##  top level of the INN tree.
+##
+##  Written by Russ Allbery in 2002.
+##
+##  Various bug fixes, code and documentation improvements since then
+##  in 2002, 2005-2011, 2013-2018, 2020-2024, 2026.
 
 require 5.005;
 

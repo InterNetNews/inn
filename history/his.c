@@ -4,7 +4,7 @@
 **  Copyright (c) 2001, Thus plc
 **
 **  Various bug fixes, code and documentation improvements since then
-**  in 2002-2004, 2006, 2009, 2014, 2017, 2021, 2022, 2024.
+**  in 2002-2004, 2006, 2009, 2014, 2017, 2021, 2022, 2024, 2026.
 **
 **  Redistribution and use of the source code in source and binary
 **  forms, with or without modification, are permitted provided that

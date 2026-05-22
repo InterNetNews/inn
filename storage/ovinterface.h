@@ -1,5 +1,10 @@
 /*
-**  Overview interface header
+**  Overview interface header.
+**
+**  Written by Katsuhiro Kondou in 1999.
+**
+**  Various bug fixes, code and documentation improvements since then
+**  in 1999-2006, 2010, 2011, 2017, 2020, 2021, 2026.
 */
 
 #ifndef OVINTERFACE_H
