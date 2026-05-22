@@ -1101,7 +1101,7 @@ hisv6_walk(void *history, const char *reason, void *cookie,
     hiscookie.new = NULL;
     hiscookie.paused = false;
     /* Ignore malformed history lines during walk.  The walk is a read-only
-       operation (e.g., building a bloom filter for expireover); aborting
+       operation (e.g., building a Bloom filter for expireover); aborting
        over one corrupt line in a potentially 180 GB file would be
        catastrophic.  expire is what fixes corrupt history entries. */
     hiscookie.ignore = true;
