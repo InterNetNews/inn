@@ -640,6 +640,19 @@ open_db(void)
                                                 ? sqlite3_errmsg(connection)
                                                 : sqlite3_errstr(status));
         sqlite3_extended_result_codes(connection, 1);
+
+        /*
+         * SQLite quirk: if opening the file in read/write mode fails,
+         * it silently retries in read-only mode.
+         *
+         * Detect this now because the first write attempt will happen
+         * at some unknowable future time.
+         *
+         * (The init branch above doesn't need this check
+         * because table creation would fail immediately.)
+         */
+        if (sqlite3_db_readonly(connection, "main"))
+            die("cannot get write access to the database");
     }
     status =
         sqlite_helper_init(&sql_main_helper, (sqlite3_stmt **) &sql_main,
