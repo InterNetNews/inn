@@ -35,6 +35,20 @@ to Roman Donchenko for the code simplification and cleaning.
 
 =item *
 
+The speed of B<expireover> has been greatly improved by the implementation
+of a Bloom filter (a probabilistic data structure used to efficiently test
+whether an element is a member of a set, without any false negative).
+Instead of checking every article in the overview database against the
+F<history> file to detect orphaned entries, B<expireover> now sequentially
+reads the F<history> file at startup to build a Bloom filter, and makes its
+checks in that optimized data structure.  On large news spools of billions of
+articles, B<expireover> could take several weeks to complete; it now runs in a
+few minutes!  This feature is activated by default and controlled by the new
+I<expirebloomfp> parameter in F<inn.conf>.  Many thanks to Kevin Bowling for
+this improvement.
+
+=item *
+
 Added four new parameters to F<ovsqlite.conf> for the ovsqlite overview
 method: I<mmapsize> to have SQLite read data via mmap instead of copying
 into its own page cache, I<readercachesize> to set the SQLite in-memory
