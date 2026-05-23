@@ -795,10 +795,13 @@ dnl
 dnl For Clang, try -Weverything but disable some of the warnings:
 dnl
 dnl   -Wcast-qual                     Some structs require casting away const.
+dnl   -Wclass-varargs                 Not an actual problem.
 dnl   -Wcovered-switch-default        Does not do harm to have default cases.
+dnl   -Wc++-keyword                   Intended for C++, not applicable to C.
 dnl   -Wdisabled-macro-expansion      Not an actual problem.
 dnl   -Wexcess-padding                Not an actual problem.
 dnl   -Wextra-semi-stmt               Useful for readability.
+dnl   -Wimplicit-void-ptr-cast        Intended for C++, not applicable to C.
 dnl   -Wpacked                        Not an actual problem.
 dnl   -Wpadded                        Not an actual problem.
 dnl   -Wpoison-system-directories     Not an actual problem (e.g. Xcode).
@@ -806,7 +809,7 @@ dnl   -Wreserved-id-macro             Autoconf sets several of these normally.
 dnl   -Wreserved-identifier           False positives with FD_ZERO.
 dnl   -Wsign-conversion               Too many fiddly changes for the benefit.
 dnl   -Wstack-protector-purecap-ignored Not an actual problem (CHERI hardware).
-dnl   -Wswitch-default                Not an actual problem.
+dnl   -Wswitch-default                False positives with switches on enums.
 dnl   -Wswitch-enum                   Useless noise.
 dnl   -Wtautological-pointer-compare  False positives with for loops.
 dnl   -Wundef                         Conflicts with Autoconf probe results.
@@ -847,9 +850,11 @@ m4_foreach_w(
      -Wmissing-prototypes -Wmissing-declarations
      -Wnormalized=nfc -Wredundant-decls -Wrestrict -Wnested-externs -Winline
      -Winvalid-pch -Wvla -Wuse-after-free=3 -Wno-unused-function
-     -Weverything -Wno-cast-qual -Wno-covered-switch-default
+     -Weverything -Wno-cast-qual -Wno-class-varargs -Wno-covered-switch-default
+     -Wno-c++-keyword
      -Wno-disabled-macro-expansion -Wno-excess-padding -Wno-extra-semi-stmt
-     -Wno-implicit-int-conversion -Wno-packed -Wno-padded
+     -Wno-implicit-int-conversion -Wno-implicit-void-ptr-cast
+     -Wno-packed -Wno-padded
      -Wno-poison-system-directories
      -Wno-reserved-id-macro -Wno-reserved-identifier -Wno-shorten-64-to-32
      -Wno-sign-conversion -Wno-stack-protector-purecap-ignored
