@@ -270,8 +270,16 @@ hisv6_closefiles(struct hisv6 *h)
     /* FIXME - mips defines dev_t to be 64-bits whereas st_dev is 32-bits,
      * so we have an overflow when casting to dev_t.
      * As we always compare against st_ino as well, it shouldn't
-     * matter though. */
+     * matter though.  The formally correct fix is probably to figure out
+     * the size of the struct stat st_dev field in Autoconf and explicitly
+     * cast -1 to that size, whatever it is. */
+#if __GNUC__ > 7
+#    pragma GCC diagnostic ignored "-Woverflow"
+#endif
     h->st.st_dev = (dev_t) -1;
+#if __GNUC__ > 7
+#    pragma GCC diagnostic warning "-Woverflow"
+#endif
     return r;
 }
 
@@ -477,11 +485,19 @@ hisv6_new(const char *path, int flags, struct history *history)
     h->dirty = 0;
     h->synccount = 0;
     h->st.st_ino = (ino_t) -1;
-    /* FIXME - mips defines dev_t to be 64-bits whereas st_dev is 32-bits,
-     * so we have an overflow when casting to dev_t.
-     * As we always compare against st_ino as well, it shouldn't
-     * matter though. */
+/* FIXME - mips defines dev_t to be 64-bits whereas st_dev is 32-bits,
+ * so we have an overflow when casting to dev_t.
+ * As we always compare against st_ino as well, it shouldn't
+ * matter though.  The formally correct fix is probably to figure out
+ * the size of the struct stat st_dev field in Autoconf and explicitly
+ * cast -1 to that size, whatever it is. */
+#if __GNUC__ > 7
+#    pragma GCC diagnostic ignored "-Woverflow"
+#endif
     h->st.st_dev = (dev_t) -1;
+#if __GNUC__ > 7
+#    pragma GCC diagnostic warning "-Woverflow"
+#endif
     return h;
 }
 
