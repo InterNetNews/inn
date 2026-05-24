@@ -339,12 +339,12 @@ sub parse_config {
 sub active {
     my ($group, $hi, $lo, $f, $alias, %groups, %aliases);
 
-  INPUT:
+  INPUTACTIVE:
     while (<$IN>) {
         $line++;
         unless (($group, $hi, $lo, $f) = /^([^ ]+) (\d+) (\d+) (.+)\n$/) {
             eprint "$file:$line: malformed line.\n";
-            next INPUT;
+            next INPUTACTIVE;
         }
 
         eprint "$file:$line: group `$group' already appeared\n"
@@ -352,14 +352,14 @@ sub active {
         eprint "$file:$line: `$hi' <  '$lo'.\n"
           if $hi < $lo && $lo != $hi + 1;
 
-        next INPUT if $f =~ /^[jmynx]$/;
+        next INPUTACTIVE if $f =~ /^[jmynx]$/;
         unless (($alias) = $f =~ /^=(.*)$/) {
             eprint "$file:$line: bad flag `$f'.\n";
-            next INPUT;
+            next INPUTACTIVE;
         }
         if ($alias eq "") {
             eprint "$file:$line: empty alias.\n";
-            next INPUT;
+            next INPUTACTIVE;
         }
         $aliases{$alias} = $line
           unless defined $groups{$alias};
@@ -399,24 +399,24 @@ my %control_actions = (
 sub control_ctl {
     my ($msg, $from, $ng, $act);
 
-  INPUT:
+  INPUTCONTROLCTL:
     while (<$IN>) {
-        next INPUT if spacious($file, ++$line);
+        next INPUTCONTROLCTL if spacious($file, ++$line);
 
         if (/^\/localencoding\//) {
             unless (($msg, $act) = /^(\/localencoding\/):([^:=]+)$/) {
                 eprint "$file:$line: malformed line.\n";
             }
-            next INPUT;
+            next INPUTCONTROLCTL;
         }
 
         unless (($msg, $from, $ng, $act) = /^([^:]+):([^:]+):([^:]+):(.+)$/) {
             eprint "$file:$line: malformed line.\n";
-            next INPUT;
+            next INPUTCONTROLCTL;
         }
         if (!defined $control_messages{$msg}) {
             eprint "$file:$line: unknown control message `$msg'.\n";
-            next INPUT;
+            next INPUTCONTROLCTL;
         }
         eprint "$file:$line: action for unknown control messages is `doit'.\n"
           if $msg eq "default" && $act eq "doit";
@@ -435,7 +435,7 @@ sub control_ctl {
           if $ng ne "*" && $ng !~ /\./ && $ng !~ /^control\|/;
         if ($act !~ /([^=]+)(=.+)?/) {
             eprint "$file:$line: malformed line.\n";
-            next INPUT;
+            next INPUTCONTROLCTL;
         }
         $act =~ s/=.*//;
         $act = "verify" if ($act =~ /^verify-.+/);
@@ -456,21 +456,21 @@ sub expire_ctl {
 
     $groupbaseexpiry = $INN::Config::groupbaseexpiry;
     $groupbaseexpiry =~ tr/A-Z/a-z/;
-  INPUT:
+  INPUTEXPIRECTL:
     while (<$IN>) {
-        next INPUT if spacious($file, ++$line);
+        next INPUTEXPIRECTL if spacious($file, ++$line);
 
         if (($v) = m@/remember/:(.+)@) {
             eprint "$file:$line: more than one /remember/ line.\n"
               if $rem++;
             if ($v !~ /[\d\.]+/) {
                 eprint "$file:$line: illegal value `$v' for remember.\n";
-                next INPUT;
+                next INPUTEXPIRECTL;
             }
             eprint "$file:$line: are you sure about your /remember/ value?\n"
               ##  These are arbitrary "sane" values.
               if $v != 0 && ($v > 60.0 || $v < 5.0);
-            next INPUT;
+            next INPUTEXPIRECTL;
         }
 
         ##  Could check for conflicting lines, but that's hard.
@@ -487,7 +487,7 @@ sub expire_ctl {
                    ([\d\.]+|never)$/x
             ) {
                 eprint "$file:$line: malformed line.\n";
-                next INPUT;
+                next INPUTEXPIRECTL;
             }
             eprint "$file:$line: duplicate default line\n"
               if $pat eq "*" && $flag eq "a" && $def++;
@@ -498,7 +498,7 @@ sub expire_ctl {
                 = /^(\d+):([\d\.]+|never):([\d\.]+|never):([\d\.]+|never)$/)
             {
                 eprint "$file:$line: malformed line.\n";
-                next INPUT;
+                next INPUTEXPIRECTL;
             }
             eprint "$file:$line: invalid class\n"
               if $class < 0;
@@ -685,18 +685,18 @@ sub innfeed_conf {
 sub moderators {
     my ($k, $v);
 
-  INPUT:
+  INPUTMODERATORS:
     while (<$IN>) {
-        next INPUT if spacious($file, ++$line);
+        next INPUTMODERATORS if spacious($file, ++$line);
 
         unless (($k, $v) = /^([^:]+):(.+)$/) {
             eprint "$file:$line: malformed line.\n";
-            next INPUT;
+            next INPUTMODERATORS;
         }
 
         if ($k eq "" || $v eq "") {
             eprint "$file:$line: missing field\n";
-            next INPUT;
+            next INPUTMODERATORS;
         }
         eprint "$file:$line: not an e-mail address\n"
           if $pedantic && $v !~ /[@!]/;
@@ -738,10 +738,10 @@ sub newsfeeds {
     my %variables;
     my $defsub = '';
 
-  INPUT:
+  INPUTNEWSFEEDS:
     while (<$IN>) {
         $line++;
-        next INPUT if /^$/;
+        next INPUTNEWSFEEDS if /^$/;
         chop;
         eprint "$file:$line: starts with whitespace\n"
           if /^\s+/;
@@ -755,7 +755,7 @@ sub newsfeeds {
             $next =~ s/^\s*//;
             $_ .= $next;
         }
-        next INPUT if /^#/;
+        next INPUTNEWSFEEDS if /^#/;
         eprint "$file:$line: ends with whitespace\n"
           if /\s+$/;
 
@@ -769,14 +769,14 @@ sub newsfeeds {
             eprint "$file:$line: variable name too long\n"
               if length($1) > 31;
             $variables{$1} = $2;
-            next INPUT;
+            next INPUTNEWSFEEDS;
         }
 
         unless (($site, $pats, $flags, $param)
             = /^([^:]+):([^:]*):([^:]*):(.*)$/)
         {
             eprint "$file:$line: malformed line.\n";
-            next INPUT;
+            next INPUTNEWSFEEDS;
         }
 
         eprint "$file:$line: Newsfeed `$site' has whitespace in its name\n"
@@ -836,22 +836,22 @@ sub newsfeeds {
               if $bang && $nobang;
         }
         $type = "f";
-      FLAG:
+      FLAGNEWSFEEDS:
         # Use -1 as a limit in split() so that trailing empty fields are not
         # skipped.
         foreach my $flag (split(/,/, $flags, -1)) {
             ($k, $v) = $flag =~ /(.)(.*)/;
             if (!defined($k)) {
                 eprint "$file:$start: empty flag in `$flags'\n";
-                next FLAG;
+                next FLAGNEWSFEEDS;
             }
             if (!defined $newsfeeds_flags{$k}) {
                 eprint "$file:$start: unknown flag `$flag'\n";
-                next FLAG;
+                next FLAGNEWSFEEDS;
             }
             if ($v !~ /$newsfeeds_flags{$k}/) {
                 eprint "$file:$start: bad value `$v' for flag `$k'\n";
-                next FLAG;
+                next FLAGNEWSFEEDS;
             }
             $type = $v
               if $k eq "T";
@@ -905,25 +905,25 @@ sub newsfeeds {
 sub nntpsend_ctl {
     my ($site, $fqdn, $flags, $f, $v);
 
-  INPUT:
+  INPUTNNTPSENCTL:
     while (<$IN>) {
-        next INPUT if spacious($file, ++$line);
+        next INPUTNNTPSENCTL if spacious($file, ++$line);
 
         ##  Ignore the size info for now.
         unless (($site, $fqdn, $flags) = /^([\w\-\.]+):([^:]*):[^:]*:([^:]*)$/)
         {
             eprint "$file:$line: malformed line.\n";
-            next INPUT;
+            next INPUTNNTPSENCTL;
         }
         eprint "$file:$line: FQDN is empty for `$site'\n"
           if $fqdn eq "";
 
-        next INPUT if $flags eq "";
-      FLAG:
+        next INPUTNNTPSENCTL if $flags eq "";
+      FLAGNNTPSENDCTL:
         foreach (split(/ /, $flags)) {
             unless (($f, $v) = /^-([adrvtTpSP])(.*)$/) {
                 eprint "$file:$line: unknown argument for `$site'\n";
-                next FLAG;
+                next FLAGNNTPSENDCTL;
             }
             eprint "$file:$line: unknown argument to option `$f': $flags\n"
               if ($f eq "P"
@@ -943,13 +943,13 @@ sub nntpsend_ctl {
 sub passwd_nntp {
     my ($name, $pass);
 
-  INPUT:
+  INPUTPASSWDNNTP:
     while (<$IN>) {
-        next INPUT if spacious($file, ++$line);
+        next INPUTPASSWDNNTP if spacious($file, ++$line);
 
         unless (($name, $pass) = /^[\w\-\.]+:([^:]*):([^:]*)(:authinfo)?$/) {
             eprint "$file:$line: malformed line.\n";
-            next INPUT;
+            next INPUTPASSWDNNTP;
         }
         eprint "$file:$line: missing username\n"
           if ($name eq "");
