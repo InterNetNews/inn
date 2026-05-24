@@ -181,7 +181,9 @@ EXTERN ACCESSGROUP *PERMaccessconf;
 EXTERN bool Tracing;
 EXTERN bool Offlinepost;
 EXTERN bool initialSSL;
+#if defined(HAVE_BLACKLIST) || defined(HAVE_BLOCKLIST)
 EXTERN bool BlocklistEnabled;
+#endif
 EXTERN char **PERMreadlist;
 EXTERN char **PERMpostlist;
 EXTERN struct client Client;

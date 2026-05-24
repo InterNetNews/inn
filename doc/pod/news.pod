@@ -50,7 +50,9 @@ file was mistakenly appended to F<news.notice> by B<scanlogs>.
 
 Following upstream rename from blacklist to blocklist, the B<--with-blacklist>
 configure flag is renamed B<--with-blocklist> for blocklistd support in
-S<FreeBSD 15> and S<NetBSD 10>.  Thanks to Jose Luis Duran for the patch.
+S<FreeBSD 15> and S<NetBSD 10>.  For backward compatibility, both blacklist
+and blocklist libraries will be searched by the new B<--with-blocklist> flag.
+Thanks to Jose Luis Duran for the information.
 
 =item *
 

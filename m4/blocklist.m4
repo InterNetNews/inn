@@ -1,5 +1,5 @@
 dnl Find the compiler and linker flags for the blocklist library on FreeBSD
-dnl which integrates with the blocklistd daemon.
+dnl or NetBSD which integrates with the blocklistd daemon.
 dnl
 dnl Finds the compiler and linker flags for linking with the blocklist library.
 dnl Provides the --with-blocklist, --with-blocklist-lib, and
@@ -20,6 +20,11 @@ dnl substitution variables, but they'll be empty if libblocklist is not found
 dnl or if --without-blocklist is given.  Defines HAVE_BLOCKLIST and sets
 dnl inn_use_BLOCKLIST to true if the blocklist library is found and
 dnl --without-blocklist is not given.
+dnl
+dnl As blocklist was formerly known as blacklist before FreeBSD 15 and
+dnl NetBSD 10, if the blocklist library is not found, the macros also search
+dnl for a working blacklist library for backward compatibility.  In case, it
+dnl is present under its old name, defines HAVE_BLACKLIST.
 dnl
 dnl Depends on the lib-helper.m4 framework.
 dnl
@@ -43,18 +48,28 @@ dnl Restore CPPFLAGS, LDFLAGS, and LIBS to their previous values (before
 dnl INN_LIB_BLOCKLIST_SWITCH was called).
 AC_DEFUN([INN_LIB_BLOCKLIST_RESTORE], [INN_LIB_HELPER_RESTORE([BLOCKLIST])])
 
-dnl Checks if the blocklist library is present.  The single argument, if
-dnl "true", says to fail if the blocklist library could not be found.
+dnl Checks if the blocklist library is present.  Also tries to find the
+dnl blacklist library for backward compatibility.  The single argument, if
+dnl "true", says to fail if either library could not be found.
 AC_DEFUN([_INN_LIB_BLOCKLIST_INTERNAL],
 [INN_LIB_HELPER_PATHS([BLOCKLIST])
  INN_LIB_BLOCKLIST_SWITCH
  AC_CHECK_HEADER([blocklist.h],
     [AC_CHECK_LIB([blocklist], [blocklist_r],
-        [BLOCKLIST_LIBS="-lblocklist"],
+        [BLOCKLIST_LIBS="-lblocklist"
+         AC_DEFINE([HAVE_BLOCKLIST], 1,
+            [Define if libblocklist is available.])],
         [AS_IF([test x"$1" = xtrue],
             [AC_MSG_ERROR([cannot find usable blocklist library])])])],
-    [AS_IF([test x"$1" = xtrue],
-        [AC_MSG_ERROR([cannot find usable blocklist header])])])
+    [AC_CHECK_HEADER([blacklist.h],
+        [AC_CHECK_LIB([blacklist], [blacklist_r],
+            [BLOCKLIST_LIBS="-lblacklist"
+             AC_DEFINE([HAVE_BLACKLIST], 1,
+                [Define if libblacklist is available.])],
+            [AS_IF([test x"$1" = xtrue],
+                [AC_MSG_ERROR([cannot find usable blacklist library])])])],
+        [AS_IF([test x"$1" = xtrue],
+           [AC_MSG_ERROR([cannot find usable blacklist/blocklist header])])])])
  INN_LIB_BLOCKLIST_RESTORE])
 
 dnl The main macro for packages with mandatory blocklist support.
@@ -62,8 +77,7 @@ AC_DEFUN([INN_LIB_BLOCKLIST],
 [INN_LIB_HELPER_VAR_INIT([BLOCKLIST])
  INN_LIB_HELPER_WITH([blocklist], [blocklist], [BLOCKLIST])
  _INN_LIB_BLOCKLIST_INTERNAL([true])
- inn_use_BLOCKLIST=true
- AC_DEFINE([HAVE_BLOCKLIST], 1, [Define if libblocklist is available.])])
+ inn_use_BLOCKLIST=true])
 
 dnl The main macro for packages with optional blocklist support.
 AC_DEFUN([INN_LIB_BLOCKLIST_OPTIONAL],
@@ -75,5 +89,4 @@ AC_DEFUN([INN_LIB_BLOCKLIST_OPTIONAL],
         [_INN_LIB_BLOCKLIST_INTERNAL([false])])])
  AS_IF([test x"$BLOCKLIST_LIBS" = x],
     [INN_LIB_HELPER_VAR_CLEAR([BLOCKLIST])],
-    [inn_use_BLOCKLIST=true
-     AC_DEFINE([HAVE_BLOCKLIST], 1, [Define if libblocklist is available.])])])
+    [inn_use_BLOCKLIST=true])])
