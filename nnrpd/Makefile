@@ -83,7 +83,8 @@ article.o: article.c ../include/portable/system.h ../include/config.h \
   ../include/inn/system.h ../include/inn/xwrite.h ../include/inn/storage.h \
   ../include/inn/options.h ../include/inn/innconf.h \
   ../include/inn/messages.h ../include/inn/ov.h ../include/inn/history.h \
-  ../include/inn/overview.h ../include/inn/wire.h nnrpd.h \
+  ../include/inn/overview.h ../include/inn/tombstone.h \
+  ../include/inn/hashtab.h ../include/inn/wire.h nnrpd.h \
   ../include/portable/socket.h ../include/portable/getaddrinfo.h \
   ../include/portable/getnameinfo.h ../include/inn/nntp.h \
   ../include/inn/paths.h ../include/inn/qio.h ../include/inn/timer.h \
