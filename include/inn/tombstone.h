@@ -12,6 +12,8 @@
 **    - ${pathdb}/cancels.tombstone    : appended continuously by innd
 **      and sm via SMcanceltombstone() for cancels outside the
 **      expireover/expirerm pipeline
+**
+**  Written by Kevin Bowling in 2026.
 */
 
 #ifndef INN_TOMBSTONE_H

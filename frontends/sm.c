@@ -1,5 +1,10 @@
 /*
 **  Provide a command line interface to the storage manager.
+**
+**  Original implementation written by Clayton O'Neill in 1997.
+**
+**  Various bug fixes, code and documentation improvements since then
+**  in 1997-2002, 2004-2006, 2009, 2015, 2020, 2021, 2026.
 */
 
 #include "portable/system.h"

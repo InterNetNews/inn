@@ -15,7 +15,10 @@
  * The slow path mirrors EXPdoline's behaviour for backends where
  * SMprobe(SELFEXPIRE) is true: even with a tombstone hashset present,
  * we still consult the simulated SMretrieve because articles can vanish
- * via wrap-around without going through SMcancel. */
+ * via wrap-around without going through SMcancel.
+ *
+ * Written by Kevin Bowling in 2026.
+ */
 
 #include "portable/system.h"
 

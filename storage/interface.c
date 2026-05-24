@@ -1,5 +1,10 @@
 /*
 **  Storage Manager interface.
+**
+**  New storage API written by Clayton O'Neill in 1997.
+**
+**  Various bug fixes, code and documentation improvements since then
+**  in 1997-2007, 2009-2011, 2021-2024, 2026.
 */
 
 #include "portable/system.h"
