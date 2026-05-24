@@ -49,6 +49,17 @@ this improvement.
 
 =item *
 
+The speed of B<expire> has also been drastically improved for large news
+spools thanks to the recording of every cancellation alongside the existing
+storage and overview deletions, so that B<expire> can just drop matching
+history entries without doing per-article retrieval system calls, thus saving
+a good amount of time at billion-article scale.  This feature contributed
+by Kevin Bowling is not enabled by default.  See the documentation
+of I<expiretombstone> in F<inn.conf> for more details, as well as
+I<nnrpdcheckart> which also makes use of the cancel tombstone log file.
+
+=item *
+
 Added four new parameters to F<ovsqlite.conf> for the ovsqlite overview
 method: I<mmapsize> to have SQLite read data via mmap instead of copying
 into its own page cache, I<readercachesize> to set the SQLite in-memory
@@ -79,6 +90,11 @@ file was mistakenly appended to F<news.notice> by B<scanlogs>.
 
 =item *
 
+Fixed B<makehistory> so that malformed input does not insert a bogus overview
+entry.  Thanks to Kevin Bowling for the patch.
+
+=item *
+
 Following upstream rename from blacklist to blocklist, the B<--with-blacklist>
 configure flag is renamed B<--with-blocklist> for blocklistd support in
 S<FreeBSD 15> and S<NetBSD 10>.  For backward compatibility, both blacklist
@@ -89,6 +105,10 @@ Thanks to Jose Luis Duran for the information.
 
 Added support for the ALPN TLS extension in B<nnrpd>.  Thanks to Roman
 Donchenko for this feature.
+
+=item *
+
+Various other minor bug fixes and documentation improvements.
 
 =back
 
