@@ -128,9 +128,10 @@ expire.o: expire.c ../include/portable/system.h ../include/config.h \
   ../include/inn/libinn.h ../include/inn/concat.h ../include/inn/macros.h \
   ../include/inn/portable-stdbool.h ../include/inn/xmalloc.h \
   ../include/inn/system.h ../include/inn/xwrite.h ../include/inn/innconf.h \
-  ../include/inn/ov.h ../include/inn/history.h ../include/inn/storage.h \
-  ../include/inn/options.h ../include/inn/overview.h \
-  ../include/inn/paths.h ../include/inn/vector.h ovinterface.h
+  ../include/inn/messages.h ../include/inn/ov.h ../include/inn/history.h \
+  ../include/inn/storage.h ../include/inn/options.h \
+  ../include/inn/overview.h ../include/inn/paths.h ../include/inn/vector.h \
+  ovinterface.h
 interface.o: interface.c ../include/portable/system.h ../include/config.h \
   ../include/inn/macros.h ../include/inn/portable-macros.h \
   ../include/inn/options.h ../include/inn/system.h \
@@ -195,6 +196,16 @@ ovmethods.o: ovmethods.c ovinterface.h ../include/config.h \
   ../include/inn/storage.h ../include/inn/options.h ovmethods.h \
   buffindexed/buffindexed.h ovdb/ovdb.h ovsqlite/ovsqlite.h \
   tradindexed/tradindexed.h
+tombstone.o: tombstone.c ../include/portable/system.h ../include/config.h \
+  ../include/inn/macros.h ../include/inn/portable-macros.h \
+  ../include/inn/options.h ../include/inn/system.h \
+  ../include/portable/stdbool.h ../include/portable/macros.h \
+  ../include/portable/stdbool.h ../include/inn/hashtab.h \
+  ../include/inn/macros.h ../include/inn/portable-stdbool.h \
+  ../include/inn/libinn.h ../include/inn/concat.h ../include/inn/xmalloc.h \
+  ../include/inn/system.h ../include/inn/xwrite.h \
+  ../include/inn/messages.h ../include/inn/storage.h \
+  ../include/inn/options.h ../include/inn/tombstone.h
 buffindexed/buffindexed.o: buffindexed/buffindexed.c ../include/portable/system.h \
   ../include/config.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/options.h \

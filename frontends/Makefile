@@ -265,7 +265,8 @@ sm.o: sm.c ../include/portable/system.h ../include/config.h \
   ../include/inn/portable-stdbool.h ../include/inn/innconf.h \
   ../include/inn/macros.h ../include/inn/libinn.h ../include/inn/concat.h \
   ../include/inn/xmalloc.h ../include/inn/system.h ../include/inn/xwrite.h \
-  ../include/inn/messages.h ../include/inn/qio.h ../include/inn/storage.h \
+  ../include/inn/messages.h ../include/inn/newsuser.h \
+  ../include/inn/paths.h ../include/inn/qio.h ../include/inn/storage.h \
   ../include/inn/options.h ../include/inn/wire.h
 feedone.o: feedone.c ../include/portable/system.h ../include/config.h \
   ../include/inn/macros.h ../include/inn/portable-macros.h \
