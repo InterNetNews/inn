@@ -12,11 +12,22 @@
 #if defined(HAVE_BLOCKLIST)
 #    include <blocklist.h>
 #    include <errno.h>
-/* Some systems (like NetBSD 9.2) do not define these pretty names. */
+/* Some systems may not define these pretty names (NetBSD 10 has them). */
 #    ifndef BLOCKLIST_API_ENUM
 enum {
     BLOCKLIST_AUTH_OK = 0,
     BLOCKLIST_AUTH_FAIL
+};
+#    endif
+#elif defined(HAVE_BLACKLIST)
+/* blocklist was known as blacklist before FreeBSD 15 and NetBSD 10. */
+#    include <blacklist.h>
+#    include <errno.h>
+/* Some systems (like NetBSD 9.2) do not define these pretty names. */
+#    ifndef BLACKLIST_API_ENUM
+enum {
+    BLACKLIST_AUTH_OK = 0,
+    BLACKLIST_AUTH_FAIL
 };
 #    endif
 #endif
@@ -95,7 +106,7 @@ static void GrowArray(void *, void *);
 static void PERMvectortoaccess(ACCESSGROUP *acc, const char *name,
                                struct vector *acccess_vec) UNUSED;
 
-#if defined(HAVE_BLOCKLIST)
+#if defined(HAVE_BLACKLIST) || defined(HAVE_BLOCKLIST)
 static void BlocklistReport(const char *user);
 #endif
 
@@ -1640,7 +1651,7 @@ PERMlogin(char *uname, char *pass, int *code, char *errorstr)
     while (runame == NULL && i-- > 0)
         runame = AuthenticateUser(auth_realms[i], uname, pass, code, errorstr);
 
-#if defined(HAVE_BLOCKLIST)
+#if defined(HAVE_BLACKLIST) || defined(HAVE_BLOCKLIST)
     BlocklistReport(runame);
 #endif
 
@@ -2283,5 +2294,39 @@ BlocklistReport(const char *user)
                strerror(errno));
 
     blocklist_close(cookie);
+}
+#elif defined(HAVE_BLACKLIST)
+void
+BlocklistReport(const char *user)
+{
+    int ret;
+    struct blacklist *cookie;
+
+    /* Only try reporting if nnrpd is started with -B. */
+    if (!BlocklistEnabled)
+        return;
+
+    /* One nnrpd process only handles one login attempt.  Connect to
+     * blacklistd, report and disconnect to avoid keeping the blacklistd
+     * connection open and unused. */
+    cookie = blacklist_open();
+    if (cookie == NULL) {
+        syslog(L_ERROR, "could not connect to blacklistd: %s",
+               strerror(errno));
+        return;
+    }
+
+    /* nnrpd always uses STDIN for client input. */
+    if (user != NULL)
+        ret = blacklist_r(cookie, BLACKLIST_AUTH_OK, STDIN_FILENO,
+                          "login successful");
+    else
+        ret = blacklist_r(cookie, BLACKLIST_AUTH_FAIL, STDIN_FILENO,
+                          "login failed");
+    if (ret == -1)
+        syslog(L_ERROR, "blacklistd communication failed: %s",
+               strerror(errno));
+
+    blacklist_close(cookie);
 }
 #endif

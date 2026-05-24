@@ -51,7 +51,7 @@ bool encryption_layer_on = false;
 #endif
 
 /* Optional arguments for getopt. */
-#if defined(HAVE_BLOCKLIST)
+#if defined(HAVE_BLACKLIST) || defined(HAVE_BLOCKLIST)
 #    define BLOCKLIST_OPT "B"
 #else
 #    define BLOCKLIST_OPT ""
@@ -1049,11 +1049,11 @@ main(int argc, char *argv[])
         case '6': /* Bind to a certain IPv6 address. */
             ListenAddr6 = xstrdup(optarg);
             break;
-#if defined(HAVE_BLOCKLIST)
+#if defined(HAVE_BLACKLIST) || defined(HAVE_BLOCKLIST)
         case 'B': /* Enable blocklistd functionality. */
             BlocklistEnabled = true;
             break;
-#endif            /* HAVE_BLOCKLIST */
+#endif            /* HAVE_BLACKLIST || HAVE_BLOCKLIST */
         case 'c': /* Use alternate readers.conf. */
             ConfFile = concatpath(innconf->pathetc, optarg);
             break;
