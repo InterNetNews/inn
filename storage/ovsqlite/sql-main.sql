@@ -2,9 +2,6 @@ pragma foreign_keys = 1;
 
 pragma busy_timeout = 999999999;
 
--- .random
-select randomblob(?1);
-
 -- .getmisc
 select value from misc
     where key=?1;
