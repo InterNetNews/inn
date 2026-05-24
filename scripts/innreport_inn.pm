@@ -1712,7 +1712,6 @@ sub collect($$$$$$) {
         # for ovsqlite WAL mode
         return 1
           if $left =~ /^ovsqlite: direct reader not available, using server$/o;
-        return 1 if $left =~ /^WAL checkpoint: /o;
         # connect
         if ($left =~ /(\S+) (\([0-9a-fA-F:.]*\) )?connect(?: - port \d+)?$/o) {
             my $cust = $1;
@@ -2015,6 +2014,12 @@ sub collect($$$$$$) {
           if $left =~ /^starttls:\ \S+\ with\ cipher\ \S+
                        \ \(\d+\/\d+\ bits\)\ no\ authentication
                        $/ox;
+    }
+
+    ########
+    ## ovsqlite-server
+    if ($prog eq "ovsqlite-server") {
+        return 1 if $left =~ /^WAL checkpoint: /o;
     }
 
     ########
