@@ -362,7 +362,7 @@ BEGIN {
             $addr = pack_sockaddr_un($path);
             $cookie = "";
         } elsif (-f _ && $stat[7] == 18) {
-            my ($fh, $fhbuf, $got, $port, $fhcookie);
+            my ($fh, $fhbuf, $got, $port);
 
             open($fh, "<", $path)
               or croak "$path: open: $!";
@@ -373,7 +373,7 @@ BEGIN {
             $got == 18
               or croak "$path: Unexpected EOF";
             close($fh);
-            ($port, $fhcookie) = unpack("n a16", $fhbuf);
+            ($port, $cookie) = unpack("n a16", $fhbuf);
             $pf = PF_INET;
             $addr = pack_sockaddr_in($port, INADDR_LOOPBACK);
         } else {
