@@ -5,6 +5,8 @@
 **  under "expiretombstone" for the file semantics.  Shared between
 **  the expire binary and the test suite so both exercise identical
 **  parsing, hashing, and atomic-snapshot logic.
+**
+**  Written by Kevin Bowling in 2026.
 */
 
 #include "portable/system.h"

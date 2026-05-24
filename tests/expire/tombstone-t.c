@@ -1,5 +1,8 @@
 /* Unit tests for the lib/tombstone helpers used by expire to consume
- * the deletion logs written by expireover/expirerm and innd/sm. */
+ * the deletion logs written by expireover/expirerm and innd/sm.
+ *
+ * Written by Kevin Bowling in 2026.
+ */
 
 #include "portable/system.h"
 

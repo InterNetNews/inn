@@ -3,7 +3,10 @@
  * Verifies the multi-writer append protocol used by innd's ARTcancel
  * and sm's -r path: the file format is one TokenToText() per line; the
  * write is gated on innconf->expiretombstone; TOKEN_EMPTY is a no-op;
- * concurrent appenders use fcntl POSIX locks via inn_lock_file. */
+ * concurrent appenders use fcntl POSIX locks via inn_lock_file.
+ *
+ * Written by Kevin Bowling in 2026.
+ */
 
 #include "portable/system.h"
 

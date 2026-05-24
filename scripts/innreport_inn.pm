@@ -4,7 +4,7 @@
 # Copyright (c) 1997-2001 by Fabien Tassin <fta@sofaraway.org>.
 #
 # Various bug fixes, code and documentation improvements since then
-# in 2002-2011, 2013-2015, 2017, 2018, 2020-2025.
+# in 2002-2011, 2013-2015, 2017, 2018, 2020-2026.
 #
 # See innreport documentation for more information.
 ##########################################################################

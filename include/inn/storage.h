@@ -1,5 +1,10 @@
 /*
 **  Here be declarations related to the storage subsystem.
+**
+**  New storage API written by Clayton O'Neill in 1997.
+**
+**  Various bug fixes, code and documentation improvements since then
+**  in 1997-2003, 2005, 2006, 2008, 2009, 2015, 2021, 2022, 2024, 2026.
 */
 
 #ifndef INN_STORAGE_H

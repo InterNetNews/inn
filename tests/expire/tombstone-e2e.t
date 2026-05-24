@@ -11,6 +11,8 @@
 #     hashset that can answer membership queries
 #   - The atomic-snapshot rename moves cancels.tombstone aside under
 #     lock so a fresh file can capture writes that follow
+#
+# Written by Kevin Bowling in 2026.
 
 count=1
 printcount() {
