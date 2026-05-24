@@ -272,7 +272,7 @@ code-check:
 	fi ; \
         if command -v "perltidy" >/dev/null 2>&1; then \
             echo "Running perltidy to check Perl code..." ; \
-            perltidy -se -wlt='c u m' -wma -wmauc=0 -wmr -wnt -wuk \
+            perltidy -se -wlt=1 -wma -wmauc=0 -wmr -wnt -wuk \
                 -wvt='c p r u' -wvxl='*_unused' $$F ; \
         else \
             echo "Skipping Perl code checking (perltidy not found)" ; \
