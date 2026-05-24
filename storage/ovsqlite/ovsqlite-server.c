@@ -289,32 +289,11 @@ make_inet_listener(void)
 {
     char *path;
     struct sockaddr_in sa;
-    int status;
-    void const *cookie;
     int ret;
     socklen_t salen;
     int fd;
 
-    sqlite3_bind_int(sql_main.random, 1, OVSQLITE_COOKIE_LENGTH);
-    status = sqlite3_step(sql_main.random);
-    if (status != SQLITE_ROW) {
-        die("SQLite error while generating random cookie: %s",
-            sqlite3_errmsg(connection));
-    }
-    cookie = sqlite3_column_blob(sql_main.random, 0);
-    if (!cookie) {
-        status = sqlite3_errcode(connection);
-        if (status != SQLITE_OK) {
-            die("SQLite error while generating random cookie: %s",
-                sqlite3_errmsg(connection));
-        } else {
-            die("unexpected NULL result while generating random cookie");
-        }
-    }
-    if (sqlite3_column_bytes(sql_main.random, 0) != OVSQLITE_COOKIE_LENGTH)
-        die("unexpected result size while generating random cookie");
-    memcpy(port.cookie, cookie, OVSQLITE_COOKIE_LENGTH);
-    resetclear(sql_main.random);
+    sqlite3_randomness(sizeof port.cookie, port.cookie);
 
     listensock = socket(AF_INET, SOCK_STREAM, 0);
     if (listensock == -1)
