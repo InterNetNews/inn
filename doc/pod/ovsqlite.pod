@@ -75,7 +75,12 @@ The maximum number of bytes of the database file that SQLite will
 memory-map.  When set, SQLite reads data directly from the operating
 system's page cache via mmap instead of copying it into its own page
 cache, which can significantly improve read performance for large
-databases.  A good starting value is the size of the database file
+databases.  When I<walmode> is enabled, B<nnrpd> reader processes honor
+this setting too, which additionally lets them share physical memory
+pages for the same database regions through the operating system's page
+cache.  This is of little benefit on ZFS or others without a unified
+buffer cache, where the mapped pages would simply be cached twice.
+A good starting value is the size of the database file
 or the amount of available memory, whichever is smaller.  For example,
 a value of C<4294967296> allows up to S<4 GB> to be memory-mapped.
 The default value of C<0> disables memory-mapped I/O.
