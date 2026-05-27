@@ -246,6 +246,7 @@ direct_open(void)
     char *journal_mode = NULL;
     bool use_wal = false;
     unsigned long reader_cachesize = 2000; /* default 2 MB */
+    unsigned long mmapsize = 0;
     int version;
     int compress_flag;
     char sqltext[64];
@@ -265,6 +266,7 @@ direct_open(void)
         config_param_boolean(top, "walmode", &use_wal);
         config_param_unsigned_number(top, "readercachesize",
                                      &reader_cachesize);
+        config_param_unsigned_number(top, "mmapsize", &mmapsize);
         config_free(top);
     }
     if (!use_wal)
@@ -319,6 +321,20 @@ direct_open(void)
         status = sqlite3_exec(read_connection, sqltext, 0, NULL, &errmsg);
         if (status != SQLITE_OK) {
             warn("ovsqlite: cannot set reader cache size: %s", errmsg);
+            sqlite3_free(errmsg);
+        }
+    }
+
+    /* Set mmap size.  Memory-mapping the database lets multiple nnrpd reader
+     * processes share the same physical pages through the operating system's
+     * page cache, reducing total memory use.  This is of little benefit on
+     * ZFS or others without a unified buffer cache, where the mapped pages
+     * would simply be cached twice. */
+    if (mmapsize) {
+        snprintf(sqltext, sizeof sqltext, "pragma mmap_size = %lu;", mmapsize);
+        status = sqlite3_exec(read_connection, sqltext, 0, NULL, &errmsg);
+        if (status != SQLITE_OK) {
+            warn("ovsqlite: cannot set reader mmap size: %s", errmsg);
             sqlite3_free(errmsg);
         }
     }
