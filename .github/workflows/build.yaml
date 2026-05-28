@@ -15,7 +15,7 @@ jobs:
     steps:
       - run: exit 1  # TODO(cclauss): Remove this line!!!
       - name: checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: install
         run: sudo -E ci/install
       - name: test
@@ -33,7 +33,7 @@ jobs:
       - run: echo $USER $(whoami)
       - run: sudo usermod -aG news $USER
       - run: sudo usermod -aG news $(whoami)
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - run: sudo -E ci/install
       - run: ./autogen
       - run: ./configure CC="${COMPILER:-gcc}" --prefix=$RUNNER_WORKSPACE/inn-install
@@ -69,9 +69,6 @@ jobs:
       # CAUTION: Running as root is dangerous.
       # - run: sudo su news ; INN_HOSTNAME=inn.github-action $RUNNER_WORKSPACE/inn-install/bin/rc.news start
 
-
-
-
       - run: pwd && ls -la
       - run: ls -lR /etc 2>/dev/null | grep -E 'inn|news'
       - run: ls -l /usr/local  # No `news` directory
@@ -93,10 +90,10 @@ jobs:
       # - run: /usr/lib/news/bin/rc.news || true
       # Run all pynntp tests
       - run: ls -la
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           repository: greenbender/pynntp
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.x'
       - run: pip install --upgrade pip
