@@ -119,7 +119,7 @@ static sqlite3 *connection;
 static sql_main_t sql_main;
 
 static bool use_compression;
-static bool use_wal;
+static bool use_wal = true;
 static unsigned long pagesize;
 static unsigned long cachesize;
 static unsigned long mmapsize;
