@@ -688,11 +688,6 @@ sub collect($$$$$$) {
             $innd_control{"flush"}++;
             return 1;
         }
-        # flush-file
-        if ($left =~ /flush_file/) {
-            $innd_control{"flush_file"}++;
-            return 1;
-        }
         # too many connections from site
         if ($left =~ /too many connections from (\S+)/o) {
             $innd_max_conn{$1}++;
@@ -840,7 +835,7 @@ sub collect($$$$$$) {
         }
         # paused
         if ($left =~ m/(\S+) paused /o) {
-            $innd_control{"paused"}++;
+            # Already counted by "ctlinnd command m:reason"
             return 1;
         }
         # throttled
