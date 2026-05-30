@@ -88,7 +88,7 @@ The default value of C<0> disables memory-mapped I/O.
 =item I<walmode>
 
 If this parameter is true, ovsqlite will use SQLite's WAL (Write-Ahead
-Logging) journal mode instead of the default PERSIST mode.  WAL mode
+Logging) journal mode instead of PERSIST mode.  WAL mode
 allows concurrent readers and writers without blocking, which significantly
 improves read performance when multiple B<nnrpd> processes access the
 overview database simultaneously.  It also sets C<synchronous> to
@@ -97,11 +97,12 @@ C<NORMAL>, which is safe with WAL and reduces unnecessary fsync overhead.
 On shutdown, the WAL is checkpointed back into the main database file
 and truncated.
 
-B<Note:> WAL mode requires shared-memory support and does not work on
-network filesystems such as NFS.  Do not enable this parameter if
-I<pathoverview> is on a network filesystem.
+B<Note:> WAL mode requires shared-memory support and does not work on network
+filesystems such as NFS when B<innd> and B<nnrpd> are not exclusively run on
+one mount consumer.  Disable this parameter if I<pathoverview> is shared on a
+network filesystem between two different hosts.
 
-The default value is false.
+The default value is true.
 
 =item I<readercachesize>
 

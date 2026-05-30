@@ -244,7 +244,7 @@ direct_open(void)
     int status;
     char *errmsg;
     char *journal_mode = NULL;
-    bool use_wal = false;
+    bool use_wal = true;
     unsigned long reader_cachesize = 2000; /* default 2 MB */
     unsigned long mmapsize = 0;
     int version;
