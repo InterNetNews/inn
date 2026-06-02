@@ -3,7 +3,7 @@
 ##
 ##  Original implementation written by Bo Lindbergh in December 2023.
 ##  Various bug fixes, code and documentation improvements since then
-##  in 2024, 2025.
+##  in 2024-2026.
 
 package INN::ovsqlite_client;
 
