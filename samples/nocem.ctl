@@ -1,4 +1,5 @@
 ##  Configuration file for perl-nocem(8).
+##  Last modified: 2026-06-09
 ##
 ##  This file lists the NoCeM issuers and types of notices you want to process.
 ##
@@ -18,7 +19,6 @@
 
 bleachbot@httrack.com:site,spam
 i2pn2-nocem@i2pn2.org:spam
-mm+nocem@dorfdsl.de:spam
 news@uni-berlin.de:Admincancel
 nocem@chmurka.net:spam
 nocem@eternal-september.org:bot,misplaced_binary,spam
