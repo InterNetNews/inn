@@ -55,9 +55,9 @@ download() {
 
             # Remove useless function for INN.
             if [ "$3" = "cc-flags.m4" ]; then
-                sed -i -e '/dnl Provides INN_PROG_CC_WARNINGS_FLAGS/,+6d' \
+                sed -i -e '/dnl Provides INN_PROG_CC_WARNINGS_FLAGS/,+4d' \
+                    -e '/AC_PROG_CC/a \ AC_REQUIRE([INN_PROG_CC_CLANG])' \
                     -e '/dnl Determine the full set/,$d' \
-                    -e '/test x"$CLANG" = xyes/,+1d' \
                     ${TEMP}
                 sed -i -e '$d' ${TEMP}
             elif [ "$3" = "sqlite3.m4" ]; then
@@ -351,6 +351,7 @@ extern char *strtok(char *, const char *);\
 ##  Synchronize Autoconf macros from upstream.
 download m4/bdb.m4 m4 bdb.m4
 download m4/cc-flags.m4 m4 cc-flags.m4
+download m4/clang.m4 m4 clang.m4
 download m4/inet-ntoa.m4 m4 inet-ntoa.m4
 download m4/krb5-config.m4 m4 krb5-config.m4
 download m4/krb5.m4 m4 krb5.m4

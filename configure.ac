@@ -142,6 +142,7 @@ m4_include([m4/blocklist.m4])
 m4_include([m4/canlock.m4])
 m4_include([m4/cc-c-o.m4])
 m4_include([m4/cc-flags.m4])
+m4_include([m4/clang.m4])
 m4_include([m4/compress.m4])
 m4_include([m4/inet-ntoa.m4])
 m4_include([m4/iov-max.m4])
@@ -828,11 +829,6 @@ dnl -Wstack-protector (for gcc, but many false positives from small buffers)
 dnl -Wimplicit-int-conversion, -Wshorten-64-to-32 (for Clang)
 dnl -fstrict-overflow (for Clang, but -fwrapv used by embedded Perl causes an
 dnl error of "argument unused during compilation" in clang-11)
-dnl
-dnl First, we add -Wunknown-warning-option to CFLAGS so that Clang properly
-dnl reports probes for unknown flags as errors.
-INN_PROG_CC_FLAG([-Werror=unknown-warning-option],
-                 [CFLAGS="$CFLAGS -Werror=unknown-warning-option"], [])
 m4_foreach_w(
     [flag],
     [-fstrict-aliasing -fstrict-flex-arrays=3
@@ -857,7 +853,7 @@ m4_foreach_w(
      -Wno-c++-keyword -Wno-default-const-init-var
      -Wno-disabled-macro-expansion -Wno-excess-padding -Wno-extra-semi-stmt
      -Wno-implicit-int-conversion -Wno-implicit-void-ptr-cast
-     -Wno-nrvo -Wno-packed -Wno-padded
+     -Wno-packed -Wno-padded
      -Wno-poison-system-directories
      -Wno-reserved-id-macro -Wno-reserved-identifier -Wno-shorten-64-to-32
      -Wno-sign-conversion -Wno-stack-protector-purecap-ignored
@@ -868,6 +864,13 @@ m4_foreach_w(
      -Wno-unused-macros -Wno-used-but-marked-unused],
     [INN_PROG_CC_FLAG(flag, [CC_WARNINGS="${CC_WARNINGS} flag"], [])])
 AC_SUBST([CC_WARNINGS])
+
+dnl The -Wno-nrvo option is recognized by GCC but then produces a warning that
+dnl it is valid for C++/ObjC++ but not for C.  Let's check for it only with
+dnl Clang.
+AS_IF([test x"$CLANG" = xyes],
+    [INN_PROG_CC_FLAG(-Wno-nrvo,
+        [CC_WARNINGS="${CC_WARNINGS} -Wno-nrvo"], [])])
 
 dnl On OpenBSD, the system headers contain many redundant declarations.
 AS_CASE([$host],
@@ -900,10 +903,6 @@ AS_IF([test x"$inn_enable_hardening_flags" = xyes],
                       [LDFLAGS="${LDFLAGS} -Wl,-z,relro"], [])
      INN_PROG_LD_FLAG([-Wl,-z,now],
                       [LDFLAGS="${LDFLAGS} -Wl,-z,now"], [])])
-
-dnl Now that compiler flags have been checked, remove -Wunknown-warning-option
-dnl from CFLAGS.
-CFLAGS=`AS_ECHO(["${CFLAGS}"]) | sed 's/ -Werror=unknown-warning-option//'`
 
 dnl Clean up our LIBS, just for grins.
 LIBS=`AS_ECHO(["$LIBS"]) | sed 's/^  *//' | sed 's/   */ /g' | sed 's/  *$//'`

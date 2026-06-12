@@ -5,6 +5,8 @@ dnl compiler supports a given flag for either compilation or linking,
 dnl respectively.  If it does, the commands in the second argument are run.
 dnl If not, the commands in the third argument are run.
 dnl
+dnl Depends on INN_PROG_CC_CLANG.
+dnl
 dnl The canonical version of this file is maintained in the rra-c-util
 dnl package, available at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
 dnl
@@ -36,9 +38,12 @@ dnl Check whether a given flag is supported by the compiler when compiling a C
 dnl source file.
 AC_DEFUN([INN_PROG_CC_FLAG],
 [AC_REQUIRE([AC_PROG_CC])
+ AC_REQUIRE([INN_PROG_CC_CLANG])
  AC_MSG_CHECKING([if $CC supports $1])
  AC_CACHE_VAL([_INN_PROG_CC_FLAG_CACHE([$1])],
     [save_CFLAGS=$CFLAGS
+     AS_IF([test x"$CLANG" = xyes],
+        [CFLAGS="$CFLAGS -Werror=unknown-warning-option"])
      AS_CASE([$1],
         [-Wno-*], [CFLAGS="$CFLAGS `AS_ECHO(["$1"]) | sed 's/-Wno-/-W/'`"],
         [CFLAGS="$CFLAGS $1"])
@@ -53,9 +58,12 @@ dnl Check whether a given flag is supported by the compiler when linking an
 dnl executable.
 AC_DEFUN([INN_PROG_LD_FLAG],
 [AC_REQUIRE([AC_PROG_CC])
+ AC_REQUIRE([INN_PROG_CC_CLANG])
  AC_MSG_CHECKING([if $CC supports $1 for linking])
  AC_CACHE_VAL([_INN_PROG_LD_FLAG_CACHE([$1])],
     [save_LDFLAGS=$LDFLAGS
+     AS_IF([test x"$CLANG" = xyes],
+        [LDFLAGS="$LDFLAGS -Werror=unknown-warning-option"])
      LDFLAGS="$LDFLAGS $1"
      AC_LINK_IFELSE([AC_LANG_PROGRAM([], [int foo = 0;])],
         [_INN_PROG_LD_FLAG_CACHE([$1])=yes],
