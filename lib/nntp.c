@@ -3,6 +3,10 @@
 **
 **  These functions speak the NNTP protocol over stdio FILEs.  So far, only
 **  the server functions are implemented; there is no client support as yet.
+**
+**  Written by Russ Allbery in 2003.
+**  Various bug fixes, code and documentation improvements since then
+**  in 2003-2006, 2010, 2014, 2021, 2023, 2024, 2026.
 */
 
 #include "portable/system.h"
@@ -228,7 +232,7 @@ nntp_read_response(struct nntp *nntp, enum nntp_code *code, char **rest)
         return status;
     *code = strtol(line, rest, 10);
     if (*rest != line + 3)
-        *code = 0;
+        *code = NNTP_INVALID_CODE;
     else if (isspace((unsigned char) *rest[0]))
         (*rest)++;
     return status;

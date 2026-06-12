@@ -32,7 +32,7 @@ that type (y and m being the most common) are returned.\n";
 __attribute__((__noreturn__)) static void
 die_nntp_code(enum nntp_code code, const char *line)
 {
-    if (code == 0)
+    if (code == NNTP_INVALID_CODE)
         die("unexpected server response: %s", line);
     else
         die("unexpected server response: %03u %s", code, line);

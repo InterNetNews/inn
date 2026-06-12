@@ -3,6 +3,10 @@
  *  Performs recovery on OV database, if needed
  *  Performs upgrade of OV database, if needed and if '-u' used
  *  Starts ovdb_monitor, if needed
+ *
+ * Created by Heath Kehoe in 2000.
+ * Various bug fixes, code and documentation improvements since then
+ * in 2000-2004, 2006-2008, 2010, 2013-2015, 2021, 2023, 2024, 2026.
  */
 
 #include "portable/system.h"
@@ -36,7 +40,7 @@ open_db(DB **db, const char *name, int type)
         warn("db_create failed: %s\n", db_strerror(ret));
         return ret;
     }
-    ret = (*db)->open(*db, NULL, name, NULL, type, DB_CREATE, 0666);
+    ret = (*db)->open(*db, NULL, name, NULL, (DBTYPE) type, DB_CREATE, 0666);
     if (ret != 0) {
         (*db)->close(*db, 0);
         warn("%s->open failed: %s", name, db_strerror(ret));
