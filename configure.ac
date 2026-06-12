@@ -798,10 +798,12 @@ dnl   -Wcast-qual                     Some structs require casting away const.
 dnl   -Wclass-varargs                 Not an actual problem.
 dnl   -Wcovered-switch-default        Does not do harm to have default cases.
 dnl   -Wc++-keyword                   Intended for C++, not applicable to C.
+dnl   -Wdefault-const-init-var        Intended for C++, not applicable to C.
 dnl   -Wdisabled-macro-expansion      Not an actual problem.
 dnl   -Wexcess-padding                Not an actual problem.
 dnl   -Wextra-semi-stmt               Useful for readability.
 dnl   -Wimplicit-void-ptr-cast        Intended for C++, not applicable to C.
+dnl   -Wnrvo                          Fine in C.
 dnl   -Wpacked                        Not an actual problem.
 dnl   -Wpadded                        Not an actual problem.
 dnl   -Wpoison-system-directories     Not an actual problem (e.g. Xcode).
@@ -812,6 +814,7 @@ dnl   -Wstack-protector-purecap-ignored Not an actual problem (CHERI hardware).
 dnl   -Wswitch-default                False positives with switches on enums.
 dnl   -Wswitch-enum                   Useless noise.
 dnl   -Wtautological-pointer-compare  False positives with for loops.
+dnl   -Wtentative-definition-compat   Intended for C++, not applicable to C.
 dnl   -Wundef                         Conflicts with Autoconf probe results.
 dnl   -Wunreachable-code              Happens with optional compilation.
 dnl   -Wunreachable-code-return       Other compilers get confused.
@@ -851,15 +854,15 @@ m4_foreach_w(
      -Wnormalized=nfc -Wredundant-decls -Wrestrict -Wnested-externs -Winline
      -Winvalid-pch -Wvla -Wuse-after-free=3 -Wno-unused-function
      -Weverything -Wno-cast-qual -Wno-class-varargs -Wno-covered-switch-default
-     -Wno-c++-keyword
+     -Wno-c++-keyword -Wno-default-const-init-var
      -Wno-disabled-macro-expansion -Wno-excess-padding -Wno-extra-semi-stmt
      -Wno-implicit-int-conversion -Wno-implicit-void-ptr-cast
-     -Wno-packed -Wno-padded
+     -Wno-nrvo -Wno-packed -Wno-padded
      -Wno-poison-system-directories
      -Wno-reserved-id-macro -Wno-reserved-identifier -Wno-shorten-64-to-32
      -Wno-sign-conversion -Wno-stack-protector-purecap-ignored
      -Wno-switch-default -Wno-switch-enum
-     -Wno-tautological-pointer-compare
+     -Wno-tautological-pointer-compare -Wno-tentative-definition-compat
      -Wno-undef -Wno-unreachable-code -Wno-unreachable-code-return
      -Wno-unsafe-buffer-usage
      -Wno-unused-macros -Wno-used-but-marked-unused],

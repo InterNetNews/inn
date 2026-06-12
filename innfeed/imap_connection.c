@@ -4,7 +4,7 @@
 **  Written by Tim Martin in 2000.
 **
 **  Various bug fixes, code and documentation improvements since then
-**  in 2000-2004, 2006-2011, 2013-2016, 2018, 2021, 2022, 2024, 2025.
+**  in 2000-2004, 2006-2011, 2013-2016, 2018, 2021, 2022, 2024-2026.
 **
 **  Instead of feeding articles via nntp to another host this feeds the
 **  messages via lmtp to a host and the control messages (cancel's etc..) it
@@ -1161,7 +1161,8 @@ AddControlMsg(connection_t *cxn, Article art, Buffer *bufs,
 
         item->article = art;
 
-        if (AddToQueue(&(cxn->imap_controlMsg_q), item, t, 1, must)
+        if (AddToQueue(&(cxn->imap_controlMsg_q), item, (control_type_t) t, 1,
+                       must)
             != RET_OK) {
             d_printf(1,
                      "%s:%u addCancelItem(): "
@@ -1448,7 +1449,7 @@ static conn_ret
 Initialize(connection_t *cxn, int respTimeout)
 {
 #ifdef HAVE_SASL
-    conn_ret saslresult;
+    int saslresult;
 #endif /* HAVE_SASL */
 
     d_printf(1, "%s:%u initializing....\n", hostPeerName(cxn->myHost),
@@ -2472,7 +2473,7 @@ imap_sendAuthenticate(connection_t *cxn)
     char *p;
 
 #ifdef HAVE_SASL
-    const char *mechusing;
+    const char *mechusing = NULL;
     int saslresult = SASL_NOMECH;
 
     sasl_interact_t *client_interact = NULL;
@@ -2686,7 +2687,7 @@ imap_sendSimple(connection_t *cxn, const char *atom, int st)
     if (result != RET_OK)
         return result;
 
-    cxn->imap_state = st;
+    cxn->imap_state = (imap_state_t) st;
 
     return RET_OK;
 }
