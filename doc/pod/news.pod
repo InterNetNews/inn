@@ -1,6 +1,33 @@
+=head1 Upgrading from 2.7 to 2.8
+
+The following changes require your full attention because a manual
+intervention may be needed:
+
+=over 2
+
+=item *
+
+SQLite's Write-Ahead Logging journal mode is now enabled by default.  This
+setting notably improves read performance when multiple B<nnrpd> processes
+access the overview database simultaneously.  However, it does not work on
+network filesystems such as NFS when B<innd> and B<nnrpd> are not exclusively
+run on one mount consumer.  In case you use the ovsqlite overview method with
+an overview database shared on a network filesystem between two different
+hosts, you need manually setting to false the I<walmode> parameter in
+F<ovsqlite.conf>.
+
+=back
+
+If you are upgrading from a version prior to S<INN 2.7>, see also
+L<Upgrading from 2.6 to 2.7>.
+
 =head1 Changes in 2.8.0 (not yet released)
 
 =over 2
+
+=item *
+
+The I<walmode> parameter in F<ovsqlite.conf> is now enabled by default for the ovsqlite overview method.
 
 =item *
 
