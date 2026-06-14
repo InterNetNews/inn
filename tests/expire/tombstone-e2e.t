@@ -20,6 +20,32 @@ printcount() {
     count=$(expr $count + 1)
 }
 
+# POSIX-portable helpers: AIX and Solaris native grep(1) lack -F and
+# native sed(1) lacks -i, so we avoid both rather than depend on GNU
+# tools being installed.
+
+# contains FILE STRING -- succeed if STRING occurs literally on some line.
+contains() {
+    while read -r _line; do
+        case "$_line" in
+        *"$2"*) return 0 ;;
+        esac
+    done <"$1"
+    return 1
+}
+
+# countlines FILE -- print the number of newline-terminated lines.
+countlines() {
+    wc -l <"$1" | tr -cd '0-9'
+}
+
+# setconf VALUE -- rewrite the expiretombstone setting in the temp inn.conf.
+setconf() {
+    sed "s/^expiretombstone:.*\$/expiretombstone:        $1/" \
+        "$TMPDIR_E2E/inn.conf" >"$TMPDIR_E2E/inn.conf.new" \
+        && mv "$TMPDIR_E2E/inn.conf.new" "$TMPDIR_E2E/inn.conf"
+}
+
 # Find the right directory.
 sm="../../frontends/sm"
 dirs='../data data tests/data'
@@ -82,14 +108,14 @@ fi
 
 # 2. Remove it via sm -r.  This should append the token to cancels.tombstone.
 $sm -r "$token1"
-if [ -r "$CANCELS" ] && grep -qF "$token1" "$CANCELS"; then
+if [ -r "$CANCELS" ] && contains "$CANCELS" "$token1"; then
     printcount "ok"
 else
     printcount "not ok" "cancels.tombstone missing token1"
 fi
 
 # 3. The file format should be exactly one line per cancellation.
-lines=$(wc -l <"$CANCELS" | sed -e 's/[ \t]//g')
+lines=$(countlines "$CANCELS")
 if [ "$lines" = 1 ]; then
     printcount "ok"
 else
@@ -99,9 +125,9 @@ fi
 # 4. A second cancellation appends, doesn't overwrite.
 token2=$($sm -s <articles/2)
 $sm -r "$token2"
-lines=$(wc -l <"$CANCELS" | sed -e 's/[ \t]//g')
-if [ "$lines" = 2 ] && grep -qF "$token1" "$CANCELS" \
-    && grep -qF "$token2" "$CANCELS"; then
+lines=$(countlines "$CANCELS")
+if [ "$lines" = 2 ] && contains "$CANCELS" "$token1" \
+    && contains "$CANCELS" "$token2"; then
     printcount "ok"
 else
     printcount "not ok" "expected 2 distinct lines, got $lines"
@@ -109,26 +135,24 @@ fi
 
 # 5. Disable expiretombstone in inn.conf and verify that sm -r becomes
 #    a tombstone no-op (still cancels the article, just doesn't log).
-sed -i.bak 's/^expiretombstone:.*$/expiretombstone:        false/' \
-    "$TMPDIR_E2E/inn.conf"
+setconf false
 
 token3=$($sm -s <articles/3)
 $sm -r "$token3"
-lines=$(wc -l <"$CANCELS" | sed -e 's/[ \t]//g')
-if [ "$lines" = 2 ] && ! grep -qF "$token3" "$CANCELS"; then
+lines=$(countlines "$CANCELS")
+if [ "$lines" = 2 ] && ! contains "$CANCELS" "$token3"; then
     printcount "ok"
 else
     printcount "not ok" "expected log unchanged when expiretombstone=false"
 fi
 
 # Restore expiretombstone for the remaining tests.
-sed -i.bak 's/^expiretombstone:.*$/expiretombstone:        true/' \
-    "$TMPDIR_E2E/inn.conf"
+setconf true
 
 # 6. TOKEN_EMPTY guard: invoking sm -r on a clearly invalid token should
 #    fail without polluting the tombstone log.
 $sm -r "@FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF@" >/dev/null 2>&1
-lines=$(wc -l <"$CANCELS" | sed -e 's/[ \t]//g')
+lines=$(countlines "$CANCELS")
 if [ "$lines" = 2 ]; then
     printcount "ok"
 else
@@ -164,13 +188,13 @@ fi
 #    a fourth article and confirming a clean append.
 token4=$($sm -s <articles/4)
 $sm -r "$token4"
-lines=$(wc -l <"$CANCELS" | sed -e 's/[ \t]//g')
-if [ "$lines" = 3 ] && grep -qF "$token4" "$CANCELS"; then
+lines=$(countlines "$CANCELS")
+if [ "$lines" = 3 ] && contains "$CANCELS" "$token4"; then
     printcount "ok"
 else
     printcount "not ok" "fourth cancel: expected 3 lines, got $lines"
 fi
 
 # Cleanup.
-rm -rf "$TMPDIR_E2E" spool tradspool.map "$TMPDIR_E2E.bak"
+rm -rf "$TMPDIR_E2E" spool tradspool.map
 exit 0
