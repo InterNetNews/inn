@@ -370,7 +370,7 @@ hisv6_reopen(struct hisv6 *h)
                on-disk copies out of sync with the mmap'ed copies most of
                the time.  So if innd is using INCORE_MMAP, then we force
                everything else to use it, too (unless we're on NFS) */
-            if (!innconf->nfsreader) {
+            if (innconf != NULL && !innconf->nfsreader) {
                 opt.pag_incore = INCORE_MMAP;
                 opt.exists_incore = INCORE_MMAP;
             }
