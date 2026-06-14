@@ -1,0 +1,162 @@
+=head1 NAME
+
+hissqlite - SQLite-based history storage method for INN
+
+=head1 DESCRIPTION
+
+This method uses SQLite to store the history database, as an alternative to
+the default C<hisv6> method.  It requires version 3.8.2 or later of the
+SQLite library (3.20.0+ recommended).
+
+SQLite source, documentation, etc. are available at
+L<https://www.sqlite.org/>.  One of the stated goals of the SQLite file
+format is long-term stability and compatibility, which makes it a good
+choice for a history database.
+
+Unlike C<hisv6>, hissqlite keeps everything in a single SQLite database
+file: there is no separate F<history> text file and no I<dbz> index files.
+Consequently the B<makedbz> and B<prunehistory> text-file tools do not
+apply, and the I<history> path simply names the database file (see
+L</CONFIGURATION>).  Each entry is keyed on the 16-byte MD5 hash of its
+Message-ID and is in one of three states: a real article (with a storage
+API token), a I<remembered> Message-ID (no token, recorded so a cancelled
+or expired article is not re-offered), or absent.
+
+Only one schema version of the hissqlite method currently exists,
+implemented since S<INN 2.8.0>.
+
+This method comes with a migration tool (B<hissqlite-convert>) and a
+support utility (B<hissqlite-util>).  See their manual pages for details.
+
+=head1 INSTALLATION
+
+The configure script will automatically enable SQLite support if it finds
+the SQLite library.  If the library isn't installed in a standard location,
+you may have to specify the B<--with-sqlite3> option to help configure find
+it.  For complicated cases, you can use separate B<--with-sqlite3-include>
+and B<--with-sqlite3-lib> options.  Finally, if you I<don't> want SQLite
+support even when your system has the SQLite library, you can use the
+B<--without-sqlite3> option.
+
+=head1 CONFIGURATION
+
+To select hissqlite as your history method, set the I<hismethod> parameter
+in F<inn.conf> to C<hissqlite>.  The database is stored at the location
+named by the I<pathhistory> parameter with a F<.sqlite> suffix appended
+(by default, F<history.sqlite> in I<pathdb>).  After changing I<hismethod>,
+migrate or rebuild your history (see L</MIGRATION>) and restart INN.
+
+The following F<inn.conf> parameters tune the database; their defaults suit
+most sites.
+
+=over 4
+
+=item I<hissqlitepagesize>
+
+The SQLite page size in bytes, applied when the database is created (it
+cannot be changed afterwards without rebuilding).  Must be a power of two
+between 512 and 65536.  The default is C<4096>, matching the common
+filesystem block size so that a random single-row insert or point lookup
+on the random-MD5 keys touches exactly one block (no read-modify-write).
+For best results the page size should match the underlying storage block
+size: on ZFS, create the history dataset with C<recordsize=4k>.  A small
+page on a coarse-recordsize ZFS dataset (the 128k default) forces
+read-modify-write on every random write and will perform worse, not
+better.
+
+=item I<hissqlitecachesize>
+
+The page cache size in kilobytes for the B<innd> writer connection.  The
+default is C<65536> (64 MB).
+
+=item I<hissqlitereadercachesize>
+
+The page cache size in kilobytes for each B<nnrpd> reader process, which
+opens the database directly for read-only access.  Each reader has its own
+cache, so this is kept small; history lookups are not B<nnrpd>'s hot path
+(overview is), and readers share the operating system page cache.  The
+default is C<2000> (about 2 MB).
+
+=item I<hissqlitemmapsize>
+
+The maximum number of bytes of the database that SQLite memory-maps, for both
+the writer and the direct readers.  When enabled, memory-mapped pages are
+served from the shared operating system page cache, which can keep the B-tree
+hot and lets reader processes share physical memory.  This is of little
+benefit on ZFS and other systems without a unified buffer cache, where the
+pages would simply be cached twice, and memory-mapped I/O turns a read error
+into a fatal signal (B<SIGBUS>) rather than a recoverable error.  The default
+value of C<0> therefore disables it, matching ovsqlite(5).  A good starting
+value, if you enable it after benchmarking, is the size of the database file
+or the amount of available memory, whichever is smaller.
+
+=back
+
+The database is opened in WAL journal mode with C<synchronous> set to
+C<NORMAL> (see L</DURABILITY>).
+
+=head1 DURABILITY
+
+hissqlite uses WAL (Write-Ahead Logging) journal mode with C<synchronous>
+set to C<NORMAL>.  A committed write is a buffered append to the WAL: it is
+durable across an application crash (for instance, if B<innd> is killed),
+but a sudden power loss or kernel panic can lose the transactions written
+since the last checkpoint.  The database itself is never corrupted.  This
+matches the durability contract of the C<hisv6>/I<dbz> backend, where
+history updates are likewise periodically flushed rather than synchronously
+committed; in both cases the affected articles are simply re-offered by
+peers.  The WAL is checkpointed in the background and truncated on a clean
+shutdown.
+
+B<Note:> WAL mode requires shared-memory support and does not work on
+network filesystems such as NFS if duties are split across multiple machines.
+Keep I<pathhistory> on local storage or only use a single instance to run
+B<innd> and other programs like B<nnrpd>.
+
+=head1 MIGRATION
+
+To convert an existing C<hisv6> history into a hissqlite database without
+losing remembered entries or exact timestamps, use B<hissqlite-convert>;
+see hissqlite-convert(8).  Alternatively, you can rebuild the history from
+the article spool with B<makehistory>, though a from-spool rebuild cannot
+reconstruct remembered Message-IDs.
+
+=head1 RUNNING
+
+hissqlite has no separate server daemon.  B<innd> writes the database
+directly and is the steady-state writer; the only other writer is B<expire>,
+which runs in place (see L</EXPIRATION>) rather than rebuilding and swapping
+files, so B<innd> is not paused for it.  SQLite's WAL locking and busy
+timeout serialize the two writers, and because writes autocommit there is no
+broker process to funnel them through (unlike ovsqlite).  Reader processes
+and the offline tools open the same WAL database read-only.
+
+While B<innd> is running, B<hissqlite-util> can safely read the database:
+B<innd> holds the write lock for only a single statement at a time, so it
+waits at most briefly.  (B<hissqlite-convert> is a one-time migration tool
+that reads a I<separate> source history, which must not be written while it
+runs; see hissqlite-convert(8).)
+
+=head1 EXPIRATION
+
+B<expire> runs against the live database in place: real articles past their
+retention are transitioned to remembered entries (their token is cleared),
+and remembered entries older than the F</remember/> threshold in
+F<expire.ctl> are deleted.  Because hissqlite expires in place, B<expire>
+cannot write a rebuilt history to a side file, so its B<-d> and B<-f> options
+are rejected.  Use B<-t> for a dry run: it lists the tokens that would be
+removed and changes neither the history nor the spool (no F<history.n> file
+is produced, unlike with C<hisv6>).  B<-x> on its own is also rejected, since
+suppressing the history rewrite while still removing articles would leave the
+history pointing at deleted articles.  See expire(8).
+
+=head1 HISTORY
+
+Written by Kevin Bowling for InterNetNews.
+
+=head1 SEE ALSO
+
+expire(8), expire.ctl(5), hissqlite-convert(8), hissqlite-util(8),
+history(5), inn.conf(5), makehistory(8), ovsqlite(5).
+
+=cut

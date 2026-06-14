@@ -28,6 +28,13 @@ If a malformed article is found in the news spool, in a way which prevents its
 integration into the history or overview data, a log line will be output and
 the malformed article will just be skipped.
 
+When the C<hissqlite> history method is configured, B<makehistory> writes the
+new history into a hissqlite database just as it does for C<hisv6>, and the
+makedbz(8) step above does not apply.  A from-spool rebuild cannot recover
+I<remembered> Message-IDs, so to migrate an existing C<hisv6> history into
+hissqlite without losing them, use hissqlite-convert(8) instead.  See
+hissqlite(5).
+
 =head1 OVERVIEW REBUILD
 
 I<WARNING>: If you're trying to rebuild the overview database, be sure to
@@ -283,7 +290,8 @@ updated by various other people since.
 
 =head1 SEE ALSO
 
-active(5), ctlinnd(8), history(5), inn.conf(5), innd(8), libinn_dbz(3),
-makedbz(8), ovdb_init(8), overchan(8), ovsqlite-server(8).
+active(5), ctlinnd(8), hissqlite(5), hissqlite-convert(8), history(5),
+inn.conf(5), innd(8), libinn_dbz(3), makedbz(8), ovdb_init(8), overchan(8),
+ovsqlite-server(8).
 
 =cut

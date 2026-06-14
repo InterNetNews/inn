@@ -283,13 +283,9 @@ ovsqlite/ovsqlite.o: ovsqlite/ovsqlite.c ovsqlite/ovsqlite.h ../include/config.h
   ../include/inn/confparse.h ../include/inn/fdflag.h \
   ../include/inn/portable-socket.h ../include/inn/innconf.h \
   ../include/inn/newsuser.h ../include/inn/paths.h \
-  ovsqlite/../ovinterface.h ovsqlite/sql-read.h ovsqlite/sqlite-helper.h
+  ovsqlite/../ovinterface.h ovsqlite/sql-read.h ../include/inn/sqlite-helper.h
 ovsqlite/sql-read.o: ovsqlite/sql-read.c ovsqlite/sql-read.h \
-  ovsqlite/sqlite-helper.h ../include/config.h ../include/inn/macros.h \
-  ../include/inn/portable-macros.h ../include/inn/options.h \
-  ../include/inn/system.h ../include/portable/stdbool.h
-ovsqlite/sqlite-helper.o: ovsqlite/sqlite-helper.c ovsqlite/sqlite-helper.h \
-  ../include/config.h ../include/inn/macros.h \
+  ../include/inn/sqlite-helper.h ../include/config.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/options.h \
   ../include/inn/system.h ../include/portable/stdbool.h
 timecaf/caf.o: timecaf/caf.c ../include/portable/system.h ../include/config.h \
@@ -418,13 +414,13 @@ ovsqlite/ovsqlite-server.o: ovsqlite/ovsqlite-server.c ../include/config.h \
   ../include/inn/innconf.h ../include/inn/libinn.h \
   ../include/inn/xmalloc.h ../include/inn/system.h ../include/inn/xwrite.h \
   ../include/inn/storage.h ../include/inn/options.h ovsqlite/sql-init.h \
-  ovsqlite/sqlite-helper.h ovsqlite/sql-main.h
+  ../include/inn/sqlite-helper.h ovsqlite/sql-main.h
 ovsqlite/sql-init.o: ovsqlite/sql-init.c ovsqlite/sql-init.h \
-  ovsqlite/sqlite-helper.h ../include/config.h ../include/inn/macros.h \
+  ../include/inn/sqlite-helper.h ../include/config.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/options.h \
   ../include/inn/system.h ../include/portable/stdbool.h
 ovsqlite/sql-main.o: ovsqlite/sql-main.c ovsqlite/sql-main.h \
-  ovsqlite/sqlite-helper.h ../include/config.h ../include/inn/macros.h \
+  ../include/inn/sqlite-helper.h ../include/config.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/options.h \
   ../include/inn/system.h ../include/portable/stdbool.h
 tradindexed/tdx-util.o: tradindexed/tdx-util.c ../include/portable/system.h \

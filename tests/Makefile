@@ -19,6 +19,7 @@ LIBM_LDFLAGS    = '-lm'
 TESTS	= authprogs/ident.t expire/tombstone.t expire/tombstone-hisexpire.t \
 	innd/artparse.t innd/chan.t lib/artnumber.t \
 	lib/asprintf.t lib/bloom.t lib/bloom-hiswalk.t lib/buffer.t \
+	lib/hissqlite.t lib/hissqlite-convert.t \
 	lib/canlock.t lib/concat.t lib/conffile.t \
 	lib/confparse.t lib/daemon.t lib/date.t \
 	lib/dispatch.t lib/fdflag.t \
@@ -122,6 +123,12 @@ lib/bloom.t: lib/bloom-t.o tap/basic.o $(LIBINN)
 
 lib/bloom-hiswalk.t: lib/bloom-hiswalk-t.o tap/basic.o $(STORAGEDEPS)
 	$(LINKDEPS) lib/bloom-hiswalk-t.o tap/basic.o $(STORAGELIBS) $(LIBS)
+
+lib/hissqlite.t: lib/hissqlite-t.o tap/basic.o $(STORAGEDEPS)
+	$(LINKDEPS) lib/hissqlite-t.o tap/basic.o $(STORAGELIBS) $(LIBS)
+
+lib/hissqlite-convert.t: lib/hissqlite-convert-t.o tap/basic.o $(STORAGEDEPS)
+	$(LINKDEPS) lib/hissqlite-convert-t.o tap/basic.o $(STORAGELIBS) $(LIBS)
 
 lib/buffer.t: lib/buffer-t.o tap/basic.o $(LIBINN)
 	$(LINK) lib/buffer-t.o tap/basic.o $(LIBINN)

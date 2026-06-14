@@ -1,0 +1,230 @@
+#! /usr/bin/perl
+# fixscript will replace this line with code to load INN::Config
+
+##  History manipulation utility for hissqlite.
+##
+##  Initial version written in 2026, modeled on ovsqlite-util.
+
+use strict;
+use warnings;
+
+use Getopt::Std;
+use POSIX qw(strftime);    ## no critic (ProhibitUnusedImport)
+
+$0 =~ s!.*/!!;
+
+# Version of this tool.
+my $VERSION = "1.0";
+
+# Bail out if the needed DBI Perl module is not installed.
+eval {
+    require DBI;
+    require DBD::SQLite;
+    1;
+} or die "DBI Perl module with SQLite driver needed"
+  . " (usually packaged as libdbd-sqlite3-perl, perl-DBD-SQLite,"
+  . " or p5-DBD-SQLite)";
+
+# Name of the database file.
+my $dbfile = "history.sqlite";
+
+my $usage = "Usage:
+  $0 [-AcdhV] [-p path]
+
+Options:
+  -A             Audit the history database for problems, and report them to
+                 standard error, without trying to fix them.  This is the
+                 default action.
+  -c             Print total, real, and remembered entry counts.
+  -d             Dump all history records as text, one per line.
+  -h             Print this help message.
+  -p path        Read $dbfile database file in path directory instead of
+                 default \$INN::Config::pathdb directory.
+  -V             Print the version of this tool and the database schema
+                 version.
+";
+
+sub HELP_MESSAGE {
+    print $usage;
+    exit(0);
+}
+
+my %opt;
+getopts("AcdhVp:", \%opt) || die $usage;
+
+HELP_MESSAGE() if defined($opt{'h'});
+
+my $modes = 0;
+$modes++ if defined($opt{'A'});
+$modes++ if defined($opt{'c'});
+$modes++ if defined($opt{'d'});
+$modes++ if defined($opt{'V'});
+
+die "Only one action allowed at the same time\n\n$usage"
+  if $modes > 1;
+
+my $dbdir = $opt{'p'} || $INN::Config::pathdb;
+my $datasource = "dbi:SQLite:dbname=$dbdir/$dbfile";
+
+# All implemented modes are read-only, so open the database read-only.
+# SQLITE_OPEN_READONLY is 0x00000001.
+my $SQLITE_OPEN_READONLY = 0x00000001;
+
+# Open the connection.  The username and password fields are left empty.
+# Enabling RaiseError permits not checking every return error codes.
+my $dbh = DBI->connect(
+    $datasource, '', '',
+    {
+        PrintError => 0,
+        RaiseError => 1,
+        AutoCommit => 1,
+        sqlite_open_flags => $SQLITE_OPEN_READONLY,
+    },
+);
+
+# Extra safety net against any accidental write in the read-only modes.
+$dbh->do("pragma query_only = 1;");
+
+# Raise the busy timeout value to a huge number of milliseconds to prevent
+# timeouts because of database locks while innd holds the writer.
+$dbh->sqlite_busy_timeout(999999999);
+
+if (defined($opt{'V'})) {
+    print_version();
+} elsif (defined($opt{'c'})) {
+    count_entries();
+} elsif (defined($opt{'d'})) {
+    dump_history();
+} else {
+    # Default action: audit.
+    audit_history();
+}
+
+# Close the connection properly.
+$dbh->disconnect;
+
+exit(0);
+
+# Return the schema version stored in the misc table, or undef if absent.
+sub get_version {
+    my $statement = $dbh->prepare("select value from misc where key = ?;");
+    my ($version) = $dbh->selectrow_array($statement, undef, "version");
+    return $version;
+}
+
+# Return a list of (total, real, remembered) entry counts.
+sub get_counts {
+    my ($total) = $dbh->selectrow_array("select count(*) from hist;");
+    my ($real)
+      = $dbh->selectrow_array("select count(*) from hist"
+          . " where token is not null;");
+    my ($remembered)
+      = $dbh->selectrow_array("select count(*) from hist"
+          . " where token is null;");
+    return ($total, $real, $remembered);
+}
+
+# Print the tool version and the database schema version (-V option).
+sub print_version {
+    my $version = get_version();
+    $version = defined($version) ? $version : "unknown";
+    print "$0 version $VERSION\n";
+    print "hissqlite database schema version $version\n";
+}
+
+# Print total, real, and remembered entry counts (-c option).
+sub count_entries {
+    my ($total, $real, $remembered) = get_counts();
+    print "total $total\n";
+    print "real $real\n";
+    print "remembered $remembered\n";
+}
+
+# Dump all history records (-d option).
+sub dump_history {
+    my $statement;
+
+    # quote(token) renders a BLOB as X'...' uppercase hex, or NULL for a
+    # remembered entry; hex(hash) renders the hash as uppercase hex.
+    $statement = $dbh->prepare(
+        q{
+            select hex(hash), arrived, posted, expires, quote(token)
+                from hist;
+        },
+    );
+    $statement->execute();
+
+    while (my @row = $statement->fetchrow_array()) {
+        my ($hash, $arrived, $posted, $expires, $token) = @row;
+        $posted = defined($posted) ? $posted : '-';
+        $expires = defined($expires) ? $expires : '-';
+        if (!defined($token) or uc($token) eq 'NULL') {
+            $token = 'remembered';
+        } else {
+            # quote() returns the token in the form X'...'; keep the hex part.
+            $token = uc(substr($token, 2, -1));
+        }
+        print "$hash $arrived $posted $expires $token\n";
+    }
+}
+
+# Audit the history database for problems and report them (-A option, default).
+sub audit_history {
+    my $problems = 0;
+
+    # Schema version.
+    my $version = get_version();
+    if (defined($version)) {
+        print "Schema version: $version\n";
+    } else {
+        print STDERR "No schema version found in misc table\n";
+        $problems++;
+    }
+
+    # Entry counts.
+    my ($total, $real, $remembered) = get_counts();
+    print "Total entries: $total\n";
+    print "Real entries (token not null): $real\n";
+    print "Remembered entries (token null): $remembered\n";
+
+    # Arrived time range.
+    my ($minarrived, $maxarrived)
+      = $dbh->selectrow_array(
+        "select min(arrived), max(arrived) from hist;");
+    if (defined($minarrived) and defined($maxarrived)) {
+        printf "Arrived range: %s .. %s\n",
+          strftime('%Y-%m-%d %H:%M:%S', localtime($minarrived)),
+          strftime('%Y-%m-%d %H:%M:%S', localtime($maxarrived));
+    } else {
+        print "Arrived range: (empty database)\n";
+    }
+
+    # Rows with a NULL arrived value (arrived is declared not null, so any
+    # such row indicates corruption).
+    my ($nullarrived)
+      = $dbh->selectrow_array(
+        "select count(*) from hist where arrived is null;");
+    if (defined($nullarrived) and $nullarrived > 0) {
+        print STDERR "$nullarrived row(s) with NULL arrived value\n";
+        $problems++;
+    }
+
+    # SQLite low-level integrity check.
+    my $statement = $dbh->prepare("pragma integrity_check;");
+    $statement->execute();
+    while (my @row = $statement->fetchrow_array()) {
+        next if $row[0] eq 'ok';
+        print STDERR "integrity_check: $row[0]\n";
+        $problems++;
+    }
+
+    if ($problems > 0) {
+        printf STDERR (
+            "%d problem%s found\n",
+            $problems, ($problems > 1) ? "s" : "",
+        );
+        exit(1);
+    } else {
+        print "No problems found\n";
+    }
+}
