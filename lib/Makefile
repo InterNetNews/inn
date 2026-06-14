@@ -22,9 +22,9 @@ SOURCES       = argparse.c artnumber.c bloom.c buffer.c cleanfrom.c        \
 	        network-innbind.c newsuser.c nntp.c qio.c                  \
 		radix32.c readin.c					   \
 		remopen.c reservedfd.c resource.c secrets.c sendarticle.c  \
-	        sendpass.c						   \
-	      	sequence.c timer.c tst.c uwildmat.c vector.c wire.c	   \
-	      	xfopena.c xmalloc.c xsignal.c xwrite.c
+	        sendpass.c sequence.c					   \
+		sqlite-helper.c timer.c tst.c uwildmat.c vector.c wire.c   \
+		xfopena.c xmalloc.c xsignal.c xwrite.c
 
 # Sources for additional functions only built to replace missing system ones.
 EXTRA_SOURCES = asprintf.c daemon.c fseeko.c ftello.c getaddrinfo.c        \
@@ -39,7 +39,7 @@ LOBJECTS      = $(OBJECTS:.o=.lo)
 
 .SUFFIXES: .lo
 
-all: libinn.$(EXTLIB) canlock.o perl.o
+all: libinn.$(EXTLIB) canlock.o perl.o sqlite-helper-gen
 
 warnings:
 	$(MAKE) COPT="$(COPT) $(WARNINGS)" all
@@ -52,11 +52,15 @@ bootstrap:
 clean clobber distclean maintclean:
 	rm -f *.o *.lo libinn.la libinn.a
 	rm -f profiled perl$(PROFSUFFIX).o libinn$(PROFSUFFIX).a
-	rm -f libinn_pure_*.a .pure
+	rm -f libinn_pure_*.a .pure sqlite-helper-gen
 	rm -rf .libs
 
+# libinn includes sqlite-helper.lo, so it must record the SQLite dependency
+# (a no-op, empty libs, when configured --without-sqlite3) -- otherwise every
+# executable linking libinn would need to name -lsqlite3 itself.
 libinn.la: $(OBJECTS) $(LOBJECTS)
-	$(LIBLD) $(LDFLAGS) -o $@ $(LOBJECTS) $(LIBS) \
+	$(LIBLD) $(LDFLAGS) -o $@ $(LOBJECTS) \
+	    $(SQLITE3_LDFLAGS) $(SQLITE3_LIBS) $(LIBS) \
 	    -rpath $(PATHLIB) -version-info $(LTVERSION)
 
 libinn.a: $(OBJECTS)
@@ -71,6 +75,18 @@ canlock.o: canlock.c
 
 perl.o: perl.c
 	$(CC) $(CFLAGS) $(PERL_CPPFLAGS) -c perl.c
+
+# sqlite-helper.c needs the SQLite headers; scope the flags to just this object
+# (the file is a no-op when built without HAVE_SQLITE3).
+sqlite-helper.o sqlite-helper.lo: sqlite-helper.c ../include/inn/sqlite-helper.h
+	$(LIBCC) $(CFLAGS) $(SQLITE3_CPPFLAGS) -c sqlite-helper.c
+
+# Shared SQL prepared-statement codegen, used by the ovsqlite overview method
+# and the hissqlite history method.
+FIX = $(SHELL) $(FIXSCRIPT)
+
+sqlite-helper-gen: sqlite-helper-gen.in $(FIXSCRIPT)
+	$(FIX) -i sqlite-helper-gen.in
 
 ../include/inn/system.h:
 	(cd ../include && $(MAKE))
@@ -492,6 +508,10 @@ sequence.o: sequence.c ../include/portable/system.h ../include/config.h \
   ../include/portable/stdbool.h ../include/portable/macros.h \
   ../include/portable/stdbool.h ../include/inn/sequence.h \
   ../include/inn/macros.h
+sqlite-helper.o: sqlite-helper.c ../include/inn/sqlite-helper.h \
+  ../include/config.h ../include/inn/macros.h \
+  ../include/inn/portable-macros.h ../include/inn/options.h \
+  ../include/inn/system.h ../include/portable/stdbool.h
 timer.o: timer.c ../include/portable/system.h ../include/config.h \
   ../include/inn/macros.h ../include/inn/portable-macros.h \
   ../include/inn/options.h ../include/inn/system.h \

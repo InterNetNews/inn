@@ -72,7 +72,14 @@ struct innconf {
     unsigned long wipexpire; /* How long to keep pending article record */
 
     /* History settings */
-    char *hismethod; /* Which history method to use */
+    char *hismethod;                  /* Which history method to use */
+    unsigned long hissqlitecachesize; /* hissqlite writer page cache, in kB */
+    unsigned long
+        hissqlitemmapsize; /* hissqlite mmap size in bytes; 0 = off */
+    unsigned long
+        hissqlitepagesize; /* hissqlite database page size, in bytes */
+    unsigned long
+        hissqlitereadercachesize; /* hissqlite per-nnrpd reader cache, in kB */
 
     /* Article Storage */
     unsigned long cnfscheckfudgesize; /* Additional CNFS integrity checking */

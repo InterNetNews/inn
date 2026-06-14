@@ -9,7 +9,7 @@ include ../Makefile.global
 LTVERSION     = 3:10:0
 
 top           = ..
-CFLAGS        = $(GCFLAGS) -I.
+CFLAGS        = $(GCFLAGS) -I. $(SQLITE3_CPPFLAGS)
 
 SOURCES       = his.c hismethods.c $(METHOD_SOURCES)
 OBJECTS       = $(SOURCES:.c=.o)
@@ -28,6 +28,9 @@ warnings:
 
 install: all
 	$(LI_LPUB) libinnhist.$(EXTLIB) $D$(PATHLIB)/libinnhist.$(EXTLIB)
+	for F in $(PROGRAMS) ; do \
+	    $(LI_XPRI) $$F $D$(PATHBIN)/`basename $$F` ; \
+	done
 
 bootstrap: Make.methods
 
@@ -116,7 +119,36 @@ hismethods.o: hismethods.c hisinterface.h ../include/config.h \
   ../include/inn/concat.h ../include/inn/macros.h \
   ../include/inn/portable-stdbool.h ../include/inn/xmalloc.h \
   ../include/inn/system.h ../include/inn/xwrite.h hismethods.h \
-  hisv6/hisv6.h
+  hissqlite/hissqlite.h hisv6/hisv6.h
+hissqlite/hissqlite-init.o: hissqlite/hissqlite-init.c hissqlite/hissqlite-init.h \
+  ../include/inn/sqlite-helper.h ../include/config.h \
+  ../include/inn/macros.h ../include/inn/portable-macros.h \
+  ../include/inn/options.h ../include/inn/system.h \
+  ../include/portable/stdbool.h
+hissqlite/hissqlite-main.o: hissqlite/hissqlite-main.c hissqlite/hissqlite-main.h \
+  ../include/inn/sqlite-helper.h ../include/config.h \
+  ../include/inn/macros.h ../include/inn/portable-macros.h \
+  ../include/inn/options.h ../include/inn/system.h \
+  ../include/portable/stdbool.h
+hissqlite/hissqlite-read.o: hissqlite/hissqlite-read.c hissqlite/hissqlite-read.h \
+  ../include/inn/sqlite-helper.h ../include/config.h \
+  ../include/inn/macros.h ../include/inn/portable-macros.h \
+  ../include/inn/options.h ../include/inn/system.h \
+  ../include/portable/stdbool.h
+hissqlite/hissqlite.o: hissqlite/hissqlite.c ../include/portable/system.h \
+  ../include/config.h ../include/inn/macros.h \
+  ../include/inn/portable-macros.h ../include/inn/options.h \
+  ../include/inn/system.h ../include/portable/stdbool.h \
+  ../include/portable/macros.h ../include/portable/stdbool.h \
+  hissqlite/../hisinterface.h ../include/inn/libinn.h \
+  ../include/inn/concat.h ../include/inn/macros.h \
+  ../include/inn/portable-stdbool.h ../include/inn/xmalloc.h \
+  ../include/inn/system.h ../include/inn/xwrite.h hissqlite/hissqlite.h \
+  ../include/inn/messages.h hissqlite/hissqlite-private.h \
+  ../include/inn/history.h ../include/inn/storage.h \
+  ../include/inn/options.h hissqlite/hissqlite-init.h \
+  ../include/inn/sqlite-helper.h hissqlite/hissqlite-main.h \
+  hissqlite/hissqlite-read.h ../include/inn/innconf.h
 hisv6/hisv6.o: hisv6/hisv6.c ../include/portable/system.h ../include/config.h \
   ../include/inn/macros.h ../include/inn/portable-macros.h \
   ../include/inn/options.h ../include/inn/system.h \
@@ -132,3 +164,13 @@ hisv6/hisv6.o: hisv6/hisv6.c ../include/portable/system.h ../include/config.h \
   ../include/inn/portable-getnameinfo.h ../include/inn/innconf.h \
   ../include/inn/inndcomm.h ../include/inn/qio.h ../include/inn/sequence.h \
   ../include/inn/timer.h
+hissqlite/hissqlite-convert.o: hissqlite/hissqlite-convert.c \
+  ../include/portable/system.h ../include/config.h ../include/inn/macros.h \
+  ../include/inn/portable-macros.h ../include/inn/options.h \
+  ../include/inn/system.h ../include/portable/stdbool.h \
+  ../include/portable/macros.h ../include/portable/stdbool.h \
+  ../include/inn/history.h ../include/inn/libinn.h ../include/inn/concat.h \
+  ../include/inn/macros.h ../include/inn/portable-stdbool.h \
+  ../include/inn/xmalloc.h ../include/inn/system.h ../include/inn/xwrite.h \
+  ../include/inn/innconf.h ../include/inn/messages.h \
+  ../include/inn/storage.h ../include/inn/options.h

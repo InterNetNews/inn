@@ -182,6 +182,8 @@ frontends/scanspool
 frontends/sm
 frontends/sys2nf
 history/buildconfig
+history/hissqlite/hissqlite-convert
+history/hissqlite/hissqlite-util
 include/config.h
 include/inn/paths.h
 include/inn/portable-getaddrinfo.h
@@ -196,6 +198,7 @@ innd/tinyleaf
 innfeed/imapfeed
 innfeed/innfeed
 innfeed/procbatch
+lib/sqlite-helper-gen
 nnrpd/nnrpd
 perl/INN/Config.pm
 perl/INN/Utils/Shlock.pm
@@ -275,7 +278,6 @@ storage/buffindexed/buffindexed_d
 storage/buildconfig
 storage/ovsqlite/ovsqlite-server
 storage/ovsqlite/ovsqlite-util
-storage/ovsqlite/sqlite-helper-gen
 storage/tradindexed/tdx-util
 support/fixconfig
 support/fixscript
@@ -306,6 +308,8 @@ tests/lib/hash.t
 tests/lib/hashtab.t
 tests/lib/headers.t
 tests/lib/hex.t
+tests/lib/hissqlite.t
+tests/lib/hissqlite-convert.t
 tests/lib/inet_aton.t
 tests/lib/inet_ntoa.t
 tests/lib/inet_ntop.t

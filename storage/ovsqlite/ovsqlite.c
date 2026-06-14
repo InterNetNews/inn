@@ -36,8 +36,8 @@
 
 #    include "../ovinterface.h"
 
+#    include "inn/sqlite-helper.h"
 #    include "sql-read.h"
-#    include "sqlite-helper.h"
 #    include <sqlite3.h>
 
 #    ifdef HAVE_ZLIB

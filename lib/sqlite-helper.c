@@ -1,4 +1,4 @@
-#include "sqlite-helper.h"
+#include "inn/sqlite-helper.h"
 
 #ifdef HAVE_SQLITE3
 

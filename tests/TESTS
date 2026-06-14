@@ -27,6 +27,8 @@ lib/hash
 lib/hashtab
 lib/headers
 lib/hex
+lib/hissqlite
+lib/hissqlite-convert
 lib/inet_aton
 lib/inet_ntoa
 lib/inet_ntop

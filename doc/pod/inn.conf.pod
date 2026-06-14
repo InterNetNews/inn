@@ -484,15 +484,15 @@ is C<10> and probably doesn't need to be changed.
 
 =head2 History Settings
 
-The following parameter affect the history database.
+The following parameters affect the history database.
 
 =over 4
 
 =item I<hismethod>
 
-Which history storage method to use.  The only currently supported
-value is C<hisv6>.  There is no default value; this parameter must
-be set.
+Which history storage method to use.  The supported values are C<hisv6>
+and, when INN is built with SQLite, C<hissqlite>.  There is no default
+value; this parameter must be set.
 
 =over 4
 
@@ -504,7 +504,41 @@ v6 format, or tagged hash format, depending on the build
 options.  Separation of these two is a project which has not yet been
 undertaken.
 
+=item C<hissqlite>
+
+Stores history data in a single SQLite database file, as an alternative
+to C<hisv6>.  This requires INN to be built with SQLite support.  See
+hissqlite(5).
+
 =back
+
+=item I<hissqlitecachesize>
+
+The SQLite page cache size in kilobytes for the B<innd> writer connection
+when the C<hissqlite> history method is used.  The default value is C<65536>
+(64 MB).  See hissqlite(5).
+
+=item I<hissqlitemmapsize>
+
+The maximum number of bytes of the C<hissqlite> history database that SQLite
+will memory-map, for both the writer and the direct readers.  The default
+value of C<0> disables memory-mapped I/O (as with ovsqlite); see hissqlite(5)
+for the trade-offs before enabling it.
+
+=item I<hissqlitepagesize>
+
+The SQLite page size in bytes for a newly created C<hissqlite> history
+database; it has no effect on an existing one.  Must be a power of two
+between 512 and 65536.  The default value is C<4096>, which matches the
+common filesystem block size; for best results pair it with the storage
+block size (on ZFS, a C<recordsize=4k> dataset).  See hissqlite(5).
+
+=item I<hissqlitereadercachesize>
+
+The SQLite page cache size in kilobytes for each B<nnrpd> reader process
+using the C<hissqlite> history method.  Each reader has its own cache, so
+this is typically kept small.  The default value is C<2000> (about 2 MB).
+See hissqlite(5).
 
 =back
 

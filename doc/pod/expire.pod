@@ -49,6 +49,15 @@ be better to only use self-expiring backends like CNFS, as the history entries
 will still get cleaned up by B<expire> when it detects that an article no
 longer exists in that backend.
 
+When the C<hissqlite> history method is in use, B<expire> updates the
+history database in place instead of building a new file and swapping it.
+It does not pause B<innd> (the two coordinate through the database).  The
+B<-d> and B<-f> options, which write a rebuilt history to a side file, are
+rejected; use B<-t> for a dry run (it reports what would be removed without
+changing the history or the spool).  B<-x> on its own is also rejected,
+because suppressing the history rewrite while still removing articles would
+leave history entries for deleted articles.  See hissqlite(5).
+
 =head1 OPTIONS
 
 =over 4
@@ -193,7 +202,7 @@ POD by Julien Elie.
 
 =head1 SEE ALSO
 
-ctlinnd(8), expire.ctl(5), expireover(8), history(5), inn.conf(5), innd(8),
-libinn_dbz(3), libinn_inndcomm(3), news.daily(8).
+ctlinnd(8), expire.ctl(5), expireover(8), hissqlite(5), history(5),
+inn.conf(5), innd(8), libinn_dbz(3), libinn_inndcomm(3), news.daily(8).
 
 =cut

@@ -23,7 +23,9 @@ TESTS	= authprogs/ident.t expire/tombstone.t expire/tombstone-hisexpire.t \
 	lib/confparse.t lib/daemon.t lib/date.t \
 	lib/dispatch.t lib/fdflag.t \
 	lib/getaddrinfo.t lib/getnameinfo.t lib/hash.t \
-	lib/hashtab.t lib/headers.t lib/hex.t lib/inet_aton.t \
+	lib/hashtab.t lib/headers.t lib/hex.t \
+	lib/hissqlite.t lib/hissqlite-convert.t \
+	lib/inet_aton.t \
 	lib/inet_ntoa.t lib/inet_ntop.t lib/innconf.t lib/list.t lib/md5.t \
 	lib/messageid.t lib/messages.t lib/mkstemp.t \
 	lib/network/addr-ipv4.t lib/network/addr-ipv6.t \
@@ -179,6 +181,12 @@ lib/headers.t: lib/headers-t.o tap/basic.o $(LIBINN)
 
 lib/hex.t: lib/hex-t.o tap/basic.o $(LIBINN)
 	$(LINK) lib/hex-t.o tap/basic.o $(LIBINN) $(LIBS)
+
+lib/hissqlite.t: lib/hissqlite-t.o tap/basic.o $(STORAGEDEPS)
+	$(LINKDEPS) lib/hissqlite-t.o tap/basic.o $(STORAGELIBS) $(LIBS)
+
+lib/hissqlite-convert.t: lib/hissqlite-convert-t.o tap/basic.o $(STORAGEDEPS)
+	$(LINKDEPS) lib/hissqlite-convert-t.o tap/basic.o $(STORAGELIBS) $(LIBS)
 
 lib/inet_aton.o: ../lib/inet_aton.c
 	$(CC) $(CFLAGS) -DTESTING -c -o $@ ../lib/inet_aton.c

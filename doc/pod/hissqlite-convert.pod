@@ -1,0 +1,74 @@
+=head1 NAME
+
+hissqlite-convert - Convert an INN history database to the hissqlite method
+
+=head1 SYNOPSIS
+
+B<hissqlite-convert> [B<-m> I<srcmethod>] I<srcpath> I<dstpath>
+
+=head1 DESCRIPTION
+
+B<hissqlite-convert> performs a faithful, one-time migration of an existing
+INN history database into a new hissqlite (SQLite) database.  It reads every
+entry from the source history through the standard history interface and
+bulk-loads it into a freshly created hissqlite database.
+
+The conversion is keyed by hash: the history records only the MD5 of each
+Message-ID, not the Message-ID itself, so the original Message-IDs cannot be
+recovered.  Unlike a from-spool rebuild with B<makehistory>, this preserves
+both the exact arrival, posting, and expiration timestamps and the
+I<remembered> (token-less) entries, which a rebuild cannot reconstruct.
+
+The new database is built in a temporary file and atomically renamed into
+place only on full success, so an interrupted or failed run never leaves a
+usable-but-incomplete destination.  B<hissqlite-convert> refuses to run if
+the destination already exists.
+
+B<innd> must not be writing the source history while it is being converted.
+After a successful conversion, set I<hismethod> to C<hissqlite> in
+F<inn.conf> and restart INN; see hissqlite(5).
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<-m> I<srcmethod>
+
+The history method of the source database.  The default is C<hisv6>.
+
+=back
+
+=head1 ARGUMENTS
+
+=over 4
+
+=item I<srcpath>
+
+The path to the source history (for C<hisv6>, the F<history> file without
+any extension), as given by the I<pathdb> parameter in F<inn.conf>.
+
+=item I<dstpath>
+
+The base path of the hissqlite database to create.  A F<.sqlite> suffix is
+appended, so I<dstpath> should match I<pathdb> (the resulting file is
+F<history.sqlite> in I<pathdb>).
+
+=back
+
+=head1 EXAMPLES
+
+Convert the default C<hisv6> history into a hissqlite database alongside it:
+
+    hissqlite-convert /news/db/history /news/db/history
+
+This creates F</news/db/history.sqlite>.
+
+=head1 HISTORY
+
+Written by Kevin Bowling for InterNetNews.
+
+=head1 SEE ALSO
+
+hissqlite(5), hissqlite-util(8), history(5), inn.conf(5), makehistory(8).
+
+=cut
