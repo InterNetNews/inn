@@ -14,6 +14,11 @@
 ##
 ##  Please don't include overview information for people's articles into INN's
 ##  test suite without their permission.
+##
+##  Written by Russ Allbery in 2004.
+##
+##  Various bug fixes, code and documentation improvements since then
+##  in 2021, 2026.
 
 my %number;
 while (<>) {
@@ -23,19 +28,19 @@ while (<>) {
     my $group = pop @data;
     my $xref = pop @data;
     if ($group =~ s/^Newsgroups: //) {
-        my @groups = split (/\s*,\s*/, $group);
+        my @groups = split(/\s*,\s*/, $group);
         for (@groups) {
             $number{$_} = 1 unless $number{$_};
             $data[0] = $_ . ':' . $number{$_}++;
-            $number{$_} += int (rand 5) if rand (10) > 8;
-            print join ("\t", @data, "Xref: inn.example.com $data[0]"), "\n";
+            $number{$_} += int(rand 5) if rand(10) > 8;
+            print join("\t", @data, "Xref: inn.example.com $data[0]"), "\n";
         }
     } else {
         $xref =~ s/Xref:\s*\S+\s+//;
-        my @xref = split (' ', $xref);
+        my @xref = split(' ', $xref);
         for (@xref) {
             $data[0] = $_;
-            print join ("\t", @data, "Xref: inn.example.com $xref"), "\n";
+            print join("\t", @data, "Xref: inn.example.com $xref"), "\n";
         }
     }
 }
