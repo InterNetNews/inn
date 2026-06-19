@@ -200,7 +200,7 @@ sub load_settings {
 
     $getsetting = $dbh->prepare("select value from misc where key = ?1");
     ($compress) = $dbh->selectrow_array($getsetting, undef, "compress");
-    if ($compress > 0) {
+    if (defined($compress) && $compress > 0) {
         ($basedict) = $dbh->selectrow_array($getsetting, undef, "basedict");
         defined($basedict)
           or die "No basedict value found to decompress overview data\n";
