@@ -1,65 +1,84 @@
-#! /bin/sh
+#!/usr/bin/perl
 #
 # Test resolver and authenticator, used for testing nnrpd external auth.
 # Saves all of its input into a file named input in the current directory, as
 # seen, and then produces output based on its command-line parameter.
+#
+# Originally written by Russ Allbery in shell in 2005.
+# Rewritten in Perl by Julien Élie in 2026 because on OpenBSD, when the script
+# kills itself with SIGUP, it doesn't exit like a process killed with SIGHUP
+# and instead exits with some sort of weird 129 exit status.
+#
+# Various bug fixes, code and documentation improvements since then
+# in 2008, 2020, 2021, 2026.
+
+use strict;
+use warnings;
 
 # Save input.
-cat > input
+{
+    open(my $fh, '>', 'input') or die "Cannot open 'input' file: $!";
+    while (<STDIN>) {
+        print $fh $_;
+    }
+    close($fh);
+}
 
 # Choose output.
-case "$1" in
-okay)
-    printf 'User:tester\r\n'
-    ;;
-garbage)
-    echo blah
-    echo Use:blah
-    printf 'Use:r:blahblahblah\r\n'
-    echo ''
-    printf 'User:tester\r\n'
-    printf '   User:wrong\r\n'
-    ;;
-error)
-    echo 'This is an error' >&2
-    exit 1
-    ;;
-interspersed)
-    printf 'This is ' >&2
-    printf 'Use'
-    printf 'an er' >&2
-    printf 'r:test'
-    printf 'ror' >&2
-    printf 'er\r'
-    printf '\n' >&2
-    printf '\n'
-    ;;
-empty)
-    ;;
-empty-error)
-    exit 1
-    ;;
-okay-error)
-    printf 'User:tester\r\n'
-    exit 1
-    ;;
-signal)
-    kill -HUP $$
-    ;;
-newline)
-    printf 'User:tester\n'
-    ;;
-partial)
-    printf 'User:tester'
-    ;;
-partial-close)
-    exec 2>&-
-    printf 'User:tester'
-    ;;
-partial-error)
-    printf 'User:tester'
-    echo 'This is an error' >&2
-    exit 1
-    ;;
-esac
-exit 0
+my $arg = defined($ARGV[0]) ? $ARGV[0] : '';
+
+if ($arg eq 'okay') {
+    print STDOUT "User:tester\r\n";
+
+} elsif ($arg eq 'garbage') {
+    print STDOUT "blah\n";
+    print STDOUT "Use:blah\n";
+    print STDOUT "Use:r:blahblahblah\r\n";
+    print STDOUT "\n";
+    print STDOUT "User:tester\r\n";
+    print STDOUT "   User:wrong\r\n";
+
+} elsif ($arg eq 'error') {
+    print STDERR "This is an error\n";
+    exit 1;
+
+} elsif ($arg eq 'interspersed') {
+    print STDERR "This is ";
+    print STDOUT "Use";
+    print STDERR "an er";
+    print STDOUT "r:test";
+    print STDERR "ror";
+    print STDOUT "er\r";
+    print STDERR "\n";
+    print STDOUT "\n";
+
+} elsif ($arg eq 'empty') {
+    # Nothing to do!
+
+} elsif ($arg eq 'empty-error') {
+    exit 1;
+
+} elsif ($arg eq 'okay-error') {
+    print STDOUT "User:tester\r\n";
+    exit 1;
+
+} elsif ($arg eq 'signal') {
+    kill('HUP', $$);
+
+} elsif ($arg eq 'newline') {
+    print STDOUT "User:tester\n";
+
+} elsif ($arg eq 'partial') {
+    print STDOUT "User:tester";
+
+} elsif ($arg eq 'partial-close') {
+    close(STDERR);
+    print STDOUT "User:tester";
+
+} elsif ($arg eq 'partial-error') {
+    print STDOUT "User:tester";
+    print STDERR "This is an error\n";
+    exit 1;
+}
+
+exit 0;
