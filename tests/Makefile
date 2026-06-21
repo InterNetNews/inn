@@ -43,17 +43,24 @@ EXTRA	= runtests clients/server-list docs/pod.t lib/xmalloc \
 	  overview/ovsqlite-read.t overview/ovsqlite-write.t \
 	  perl/minimum-version.t
 
+BENCHMARKS = lib/history-bench
+
 all check test tests: $(TESTS) $(EXTRA)
 	./runtests -l TESTS
 
 build: $(TESTS) $(EXTRA)
+
+benchmarks: $(BENCHMARKS)
+
+benchmark-history: $(BENCHMARKS)
+	./lib/history-bench -n 100M
 
 warnings:
 	$(MAKE) COPT="$(COPT) $(WARNINGS)" build
 
 clean clobber distclean maintclean:
 	rm -f *.o *.lo */*.o */*.lo */*/*.o */*/*.o \
-	  .pure */.pure */*/.pure $(TESTS) $(EXTRA)
+	  .pure */.pure */*/.pure $(TESTS) $(EXTRA) $(BENCHMARKS)
 	rm -rf .libs */.libs */*/.libs
 
 $(FIXSCRIPT):
@@ -187,6 +194,9 @@ lib/hissqlite.t: lib/hissqlite-t.o tap/basic.o $(STORAGEDEPS)
 
 lib/hissqlite-convert.t: lib/hissqlite-convert-t.o tap/basic.o $(STORAGEDEPS)
 	$(LINKDEPS) lib/hissqlite-convert-t.o tap/basic.o $(STORAGELIBS) $(LIBS)
+
+lib/history-bench: lib/history-bench.o $(STORAGEDEPS)
+	$(LINKDEPS) lib/history-bench.o $(STORAGELIBS) $(LIBS)
 
 lib/inet_aton.o: ../lib/inet_aton.c
 	$(CC) $(CFLAGS) -DTESTING -c -o $@ ../lib/inet_aton.c
