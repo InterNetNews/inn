@@ -1533,6 +1533,8 @@ ARTxrefslave(ARTDATA *data)
     /* skip server name */
     if ((p = strpbrk(HDR(HDR__XREF), " \t\r\n")) == NULL)
         return false;
+    if (p > HDR(HDR__XREF) + HDR_LEN(HDR__XREF))
+        return false;
     /* in case Xref is folded */
     while (*++p == ' ' || *p == '\t' || *p == '\r' || *p == '\n')
         ;
