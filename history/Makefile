@@ -9,7 +9,7 @@ include ../Makefile.global
 LTVERSION     = 3:9:0
 
 top           = ..
-CFLAGS        = $(GCFLAGS) -I.
+CFLAGS        = $(GCFLAGS) -I. $(SQLITE3_CPPFLAGS)
 
 SOURCES       = his.c hismethods.c $(METHOD_SOURCES)
 OBJECTS       = $(SOURCES:.c=.o)
@@ -28,6 +28,9 @@ warnings:
 
 install: all
 	$(LI_LPUB) libinnhist.$(EXTLIB) $D$(PATHLIB)/libinnhist.$(EXTLIB)
+	for F in $(PROGRAMS) ; do \
+	    $(LI_XPRI) $$F $D$(PATHBIN)/`basename $$F` ; \
+	done
 
 bootstrap: Make.methods
 

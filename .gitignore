@@ -125,6 +125,14 @@
 /history/buildconfig
 /history/hismethods.c
 /history/hismethods.h
+/history/hissqlite/hissqlite-convert
+/history/hissqlite/hissqlite-init.c
+/history/hissqlite/hissqlite-init.h
+/history/hissqlite/hissqlite-main.c
+/history/hissqlite/hissqlite-main.h
+/history/hissqlite/hissqlite-read.c
+/history/hissqlite/hissqlite-read.h
+/history/hissqlite/hissqlite-util
 /include/config.h
 /include/config.h.in
 /include/inn/paths.h
@@ -143,6 +151,7 @@
 /innfeed/imapfeed
 /innfeed/innfeed
 /innfeed/procbatch
+/lib/sqlite-helper-gen
 /nnrpd/nnrpd
 /perl/INN/Config.pm
 /perl/INN/Utils/Shlock.pm
@@ -216,6 +225,9 @@
 /tests/lib/hashtab.t
 /tests/lib/headers.t
 /tests/lib/hex.t
+/tests/lib/hissqlite-convert.t
+/tests/lib/hissqlite.t
+/tests/lib/history-bench
 /tests/lib/inet_aton.t
 /tests/lib/inet_ntoa.t
 /tests/lib/inet_ntop.t

@@ -108,7 +108,7 @@ $preamble
 #ifndef $guard
 #define $guard 1
 
-#include "sqlite-helper.h"
+#include "inn/sqlite-helper.h"
 
 #ifdef HAVE_SQLITE3
 

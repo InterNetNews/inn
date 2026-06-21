@@ -710,6 +710,7 @@ main(int ac, char *av[])
     bool Writing;
     bool UnlinkFile;
     bool val;
+    bool inplace;
     time_t TimeWarp;
     size_t Size = 0;
 
@@ -878,6 +879,56 @@ main(int ac, char *av[])
     HISctl(History, HISCTLS_IGNOREOLD, &IgnoreOld);
     if (Size != 0) {
         HISctl(History, HISCTLS_NPAIRS, &Size);
+    }
+
+    /* In-place backends (e.g. hissqlite) mutate the live database via a writer
+     * rather than rebuilding a new file and swapping it, so they must be opened
+     * read/write (even for a dry run: the expire scan runs on the writer
+     * connection).  Backends that do not implement HISCTLG_INPLACEEXPIRE leave
+     * the flag untouched, so the hisv6 rebuild-and-swap path is unchanged.
+     *
+     * The modes that decouple the history rewrite from article removal need
+     * care here, because a run that does one but not the other corrupts the
+     * spool<->history correspondence (e.g. delete articles but keep their
+     * history rows).  All exits go through CleanupAndExit, not die(), so the
+     * server reservation taken above is released.
+     *
+     *   -t (tracing) is the dry run: EXPremove() already suppresses the
+     *   SMcancel(), and we additionally force Writing off so the live history
+     *   is not mutated -- it lists what would be removed and changes nothing.
+     *   (Unlike hisv6 it produces no history.n side file.)
+     *
+     *   -d/-f ask for a rebuilt history written to a side file, which an
+     *   in-place backend cannot produce, so they are refused.
+     *
+     *   -x on its own (suppress the history rewrite, but still remove articles)
+     *   is exactly the inconsistent run the dry run replaces, so it is refused
+     *   too; -t is the supported way to preview an expire. */
+    inplace = false;
+    HISctl(History, HISCTLG_INPLACEEXPIRE, &inplace);
+    if (inplace) {
+        if (EXPtracing) {
+            Writing = false;
+        } else if (NHistory != NULL) {
+            warn("%s expires in place and cannot write a separate history file"
+                 " (-d/-f); use -t for a dry run",
+                 innconf->hismethod);
+            CleanupAndExit(Server, false, 1);
+        } else if (!Writing) {
+            warn("%s expires in place: -x without -t would remove articles but"
+                 " leave their history entries; use -t for a dry run",
+                 innconf->hismethod);
+            CleanupAndExit(Server, false, 1);
+        }
+        HISclose(History);
+        History = HISopen(HistoryText, innconf->hismethod, HIS_RDWR);
+        if (!History) {
+            warn("cannot reopen history read/write for in-place expire");
+            CleanupAndExit(Server, false, 1);
+        }
+        HISctl(History, HISCTLS_IGNOREOLD, &IgnoreOld);
+        if (Size != 0)
+            HISctl(History, HISCTLS_NPAIRS, &Size);
     }
 
     val = true;

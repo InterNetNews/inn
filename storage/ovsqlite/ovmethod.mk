@@ -11,21 +11,20 @@ ovsqlite/ovsqlite-server: $(OVSQLITEOBJECTS) libinnstorage.$(EXTLIB)
 ovsqlite/ovsqlite-util: ovsqlite/ovsqlite-util.in $(FIXSCRIPT)
 	$(FIX) ovsqlite/ovsqlite-util.in
 
-ovsqlite/sqlite-helper-gen: ovsqlite/sqlite-helper-gen.in $(FIXSCRIPT)
-	$(FIX) -i ovsqlite/sqlite-helper-gen.in
+##  sqlite-helper-gen now lives in lib/ (shared with the hissqlite history
+##  method); lib is built before storage so it is available here.
 
-ovsqlite/sql-main.c: ovsqlite/sql-main.sql ovsqlite/sqlite-helper-gen
-	ovsqlite/sqlite-helper-gen ovsqlite/sql-main.sql
+ovsqlite/sql-main.c: ovsqlite/sql-main.sql ../lib/sqlite-helper-gen
+	../lib/sqlite-helper-gen ovsqlite/sql-main.sql
 
 ovsqlite/sql-main.h: ovsqlite/sql-main.c ;
 
-ovsqlite/sql-init.c: ovsqlite/sql-init.sql ovsqlite/sqlite-helper-gen
-	ovsqlite/sqlite-helper-gen ovsqlite/sql-init.sql
+ovsqlite/sql-init.c: ovsqlite/sql-init.sql ../lib/sqlite-helper-gen
+	../lib/sqlite-helper-gen ovsqlite/sql-init.sql
 
 ovsqlite/sql-init.h: ovsqlite/sql-init.c ;
 
-ovsqlite/sql-read.c: ovsqlite/sql-read.sql ovsqlite/sqlite-helper-gen
-	ovsqlite/sqlite-helper-gen ovsqlite/sql-read.sql
+ovsqlite/sql-read.c: ovsqlite/sql-read.sql ../lib/sqlite-helper-gen
+	../lib/sqlite-helper-gen ovsqlite/sql-read.sql
 
 ovsqlite/sql-read.h: ovsqlite/sql-read.c ;
-

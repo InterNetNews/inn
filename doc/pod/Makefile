@@ -23,6 +23,7 @@ MAN3	= ../man/libinn.3 ../man/libinn_clientlib.3 ../man/libinn_dbz.3 \
 MAN5	= ../man/active.5 ../man/active.times.5 ../man/buffindexed.conf.5 \
 	../man/control.ctl.5 ../man/cycbuff.conf.5 ../man/distrib.pats.5 \
 	../man/distributions.5 ../man/expire.ctl.5 ../man/history.5 \
+	../man/hissqlite.5 \
 	../man/incoming.conf.5 ../man/inn.conf.5 ../man/innfeed.conf.5 \
 	../man/innreport.conf.5 ../man/inn-secrets.conf.5 \
 	../man/innwatch.ctl.5 ../man/moderators.5 \
@@ -38,7 +39,9 @@ MAN8	= ../man/actsync.8 ../man/archive.8 ../man/auth_krb5.8 \
 	../man/controlchan.8 ../man/ctlinnd.8 ../man/cvtbatch.8 \
 	../man/docheckgroups.8 \
 	../man/domain.8 ../man/expire.8 ../man/expireover.8 \
-	../man/expirerm.8 ../man/ident.8 \
+	../man/expirerm.8 \
+	../man/hissqlite-convert.8 ../man/hissqlite-util.8 \
+	../man/ident.8 \
 	../man/innbind.8 ../man/inncheck.8 ../man/innd.8 ../man/inndf.8 \
 	../man/innfeed.8 ../man/innreport.8 ../man/innstat.8 \
 	../man/innupgrade.8 \
@@ -108,6 +111,7 @@ maintclean: distclean
 ../man/distributions.5:	distributions.pod	; $(POD2MAN) -s 5 $? > $@
 ../man/expire.ctl.5:	expire.ctl.pod		; $(POD2MAN) -s 5 $? > $@
 ../man/history.5:	history.pod		; $(POD2MAN) -s 5 $? > $@
+../man/hissqlite.5:	hissqlite.pod		; $(POD2MAN) -s 5 $? > $@
 ../man/incoming.conf.5:	incoming.conf.pod	; $(POD2MAN) -s 5 $? > $@
 ../man/inn.conf.5:	inn.conf.pod		; $(POD2MAN) -s 5 $? > $@
 ../man/innfeed.conf.5:	innfeed.conf.pod	; $(POD2MAN) -s 5 $? > $@
@@ -145,6 +149,8 @@ maintclean: distclean
 ../man/expire.8:	expire.pod		; $(POD2MAN) -s 8 $? > $@
 ../man/expireover.8:	expireover.pod		; $(POD2MAN) -s 8 $? > $@
 ../man/expirerm.8:	expirerm.pod		; $(POD2MAN) -s 8 $? > $@
+../man/hissqlite-convert.8: hissqlite-convert.pod	; $(POD2MAN) -s 8 $? > $@
+../man/hissqlite-util.8: hissqlite-util.pod	; $(POD2MAN) -s 8 $? > $@
 ../man/ident.8:		ident.pod		; $(POD2MAN) -s 8 $? > $@
 ../man/innbind.8:	innbind.pod		; $(POD2MAN) -s 8 $? > $@
 ../man/inncheck.8:	inncheck.pod		; $(POD2MAN) -s 8 $? > $@

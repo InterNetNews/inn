@@ -1,0 +1,92 @@
+=head1 NAME
+
+hissqlite-util - History manipulation utility for hissqlite
+
+=head1 SYNOPSIS
+
+B<hissqlite-util> [B<-AcdhV>] [B<-p> I<path>]
+
+=head1 DESCRIPTION
+
+B<hissqlite-util> is an administrative interface to the hissqlite history
+method for INN.  It only works on hissqlite history databases, not on any
+other type of INN history.  It allows the administrator to audit the
+database for problems, dump its contents, and report entry counts and the
+schema version.
+
+All of its actions are read-only, so it is safe to run while INN is running.
+B<hissqlite-util> opens the database directly; because B<innd> holds the
+write lock for only a single statement at a time, it waits at most briefly
+for any in-progress write.
+
+=head1 REQUIREMENTS
+
+The C<DBI> Perl module with the C<DBD::SQLite> driver must be installed for
+this program to work.  They are present in most distributions as a package
+named like C<libdbd-sqlite3-perl>, C<perl-DBD-SQLite> or C<p5-DBD-SQLite>.
+They can also be directly installed from CPAN (C<DBI> and C<DBD-SQLite>
+distributions available at L<https://metacpan.org/dist/DBI> and
+L<https://metacpan.org/dist/DBD-SQLite>).
+
+Naturally, a hissqlite history database also needs being in use, as detailed
+in the hissqlite(5) manual page.
+
+=head1 OPTIONS
+
+Only one action may be given at a time.  With no action, B<-A> is assumed.
+
+=over 4
+
+=item B<-A>
+
+Audit the history database for problems and report them to standard error,
+without trying to fix them.  This reports the schema version and entry
+counts, checks for rows with a missing arrival time, and runs SQLite's
+C<integrity_check>.  This is the default action.
+
+=item B<-c>
+
+Print the total, real (token-bearing), and remembered (token-less) entry
+counts.
+
+=item B<-d>
+
+Dump all history records as text, one per line: the hash in hexadecimal,
+the arrival, posting, and expiration timestamps (in seconds since epoch),
+and the storage API token in hexadecimal (or C<remembered> for a token-less
+entry).
+
+=item B<-h>
+
+Print a usage message and exit.
+
+=item B<-p> I<path>
+
+Act on the F<history.sqlite> database in I<path> instead of the default
+I<pathdb> directory from F<inn.conf>.
+
+=item B<-V>
+
+Print the version of this tool and the database schema version.
+
+=back
+
+=head1 EXAMPLES
+
+Audit the history database for problems:
+
+    hissqlite-util -A
+
+Print entry counts for a database in F</news/db>:
+
+    hissqlite-util -c -p /news/db
+
+=head1 HISTORY
+
+Written by Kevin Bowling for InterNetNews.
+
+=head1 SEE ALSO
+
+hissqlite(5), hissqlite-convert(8), history(5), inn.conf(5).
+
+=cut
