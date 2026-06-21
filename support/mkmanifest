@@ -280,6 +280,7 @@ history/hissqlite/hissqlite-convert
 history/hissqlite/hissqlite-util
 tests/lib/hissqlite.t
 tests/lib/hissqlite-convert.t
+tests/lib/history-bench
 storage/tradindexed/tdx-util
 support/fixconfig
 support/fixscript
