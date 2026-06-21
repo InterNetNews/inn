@@ -9,7 +9,7 @@
 ##  and put into the public domain.
 ##
 ##  Various bug fixes, code and documentation improvements since then
-##  in 2001, 2003, 2022, 2024, 2025.
+##  in 2001, 2003, 2022, 2024-2026.
 
 use strict;
 use warnings;
@@ -110,15 +110,14 @@ input of the process are spooled, and only printed to the standard input of
 I<some-other-program> after a certain delay time has passed.
 
 The main use case is for a news feed that deliberately should not distribute
-articles as soon as possible.  One reason is giving cancel control articles
-and NoCeM messages time to arrive so that B<innd> remembers the Message-IDs of
-those cancelled articles before they actually arrive.  It permits cancelling
-articles before they are locally stored and spread to other peers.  The delay
-can be set up for outgoing feeds wanting that or, even better for not slowing
-the propagation of articles, internally between a frontend instance of B<innd>
-receiving the articles from all your peers and another local instance of
-B<innd> fed by your frontend with a delay except for cancels and NoCeM
-articles.
+articles as soon as possible.  One reason is giving NoCeM messages time to
+arrive so that B<innd> remembers the Message-IDs of those cancelled articles
+before they actually arrive.  It permits cancelling articles before they
+are locally stored and spread to other peers.  The delay can be set up for
+outgoing feeds wanting that or, even better for not slowing the propagation
+of articles, internally between a frontend instance of B<innd> receiving the
+articles from all your peers and another local instance of B<innd> fed by your
+frontend with a delay except for NoCeM articles.
 
 Another use case is using a link only as a backup.
 
@@ -180,18 +179,24 @@ which they are sent in the news.lists.filters newsgroup.
 Use C<innfeed-delayed!> instead of C<innfeed!> in the F<newsfeeds> entries for
 peers which should receive a delayed feed.  If you wish, you can also set up
 two entries for each peer, keeping a real-time feed through C<innfeed!> for
-control articles and NoCeM messages, and delaying the feed of other articles
-through C<innfeed-delayed!>.
+NoCeM messages, and delaying the feed of other articles through
+C<innfeed-delayed!>.
 
     news.uu.net/uunet\
-        :!*,control,control.*,news.lists.filters\
+        :!*,news.lists.filters\
         :Tm:innfeed!
 
     news.uu.net-delayed/uunet\
-        :*,!control,!control.*,@news.lists.filters\
+        :*,@news.lists.filters\
         :Tm:innfeed-delayed!
 
-In that case, be sure to use the same C<news.uu.net-delayed> peer name in
+Cancel articles should also be delayed so that they arrive after the article
+they cancel.  Otherwise INN cannot authenticate them (using Cancel-Lock).
+Unauthenticated cancels are not processed by default (see I<docancels>
+in F<inn.conf>) but if you decide to process them, you can also send the
+control.cancel pseudo-newsgroup as a real-time feed.
+
+Be sure to use the same C<news.uu.net-delayed> peer name in
 F<innfeed-delayed.conf>.  Note that you should only configure a delayed feed
 for a remote peer if its news administrator agrees with that (he may want a
 real-time feed, or already have locally implemented a delay on his incoming
