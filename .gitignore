@@ -227,6 +227,7 @@
 /tests/lib/hex.t
 /tests/lib/hissqlite-convert.t
 /tests/lib/hissqlite.t
+/tests/lib/history-bench
 /tests/lib/inet_aton.t
 /tests/lib/inet_ntoa.t
 /tests/lib/inet_ntop.t
