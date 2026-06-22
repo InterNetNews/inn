@@ -751,7 +751,12 @@ close_db(void)
                    checkpointed, wal_frames);
         }
     } else {
-        sqlite3_step(sql_main.delete_journal);
+        int status;
+
+        status = sqlite3_step(sql_main.delete_journal);
+        if (status != SQLITE_DONE)
+            notice("failed to delete the rollback journal: %s",
+                   sqlite3_errmsg(connection));
         sqlite3_reset(sql_main.delete_journal);
     }
     sqlite_helper_term(&sql_main_helper, (sqlite3_stmt **) &sql_main);
@@ -828,12 +833,16 @@ static void
 begin_transaction(void)
 {
     struct timeval now;
+    int status;
 
     if (in_transaction)
         return;
     gettimeofday(&now, NULL);
     next_commit = timeval_sum(now, transaction_time_limit);
-    sqlite3_step(sql_main.begin);
+    status = sqlite3_step(sql_main.begin);
+    if (status != SQLITE_DONE)
+        die("failed to start database transaction: %s",
+            sqlite3_errmsg(connection));
     sqlite3_reset(sql_main.begin);
     in_transaction = true;
 }
@@ -841,9 +850,14 @@ begin_transaction(void)
 static void
 commit_transaction(void)
 {
+    int status;
+
     if (!in_transaction)
         return;
-    sqlite3_step(sql_main.commit);
+    status = sqlite3_step(sql_main.commit);
+    if (status != SQLITE_DONE)
+        die("failed to commit database transaction: %s",
+            sqlite3_errmsg(connection));
     sqlite3_reset(sql_main.commit);
     transaction_rowcount = 0;
     in_transaction = false;
@@ -852,21 +866,36 @@ commit_transaction(void)
 static void
 savepoint(void)
 {
-    sqlite3_step(sql_main.savepoint);
+    int status;
+
+    status = sqlite3_step(sql_main.savepoint);
+    if (status != SQLITE_DONE)
+        die("failed to create database savepoint: %s",
+            sqlite3_errmsg(connection));
     sqlite3_reset(sql_main.savepoint);
 }
 
 static void
 release_savepoint(void)
 {
-    sqlite3_step(sql_main.release_savepoint);
+    int status;
+
+    status = sqlite3_step(sql_main.release_savepoint);
+    if (status != SQLITE_DONE)
+        die("failed to release database savepoint: %s",
+            sqlite3_errmsg(connection));
     sqlite3_reset(sql_main.release_savepoint);
 }
 
 static void
 rollback_savepoint(void)
 {
-    sqlite3_step(sql_main.rollback_savepoint);
+    int status;
+
+    status = sqlite3_step(sql_main.rollback_savepoint);
+    if (status != SQLITE_DONE)
+        die("failed to rollback database savepoint: %s",
+            sqlite3_errmsg(connection));
     sqlite3_reset(sql_main.rollback_savepoint);
 }
 
@@ -1878,8 +1907,12 @@ do_expire_group(client_t *client)
     resetclear(stmt);
     stmt = NULL;
 
-    sqlite3_step(sql_main.clear_expireart);
-    sqlite3_reset(sql_main.clear_expireart);
+    stmt = sql_main.clear_expireart;
+    status = sqlite3_step(stmt);
+    if (status != SQLITE_DONE)
+        fail_stmt();
+    sqlite3_reset(stmt);
+    stmt = NULL;
 
     if (changes > 0) {
         if ((uint64_t) changes > oldcount)
@@ -1990,8 +2023,12 @@ do_finish_expire(client_t *client)
     resetclear(stmt);
     stmt = NULL;
 
-    sqlite3_step(sql_main.clear_expireart);
-    sqlite3_reset(sql_main.clear_expireart);
+    stmt = sql_main.clear_expireart;
+    status = sqlite3_step(stmt);
+    if (status != SQLITE_DONE)
+        fail_stmt();
+    sqlite3_reset(stmt);
+    stmt = NULL;
 
     transaction_rowcount += changes;
     release_savepoint();
