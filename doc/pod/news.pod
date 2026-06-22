@@ -1,4 +1,4 @@
-=head1 Changes in 2.7.4 (not yet released)
+=head1 Changes in 2.7.4 (2026-06-22)
 
 =over 2
 
@@ -74,6 +74,12 @@ Thanks to Jose Luis Duran for the information.
 
 Added support for the ALPN TLS extension in B<nnrpd>.  Thanks to Roman
 Donchenko for this feature.
+
+=item *
+
+In consequence of the changes in the libinn(3) and libinnstorage(3) interfaces
+for the Bloom filter and overview improvements, both of these libraries have
+their SONAME bump in this release.
 
 =item *
 
