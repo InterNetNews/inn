@@ -31,7 +31,7 @@ dnl
 dnl Various bug fixes, code and documentation improvements since its creation
 dnl in 1998-2018, 2020-2026.
 
-AC_INIT([INN], [2.7.4], [inn-workers@lists.isc.org],
+AC_INIT([INN], [2.7.5], [inn-workers@lists.isc.org],
     [inn], [https://www.isc.org/othersoftware/])
 AC_PREREQ([2.64])
 AC_CONFIG_AUX_DIR([support])
