@@ -793,7 +793,9 @@ L<https://www.gnu.org/software/libtool/manual/html_node/Updating-version-info.ht
 The commit message usually contains a brief description of API changes, if
 any, just for the record.  Avoid bumping SONAME in minor releases (ideally,
 changes in any interfaces should be delayed until the next major release, and
-the bump clearly mentioned in the releases notes).
+the bump clearly mentioned in the releases notes).  Note that increasing the
+first number in LTVERSION does not necessarily mean that SONAME has bumped;
+check the name of the generated libraries to be sure.
 
 =back
 

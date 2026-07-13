@@ -135,9 +135,8 @@ Donchenko for this feature.
 
 =item *
 
-In consequence of the changes in the libinn(3) and libinnstorage(3) interfaces
-for the Bloom filter and overview improvements, both of these libraries have
-their SONAME bump in this release.
+In consequence of the changes in the libinnstorage(3) interface due to
+overview improvements, this library has its SONAME bump in this release.
 
 =item *
 
