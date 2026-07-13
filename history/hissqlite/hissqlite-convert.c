@@ -106,7 +106,7 @@ convert_cb(void *cookie, const HASH *hash, time_t arrived, time_t posted,
         exec(st->db, "commit");
         exec(st->db, "begin");
         if (st->count % (COMMIT_EVERY * 20) == 0)
-            notice("%lu entries...", st->count);
+            notice("%lu entries converted...", st->count);
     }
     return true;
 }
@@ -213,7 +213,7 @@ main(int argc, char *argv[])
 
     if (st.dups > 0)
         warn("%lu duplicate hashes in the source were skipped", st.dups);
-    notice("converted %lu entries into %s", st.count, dstpath);
+    notice("converted %lu entries into %s", st.count, finaldb);
     free(finaldb);
     free(tempbase);
     free(tempdb);

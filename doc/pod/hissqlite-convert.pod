@@ -44,14 +44,14 @@ The history method of the source database.  The default is C<hisv6>.
 
 =item I<srcpath>
 
-The path to the source history (for C<hisv6>, the F<history> file without
-any extension), as given by the I<pathdb> parameter in F<inn.conf>.
+The path to the source history.  For C<hisv6>, it is I<pathdb>/F<history>
+without any extension, as given by the I<pathdb> parameter in F<inn.conf>.
 
 =item I<dstpath>
 
-The base path of the hissqlite database to create.  A F<.sqlite> suffix is
-appended, so I<dstpath> should match I<pathdb> (the resulting file is
-F<history.sqlite> in I<pathdb>).
+The path of the hissqlite database to create.  A F<.sqlite> suffix is
+appended, so I<dstpath> should match I<pathdb>/F<history> (the resulting file
+is F<history.sqlite> in I<pathdb>).
 
 =back
 
