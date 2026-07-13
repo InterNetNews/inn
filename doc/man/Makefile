@@ -16,7 +16,7 @@ SEC3PM	= INN__Config.3pm \
 
 SEC5	= active.5 active.times.5 buffindexed.conf.5 control.ctl.5 \
 	cycbuff.conf.5 distrib.pats.5 distributions.5 expire.ctl.5 \
-	history.5 incoming.conf.5 \
+	hissqlite.5 history.5 incoming.conf.5 \
 	inn.conf.5 innfeed.conf.5 innreport.conf.5 inn-secrets.conf.5 \
 	innwatch.ctl.5 moderators.5 motd.news.5 \
 	newsfeeds.5 newsgroups.5 newslog.5 nnrpd.track.5 nntpsend.ctl.5 ovdb.5 \
@@ -26,7 +26,7 @@ SEC5	= active.5 active.times.5 buffindexed.conf.5 control.ctl.5 \
 SEC8	= actsync.8 archive.8 batcher.8 buffchan.8 ckpasswd.8 \
 	cnfsheadconf.8 cnfsstat.8 controlchan.8 ctlinnd.8 cvtbatch.8 \
 	delayer.8 docheckgroups.8 domain.8 expire.8 expireover.8 expirerm.8 \
-	ident.8 \
+	hissqlite-convert.8 hissqlite-util.8 ident.8 \
 	innbind.8 inncheck.8 innd.8 inndf.8 innfeed.8 innreport.8 innstat.8 \
 	innupgrade.8 innwatch.8 innxbatch.8 innxmit.8 mailpost.8 makedbz.8 \
 	makehistory.8 mod-active.8 news.daily.8 news2mail.8 ninpaths.8 \
