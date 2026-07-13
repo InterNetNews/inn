@@ -19,7 +19,8 @@ COMPILER="${COMPILER:-gcc}"
 ./configure CC="$COMPILER" --with-perl --with-python
 make warnings
 (cd contrib && make warnings)
-(cd frontends && make optional)
+(cd frontends && make warnings optional)
+(cd tests && make warnings benchmarks)
 (cd tests && make warnings && make)
 make check-manifest
 

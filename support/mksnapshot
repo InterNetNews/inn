@@ -70,9 +70,10 @@ else
     cd contrib
     make warnings
     cd ../frontends
-    make optional
+    make warnings optional
     cd ../tests
     make warnings
+    make warnings benchmarks
     make
     cd ..
     make check-manifest
