@@ -278,7 +278,7 @@ main(int argc, char *argv[])
     free(active_path);
 
     /* open up the history manager */
-    path = concatpath(innconf->pathdb, INN_PATH_HISTORY);
+    path = concatpath(innconf->pathhistory, INN_PATH_HISTORY);
     history = HISopen(path, innconf->hismethod, HIS_RDONLY);
     free(path);
 
@@ -491,7 +491,7 @@ main(int argc, char *argv[])
          * overestimate of entries, which is what we want for Bloom sizing. */
         const size_t min_history_line = 37;
 
-        histpath = concatpath(innconf->pathdb, INN_PATH_HISTORY);
+        histpath = concatpath(innconf->pathhistory, INN_PATH_HISTORY);
         if (stat(histpath, &st) == 0)
             estimated = st.st_size / min_history_line;
         else

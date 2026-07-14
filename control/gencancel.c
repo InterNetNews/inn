@@ -2,6 +2,9 @@
 **  Generate cancel control messages, with appropriate admin Cancel-Key.
 **
 **  Initial implementation in 2022 by Julien ÉLIE.
+**
+**  Various bug fixes, code and documentation improvements since then
+**  in 2023, 2026.
 */
 
 #include "portable/system.h"
@@ -53,7 +56,7 @@ getNewsgroups(char *mid)
     char *newsgroups;
     bool flag = false;
 
-    HistoryText = concatpath(innconf->pathdb, INN_PATH_HISTORY);
+    HistoryText = concatpath(innconf->pathhistory, INN_PATH_HISTORY);
     History = HISopen(HistoryText, innconf->hismethod, HIS_RDONLY);
 
     if (History == NULL) {

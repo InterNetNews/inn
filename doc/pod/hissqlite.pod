@@ -40,10 +40,11 @@ B<--without-sqlite3> option.
 
 =head1 CONFIGURATION
 
-To select hissqlite as your history method, set the I<hismethod> parameter in
-F<inn.conf> to C<hissqlite>.  The database is stored in F<history.sqlite> in
-the I<pathdb> directory.  After changing I<hismethod>, migrate or rebuild your
-history (see L</MIGRATION>) and restart INN.
+To select hissqlite as your history method, set the I<hismethod> parameter
+in F<inn.conf> to C<hissqlite>.  The database is stored as
+F<history.sqlite> in the directory named by the I<pathhistory> parameter
+(by default the value of I<pathdb>).  After changing I<hismethod>,
+migrate or rebuild your history (see L</MIGRATION>) and restart INN.
 
 To start with an empty history database on a fresh server, run
 B<makehistory> once: on an empty spool, it simply creates an empty
@@ -82,10 +83,10 @@ between 512 and 65536.  The default is C<4096>, matching the common
 filesystem block size so that a random single-row insert or point lookup
 on the random-MD5 keys touches exactly one block (no read-modify-write).
 For best results, the page size should match the underlying storage block
-size: on ZFS, create the history dataset with C<recordsize=4k>.  A small
-page on a coarse-recordsize ZFS dataset (the 128k default) forces
-read-modify-write on every random write and will perform worse, not
-better.
+size: on ZFS, create a dedicated history dataset with C<recordsize=4k> and
+point the I<pathhistory> parameter at it.  A small page on a
+coarse-recordsize ZFS dataset (the 128k default) forces read-modify-write
+on every random write and will perform worse, not better.
 
 =item I<hissqlitereadercachesize>
 
@@ -115,7 +116,7 @@ shutdown.
 
 B<Note:> WAL mode requires shared-memory support and does not work on
 network filesystems such as NFS if duties are split across multiple machines.
-Keep I<pathdb> on local storage or only use a single instance to run
+Keep I<pathhistory> on local storage or only use a single instance to run
 B<innd> and other programs like B<nnrpd>.
 
 =head1 MIGRATION

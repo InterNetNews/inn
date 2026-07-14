@@ -531,7 +531,8 @@ The SQLite page size in bytes for a newly created C<hissqlite> history
 database; it has no effect on an existing one.  Must be a power of two
 between 512 and 65536.  The default value is C<4096>, which matches the
 common filesystem block size; for best results pair it with the storage
-block size (on ZFS, a C<recordsize=4k> dataset).  See hissqlite(5).
+block size (on ZFS, a C<recordsize=4k> dataset, which I<pathhistory> can
+point into).  See hissqlite(5).
 
 =item I<hissqlitereadercachesize>
 
@@ -1563,9 +1564,9 @@ default F<innwatch.ctl>.  The default value is C<4000>.
 
 =item I<innwatchlibspace>
 
-Free space in I<pathdb>, in inndf(8) output units (normally kilobytes), at
-which innd(8) will be throttled by innwatch(8), assuming a default
-F<innwatch.ctl>.  The default value is C<25000>.
+Free space in I<pathdb> and I<pathhistory>, in inndf(8) output units
+(normally kilobytes), at which innd(8) will be throttled by innwatch(8),
+assuming a default F<innwatch.ctl>.  The default value is C<25000>.
 
 =item I<innwatchloload>
 
@@ -1906,8 +1907,9 @@ I<pathbin>/control.
 =item I<pathdb>
 
 The path to the database files used and updated by the server (currently,
-F<active>, F<active.times>, F<history> and its indices, and
-F<newsgroups>).  The default value is I<pathnews>/db.
+F<active>, F<active.times>, F<newsgroups>, and, unless I<pathhistory> is
+set elsewhere, the F<history> database).  The default value is
+I<pathnews>/db.
 
 =item I<pathetc>
 
@@ -1918,6 +1920,17 @@ I<pathnews>/etc.
 
 The path to the Perl and Python filters.  The default value is
 I<pathbin>/filter.
+
+=item I<pathhistory>
+
+The path to the history database files (the history(5) text file and its
+I<dbz> indices with the C<hisv6> history method, or F<history.sqlite> and its
+WAL files with C<hissqlite>).  Pointing this somewhere other than I<pathdb>
+lets the history database live on its own file system or, with hissqlite,
+on a dedicated ZFS dataset with a matching I<recordsize> (see hissqlite(5)).
+The directory must exist and be writable by the news user; the installation
+process only creates the default one.  The default value is the value of
+I<pathdb>.
 
 =item I<pathhttp>
 

@@ -63,7 +63,7 @@ Print a usage message and exit.
 =item B<-p> I<path>
 
 Act on the F<history.sqlite> database in I<path> instead of the default
-I<pathdb> directory from F<inn.conf>.
+I<pathhistory> directory from F<inn.conf>.
 
 =item B<-V>
 

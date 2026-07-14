@@ -319,7 +319,8 @@ writes to those files are an appreciable percentage of INN's disk activity.
 The history database can also be quite large (requiring up to S<2 GB> or
 more), and is rewritten to a new one during nightly B<expire> for the C<hisv6>
 history storage method, so this is a common portion of INN to move to a
-different file system.
+different file system.  To move only the history database, without the
+other database files, see the I<pathhistory> parameter in inn.conf(5).
 
 =item B<--with-spool-dir>=PATH
 
@@ -1555,10 +1556,11 @@ At this point, you need to set up the news database directory
 (in I<pathdb>).  This directory will hold the active(5) file (the list of
 newsgroups you carry), the active.times(5) file (the creator and creation
 time of newsgroups created since the server was initialized), the
-newsgroups(5) file (descriptions for all the newsgroups you carry), and
-the history database (a record of every article the server currently has or
-has seen in the past few days, used to decide whether to accept or refuse
-new incoming messages).
+newsgroups(5) file (descriptions for all the newsgroups you carry), and,
+unless the I<pathhistory> parameter puts it elsewhere, the history
+database (a record of every article the server currently has or has seen
+in the past few days, used to decide whether to accept or refuse new
+incoming messages).
 
 Before starting to work on this, make sure you're logged on as the news
 user, since all of these files need to be owned by that user.  This is a
@@ -1595,7 +1597,7 @@ to use.
 
 To create an empty C<hisv6> history database, type:
 
-    cd <pathdb in inn.conf>
+    cd <pathhistory in inn.conf>
     touch history
     makedbz -i -o
 
@@ -1613,7 +1615,7 @@ run of B<news.daily> which will appropriately resize it.
 
 If I<hismethod> is set to C<hissqlite> in F<inn.conf>, run B<makehistory>
 (with no arguments) instead: on an empty spool, it simply creates an empty
-F<history.sqlite> database in I<pathdb>.  Do not create the file by hand
+F<history.sqlite> database in I<pathhistory>.  Do not create the file by hand
 with C<touch>, and no pre-sizing is needed; the database grows by itself.
 
 (Note that if you install INN with C<make install>, you do not need to

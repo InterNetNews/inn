@@ -1,5 +1,10 @@
 /*
 **  Various miscellaneous utility functions for innd internal use.
+**
+**  Broken out from innd.c in 2000 by Russ Allbery.
+**
+**  Various bug fixes, code and documentation improvements since then
+**  in 2001-2004, 2006, 2008, 2009, 2015, 2021, 2024, 2026.
 */
 
 #include "portable/system.h"
@@ -311,7 +316,7 @@ InndHisOpen(void)
     int flags;
     size_t synccount;
 
-    histpath = concatpath(innconf->pathdb, INN_PATH_HISTORY);
+    histpath = concatpath(innconf->pathhistory, INN_PATH_HISTORY);
     if (innconf->hismethod == NULL) {
         sysdie("hismethod is not defined");
         /*NOTREACHED*/
@@ -337,7 +342,7 @@ InndHisClose(void)
     if (!HISclose(History)) {
         char *histpath;
 
-        histpath = concatpath(innconf->pathdb, INN_PATH_HISTORY);
+        histpath = concatpath(innconf->pathhistory, INN_PATH_HISTORY);
         sysdie("SERVER can't close history %s", histpath);
         /* NOTREACHED */
         free(histpath);

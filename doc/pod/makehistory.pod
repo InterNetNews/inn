@@ -19,9 +19,10 @@ it is useful to run makedbz(8) after makehistory(8) in order to improve the
 efficiency of the indices (B<makehistory> does not know how large to make the
 hash table at first run, unless the size is given by the B<-s> flag).
 
-The default location of the history database is I<pathdb>/F<history> for the
-C<hisv6> storage method, and I<pathdb>/F<history.sqlite> for the C<hissqlite>
-storage method; to specify an alternate location, use the B<-f> flag.
+The default location of the history database is I<pathhistory>/F<history>
+for the C<hisv6> storage method, and I<pathhistory>/F<history.sqlite> for the
+C<hissqlite> storage method; to specify an alternate location, use the B<-f>
+flag.
 
 By default, B<makehistory> will scan the entire spool, using the storage
 manager, and write a history line for every article.  To also generate
@@ -147,7 +148,8 @@ buffindexed, the B<overchan> program is invoked to write overview.
 =item B<-f> I<filename>
 
 Rather than writing directly to the default F<history> or F<history.sqlite>
-databases in I<pathdb>, instead write to I<filename>, also in I<pathdb>.
+databases in I<pathhistory>, instead write to I<filename>, also in
+I<pathhistory>.
 
 =item B<-I>
 
@@ -242,14 +244,14 @@ running (or is throttled).
 
 This will rebuild the overview (if using buffindexed, erase the
 existing overview buffers before running this command) and leave a new
-F<history> file as C<history.n> in I<pathdb>.  To preserve all of the history
-entries from the old F<history> file that correspond to rejected articles or
-expired articles, follow the above command with:
+F<history> file as C<history.n> in I<pathhistory>.  To preserve all of the
+history entries from the old F<history> file that correspond to rejected
+articles or expired articles, follow the above command with:
 
-    cd <pathdb>
+    cd <pathhistory>
     awk 'NF == 2 { print }' < history >> history.n
 
-(replacing the path with your I<pathdb>, if it isn't the default).  Then
+(replacing the path with your I<pathhistory>, if it isn't the default).  Then
 look over the new F<history> file for problems and run:
 
     makedbz -s `wc -l < history.n` -f history.n
@@ -285,12 +287,12 @@ To just rebuild overview (whathever history method you use):
 
 =over 4
 
-=item I<pathdb>/history
+=item I<pathhistory>/history
 
 This is the default output file for B<makehistory> with the C<hisv6> history
 storage method.
 
-=item I<pathdb>/history.sqlite
+=item I<pathhistory>/history.sqlite
 
 This is the default output file for B<makehistory> with the C<hissqlite>
 history storage method.

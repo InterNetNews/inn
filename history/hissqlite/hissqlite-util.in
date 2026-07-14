@@ -39,7 +39,7 @@ Options:
   -d             Dump all history records as text, one per line.
   -h             Print this help message.
   -p path        Read $dbfile database file in path directory instead of
-                 default \$INN::Config::pathdb directory.
+                 default \$INN::Config::pathhistory directory.
   -V             Print the version of this tool and the database schema
                  version.
 ";
@@ -63,7 +63,7 @@ $modes++ if defined($opt{'V'});
 die "Only one action allowed at the same time\n\n$usage"
   if $modes > 1;
 
-my $dbdir = $opt{'p'} || $INN::Config::pathdb;
+my $dbdir = $opt{'p'} || $INN::Config::pathhistory;
 my $datasource = "dbi:SQLite:dbname=$dbdir/$dbfile";
 
 # All implemented modes are read-only, so open the database read-only.

@@ -4,7 +4,7 @@ history - Record of current and recently expired Usenet articles
 
 =head1 DESCRIPTION
 
-The file I<pathdb>/F<history> keeps a record of all articles currently
+The file I<pathhistory>/F<history> keeps a record of all articles currently
 stored in the news system, as well as those that have been received but
 since expired.  In a typical production environment, this file will be
 many megabytes.

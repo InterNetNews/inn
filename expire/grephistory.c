@@ -89,7 +89,7 @@ main(int ac, char *av[])
     if (!innconf_read(NULL))
         exit(1);
 
-    History = concatpath(innconf->pathdb, INN_PATH_HISTORY);
+    History = concatpath(innconf->pathhistory, INN_PATH_HISTORY);
 
     What = '?';
 

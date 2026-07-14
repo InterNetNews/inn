@@ -1355,7 +1355,7 @@ main(int ac, char *av[])
         alarm(TotalTimeout);
     }
 
-    path = concatpath(innconf->pathdb, INN_PATH_HISTORY);
+    path = concatpath(innconf->pathhistory, INN_PATH_HISTORY);
     History = HISopen(path, innconf->hismethod, HIS_RDONLY);
     free(path);
 

@@ -102,6 +102,7 @@ static const struct config config_table[] = {
     {K(pathdb),                     STRING(NULL)      },
     {K(pathetc),                    STRING(NULL)      },
     {K(pathfilter),                 STRING(NULL)      },
+    {K(pathhistory),                STRING(NULL)      },
     {K(pathhttp),                   STRING(NULL)      },
     {K(pathincoming),               STRING(NULL)      },
     {K(pathlog),                    STRING(NULL)      },
@@ -317,6 +318,8 @@ innconf_set_defaults(void)
         innconf->pathfilter = concatpath(innconf->pathbin, "filter");
     if (innconf->pathdb == NULL)
         innconf->pathdb = concatpath(innconf->pathnews, "db");
+    if (innconf->pathhistory == NULL)
+        innconf->pathhistory = xstrdup(innconf->pathdb);
     if (innconf->pathetc == NULL)
         innconf->pathetc = concatpath(innconf->pathnews, "etc");
     if (innconf->pathrun == NULL)

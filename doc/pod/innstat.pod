@@ -21,8 +21,9 @@ the operating mode of the server, as returned by C<ctlinnd mode>;
 
 =item *
 
-the disk usage of several directories: I<patharticles>, I<pathdb>, I<pathetc>,
-I<pathincoming>, I<pathlog>, I<pathoutgoing>, I<pathoverview>, and I<pathtmp>.
+the disk usage of several directories: I<patharticles>, I<pathdb>,
+I<pathetc>, I<pathhistory>, I<pathincoming>, I<pathlog>, I<pathoutgoing>,
+I<pathoverview>, and I<pathtmp>.
 If used, the disk usage of the I<patharchive> and I<pathhttp> directories
 are also reported;
 

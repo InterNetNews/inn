@@ -36,8 +36,8 @@ and comment lines are also passed through.)
 
 =item B<-f> I<filename>
 
-The default name of the F<history> file is I<pathdb>/F<history>; to specify
-a different name, use the B<-f> flag.
+The default name of the F<history> file is I<pathhistory>/F<history>; to
+specify a different name, use the B<-f> flag.
 
 =back
 

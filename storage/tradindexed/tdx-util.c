@@ -5,6 +5,11 @@
 **  including some ways that are useful for recovery from crashes.  It allows
 **  the user to view the contents of the various data structures that
 **  tradindexed stores on disk.
+**
+**  Initial implementation in 2002 by Russ Allbery.
+**
+**  Various bug fixes, code and documentation improvements since then
+**  in 2003, 2005, 2006, 2008-2010, 2017, 2021-2024, 2026.
 */
 
 #include "portable/system.h"
@@ -308,7 +313,7 @@ group_rebuild(const char *group, const char *path)
     if (!tdx_index_rebuild_start(index, entry))
         die("cannot start index rebuild for %s", group);
 
-    histpath = concatpath(innconf->pathdb, INN_PATH_HISTORY);
+    histpath = concatpath(innconf->pathhistory, INN_PATH_HISTORY);
     flags = HIS_RDONLY | HIS_ONDISK;
     history = HISopen(histpath, innconf->hismethod, flags);
     if (history == NULL)

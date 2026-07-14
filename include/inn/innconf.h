@@ -228,6 +228,7 @@ struct innconf {
     char *pathdb;       /* News database files */
     char *pathetc;      /* News configuration files */
     char *pathfilter;   /* Filtering code */
+    char *pathhistory;  /* History database files */
     char *pathhttp;     /* HTML files */
     char *pathincoming; /* Incoming spooled news */
     char *pathlog;      /* Log files */
