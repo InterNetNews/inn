@@ -37,8 +37,11 @@ libinnstorage - Routines for managing INN storage
         void          *private;
         time_t        arrived;
         time_t        expires;
+        bool          filtered;
         char          *groups;
         int           groupslen;
+        char          *path;
+        int           pathlen;
         TOKEN         *token;
     } ARTHANDLE;
 
@@ -79,6 +82,8 @@ libinnstorage - Routines for managing INN storage
 
     bool SMcancel(TOKEN token);
 
+    bool SMcanceltombstone(TOKEN token);
+
     bool SMprobe(PROBETYPE type, TOKEN *token, void *value);
 
     void SMprintfiles(FILE *file, TOKEN token, char **xref,
@@ -106,7 +111,8 @@ libinnstorage - Routines for managing INN storage
         OVSTATICSEARCH,
         OVSTATALL,
         OVCACHEKEEP,
-        OVCACHEFREE
+        OVCACHEFREE,
+        OVTOKENCACHE
     } OVCTLTYPE;
 
     typedef enum {
@@ -267,7 +273,7 @@ Then B<SMnext> returns B<ARTHANDLE> which should be used for the next
 query.  If a NULL pointer B<ARTHANDLE> is returned, no articles are left
 to be queried.  If I<data> of B<ARTHANDLE> is NULL pointer or I<len> of
 B<ARTHANDLE> is C<0>, it indicates the article may be corrupted and should
-be cancelled by I<SMcancel>.  The data area indicated by B<ARTHANDLE>
+be cancelled by B<SMcancel>.  The data area indicated by B<ARTHANDLE>
 should not be modified.
 
 The B<SMfreearticle> function frees all allocated memory used by
@@ -278,6 +284,16 @@ frees allocated memory internally.
 The B<SMcancel> function removes the article specified with I<token>.
 It returns true if cancellation is successful or returns false if not.
 B<SMcancel> fails if B<SM_RDWR> has not been set to true with B<SMsetup>.
+
+The B<SMcanceltombstone> function appends the I<token> to the out-of-band
+cancel tombstone log so a later expire run can drop the matching history
+entry without calling B<SMretrieve>.  It is intended for callers that
+cancel articles outside the B<expireover>/B<expirerm> pipeline (B<innd>'s
+B<ARTcancel> and B<sm -r>).  It is a no-op when I<expiretombstone> is false
+in F<inn.conf> or I<token> has type B<TOKEN_EMPTY>.  The function returns true
+on success (token appended, flushed, file closed), false on any failure path.
+Callers can ignore the return value (the cancel itself has already succeeded
+by the time this is called).
 
 The B<SMprobe> function checks the token on B<PROBETYPE>.  I<type> is
 one of following:
@@ -386,6 +402,10 @@ Setup whether the cache should be kept.
 =item C<OVCACHEFREE>
 
 Free the cache.
+
+=item C<OVTOKENCACHE>
+
+Pass the Bloom filter to B<OVhisthasmsgid>.
 
 =back
 
