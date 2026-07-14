@@ -1587,7 +1587,8 @@ standalone.  If you don't want these groups to be visible to clients,
 do I<not> delete them; simply hide them in F<readers.conf>.  C<to> must also
 exist as a newsgroup if you have I<mergetogroups> set in F<inn.conf>.
 
-Next, you need to create an empty F<history> database.  To do this, type:
+Next, you need to create an empty F<history> database.  With the default
+C<hisv6> history method, type:
 
     cd <pathdb in inn.conf>
     touch history
@@ -1605,9 +1606,14 @@ This initial size does not limit the number of articles the news server will
 accept.  It will just get slower when that size is exceeded, until the next
 run of B<news.daily> which will appropriately resize it.
 
+If I<hismethod> is set to C<hissqlite> in F<inn.conf>, run B<makehistory>
+(with no arguments) instead: on an empty spool, it simply creates an empty
+F<history.sqlite> database in I<pathdb>.  Do not create the file by hand
+with C<touch>, and no pre-sizing is needed; the database grows by itself.
+
 (Note that if you install INN with C<make install>, you do not need to
 run these commands: the installation takes care of creating the
-F<history> database.)
+history database for the configured I<hismethod>.)
 
 When it finishes, make sure the file permissions are correct on all
 the files you've just created:

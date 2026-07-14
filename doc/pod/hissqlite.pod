@@ -46,6 +46,12 @@ named by the I<pathdb> parameter with a F<.sqlite> suffix appended
 (by default, F<history.sqlite> in I<pathdb>).  After changing I<hismethod>,
 migrate or rebuild your history (see L</MIGRATION>) and restart INN.
 
+To start with an empty history database on a fresh server, run
+B<makehistory> once: on an empty spool, it simply creates an empty
+F<history.sqlite> (C<make install> does this when I<hismethod> is already
+set to C<hissqlite>).  Do not create the file by hand; B<innd> requires an
+initialized database and will refuse to start on an empty file.
+
 The following F<inn.conf> parameters tune the database; their defaults suit
 most sites.
 
