@@ -150,18 +150,33 @@ $D$(PATH_ACTIVE_TIMES):
 	    chgrp $(RUNASGROUP) $@ ; \
 	fi
 	chmod $(FILEMODE) $@
+##  With hismethod set to hissqlite, the empty database is created by running
+##  makehistory once (instant on an empty spool); the hisv6 history text file
+##  is not touched, so this recipe reruns on later installs and the .sqlite
+##  existence check keeps it a no-op.  innconfval is only run for a real
+##  install ($D empty), where the installed binaries and inn.conf exist; a
+##  DESTDIR (packaging) install takes the historical path and leaves database
+##  initialization to the package's post-install.
 $D$(PATH_HISTORY):
-	touch $@
 	@ME=`$(WHOAMI)` ; \
-	if [ x"$$ME" = xroot ] ; then \
-	    chown $(RUNASUSER) $@ ; \
-	    chgrp $(RUNASGROUP) $@ ; \
-	fi
-	chmod $(FILEMODE) $@
-	@ME=`$(WHOAMI)` ; \
-	if [ -z "$D" ] ; then \
-	    if [ x"$$ME" = xroot ] || [ x"$$ME" = x"$(RUNASUSER)" ] ; then \
-	        $(PATHBIN)/makedbz -i -o ; \
+	if [ -z "$D" ] \
+	   && [ x"`$(PATHBIN)/innconfval hismethod`" = xhissqlite ] ; then \
+	    if [ ! -f "$(PATH_HISTORY).sqlite" ] ; then \
+	        if [ x"$$ME" = xroot ] || [ x"$$ME" = x"$(RUNASUSER)" ] ; then \
+	            $(PATHBIN)/makehistory ; \
+	        fi ; \
+	    fi ; \
+	else \
+	    touch $@ ; \
+	    if [ x"$$ME" = xroot ] ; then \
+	        chown $(RUNASUSER) $@ ; \
+	        chgrp $(RUNASGROUP) $@ ; \
+	    fi ; \
+	    chmod $(FILEMODE) $@ ; \
+	    if [ -z "$D" ] ; then \
+	        if [ x"$$ME" = xroot ] || [ x"$$ME" = x"$(RUNASUSER)" ] ; then \
+	            $(PATHBIN)/makedbz -i -o ; \
+	        fi ; \
 	    fi ; \
 	fi
 
