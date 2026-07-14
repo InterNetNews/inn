@@ -36,6 +36,11 @@
    long expire does not pin the WAL. */
 #define HISSQLITE_EXPIRE_BATCH    10000
 
+/* HIS_INCORE (a bulk rebuild, makehistory) commits writes in transactions of
+   this many rows instead of one each; matches hissqlite-convert's
+   COMMIT_EVERY.  See the batch_* helpers in hissqlite.c. */
+#define HISSQLITE_BULK_BATCH      50000
+
 /* Fallback values for the inn.conf tunables (hissqlitepagesize,
    hissqlitecachesize, hissqlitemmapsize, hissqlitereadercachesize), used when
    inn.conf has not been read -- offline tools and unit tests that open history
@@ -54,9 +59,13 @@ struct hissqlite {
     int flags; /* HIS_RDONLY / HIS_RDWR / HIS_CREAT / ... */
 
     /* Writer side (NULL for a pure read-only direct reader).  Writes
-       autocommit -- there is no batching state (see hissqlite.c). */
+       autocommit unless the handle was opened HIS_INCORE, the bulk-rebuild
+       hint, which enables transaction batching (see hissqlite.c). */
     hissqlite_main_t main;
-    int wal_pages; /* WAL frame count, updated by the wal_hook. */
+    int wal_pages;        /* WAL frame count, updated by the wal_hook. */
+    size_t batch_size;    /* writes per transaction; 0 = autocommit. */
+    size_t batch_pending; /* writes in the currently open batch. */
+    bool batch_open;      /* an explicit batch transaction is open. */
 
     /* Reader side (used when opened HIS_RDONLY in WAL mode). */
     hissqlite_read_t read;

@@ -80,6 +80,7 @@ struct bench_config {
     uint64_t entries;
     uint64_t random_lookups;
     uint64_t sync_every;
+    bool bulk;
     const char *root;
     bool keep;
     const char **methods;
@@ -146,12 +147,15 @@ usage(int status)
     FILE *out;
 
     out = status == 0 ? stdout : stderr;
-    fprintf(out, "usage: history-bench [-k] [-d dir] [-n entries] "
+    fprintf(out, "usage: history-bench [-Bk] [-d dir] [-n entries] "
                  "[-r random-lookups] [-s sync-every] [method ...]\n");
     fprintf(out, "\n");
     fprintf(out, "Default: -n 100M -r 1M -s 10K hisv6 hissqlite\n");
     fprintf(out, "Counts accept K, M, and G decimal suffixes.\n");
     fprintf(out, "Use -s 0 to disable periodic HISsync during writes.\n");
+    fprintf(out, "-B opens the writer as a bulk rebuild (HIS_INCORE), as\n");
+    fprintf(out, "makehistory does; combine with -s 0 for the pure bulk "
+                 "path.\n");
     fprintf(out, "Benchmark data is removed unless -k is given.\n");
     exit(status);
 }
@@ -295,12 +299,17 @@ remove_tree(const char *path)
 }
 
 static struct history *
-create_history(const char *method, const char *histpath, uint64_t entries)
+create_history(const char *method, const char *histpath, uint64_t entries,
+               bool bulk)
 {
     struct history *h;
     size_t npairs;
+    int flags = HIS_CREAT | HIS_RDWR | (bulk ? HIS_INCORE : HIS_INCORE_HINT);
 
-    h = HISopen(NULL, method, HIS_CREAT | HIS_RDWR | HIS_INCORE_HINT);
+    /* -B swaps innd's steady-state open for makehistory's bulk-rebuild open
+       (HIS_INCORE): hisv6 builds the dbz index in core, hissqlite batches
+       the writes into large transactions. */
+    h = HISopen(NULL, method, flags);
     if (h == NULL)
         return NULL;
     npairs = (size_t) entries;
@@ -359,7 +368,7 @@ benchmark_method(const struct bench_config *config, const char *method,
     fprintf(stderr, "%s create/write %llu entries at %s\n", method,
             (unsigned long long) config->entries, histpath);
     start = now_seconds();
-    h = create_history(method, histpath, config->entries);
+    h = create_history(method, histpath, config->entries, config->bulk);
     if (h == NULL) {
         fprintf(stderr, "%s skipped: %s\n", method,
                 HISerror(h) != NULL ? HISerror(h) : "method unavailable");
@@ -578,6 +587,8 @@ main(int argc, char **argv)
             usage(0);
         } else if (strcmp(argv[i], "-k") == 0) {
             config.keep = true;
+        } else if (strcmp(argv[i], "-B") == 0) {
+            config.bulk = true;
         } else if (strcmp(argv[i], "-n") == 0) {
             if (++i >= argc)
                 usage(1);

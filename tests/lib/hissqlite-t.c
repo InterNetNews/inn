@@ -108,7 +108,7 @@ main(void)
     struct walkcount wc;
     bool has_token;
 
-    test_init(27);
+    test_init(32);
 
     strlcpy(tmpdir, "hissqlite-XXXXXX", sizeof(tmpdir));
     if (mkdtemp(tmpdir) == NULL)
@@ -380,6 +380,91 @@ main(void)
         ok(27, kept);
         if (eh != NULL)
             HISclose(eh);
+    }
+
+    /* bulk write batching: HIS_INCORE (the rebuild hint makehistory passes)
+       makes writes commit in transactions of BULK_BATCH rows.  Writes inside
+       an open batch are deferred (invisible to a WAL direct reader) until a
+       commit: on batch full, on HISsync, and on close. */
+#    define BULK_BATCH 50000 /* must match HISSQLITE_BULK_BATCH */
+    {
+        char bpath[160];
+        struct history *bw, *br;
+        TOKEN bt;
+        unsigned long n;
+        char msgid[64];
+
+        snprintf(bpath, sizeof(bpath), "%s/batch", tmpdir);
+        bw = HISopen(bpath, "hissqlite", HIS_CREAT | HIS_RDWR | HIS_INCORE);
+        if (bw == NULL)
+            bail("can't create bulk hissqlite history");
+        memset(&bt, 0, sizeof(bt));
+        bt.type = 1;
+
+        /* 5 writes: the batch is far from full, so it is still open and a
+           WAL direct reader must not see them yet. */
+        for (n = 0; n < 5; n++) {
+            snprintf(msgid, sizeof(msgid), "<batch-%lu@test>", n);
+            if (!HISwrite(bw, msgid, BASE, BASE, 0, &bt))
+                bail("batched HISwrite failed: %s", HISerror(bw));
+        }
+        br = HISopen(bpath, "hissqlite", HIS_RDONLY);
+        ok(28, br != NULL && !HIScheck(br, "<batch-0@test>"));
+
+        /* HISsync commits the open batch; the same reader now sees them. */
+        ok(29, HISsync(bw) && br != NULL && HIScheck(br, "<batch-0@test>")
+                   && HIScheck(br, "<batch-4@test>"));
+
+        /* BULK_BATCH + 3 more writes: one batch fills and commits on its own
+           (its last row, BULK_BATCH+4, becomes visible), three stay pending
+           in the next batch (BULK_BATCH+5..+7, invisible). */
+        for (n = 5; n < 5 + BULK_BATCH + 3; n++) {
+            snprintf(msgid, sizeof(msgid), "<batch-%lu@test>", n);
+            if (!HISwrite(bw, msgid, BASE, BASE, 0, &bt))
+                bail("batched HISwrite failed: %s", HISerror(bw));
+        }
+        {
+            bool committed, pending_hidden;
+
+            snprintf(msgid, sizeof(msgid), "<batch-%d@test>", BULK_BATCH + 4);
+            committed = br != NULL && HIScheck(br, msgid);
+            snprintf(msgid, sizeof(msgid), "<batch-%d@test>", BULK_BATCH + 7);
+            pending_hidden = br != NULL && !HIScheck(br, msgid);
+            ok(30, committed && pending_hidden);
+        }
+        if (br != NULL)
+            HISclose(br);
+
+        /* Close flushes the pending tail; everything written is present. */
+        if (!HISclose(bw))
+            bail("batched HISclose failed");
+        br = HISopen(bpath, "hissqlite", HIS_RDONLY);
+        snprintf(msgid, sizeof(msgid), "<batch-%d@test>", BULK_BATCH + 7);
+        ok(31, br != NULL && HIScheck(br, "<batch-0@test>")
+                   && HIScheck(br, msgid));
+        if (br != NULL)
+            HISclose(br);
+    }
+
+    /* Without HIS_INCORE, writes autocommit: immediately visible to a direct
+       reader with no sync -- the steady-state two-writer invariant. */
+    {
+        char apath[160];
+        struct history *aw, *ar;
+        TOKEN at;
+
+        snprintf(apath, sizeof(apath), "%s/autocommit", tmpdir);
+        aw = HISopen(apath, "hissqlite", HIS_CREAT | HIS_RDWR);
+        memset(&at, 0, sizeof(at));
+        at.type = 1;
+        if (aw != NULL)
+            HISwrite(aw, "<auto@test>", BASE, BASE, 0, &at);
+        ar = HISopen(apath, "hissqlite", HIS_RDONLY);
+        ok(32, aw != NULL && ar != NULL && HIScheck(ar, "<auto@test>"));
+        if (ar != NULL)
+            HISclose(ar);
+        if (aw != NULL)
+            HISclose(aw);
     }
 
     {

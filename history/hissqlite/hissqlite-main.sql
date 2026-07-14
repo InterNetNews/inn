@@ -19,12 +19,13 @@ pragma foreign_keys = off;
 -- per-connection page cache is affordable; mmap lets reads come from the
 -- shared OS page cache and keeps the random-MD5 B-tree hot.
 
--- Writes are NOT batched: each statement autocommits (one implicit transaction
--- per write).  Under synchronous=NORMAL a commit is a buffered WAL append, not
--- an fsync, so there is no fsync cost to amortise; batching would only hold
--- the write lock across the batch and starve the other writer (expire) in the
--- two-writer model.  Batching is reserved for the offline bulk load
--- (hissqlite-convert.c).  See hissqlite.c.
+-- Steady-state writes are NOT batched: each statement autocommits (one
+-- implicit transaction per write).  Under synchronous=NORMAL a commit is a
+-- buffered WAL append, not an fsync, so there is no fsync cost to amortise;
+-- batching would only hold the write lock across the batch and starve the
+-- other writer (expire) in the two-writer model.  Batching is reserved for
+-- sole-writer bulk loads: the HIS_INCORE rebuild hint (makehistory) and the
+-- offline converter (hissqlite-convert.c).  See hissqlite.c.
 
 -- HISlookup: Message-ID -> token.  A row with token IS NULL (remembered)
 -- returns found=true with an empty token; ARTopenbyid treats TOKEN_EMPTY as
