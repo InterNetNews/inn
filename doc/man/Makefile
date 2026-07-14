@@ -65,7 +65,8 @@ install-man5:
 	for M in $(SEC5) ; do \
 	    $(CP_MAN) $$M $D$(MAN5)/$$M ; \
 	done
-	rm -f $D$(MAN5)/motd.innd.5 $D$(MAN5)/motd.nnrpd.5
+	rm -f $D$(MAN5)/hisv6.5 $D$(MAN5)/motd.innd.5 $D$(MAN5)/motd.nnrpd.5
+	$(LN_S) history.5 $D$(MAN5)/hisv6.5
 	$(LN_S) motd.news.5 $D$(MAN5)/motd.innd.5
 	$(LN_S) motd.news.5 $D$(MAN5)/motd.nnrpd.5
 	rm -f $D$(MAN5)/localgroups.5 $D$(MAN5)/nocem.ctl.5
