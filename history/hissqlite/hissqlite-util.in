@@ -3,7 +3,7 @@
 
 ##  History manipulation utility for hissqlite.
 ##
-##  Initial version written in 2026, modeled on ovsqlite-util.
+##  Initial version written in 2026 by Kevin Bowling, modeled on ovsqlite-util.
 
 use strict;
 use warnings;

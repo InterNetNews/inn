@@ -1,5 +1,7 @@
 /*
 **  Private declarations for the hissqlite history backend.
+**
+**  Written by Kevin Bowling in 2026.
 */
 
 #ifndef HISSQLITE_PRIVATE_H

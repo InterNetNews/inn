@@ -1,5 +1,7 @@
 -- Read-only prepared statements for hissqlite (nnrpd and other readers).
 --
+-- Written by Kevin Bowling in 2026.
+--
 -- In WAL mode, readers open the SQLite file read-only and query it directly,
 -- bypassing any writer process.
 

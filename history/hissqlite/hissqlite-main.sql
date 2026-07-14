@@ -1,6 +1,8 @@
 -- Writer prepared statements for hissqlite (used by innd and the offline
 -- tools: makehistory, prunehistory, the migration converter).
 --
+-- Written by Kevin Bowling in 2026.
+--
 -- Implementation follows ovsqlite's limits/patterns; the operator-facing
 -- durability contract matches dbz (lose recent on power loss, never corrupt,
 -- peer resends).  WAL + synchronous=NORMAL: a commit is durable across an

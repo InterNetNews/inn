@@ -1,3 +1,12 @@
+/* SQL helper program.
+**
+**  Original implementation written by Bo Lindbergh (2020-12-17).
+**  <2bfjdsla52kztwejndzdstsxl9athp@gmail.com>
+**
+**  Various bug fixes, code and documentation improvements since then
+**  in 2021, 2026.
+*/
+
 #include "inn/sqlite-helper.h"
 
 #ifdef HAVE_SQLITE3

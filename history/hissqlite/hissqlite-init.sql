@@ -4,6 +4,8 @@
 -- clustered on the 16-byte MD5 of the Message-ID, so a Message-ID -> token
 -- lookup is one clustered-leaf access (the token lives in the leaf).
 --
+-- Written by Kevin Bowling in 2026.
+--
 -- Three logical states of a row:
 --     token IS NOT NULL  -> a real, stored article
 --     token IS NULL      -> a "remembered" entry (article seen/rejected or
