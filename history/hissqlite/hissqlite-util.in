@@ -144,11 +144,11 @@ sub count_entries {
 sub dump_history {
     my $statement;
 
-    # quote(token) renders a BLOB as X'...' uppercase hex, or NULL for a
-    # remembered entry; hex(hash) renders the hash as uppercase hex.
+    # hex() renders a BLOB as uppercase hex, or NULL for a remembered entry's
+    # missing token.
     $statement = $dbh->prepare(
         q{
-            select hex(hash), arrived, posted, expires, quote(token)
+            select hex(hash), arrived, posted, expires, hex(token)
                 from hist;
         },
     );
@@ -158,11 +158,13 @@ sub dump_history {
         my ($hash, $arrived, $posted, $expires, $token) = @row;
         $posted = defined($posted) ? $posted : '-';
         $expires = defined($expires) ? $expires : '-';
-        if (!defined($token) || (uc($token) eq 'NULL')) {
+        if (!defined($token)) {
             $token = 'remembered';
         } else {
-            # quote() returns the token in the form X'...'; keep the hex part.
-            $token = uc(substr($token, 2, -1));
+            # The token column stores the raw storage API token, so its hex
+            # surrounded with @ is exactly INN's textual token form, as
+            # rendered by TokenToText() and used in a hisv6 history file.
+            $token = '@' . $token . '@';
         }
         print "$hash $arrived $posted $expires $token\n";
     }
