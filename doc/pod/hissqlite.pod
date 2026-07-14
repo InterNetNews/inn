@@ -118,7 +118,9 @@ To convert an existing C<hisv6> history into a hissqlite database without
 losing remembered entries or exact timestamps, use B<hissqlite-convert>;
 see hissqlite-convert(8).  Alternatively, you can rebuild the history from
 the article spool with B<makehistory>, though a from-spool rebuild cannot
-reconstruct remembered Message-IDs.
+reconstruct remembered Message-IDs.  Both bulk-load in large batched
+transactions, substantially faster than B<innd>'s steady-state
+one-commit-per-article write path.
 
 =head1 RUNNING
 

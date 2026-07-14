@@ -74,18 +74,69 @@ copy_blob(struct hissqlite *h, sqlite3_stmt *stmt, int col, void *dst,
 }
 
 /*
-**  Writes are NOT batched: each HISwrite/HISremember/HISreplace autocommits
-**  (one implicit transaction per statement).  With synchronous=NORMAL a commit
-**  is a buffered WAL append, not an fsync, so there is no fsync cost to
-**  amortise; batching would buy only a little WAL overhead, at the price of
-**  holding the write lock across the batch.  Holding the lock is exactly wrong
-**  for the two-writer model (innd + a separate expire process): a batch
-**  would starve the other writer.  Autocommit holds the lock for a single
-**  statement, so innd and expire interleave cleanly, and there is no open
-**  transaction to leave dangling on error or to wrap the expire scan.
-**  Batching only makes sense for the single-writer, offline bulk load -- see
-**  hissqlite-convert.c.
+**  Steady-state writes are NOT batched: each HISwrite/HISremember/HISreplace
+**  autocommits (one implicit transaction per statement).  With
+**  synchronous=NORMAL, a commit is a buffered WAL append, not an fsync, so
+**  there is no fsync cost to amortise; batching would hold the write lock
+**  across the batch, which is exactly wrong for the two-writer model (innd +
+**  a separate expire process).  The lock hold of an open batch is not the
+**  time to write N rows but the wall-clock time until N articles arrive, so
+**  at low traffic even a small batch could starve expire past its
+**  busy_timeout.  Autocommit holds the lock for a single statement, so innd
+**  and expire interleave cleanly, and there is no open transaction to leave
+**  dangling on error.
+**
+**  Bulk loading is the exception: committing per row costs throughput
+**  (the per-transaction WAL append + wal-index update dominates a random-key
+**  load).  The history API already has a bulk-rebuild hint for exactly this:
+**  HIS_INCORE, which makehistory passes and which hisv6 honors by building
+**  the whole dbz index in core and flushing at close, sole writer assumed,
+**  durability deferred, a crash means rerunning the rebuild.  hissqlite
+**  translates the same hint into its own terms: HISwrite runs in explicit
+**  transactions of HISSQLITE_BULK_BATCH rows.  The batch commits when full,
+**  on HISsync and on HISclose, so every write that returned true is
+**  committed by close.
 */
+static bool
+batch_commit(struct hissqlite *h)
+{
+    if (!h->batch_open)
+        return true;
+    h->batch_open = false;
+    h->batch_pending = 0;
+    if (sqlite3_exec(h->db, "commit", NULL, NULL, NULL) != SQLITE_OK) {
+        /* The batch's writes are lost; make that loud, then roll back so the
+           connection is not left inside a wedged transaction. */
+        hissqlite_seterror(h, "batch commit");
+        sqlite3_exec(h->db, "rollback", NULL, NULL, NULL);
+        return false;
+    }
+    return true;
+}
+
+static void
+batch_begin(struct hissqlite *h)
+{
+    if (h->batch_size == 0 || h->batch_open)
+        return;
+    /* On failure, no transaction is open, so the write below simply
+       autocommits: safe degradation, and the write path reports any real
+       database error itself. */
+    if (sqlite3_exec(h->db, "begin", NULL, NULL, NULL) == SQLITE_OK) {
+        h->batch_open = true;
+        h->batch_pending = 0;
+    }
+}
+
+static bool
+batch_advance(struct hissqlite *h)
+{
+    if (!h->batch_open)
+        return true;
+    if (++h->batch_pending < h->batch_size)
+        return true;
+    return batch_commit(h);
+}
 
 /*
 **  Track the WAL frame count so HISsync can decide when to checkpoint.
@@ -327,6 +378,11 @@ hissqlite_doopen(struct hissqlite *h)
     sqlite3_exec(h->db, pragma, NULL, NULL, NULL);
     snprintf(pragma, sizeof(pragma), "pragma mmap_size = %lu;", mmapsize);
     sqlite3_exec(h->db, pragma, NULL, NULL, NULL);
+
+    /* Bulk rebuild (makehistory): batch the writes; see the batch_* helpers
+       above. */
+    if (h->flags & HIS_INCORE)
+        h->batch_size = HISSQLITE_BULK_BATCH;
     return true;
 
 fail:
@@ -367,6 +423,7 @@ bool
 hissqlite_sync(void *history)
 {
     struct hissqlite *h = history;
+    bool ok = true;
 
     /* HISsync is deliberately NOT a durability barrier, matching dbz:
        hisv6_sync does fflush(3) + msync(MS_ASYNC), neither of which waits for
@@ -378,10 +435,16 @@ hissqlite_sync(void *history)
        be synchronous=FULL, a possible future knob, not an fsync here.)  innd
        calls HISsync on a timer, so it is simply the convenient place to keep
        the WAL bounded: once it has grown past the threshold, do a non-blocking
-       PASSIVE checkpoint. */
-    if (!h->direct_reader && h->wal_pages >= HISSQLITE_WAL_CKPT_PAGES)
-        hissqlite_wal_passive(h);
-    return true;
+       PASSIVE checkpoint.
+
+       Under HISCTLS_WRITEBATCH there IS something buffered: commit the open
+       batch so a bulk loader that calls HISsync gets its writes flushed. */
+    if (!h->direct_reader) {
+        ok = batch_commit(h);
+        if (h->wal_pages >= HISSQLITE_WAL_CKPT_PAGES)
+            hissqlite_wal_passive(h);
+    }
+    return ok;
 }
 
 bool
@@ -408,6 +471,10 @@ hissqlite_close(void *history)
     if (!h->direct_reader) {
         int log = 0, ckpt = 0;
 
+        /* Commit any open bulk-ingest batch so every HISwrite that returned
+           true is in the database before the final checkpoint. */
+        if (!batch_commit(h))
+            ok = false;
         if (sqlite3_wal_checkpoint_v2(h->db, NULL, SQLITE_CHECKPOINT_PASSIVE,
                                       &log, &ckpt)
                 == SQLITE_OK
@@ -491,6 +558,7 @@ hissqlite_write(void *history, const char *key, time_t arrived, time_t posted,
     sqlite3_stmt *stmt = h->main.write;
     bool ok;
 
+    batch_begin(h);
     bind_key(stmt, key);
     sqlite3_bind_int64(stmt, 2, (sqlite3_int64) arrived);
     sqlite3_bind_int64(stmt, 3, (sqlite3_int64) posted);
@@ -509,6 +577,11 @@ hissqlite_write(void *history, const char *key, time_t arrived, time_t posted,
                      concat("hissqlite: duplicate message-id, write ignored: ",
                             key, (char *) NULL));
     sqlite3_reset(stmt);
+    /* After the sqlite3_changes() check: a batch COMMIT must not slip between
+       the INSERT and that read.  A failed write leaves the batch open; its
+       earlier, successful writes commit on the next flush. */
+    if (ok && !batch_advance(h))
+        ok = false;
     return ok;
 }
 
