@@ -25,8 +25,9 @@ usable-but-incomplete destination.  B<hissqlite-convert> refuses to run if
 the destination already exists.
 
 B<innd> must not be writing the source history while it is being converted.
-After a successful conversion, set I<hismethod> to C<hissqlite> in
-F<inn.conf> and restart INN; see hissqlite(5).
+After a successful conversion, set I<hismethod> to C<hissqlite> in F<inn.conf>
+and restart INN; see hissqlite(5).  You may also want to audit the new
+database with B<hissqlite-util> to ensure everything went fine.
 
 =head1 OPTIONS
 
