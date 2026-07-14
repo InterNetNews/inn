@@ -52,7 +52,7 @@ Usage: makehistory [-abFIOSx] [-f file] [-l count] [-L load] [-s size]\n\
     -b          delete bad articles from spool\n\
     -F          fork when writing overview\n\
     -f file     write history entries to file\n\
-                (default $pathdb/history{.sqlite})\n\
+                (default $pathhistory/history{.sqlite})\n\
     -I          do not create overview for articles numbered below lowmark\n\
     -l count    size of overview updates (default 10000)\n\
     -L load     pause when load average exceeds threshold\n\
@@ -913,7 +913,7 @@ main(int argc, char **argv)
     /* Set defaults. */
     if (!innconf_read(NULL))
         exit(1);
-    HistoryPath = concatpath(innconf->pathdb, INN_PATH_HISTORY);
+    HistoryPath = concatpath(innconf->pathhistory, INN_PATH_HISTORY);
     ActivePath = concatpath(innconf->pathdb, INN_PATH_ACTIVE);
     TmpDir = innconf->pathtmp;
     RebuiltflagPath = concatpath(innconf->pathrun, INN_PATH_REBUILDOVERVIEW);
@@ -981,7 +981,7 @@ main(int argc, char **argv)
     if (!NoHistory) {
         if ((p = strrchr(HistoryPath, '/')) == NULL) {
             /* Find the default history database directory. */
-            HistoryDir = innconf->pathdb;
+            HistoryDir = innconf->pathhistory;
         } else {
             *p = '\0';
             HistoryDir = xstrdup(HistoryPath);

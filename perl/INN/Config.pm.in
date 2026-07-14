@@ -16,8 +16,9 @@ use Exporter;
 # Variables dynamically declared from innconfval, and used in this package.
 use vars qw(
     $ovmethod $patharchive $patharticles $pathbin $pathcontrol $pathdb
-    $pathetc $pathfilter $pathincoming $pathlog $pathnews $pathoutgoing
-    $pathoverview $pathrun $pathspool $pathtmp $runasuser $runasgroup
+    $pathetc $pathfilter $pathhistory $pathincoming $pathlog $pathnews
+    $pathoutgoing $pathoverview $pathrun $pathspool $pathtmp $runasuser
+    $runasgroup
 );
 
 our @ISA = qw(Exporter);
@@ -77,7 +78,7 @@ our $active = "${pathdb}/active";
 our $activetimes = "${pathdb}/active.times";
 our $newactive = "${pathdb}/active.tmp";
 our $oldactive = "${pathdb}/active.old";
-our $history = "${pathdb}/history";
+our $history = "${pathhistory}/history";
 our $newsgroups = "${pathdb}/newsgroups";
 our $ctlfile = "${newsetc}/control.ctl";
 our $ctlwatch = "${newsetc}/innwatch.ctl";

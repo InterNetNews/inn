@@ -308,7 +308,7 @@ group_rebuild(const char *group, const char *path)
     if (!tdx_index_rebuild_start(index, entry))
         die("cannot start index rebuild for %s", group);
 
-    histpath = concatpath(innconf->pathdb, INN_PATH_HISTORY);
+    histpath = concatpath(innconf->pathhistory, INN_PATH_HISTORY);
     flags = HIS_RDONLY | HIS_ONDISK;
     history = HISopen(histpath, innconf->hismethod, flags);
     if (history == NULL)

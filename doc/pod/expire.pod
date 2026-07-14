@@ -94,8 +94,8 @@ C<hisv6> history method, B<expire> uses the old I<dbz> database to determine
 the size of the new one.  (If the B<-d> flag is not used, the output filename
 will be the same as the input filename with an extension of C<.n>.)
 
-The default without the B<-h> flag is I<pathdb>/F<history> for C<hisv6> and
-I<pathdb>/F<history.sqlite> for C<hissqlite>.
+The default without the B<-h> flag is I<pathhistory>/F<history> for C<hisv6> and
+I<pathhistory>/F<history.sqlite> for C<hissqlite>.
 
 =item B<-i>
 

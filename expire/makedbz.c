@@ -127,7 +127,7 @@ Rebuild(off_t size, bool IgnoreOld, bool Overwrite)
         temp[0] = '\0';
         /*
         ** only do removedbz files if a. we're using something besides
-        ** $pathdb/history, or b. we're ignoring the old db.
+        ** $pathhistory/history, or b. we're ignoring the old db.
         */
         if (strcmp(TextFile, HISTORY) != 0 || IgnoreOld)
             RemoveDBZFiles(TextFile);
@@ -244,9 +244,9 @@ main(int argc, char **argv)
     /* Set defaults. */
     if (!innconf_read(NULL))
         exit(1);
-    TextFile = concatpath(innconf->pathdb, INN_PATH_HISTORY);
-    HISTORY = concatpath(innconf->pathdb, INN_PATH_HISTORY);
-    HistoryDir = innconf->pathdb;
+    TextFile = concatpath(innconf->pathhistory, INN_PATH_HISTORY);
+    HISTORY = concatpath(innconf->pathhistory, INN_PATH_HISTORY);
+    HistoryDir = innconf->pathhistory;
     IgnoreOld = false;
     Overwrite = false;
 
@@ -277,7 +277,7 @@ main(int argc, char **argv)
 
     if ((p = strrchr(TextFile, '/')) == NULL) {
         /* find the default history file directory */
-        HistoryDir = innconf->pathdb;
+        HistoryDir = innconf->pathhistory;
     } else {
         *p = '\0';
         HistoryDir = xstrdup(TextFile);

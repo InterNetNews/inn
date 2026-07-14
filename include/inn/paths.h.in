@@ -45,7 +45,7 @@
 #define INN_PATH_SERVERPID         "innd.pid"
 #define INN_PATH_REBUILDOVERVIEW   ".rebuildoverview"
 
-/* Default prefix path is pathdb. */
+/* Default prefix path is pathdb (pathhistory for INN_PATH_HISTORY). */
 #define INN_PATH_HISTORY           "history"
 #define INN_PATH_ACTIVE            "active"
 #define INN_PATH_NEWACTIVE         "active.tmp"

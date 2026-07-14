@@ -53,7 +53,7 @@ getNewsgroups(char *mid)
     char *newsgroups;
     bool flag = false;
 
-    HistoryText = concatpath(innconf->pathdb, INN_PATH_HISTORY);
+    HistoryText = concatpath(innconf->pathhistory, INN_PATH_HISTORY);
     History = HISopen(HistoryText, innconf->hismethod, HIS_RDONLY);
 
     if (History == NULL) {

@@ -311,7 +311,7 @@ InndHisOpen(void)
     int flags;
     size_t synccount;
 
-    histpath = concatpath(innconf->pathdb, INN_PATH_HISTORY);
+    histpath = concatpath(innconf->pathhistory, INN_PATH_HISTORY);
     if (innconf->hismethod == NULL) {
         sysdie("hismethod is not defined");
         /*NOTREACHED*/
@@ -337,7 +337,7 @@ InndHisClose(void)
     if (!HISclose(History)) {
         char *histpath;
 
-        histpath = concatpath(innconf->pathdb, INN_PATH_HISTORY);
+        histpath = concatpath(innconf->pathhistory, INN_PATH_HISTORY);
         sysdie("SERVER can't close history %s", histpath);
         /* NOTREACHED */
         free(histpath);

@@ -150,30 +150,43 @@ $D$(PATH_ACTIVE_TIMES):
 	    chgrp $(RUNASGROUP) $@ ; \
 	fi
 	chmod $(FILEMODE) $@
-##  With hismethod set to hissqlite, the empty database is created by running
-##  makehistory once (instant on an empty spool); the hisv6 history text file
-##  is not touched, so this recipe reruns on later installs and the .sqlite
-##  existence check keeps it a no-op.  innconfval is only run for a real
-##  install ($D empty), where the installed binaries and inn.conf exist; a
-##  DESTDIR (packaging) install takes the historical path and leaves database
-##  initialization to the package's post-install.
+##  For a real install ($D empty), the history location and method come from
+##  the installed inn.conf via innconfval, so a non-default pathhistory is
+##  honoured, and existence checks on the real files keep reruns no-ops (the
+##  make target above is only the default location).  With hismethod set to
+##  hissqlite, the empty database is created by running makehistory once
+##  (instant on an empty spool); no hisv6 history text file is touched.  A
+##  DESTDIR (packaging) install just creates the placeholder text file at the
+##  default location, as before, and leaves database initialization to the
+##  package's post-install.
 $D$(PATH_HISTORY):
 	@ME=`$(WHOAMI)` ; \
-	if [ -z "$D" ] \
-	   && [ x"`$(PATHBIN)/innconfval hismethod`" = xhissqlite ] ; then \
-	    if [ ! -f "$(PATH_HISTORY).sqlite" ] ; then \
-	        if [ x"$$ME" = xroot ] || [ x"$$ME" = x"$(RUNASUSER)" ] ; then \
-	            $(PATHBIN)/makehistory ; \
-	        fi ; \
-	    fi ; \
-	else \
+	if [ -n "$D" ] ; then \
 	    touch $@ ; \
 	    if [ x"$$ME" = xroot ] ; then \
 	        chown $(RUNASUSER) $@ ; \
 	        chgrp $(RUNASGROUP) $@ ; \
 	    fi ; \
 	    chmod $(FILEMODE) $@ ; \
-	    if [ -z "$D" ] ; then \
+	else \
+	    HISTDIR=`$(PATHBIN)/innconfval pathhistory` ; \
+	    if [ -z "$$HISTDIR" ] ; then \
+	        echo "innconfval pathhistory failed; not initializing history" ; \
+	        exit 1 ; \
+	    fi ; \
+	    if [ x"`$(PATHBIN)/innconfval hismethod`" = xhissqlite ] ; then \
+	        if [ ! -f "$$HISTDIR/history.sqlite" ] ; then \
+	            if [ x"$$ME" = xroot ] || [ x"$$ME" = x"$(RUNASUSER)" ] ; then \
+	                $(PATHBIN)/makehistory ; \
+	            fi ; \
+	        fi ; \
+	    elif [ ! -f "$$HISTDIR/history" ] ; then \
+	        touch "$$HISTDIR/history" ; \
+	        if [ x"$$ME" = xroot ] ; then \
+	            chown $(RUNASUSER) "$$HISTDIR/history" ; \
+	            chgrp $(RUNASGROUP) "$$HISTDIR/history" ; \
+	        fi ; \
+	        chmod $(FILEMODE) "$$HISTDIR/history" ; \
 	        if [ x"$$ME" = xroot ] || [ x"$$ME" = x"$(RUNASUSER)" ] ; then \
 	            $(PATHBIN)/makedbz -i -o ; \
 	        fi ; \

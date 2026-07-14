@@ -1109,7 +1109,7 @@ main(int argc, char *argv[])
             syswarn("could not nice to %lu", innconf->nicennrpd);
     }
 
-    HISTORY = concatpath(innconf->pathdb, INN_PATH_HISTORY);
+    HISTORY = concatpath(innconf->pathhistory, INN_PATH_HISTORY);
     ACTIVE = concatpath(innconf->pathdb, INN_PATH_ACTIVE);
     ACTIVETIMES = concatpath(innconf->pathdb, INN_PATH_ACTIVETIMES);
     NEWSGROUPS = concatpath(innconf->pathdb, INN_PATH_NEWSGROUPS);

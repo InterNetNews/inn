@@ -738,7 +738,7 @@ main(int ac, char *av[])
         notice("expiretombstone has no effect when groupbaseexpiry"
                " is false - check your inn.conf configuration");
 
-    HistoryText = concatpath(innconf->pathdb, INN_PATH_HISTORY);
+    HistoryText = concatpath(innconf->pathhistory, INN_PATH_HISTORY);
 
     umask(NEWSUMASK);
 
@@ -811,7 +811,7 @@ main(int ac, char *av[])
      * don't replace the existing hisv6 history files */
     if (EXPtracing || NHistoryText || NHistoryPath) {
         if (NHistoryPath == NULL)
-            NHistoryPath = innconf->pathdb;
+            NHistoryPath = innconf->pathhistory;
         if (NHistoryText == NULL)
             NHistoryText = INN_PATH_HISTORY;
         NHistory = concatpath(NHistoryPath, NHistoryText);
