@@ -9,16 +9,19 @@ B<makehistory> [B<-abFIOSx>] [B<-f> I<filename>] [B<-l> I<count>]
 
 =head1 DESCRIPTION
 
-B<makehistory> rebuilds the history(5) text file, which contains a list of
+B<makehistory> rebuilds the history database, which contains a list of
 message-IDs of articles already seen by the server.  It can also be used
-to rebuild the overview database.  Note that even though the I<dbz> indices
-for the F<history> file are also rebuilt by B<makehistory>, it is useful
-to run makedbz(8) after makehistory(8) in order to improve the efficiency
-of the indices (B<makehistory> does not know how large to make the hash
-table at first run, unless the size is given by the B<-s> flag).
+to rebuild the overview database.
 
-The default location of the F<history> text file is I<pathdb>/history; to
-specify an alternate location, use the B<-f> flag.
+Note that, when the C<hisv6> history storage method is configured, even though
+the I<dbz> indices for the F<history> file are also rebuilt by B<makehistory>,
+it is useful to run makedbz(8) after makehistory(8) in order to improve the
+efficiency of the indices (B<makehistory> does not know how large to make the
+hash table at first run, unless the size is given by the B<-s> flag).
+
+The default location of the history database is I<pathdb>/F<history> for the
+C<hisv6> storage method, and I<pathdb>/F<history.sqlite> for the C<hissqlite>
+storage method; to specify an alternate location, use the B<-f> flag.
 
 By default, B<makehistory> will scan the entire spool, using the storage
 manager, and write a history line for every article.  To also generate
@@ -28,12 +31,12 @@ If a malformed article is found in the news spool, in a way which prevents its
 integration into the history or overview data, a log line will be output and
 the malformed article will just be skipped.
 
-When the C<hissqlite> history method is configured, B<makehistory> writes the
-new history into a hissqlite database just as it does for C<hisv6>, and the
-makedbz(8) step above does not apply.  A from-spool rebuild cannot recover
-I<remembered> Message-IDs, so to migrate an existing C<hisv6> history into
-hissqlite without losing them, use hissqlite-convert(8) instead.  See
-hissqlite(5).
+When the C<hissqlite> history storage method is configured, B<makehistory>
+writes the new history into a hissqlite database just as it does for C<hisv6>,
+and the makedbz(8) step above does not apply.  A from-spool rebuild cannot
+recover I<remembered> Message-IDs, so to migrate an existing C<hisv6>
+history into hissqlite without losing them, use hissqlite-convert(8) instead.
+See hissqlite(5).
 
 =head1 OVERVIEW REBUILD
 
@@ -119,9 +122,10 @@ otherwise, manually run C<ctlinnd renumber ''>).
 
 =item B<-a>
 
-Append to the F<history> file rather than generating a new one.  If you
-append to the main F<history> file, make sure innd(8) is throttled or not
-running, or you can corrupt the history.
+Append to the history database rather than generating a new one.  If you
+append to the main F<history> text file (when using the C<hisv6> history
+storage method), make sure innd(8) is throttled or not running, or you can
+corrupt the history.
 
 =item B<-b>
 
@@ -140,8 +144,8 @@ buffindexed, the B<overchan> program is invoked to write overview.
 
 =item B<-f> I<filename>
 
-Rather than writing directly to I<pathdb>/history, instead write to
-I<filename>, also in I<pathdb>.
+Rather than writing directly to the default F<history> or F<history.sqlite>
+databases in I<pathdb>, instead write to I<filename>, also in I<pathdb>.
 
 =item B<-I>
 
@@ -177,7 +181,7 @@ available or efficient.
 
 =item B<-O>
 
-Create the overview database as well as the F<history> file.  Overview
+Create the overview database as well as the history database.  Overview
 information is only required if the server supports readers; it is not
 needed for a transit-only server (see I<enableoverview> in inn.conf(5)).
 If you are using the buffindexed overview storage method, erase all of
@@ -192,18 +196,20 @@ ignored.  This option only makes sense in combination with B<-O>.
 
 =item B<-s> I<size>
 
-Size the history database for approximately I<size> key-value pairs
+Size the C<hisv6> history database for approximately I<size> key-value pairs
 (i.e. lines in F<history>).  Accurately specifying the size is an optimization
 that will create a more efficient database.  (The size should be the estimated
 eventual number of articles, typically the size of the old F<history> file,
-in lines.)
+in lines.)  This has no effect for a C<hissqlite> history database as the
+B-tree grows itself when needed; there is no fixed-size table to presize and
+no rebuild-to-grow.
 
-By default, B<makehistory> will create a database optimized for handling about
-6,000,000 articles (or 500,000 if the slower tagged hash format is used).
-This size does not limit the number of articles the news server can store
-in its F<history> file.  It will just get slower when that optimal size is
-exceeded, until the next run of B<news.daily> which will appropriately resize
-it.
+By default when C<hisv6> is used, B<makehistory> will create a database
+optimized for handling about 6,000,000 articles (or 500,000 if the slower
+tagged hash format is used).  This size does not limit the number of articles
+the news server can store in its F<history> file.  It will just get slower
+when that optimal size is exceeded, until the next run of B<news.daily> which
+will appropriately resize it.
 
 =item B<-T> I<tmpdir>
 
@@ -217,15 +223,15 @@ directory; see the sort(1) man page on your system to be sure.
 
 =item B<-x>
 
-If this option is given, B<makehistory> won't write out F<history> file
-entries.  This is useful mostly for building overview without generating
-a new F<history> file.
+If this option is given, B<makehistory> won't write out history entries.
+This is useful mostly for building overview without generating a new history
+database.
 
 =back
 
 =head1 EXAMPLES
 
-Here's a typical example of rebuilding the entire history and overview
+Here's a typical example of rebuilding the entire C<hisv6> history and overview
 database, removing broken articles in the news spool.  This uses the
 default temporary file locations and should be done while B<innd> isn't
 running (or is throttled).
@@ -250,14 +256,18 @@ Then rename all of the files matching C<history.n.*> to C<history.*>,
 replacing the current history database and indices.  After that, it's safe
 to unthrottle B<innd>.
 
-For a simpler example:
+For a simpler example with C<hisv6>:
 
     makehistory -b -f history.n -I -O
 
 will scan the spool, removing broken articles and generating history and
 overview entries for articles missing from history.
 
-To pre-size the F<history> file for 100,000,000 articles, and generate
+With C<hissqlite>, just run:
+
+    makehistory -b -I -O
+
+To pre-size the C<hisv6> F<history> file for 100,000,000 articles, and generate
 overview data at the same time, you may directly use the following command:
 
     makehistory -O -s 100000000
@@ -265,7 +275,7 @@ overview data at the same time, you may directly use the following command:
 You then do not need running B<makedbz> as the F<history> file has already
 been generated and optimized for the expected number of articles.
 
-To just rebuild overview:
+To just rebuild overview (whathever history method you use):
 
     makehistory -O -x -F
 
@@ -275,7 +285,13 @@ To just rebuild overview:
 
 =item I<pathdb>/history
 
-This is the default output file for B<makehistory>.
+This is the default output file for B<makehistory> with the C<hisv6> history
+storage method.
+
+=item I<pathdb>/history.sqlite
+
+This is the default output file for B<makehistory> with the C<hissqlite>
+history storage method.
 
 =item I<pathtmp>
 

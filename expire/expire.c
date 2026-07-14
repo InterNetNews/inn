@@ -389,7 +389,7 @@ EXPremove(const TOKEN *token)
 **  previous expire run that crashed before unlinking.
 **
 **  consuming=true means this is a real run that will replace the
-**  history file; we rename cancels.tombstone to .processing under
+**  history database; we rename cancels.tombstone to .processing under
 **  the consumer's lock so concurrent appenders cannot lose cancels
 **  written between our read and the eventual unlink.
 **  consuming=false (dry-run, tracing, or alternate-output expire) skips
@@ -742,7 +742,7 @@ main(int ac, char *av[])
 
     umask(NEWSUMASK);
 
-    /* find the default history file directory */
+    /* find the default history database directory */
     EXPhistdir = xstrdup(HistoryText);
     p = strrchr(EXPhistdir, '/');
     if (p != NULL) {
@@ -808,7 +808,7 @@ main(int ac, char *av[])
         Usage();
 
     /* if EXPtracing is set, then pass in a path, this ensures we
-     * don't replace the existing history files */
+     * don't replace the existing hisv6 history files */
     if (EXPtracing || NHistoryText || NHistoryPath) {
         if (NHistoryPath == NULL)
             NHistoryPath = innconf->pathdb;
@@ -1016,7 +1016,8 @@ main(int ac, char *av[])
         /* Got -z but file was closed; oops. */
         Bad = true;
 
-    /* If we're done okay, and we're not tracing, slip in the new files. */
+    /* If we're done okay, and we're not tracing, slip in the new hisv6 history
+       files. */
     if (EXPverbose) {
         if (Bad)
             printf("Expire errors: history files not updated.\n");

@@ -5,7 +5,7 @@
 ##  Optional arguments:
 ##      delayrm              Delay unlink files, then do it quicker (expire -z)
 ##      expctl=xxx           Use xxx as expire.ctl file
-##      expdir=xxx           Directory in which to build new history file
+##      expdir=xxx           Directory in which to build new hisv6 history file
 ##      expireover           Runs expireover after expiration
 ##      expireoverflags=xxx  Pass xxx flags to expireover
 ##      flags=xxx            Pass xxx flags to expire
@@ -424,7 +424,7 @@ if ${DOEXPIRE}; then
         eval expire "${EXPIREFLAGS}" 2>&1 | grep -v 'No such file or directory'
     fi
 
-    ##  If built on another filesystem, move history files.
+    ##  If built on another filesystem, move hisv6 history files.
     if [ -n "${EXPDIR}" ]; then
         if [ ! -f ${EXPDIR}/history.n -o ! -f ${EXPDIR}/history.n.done ]; then
             (

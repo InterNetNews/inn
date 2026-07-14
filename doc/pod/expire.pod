@@ -10,9 +10,9 @@ B<expire> [B<-iNnptx>] [B<-d> I<dir>] [B<-f> I<file>] [B<-g> I<file>]
 
 =head1 DESCRIPTION
 
-B<expire> scans the history(5)-format text file I<pathdb>/history and
-uses the information recorded in it to purge itself of old news articles.
-Its behaviour depends on the setting of I<groupbaseexpiry> in F<inn.conf>.
+B<expire> scans the history database and uses the information recorded in it
+to purge itself of old news articles.  Its behaviour depends on the setting of
+I<groupbaseexpiry> in F<inn.conf>.
 
 When I<groupbaseexpiry> is false, article expiration is primarily done by
 B<expire> based on the expiration rules in F<expire.ctl> that match the
@@ -64,14 +64,16 @@ leave history entries for deleted articles.  See hissqlite(5).
 
 =item B<-d> I<dir>
 
-If the B<-d> flag is used, then the new F<history> file and database
-is created in the specified directory I<dir>.  This is useful when the
-filesystem does not have sufficient space to hold both the old and
-new history files.  When this flag is used, B<expire> leaves the server
-paused and creates a zero-length file named after the new history file,
+If the B<-d> flag is used with the C<hisv6> history method, then the new
+F<history> file and database is created in the specified directory I<dir>.
+This is useful when the filesystem does not have sufficient space to hold both
+the old and new history files.  When this flag is used, B<expire> leaves the
+server paused and creates a zero-length file named after the new history file,
 with an extension of C<.done> to indicate that it has successfully completed
 the expiration.  The calling script should install the new history file and
 unpause the server.  The B<-r> flag should be used with this flag.
+
+This option is not available with the C<hissqlite> history method.
 
 =item B<-f> I<file>
 
@@ -87,16 +89,20 @@ to the specified I<file>.
 
 =item B<-h> I<file>
 
-To specify an alternate input text history file, use the B<-h> flag.
-B<expire> uses the old I<dbz> database to determine the size of the
-new one.  (If the B<-d> flag is not used, the output filename will be
-the same as the input filename with an extension of C<.n>.)
+To specify an alternate input history database, use the B<-h> flag.  With a
+C<hisv6> history method, B<expire> uses the old I<dbz> database to determine
+the size of the new one.  (If the B<-d> flag is not used, the output filename
+will be the same as the input filename with an extension of C<.n>.)
 
-The default without the B<-h> flag is I<pathdb>/history.
+The default without the B<-h> flag is I<pathdb>/F<history> for C<hisv6> and
+I<pathdb>/F<history.sqlite> for C<hissqlite>.
 
 =item B<-i>
 
-To ignore the old database, use the B<-i> flag.
+To ignore the old database for the computation of the estimated size of the
+new C<hisv6> history database, use the B<-i> flag.
+
+It has no effect with the C<hissqlite> history method.
 
 =item B<-N>
 
@@ -116,6 +122,9 @@ a very short time S<-- long> enough to see if any new articles arrived
 since it first hit the end of the file, and to rename the new files
 to the working files.
 
+This flag is only useful for the C<hisv6> history method as C<hissqlite> does
+not need pausing B<innd>.
+
 =item B<-p>
 
 B<expire> makes its decisions on the time the article arrived, as found
@@ -127,36 +136,46 @@ use the B<-p> flag.
 =item B<-r> I<reason>
 
 B<expire> normally sends a C<pause> command to the local B<innd> daemon
-when it needs exclusive access to the F<history> file, using the string
+when it needs exclusive access to the history database, using the string
 C<Expiring> as the reason.  To give a different reason, use the B<-r> flag.
 The process ID will be appended to the reason.  When B<expire> is finished
-and the new F<history> file is ready, it sends a C<go> command.  See
+and the new history database is ready, it sends a C<go> command.  See
 also the B<-n> flag.
+
+This flag is only useful for the C<hisv6> history method as C<hissqlite> does
+not need pausing B<innd>.
 
 =item B<-s> I<size>
 
-B<expire> determines the optimal size of the new F<history> file from the size
-of the old one.  In case you want to force a specific size, use this flag to
-optimize the new history database for approximately I<size> key-value pairs
-(i.e. lines in F<history>).  Accurately specifying the size will create a
-more efficient database.  (The size should be the estimated eventual number of
-articles, typically the size of the old F<history> file, in lines.)
+B<expire> determines the optimal size of the new C<hisv6> F<history> file from
+the size of the old one.  In case you want to force a specific size, use this
+flag to optimize the new history database for approximately I<size> key-value
+pairs (i.e. lines in F<history>).  Accurately specifying the size will create
+a more efficient database.  (The size should be the estimated eventual number
+of articles, typically the size of the old F<history> file, in lines.)
+
+It has no effect with the C<hissqlite> history method.
 
 =item B<-t>
 
-If the B<-t> flag is used, then B<expire> will generate a list of the
-tokens that should be removed on its standard output, and the new F<history>
-file will be left in F<history.n>, F<history.n.dir>, F<history.n.index>
-and F<history.n.hash>.  This flag is useful for debugging when used with
-the B<-n> flag.  Note that if the B<-f> flag is used, then the name
-specified with that flag will be used instead of F<history>.
+If the B<-t> flag is used, then B<expire> will generate a list of the tokens
+that should be removed on its standard output.
+
+With the C<hisv6> history method, the new F<history> file will be left in
+F<history.n>, F<history.n.dir>, F<history.n.index> and F<history.n.hash>.
+This flag is useful for debugging when used with the B<-n> flag.  Note that
+if the B<-f> flag is used, then the name specified with that flag will be used
+instead of F<history>.
+
+With the C<hissqlite> history method, it acts as a dry run, reporting what
+would be removed without changing the history database or the spool.
 
 =item B<-v> I<level>
 
 The B<-v> flag is used to increase the verbosity of the program, generating
 messages to standard output.  The I<level> should be a number, where higher
 numbers result in more output.  Level one will print totals of the various
-actions done (not valid if a new F<history> file is not written), level two
+actions done (not valid if a new history database is not written), level two
 will print a report on each individual file, while level five results in
 multiple lines of output for every history line processed.
 
@@ -168,10 +187,12 @@ floating point number indicating the number of days to use as the offset.
 
 =item B<-x>
 
-If the B<-x> flag is used, then B<expire> will not create any new history
-files.  This is most useful when combined with the B<-n> and B<-t> flags
-to see how different expiration policies would change the amount of disk
+If the B<-x> flag is used, then B<expire> will not create any new C<hisv6>
+history files.  This is most useful when combined with the B<-n> and B<-t>
+flags to see how different expiration policies would change the amount of disk
 space used.
+
+This option is not available with the C<hissqlite> history method.
 
 =item B<-z> I<file>
 

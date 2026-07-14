@@ -1,6 +1,6 @@
 =head1 NAME
 
-his - routines for managing INN history
+libinnhist - Routines for managing INN history
 
 =head1 SYNOPSIS
 
@@ -85,14 +85,15 @@ These functions provide access to the INN history database.  They maintain
 key/value pairs in an opaque database whilst providing for expiry of
 outdated information.
 
-The history structure is an opaque handle returned from HISopen.
+The history structure is an opaque handle returned from B<HISopen>.
 
 The B<HISopen> function opens the history file designated by I<path>
 using the mode I<flags> using the specified I<method>.  I<flags> may be
 B<HIS_RDONLY> to indicate that read-only access to the history
 database is desired, or B<HIS_RDWR> for read/write access.  History
-methods are defined at build time; the history method currently
-available is "hisv6".  On success a newly initialised history handle is
+methods are defined at build time; the history methods currently
+available are C<hisv6> and, when INN is built with SQLite support,
+C<hissqlite>.  On success, a newly initialised history handle is
 returned, or B<NULL> on failure.
 
 B<HIS_ONDISK>, B<HIS_INCORE> and B<HIS_MMAP> may be logically ORed
@@ -120,7 +121,7 @@ B<true> on success.
 The B<HISsync> function synchronises any outstanding transactions
 associated with I<history> to disk.
 
-B<HISsetcache> associates a cache used for speeding up HIScheck with
+B<HISsetcache> associates a cache used for speeding up B<HIScheck> with
 I<history>.  The cache will occupy approximately I<size> bytes.
 
 B<HISlookup> retrieves a token from I<history> based on the passed
@@ -311,7 +312,7 @@ value of type B<bool> and will not be modified by the call.
 
 =item C<HISCTLS_STATINTERVAL> (time_t *)
 
-For the history v6 and tagged hash managers, set the interval, in
+For the C<hisv6> history method and tagged hash managers, set the interval, in
 seconds, between stat(2)s of the history files checking for replaced
 files (as happens during expire); this option is typically used by
 nnrpd(8) like applications.  I<val> should be a pointer to a value of

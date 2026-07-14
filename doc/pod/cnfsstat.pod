@@ -69,7 +69,7 @@ Write output to syslog(3) instead of standard output.
 =item B<-v>
 
 Write additional information, especially about consistency checks for article
-storage and the F<history> file.
+storage and missing articles in the history database.
 
 =back
 
@@ -80,6 +80,7 @@ to POD by Julien Elie.
 
 =head1 SEE ALSO
 
-cycbuff.conf(5), history(5), inn.conf(5), rc.news(8), storage.conf(5).
+cycbuff.conf(5), hissqlite(5), history(5), inn.conf(5), rc.news(8),
+storage.conf(5).
 
 =cut

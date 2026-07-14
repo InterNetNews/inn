@@ -429,7 +429,7 @@ if you have several peers and reject a lot of articles, so be careful with
 it.  Even if this is set to true, INN won't log some rejected articles to
 history if there's reason to believe the article might be accepted if
 offered by a different peer, so there is usually no reason to set this to
-false (although doing so can decrease the size of the history file).  This
+false (although doing so can decrease the size of the history database).  This
 is a boolean value and the default is true.
 
 =item I<sourceaddress>
@@ -571,13 +571,14 @@ expiration.  The value is the reciprocal of the desired false positive
 rate: for example, C<10000> means a 1-in-10,000 (0.01%) false positive
 rate.  Higher values use more memory but produce fewer false positives.
 At the default of C<10000>, memory usage is approximately 20 bits per
-article in the F<history> file (e.g., S<48 MB> for 20 million articles,
+article in the history database (e.g., S<48 MB> for 20 million articles,
 S<2.4 GB> for 1 billion articles).
 
 Setting this to C<0> disables the Bloom filter entirely, falling back
 to per-article history lookups (the pre-existing behavior).  This is
 not recommended for large spools as it results in random I/O into the
-F<history> file for every article in the overview database.
+C<hisv6> F<history> file or random SQL requests into the C<hissqlite>
+history database for every article in the overview database.
 
 The Bloom filter has no effect when B<expireover> is run with the B<-s>
 flag (which forces a filesystem stat of every article).
@@ -632,7 +633,7 @@ occasional B<sm -r> on the same host) write from one client.
 The next B<expire> invocation loads both files into a single hashset
 and treats every article in either log as already gone, avoiding an
 C<SMretrieve(RETR_STAT)> call per history entry.  For storage methods
-where the stat is a file-system call (tradspool, timehash) this turns
+where the stat is a file-system call (tradspool, timehash), this turns
 a billion C<access(2)> calls into a few thousand hash lookups; for
 storage methods that self-expire (CNFS), the stat call remains because
 articles can vanish through wrap-around without going through
@@ -829,9 +830,9 @@ defaults to C<50>.  (Flushing to disk is parameterized differently for other
 methods: I<txn_nosync> in F<ovdb.conf>, I<transrowlimit> and I<transtimelimit>
 in F<ovsqlite.conf>, and always after each article arrival for tradindexed.)
 
-See I<icdsynccount> (related to flushes of the I<active> and I<history> files)
-for more information about this trade-off between faster speed and more data
-loss if B<innd> crashes.
+See I<icdsynccount> (related to flushes of the F<active> and C<hisv6>
+F<history> files) for more information about this trade-off between faster
+speed and more data loss if B<innd> crashes.
 
 =item I<ovmethod>
 
@@ -934,13 +935,13 @@ same internal article numbering.
 Servers with this parameter set should generally only have one upstream
 feed, and should always have I<nnrpdposthost> set to hand locally posted
 articles off to the master server.  The upstream server should be careful
-to feed articles in order so as to keep the history file of the slave server
-chronologically ordered as the expiration process is based on the arrival time
-of the articles (unless the B<-p> flag is given to B<expire> and B<expireover>
-to make expiration decisions relative to posting dates instead, but
-self-expiring storage methods like CNFS will wrap anyway and remove articles
-in the same order they have arrived).  This is a boolean value and the default
-is false.
+to feed articles in order so as to keep the history database of the slave
+server chronologically ordered as the expiration process is based on the
+arrival time of the articles (unless the B<-p> flag is given to B<expire> and
+B<expireover> to make expiration decisions relative to posting dates instead,
+but self-expiring storage methods like CNFS will wrap anyway and remove
+articles in the same order they have arrived).  This is a boolean value and
+the default is false.
 
 See F<doc/FAQ> (subject 6.4) for an example of use of this parameter
 when feeding all articles on a server to another server, keeping their
@@ -996,7 +997,7 @@ be increased if many clients connect via slow network links.
 How many cache slots to reserve for message-IDs to storage token
 translations.  When serving overview data to clients (NEWNEWS, OVER,
 etc.), nnrpd(8) can cache the storage token associated with a message-ID
-and save the cost of looking it up in the F<history> file; for some
+and save the cost of looking it up in the history database; for some
 configurations, setting this parameter can save more than 90% of the
 wall clock time for a session.  The default value is C<64000>.
 
@@ -1690,9 +1691,10 @@ false.
 
 =item I<stathist>
 
-Where to write history statistics for analysis with F<contrib/stathist>; this
-can be modified with ctlinnd(8) while B<innd> is running.  Logging does not
-occur unless a path is given, and there is no default value.
+Where to write history statistics for analysis with the B<stathist> program in
+the F<contrib> directory; this can be modified with ctlinnd(8) while B<innd>
+is running.  Logging does not occur unless a path is given, and there is no
+default value.
 
 =item I<status>
 
@@ -1758,8 +1760,8 @@ C<1048576>) and the default value is C<16384>.
 
 =item I<icdsynccount>
 
-How many article writes between updating the F<active> and F<history> files.
-The default value is C<10>.
+How many article writes between updating the F<active> and C<hisv6> F<history>
+files.  The default value is C<10>.
 
 This is a trade-off between faster speed and more data loss if B<innd> crashes
 (or the system crashes, or loses power, etc.).  The higher this parameter
@@ -1771,6 +1773,9 @@ such as duplicate article numbers and corresponding errors when storing new
 articles.  (If B<innd> has crashed, you can fix these errors by rebuilding the
 F<history> file and overview with makehistory(8).  The F<active> file will be
 automatically be renumbered after that operation.)
+
+This setting is not used for the C<hissqlite> history method whose writes are
+in autocommit mode.
 
 =item I<keepmmappedthreshold>
 

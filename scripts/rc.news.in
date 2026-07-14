@@ -157,7 +157,7 @@ if [ ! -s ${ACTIVE} ]; then
         fi
     fi
     RFLAG="-r"
-    # You might want to rebuild the DBZ database, too:
+    # You might want to rebuild the DBZ database for hisv6, too:
     #cd ${PATHDB} \
     #    && makehistory -r \
     #    && mv history.n.dir history.dir \

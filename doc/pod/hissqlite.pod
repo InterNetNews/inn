@@ -40,11 +40,10 @@ B<--without-sqlite3> option.
 
 =head1 CONFIGURATION
 
-To select hissqlite as your history method, set the I<hismethod> parameter
-in F<inn.conf> to C<hissqlite>.  The database is stored at the location
-named by the I<pathdb> parameter with a F<.sqlite> suffix appended
-(by default, F<history.sqlite> in I<pathdb>).  After changing I<hismethod>,
-migrate or rebuild your history (see L</MIGRATION>) and restart INN.
+To select hissqlite as your history method, set the I<hismethod> parameter in
+F<inn.conf> to C<hissqlite>.  The database is stored in F<history.sqlite> in
+the I<pathdb> directory.  After changing I<hismethod>, migrate or rebuild your
+history (see L</MIGRATION>) and restart INN.
 
 The following F<inn.conf> parameters tune the database; their defaults suit
 most sites.

@@ -86,7 +86,7 @@ enum {
     HISCTLS_STATINTERVAL,
 
     /* (bool) does this backend expire IN PLACE (mutating the live database
-     * via a writer) rather than rebuilding a new file and swapping it?
+     * via a writer rather than rebuilding a new file and swapping it)?
      * Backends that do not implement this selector leave the value untouched,
      * so the caller must initialise it to false.  expire(8) uses this to
      * decide whether to open the history read/write (in place) or read-only

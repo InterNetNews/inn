@@ -47,16 +47,17 @@ By default, B<expireover> purges all overview information for newsgroups
 that have been removed from the server; this behavior is suppressed if
 B<-f> is given.
 
-To speed up the existence check for each article, B<expireover> builds
-a Bloom filter from the F<history> file at startup.  This replaces
-per-article random I/O into the F<history> file with a single sequential
-read, which is critical for large spools.  The Bloom filter is a
-positive-only cache: if it reports an article probably exists, the
-slow history lookup is skipped.  If it reports the article is not found,
-B<expireover> falls back to a direct history lookup for correctness.
-False positives (the Bloom filter incorrectly reporting an article
-exists) are benign; the orphaned overview entry will be cleaned up on
-the next expiration run.
+To speed up the existence check for each article, B<expireover> builds a
+Bloom filter from the history database at startup.  This replaces, for the
+C<hisv6> history method, per-article random I/O into the F<history> file
+with a single sequential read, which is critical for large spools.  It is
+also a win for per-article SQL requests with the C<hissqlite> history method.
+The Bloom filter is a positive-only cache: if it reports an article probably
+exists, the slow history lookup is skipped.  If it reports the article is not
+found, B<expireover> falls back to a direct history lookup for correctness.
+False positives (the Bloom filter incorrectly reporting an article exists) are
+benign; the orphaned overview entry will be cleaned up on the next expiration
+run.
 
 The false positive rate and memory usage of the Bloom filter are
 controlled by the I<expirebloomfp> setting in F<inn.conf>.  Setting it

@@ -312,12 +312,13 @@ B<--with-tmp-dir> below).
 
 =item B<--with-db-dir>=PATH
 
-Sets the prefix for INN database files.  The default is F<PREFIX/db>,
-where PREFIX is F</usr/local/news> unless overridden with the option above.
-The F<history> and F<active> files will be stored in this directory, and
+Sets the prefix for INN database files.  The default is F<PREFIX/db>, where
+PREFIX is F</usr/local/news> unless overridden with the option above.  The
+history database and the F<active> file will be stored in this directory, and
 writes to those files are an appreciable percentage of INN's disk activity.
-The F<history> file can also be quite large (requiring up to S<2 GB> or more
-during nightly B<expire>), so this is a common portion of INN to move to a
+The history database can also be quite large (requiring up to S<2 GB> or
+more), and is rewritten to a new one during nightly B<expire> for the C<hisv6>
+history storage method, so this is a common portion of INN to move to a
 different file system.
 
 =item B<--with-spool-dir>=PATH
@@ -359,23 +360,24 @@ define a 32-bit I<off_t> type.
 This is not enabled by default (unless of course I<off_t> is already 64-bit
 long), even on platforms that support it, because it changes the format
 of INN's on-disk databases (making it difficult to upgrade an earlier INN
-installation) and can significantly increase the size of some of the history
-database files.  Large file support is not necessary unless your F<history>
-database is so large that it exceeds S<2 GB> or you want to use CNFS buffers
-larger than S<2 GB> on 32-bit platforms.
+installation) and can significantly increase the size of some of the C<hisv6>
+history database files.  Large file support is not necessary unless you use
+the C<hisv6> history storage method and your C<hisv6> history database is so
+large that it exceeds S<2 GB> or you want to use CNFS buffers larger than S<2
+GB> on 32-bit platforms.
 
-The history, tradindexed and buffindexed overview, and timecaf databases
-written by an INN built with this option are incompatible with those
+The C<hisv6> history, tradindexed and buffindexed overview, and timecaf
+databases written by an INN built with this option are incompatible with those
 written by an INN without this option.  (CNFS buffers are compatible.)
 
 =item B<--enable-tagged-hash>
 
-Use tagged hash table for the F<history> database.  The tagged hash format
-uses much less memory but is somewhat slower.  This option is recommended
-if you have less than S<256 MB> of RAM on your news server.  If you install
-INN without tagged hash (the default) and B<expire> takes an excessive amount
-of time, you should make sure the RAM in your system satisfies the
-following formula:
+Use tagged hash table for the C<hisv6> history database.  The tagged
+hash format uses much less memory but is somewhat slower.  This option is
+recommended if you have less than S<256 MB> of RAM on your news server.
+If you install INN without tagged hash (the default) and B<expire> takes
+an excessive amount of time, you should make sure the RAM in your system
+satisfies the following formula:
 
     ram > 10 * tablesize
 
@@ -383,7 +385,7 @@ following formula:
     tablesize: 3rd field on the 1st line of history.dir (bytes)
 
 If you don't have at least that much RAM, try rebuilding INN with tagged
-hash enabled.
+hash enabled or switch to the C<hissqlite> history storage method.
 
 NOTE: B<--enable-largefiles> cannot be used with B<--enable-tagged-hash>.
 
@@ -940,7 +942,7 @@ address will be used.
 =item hiscachesize
 
 The amount of memory (in kilobytes) to allocate for a cache of recently
-used F<history> file entries.  Setting this to C<0> disables history caching.
+used history file entries.  Setting this to C<0> disables history caching.
 History caching can greatly increase the number of articles per second
 that your server is capable of processing.  A value of C<256> is a good
 default choice.
@@ -1418,10 +1420,10 @@ Only one entry is required for all storage classes; it looks like:
     /remember/:11
 
 This entry says how long to keep the message-IDs for articles that have
-already expired in the history file so that the server doesn't accept them
+already expired in the history database so that the server doesn't accept them
 again.  Occasionally, fairly old articles will get regurgitated somewhere
 and offered to you again, so even after you've expired articles from your
-spool, you want to keep them around in your history file for a little
+spool, you want to keep them around in your history database for a little
 while to ensure you don't get duplicates.
 
 INN will reject any articles more than a certain number of days old (the
@@ -1554,7 +1556,7 @@ At this point, you need to set up the news database directory
 newsgroups you carry), the active.times(5) file (the creator and creation
 time of newsgroups created since the server was initialized), the
 newsgroups(5) file (descriptions for all the newsgroups you carry), and
-the history(5) file (a record of every article the server currently has or
+the history database (a record of every article the server currently has or
 has seen in the past few days, used to decide whether to accept or refuse
 new incoming messages).
 
@@ -1587,7 +1589,11 @@ standalone.  If you don't want these groups to be visible to clients,
 do I<not> delete them; simply hide them in F<readers.conf>.  C<to> must also
 exist as a newsgroup if you have I<mergetogroups> set in F<inn.conf>.
 
-Next, you need to create an empty F<history> database.  To do this, type:
+Next, you need to create an empty history database.  See I<hismethod> in
+F<inn.conf>, and then set appropriately the history storage method you wish
+to use.
+
+To create an empty C<hisv6> history database, type:
 
     cd <pathdb in inn.conf>
     touch history
@@ -1596,8 +1602,8 @@ Next, you need to create an empty F<history> database.  To do this, type:
 B<makedbz> will then create a database optimized for handling about 6,000,000
 articles (or 500,000 if the slower tagged hash format is used).  If you
 expect to inject more articles than that, use the B<-s> flag to specify the
-number of entries to size the initial F<history> file for.  To pre-size it for
-100,000,000 articles, type:
+number of entries to size the initial C<hisv6> F<history> file for.  To
+pre-size it for 100,000,000 articles, type:
 
     makedbz -i -o -s 100000000
 
@@ -1606,7 +1612,7 @@ accept.  It will just get slower when that size is exceeded, until the next
 run of B<news.daily> which will appropriately resize it.
 
 (Note that if you install INN with C<make install>, you do not need to
-run these commands: the installation takes care of creating the
+run these commands: the installation takes care of creating the C<hisv6>
 F<history> database.)
 
 When it finishes, make sure the file permissions are correct on all

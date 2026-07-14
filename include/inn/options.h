@@ -6,6 +6,11 @@
 **  hand to change the more obscure options.  Ideally, most if not all of the
 **  contents of this file should move elsewhere or be replaced with configure
 **  flags or run-time configuration.
+**
+**  Originally written by Russ Allbery in 2003.
+**
+**  Various bug fixes, code and documentation improvements since then
+**  in 2005, 2006, 2009, 2010, 2020-2022, 2026.
 */
 
 #ifndef INN_OPTIONS_H
@@ -36,7 +41,8 @@
 /* Reject articles posted more than this many seconds in the future. */
 #define DATE_FUZZ       (24L * 60L * 60L)
 
-/* innd will flush the history and active file after this many seconds. */
+/* innd will flush the hisv6 history and active files after this many seconds.
+ */
 #define DEFAULT_TIMEOUT 300
 
 /* Define if inews should munge the GECOS entry of the passwd file when
@@ -48,7 +54,7 @@
 
 /* Value to pass to dbzincore() inside innd.  Under some bizarre low memory
    circumstance, you may want this not to be 1, but normally you always want
-   to load the full history indexes into innd's memory.  Has no effect if
+   to load the full hisv6 history indexes into innd's memory.  Has no effect if
    using tagged hash (which is always in core). */
 #define INND_DBZINCORE     1
 

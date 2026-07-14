@@ -1,8 +1,8 @@
 /* Integration test: HISwalk + Bloom filter for expireover token cache.
  *
- * Creates a temporary history file with a mix of entries (some with tokens,
- * some remembered-only), builds a Bloom filter via HISwalk, and verifies
- * that the Bloom filter correctly identifies articles with tokens vs.
+ * Creates a temporary hisv6 history file with a mix of entries (some with
+ * tokens, some remembered-only), builds a Bloom filter via HISwalk, and
+ * verifies that the Bloom filter correctly identifies articles with tokens vs.
  * remembered entries.
  *
  * Written by Kevin Bowling in 2026.

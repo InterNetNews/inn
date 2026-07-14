@@ -4,7 +4,7 @@
 **  Modified for NNTP streaming: 1996-01-03 Jerry Aguirre.
 **
 **  Various bug fixes, code and documentation improvements since then
-**  in 1997-2007, 2009-2011, 2014, 2015, 2017, 2021, 2022, 2024.
+**  in 1997-2007, 2009-2011, 2014, 2015, 2017, 2021, 2022, 2024, 2026.
 */
 
 #include "portable/system.h"
@@ -173,7 +173,7 @@ static void ExitWithStats(int) __attribute__((__noreturn__));
 
 
 /*
-**  Return true if the history file has the article expired.
+**  Return true if the history database has the article expired.
 */
 static bool
 Expired(char *MessageID)

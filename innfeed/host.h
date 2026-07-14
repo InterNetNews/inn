@@ -45,8 +45,8 @@ extern unsigned int hostHighwater;
  * PORTNUM is the port number on the remote host we should talk to.
  * CLOSEPERIOD is the number of seconds after connecting that the
  *     connections should be closed down and reinitialized (due to problems
- *     with old NNTP servers that hold history files open. Value of 0 means
- *     don't close down.
+ *     with old NNTP servers that hold history database files open).
+ *     Value of 0 means don't close down.
  * STREAMING is a boolean flag to tell if the Host wants its Connections to
  *     do streaming or not.
  * LOWPASSHIGH is the high value for the low-pass filter.

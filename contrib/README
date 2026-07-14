@@ -72,7 +72,7 @@ findreadgroups
 
 fixhist
 
-    Performs various cleanups and sanity checks on the history database.
+    Performs various cleanups and sanity checks on a hisv6 history database.
 
 innconfcheck
 
@@ -105,7 +105,7 @@ mkbuf
 mlockfile
 
     Locks files given on the command line into memory using mlock (only
-    tested on Solaris).  Useful primarily for locking the history files
+    tested on Solaris).  Useful primarily for locking the hisv6 history files
     (history.hash and history.index) into memory on a system with
     sufficient memory to speed history lookups in innd.  This seems to
     help some systems quite a lot and others not at all.

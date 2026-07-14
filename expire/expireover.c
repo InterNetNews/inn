@@ -4,7 +4,7 @@
 **  This program handles the nightly expiration of overview information.  If
 **  groupbaseexpiry is true, this program also handles the removal of
 **  articles that have expired.  It's separate from the process that scans
-**  and expires the history file.
+**  and expires the history database.
 */
 
 #include "portable/system.h"
@@ -470,17 +470,18 @@ main(int argc, char *argv[])
     }
 
     /* Set up signal handlers before the Bloom walk, which can take several
-       minutes on very large history files. */
+       minutes on very large history databases. */
     xsignal(SIGTERM, fatal_signal);
     xsignal(SIGINT, fatal_signal);
     xsignal(SIGHUP, fatal_signal);
 
-    /* Build a Bloom filter from the history file for fast existence checks.
-       This replaces millions of random pread() calls into the history file
-       with a single sequential read, making expireover feasible on large
-       spools (1B+ articles).  The Bloom filter is used as a positive-only
-       cache: hits skip the slow history lookup, misses fall through to
-       HISlookup for correctness (handles articles added after the walk). */
+    /* Build a Bloom filter from the history database for fast existence
+       checks.  This replaces millions of random pread() calls or SQL requests
+       into the history database with a single sequential read, making
+       expireover feasible on large spools (1B+ articles).  The Bloom filter is
+       used as a positive-only cache: hits skip the slow history lookup, misses
+       fall through to HISlookup for correctness (handles articles added after
+       the walk). */
     if (innconf->expirebloomfp > 0 && !always_stat) {
         struct stat st;
         char *histpath;

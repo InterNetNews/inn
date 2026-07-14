@@ -5,10 +5,14 @@
 **  prior to 11.0, all 32-bit Solaris versions and 32-bit applications running
 **  on 64-bit Solaris, these functions allow reserving low-numbered file
 **  descriptors so that they could be re-used.
-**  Without this mechanism, some essential files like the history file may not
-**  have any file descriptor left when being reopened after a closure for some
-**  operations, and stdio would fail.
+**  Without this mechanism, some essential files like the history database
+**  may not have any file descriptor left when being reopened after a closure
+**  for some operations, and stdio would fail.
 **
+**  Originally written by Katsuhiro Kondou <kondou@nec.co.jp>.
+**
+**  Various bug fixes, code and documentation improvements since then
+**  in 1998, 2000, 2003, 2006, 2021, 2023, 2026.
 */
 
 #include "portable/system.h"

@@ -4218,8 +4218,8 @@ delConnection(Connection cxn)
  *    before considering the connection dead.
  * CLOSEPERIOD is the number of seconds after connecting that the
  *     connections should be closed down and reinitialized (due to problems
- *     with old NNTP servers that hold history files open. Value of 0 means
- *     no close down.
+ *     with old NNTP servers that hold history database files open).
+ *     Value of 0 means no close down.
  */
 
 Connection

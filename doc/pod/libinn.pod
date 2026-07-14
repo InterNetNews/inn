@@ -310,9 +310,9 @@ B<fdreserve> permits reserving I<fdnum> file descriptors for future use.
 On platforms that have a stdio limitation, such as 64-bit Solaris versions
 prior to 11.0, all 32-bit Solaris versions and 32-bit applications running
 on 64-bit Solaris, low-numbered file descriptors can then be kept and re-used
-for stdio.  Without this mechanism, some essential files like the F<history>
-file may not have any file descriptor left when being reopened after a closure
-for some operations, and stdio would fail.
+for stdio.  Without this mechanism, some essential files like the history
+database file may not have any file descriptor left when being reopened after
+a closure for some operations, and stdio would fail.
 
 These file descriptors all read C</dev/null>, until B<Fopen> is called
 on them.  If I<fdnum> is C<0> or negative, all reserved file descriptors

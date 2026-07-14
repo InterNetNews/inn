@@ -16,7 +16,7 @@ those tokens but also to perform other operations on the storage
 subsystem.
 
 I<token> is the token of an article (the same thing that's returned by
-B<grephistory> or stored in the F<history> file).  It looks something like:
+B<grephistory> or stored in the history database).  It looks something like:
 
     @0502000005A4000000010000000000000000@
 
@@ -121,6 +121,7 @@ Rewritten in POD by Russ Allbery <eagle@eyrie.org>.
 
 =head1 SEE ALSO
 
-ctlinnd(8), grephistory(1), history(5), rnews(1), storage.conf(5).
+ctlinnd(8), grephistory(1), hissqlite(5), history(5), rnews(1),
+storage.conf(5).
 
 =cut

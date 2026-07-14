@@ -14,6 +14,8 @@ them with spaces, so that the size and position of any following entries
 does not change.  This has an effect similar to expiring the article, in
 that it is still mentioned in the history database but cannot be retrieved.
 
+This program only works with the C<hisv6> history storage method.
+
 B<prunehistory> reads the standard input.  The input is taken as a set of
 lines.  Blank lines and lines starting with a number sign (C<#>) are ignored.
 All other lines should consist of a message-ID followed by zero or more other
@@ -34,7 +36,7 @@ and comment lines are also passed through.)
 
 =item B<-f> I<filename>
 
-The default name of the F<history> file is I<pathdb>/history; to specify
+The default name of the F<history> file is I<pathdb>/F<history>; to specify
 a different name, use the B<-f> flag.
 
 =back

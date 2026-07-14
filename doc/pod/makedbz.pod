@@ -8,9 +8,12 @@ B<makedbz> [B<-io>] [B<-f> I<filename>] [B<-s> I<size>]
 
 =head1 DESCRIPTION
 
-B<makedbz> rebuilds I<dbz> database (also known as the F<history> file).
-The default name of the text file is I<pathdb>/history; to specify a different
-name, use the B<-f> flag.
+B<makedbz> rebuilds I<dbz> database (also known as the F<history> file for
+the C<hisv6> history storage method).  The default name of the text file is
+I<pathdb>/F<history>; to specify a different name, use the B<-f> flag.
+
+This program is not needed for the C<hissqlite> history storage method, based
+on an SQLite database.
 
 =head1 OPTIONS
 

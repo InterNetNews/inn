@@ -248,12 +248,12 @@ DO_DBZ_TAGGED_HASH=DONT
 inn_enable_tagged_hash=no
 AC_ARG_ENABLE([tagged-hash],
     [AS_HELP_STRING([--enable-tagged-hash],
-        [Use tagged hash table for history])],
+        [Use tagged hash table for hisv6 history])],
     [if test "x$enableval" = xyes ; then
         DO_DBZ_TAGGED_HASH=DO
         inn_enable_tagged_hash=yes
         AC_DEFINE([DO_TAGGED_HASH], [1],
-            [Define to use tagged hash for the history file.])
+            [Define to use tagged hash for the hisv6 history file.])
     fi])
 AC_SUBST([DO_DBZ_TAGGED_HASH])
 

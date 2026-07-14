@@ -1,6 +1,6 @@
 /* Integration test: HISexpire callback path consults the tombstone hashset.
  *
- * Builds a temporary history file with HISopen/HISwrite, populates a
+ * Builds a temporary hisv6 history file with HISopen/HISwrite, populates a
  * tombstone hashset for some of the tokens, runs HISexpire with a
  * callback that mirrors EXPdoline's decision tree -- including the
  * SELFEXPIRE branch (gap G).  Verifies the resulting new history file

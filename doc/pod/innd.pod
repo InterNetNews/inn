@@ -13,9 +13,9 @@ B<innd> [B<-adfNrsSu>] [B<-4> I<address>] [B<-6> I<address>] [B<-c> I<days>]
 
 B<innd>, the InterNetNews daemon, handles all incoming NNTP feeds,
 coordinates the storage, retransmission, and overview generation for all
-accepted articles, and manages the active(5) and history(5) databases.  It
-handles incoming connections on the NNTP port, and also creates and
-listens to a local Unix-domain stream socket in order to receive articles
+accepted articles, and manages the active(5) and history(5)/hissqlite(5)
+databases.  It handles incoming connections on the NNTP port, and also creates
+and listens to a local Unix-domain stream socket in order to receive articles
 from local processes such as nnrpd(8) and rnews(1).
 
 As the master daemon, B<innd> should generally be started at boot and be
@@ -228,9 +228,12 @@ Report errors found in F<incoming.conf> via syslog(3) and exit normally.
 
 =item B<-t> I<seconds>
 
-Normally, B<innd> will flush any changes to history and the F<active> file
-after 300 seconds of inactivity.  This option changes that timeout to
+Normally, B<innd> will flush any changes to C<hisv6> F<history> and F<active>
+files after 300 seconds of inactivity.  This option changes that timeout to
 I<seconds>.
+
+This setting is not used for the C<hissqlite> history method whose writes are
+in autocommit mode.
 
 =item B<-u>
 
@@ -502,8 +505,8 @@ Written by Rich $alz <rsalz@uunet.uu.net> for InterNetNews.
 
 =head1 SEE ALSO
 
-active(5), ctlinnd(8), history(5), incoming.conf(5), inn.conf(5), innbind(8),
-innfeed(8), innstat(8), libinn_dbz(3), libinn_inndcomm(3), newsfeeds(5),
-nnrpd(8), rnews(1), syslog(3).
+active(5), ctlinnd(8), hissqlite(5), history(5), incoming.conf(5),
+inn.conf(5), innbind(8), innfeed(8), innstat(8), libinn_dbz(3),
+libinn_inndcomm(3), newsfeeds(5), nnrpd(8), rnews(1), syslog(3).
 
 =cut

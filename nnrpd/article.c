@@ -444,7 +444,7 @@ ARTopenbyid(char *msg_id, ARTNUM *ap, bool final)
         if (History == NULL) {
             time_t statinterval;
 
-            /* Do lazy opens of the history file: lots of clients
+            /* Do lazy opens of the history database: lots of clients
              * will never ask for anything by Message-ID, so put off
              * doing the work until we have to. */
             History = HISopen(HISTORY, innconf->hismethod, HIS_RDONLY);

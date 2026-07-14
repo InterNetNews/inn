@@ -48,7 +48,7 @@ C<NEWNEWS> command.
 This option may be used only if the command is executed on the host where the
 B<innd> server is running.  If this option is used, B<nntpget> connects to
 the specified remote I<host> to retrieve articles.  Any article not present
-in the local F<history> database is then fetched from the remote site and
+in the local history database is then fetched from the remote site and
 offered to the local server.
 
 Articles are not written to standard output.  Only processed Message-IDs are,

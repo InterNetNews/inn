@@ -380,7 +380,7 @@ XS(XS_INN_article)
     if (items != 1)
         croak("Usage: INN::article(msgid)");
 
-    /* Get the article token from the message ID and the history file. */
+    /* Get the article token from the Message-ID and the history database. */
     msgid = (char *) SvPV_nolen(ST(0));
     if (!HISlookup(History, msgid, NULL, NULL, NULL, &token))
         XSRETURN_UNDEF;
@@ -426,7 +426,7 @@ XS(XS_INN_cancel)
 
 
 /*
-**  Return the files for a given message ID, taken from the history file.
+**  Return the files for a given Message-ID, taken from the history database.
 **  This function should really be named INN::token() and probably will be
 **  some day.
 */
@@ -449,7 +449,7 @@ XS(XS_INN_filesfor)
 
 
 /*
-**  Whether message ID is in the history file; returns boolean.
+**  Whether a Message-ID is in the history database; returns boolean.
 */
 XS(XS_INN_havehist)
 {
@@ -484,7 +484,7 @@ XS(XS_INN_head)
     if (items != 1)
         croak("Usage: INN::head(msgid)");
 
-    /* Get the article token from the Message-ID and the history file. */
+    /* Get the article token from the Message-ID and the history database. */
     msgid = (char *) SvPV_nolen(ST(0));
     if (!HISlookup(History, msgid, NULL, NULL, NULL, &token))
         XSRETURN_UNDEF;
