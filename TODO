@@ -23,7 +23,7 @@ suite, which is currently very minimal.  Any work done on the test suite
 to allow more portions of INN to be automatically tested will make all
 changes easier and will be *greatly* appreciated.
 
-Last modified on 2022-07-10.
+Last modified on 2026-07-14.
 
 
 Would be nice to have in the current major version of INN:
@@ -44,12 +44,6 @@ Would be nice to have in the current major version of INN:
 * Convert readers.conf and storage.conf (and related configuration files)
   to use the new parsing system and break out program-specific sections
   of inn.conf into their own groups.
-
-* The current WIP cache and history cache should be integrated into the
-  history API, things like Message-ID hashing should become a selectable
-  property of the history file, and the history API should support
-  multiple backend storage formats and automatically select the right one
-  for an existing history file based on stored metainformation.
 
 * The interface to embedded filters needs to be reworked.  The information
   about which filters are enabled should be isolated in the filtering API,
@@ -250,9 +244,6 @@ Needed Bug Fixes
 * INN's startup script should be sure to clean out old lock files and PID
   files for innfeed.  Be careful, though, since innfeed may still be
   running, spawned from a previous innd.
-
-* makedbz should be more robust in the presence of malformed history
-  lines, discarding with them or otherwise dealing with them.
 
 * Some servers reject some IHAVE, TAKETHIS, or CHECK commands with 500
   syntax errors (particularly for long Message-IDs), and innfeed doesn't
@@ -519,10 +510,6 @@ General Projects
   two and poll isn't portable, so supporting both cleanly would require a
   bit of thought.
 
-* Currently only innd and innfeed increase their file descriptor limits.
-  Other parts of INN, notably makehistory, may benefit from doing the same
-  thing if they can without root privileges.
-
 * Revisit support for aliased groups and what nnrpd does with them.
   Should posts to the alias automatically be redirected to the real group?
   Regardless, the error return should provide useful information about
@@ -533,9 +520,6 @@ General Projects
 
 * More details as to why a Message-ID is bad would be useful to return to
   the user, particularly for rnews, inews, etc.
-
-* Support putting the history file in different directory from the other
-  (much smaller) db files without hand-editing a bunch of files.
 
 * frontends/pullnews and frontends/nntpget should be merged in one script.
 
@@ -558,13 +542,6 @@ Long-Term Projects
   groups into which an article should be filed, or even spool the article
   to a local disk file rather than storing it.  (See the stuff that the
   nnrpd filter can already do.)
-
-* When articles expire out of a storage method with self-expire
-  functionality, the overview and history entries for those articles
-  should also be expired immediately.  Otherwise, things like the GROUP
-  command don't give the correct results.  This will likely require a
-  callback that can be passed to CNFS that is called to do the overview
-  and history cleanup for each article overwritten.
 
 * Feed control, namely allowing your peers to set policy on what articles
   you feed them (not just newsgroups but max article size and perhaps even
@@ -636,11 +613,6 @@ Long-Term Projects
   configurations that shouldn't be nearly that complicated to get running
   out of the box.  A little interactive Perl script asking some simple
   questions could probably get a lot of cases easily right.
-
-* One ideally wants to be able to easily convert between different
-  overview formats or storage methods, refiling articles in place.  This
-  should be possible once we have a history API that allows changing the
-  storage location of an article in-place.
 
 * Support building in a separate directory than the source tree.  It may
   be best to just support this via lndir rather than try to do it in
