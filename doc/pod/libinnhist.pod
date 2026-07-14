@@ -29,7 +29,8 @@ his - routines for managing INN history
         HISCTLS_SYNCCOUNT,
         HISCTLS_NPAIRS,
         HISCTLS_IGNOREOLD,
-        HISCTLS_STATINTERVAL
+        HISCTLS_STATINTERVAL,
+        HISCTLG_INPLACEEXPIRE
     };
 
     struct history *HISopen(const char *path, const char *method,
@@ -315,6 +316,16 @@ seconds, between stat(2)s of the history files checking for replaced
 files (as happens during expire); this option is typically used by
 nnrpd(8) like applications.  I<val> should be a pointer to a value of
 type B<time_t> and will not be modified by the call.
+
+=item C<HISCTLG_INPLACEEXPIRE> (bool *)
+
+Indicate whether the history backend expires in place (mutating the live
+database via a writer rather than rebuilding a new file and swapping it).
+Backends that do not implement this selector leave the value untouched,
+so the caller must initialise it to false.  I<val> should be a pointer to a
+value of type B<bool> and will not be modified by the call.  expire(8) uses
+this to decide whether to open the history read/write (in place) or read-only
+(rebuild-and-swap, the hisv6 model).
 
 =back
 
