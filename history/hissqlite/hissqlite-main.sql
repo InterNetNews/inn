@@ -29,9 +29,9 @@ pragma foreign_keys = off;
 -- sole-writer bulk loads: the HIS_INCORE rebuild hint (makehistory) and the
 -- offline converter (hissqlite-convert.c).  See hissqlite.c.
 
--- HISlookup: Message-ID -> token.  A row with token IS NULL (remembered)
--- returns found=true with an empty token; ARTopenbyid treats TOKEN_EMPTY as
--- "no article".
+-- HISlookup: Message-ID -> token.  A row with token IS NULL (remembered) is
+-- reported as not found, matching hisv6: HISlookup means "have the article";
+-- HIScheck is the existence test that also counts remembered entries.
 -- .lookup
 select arrived, posted, expires, token
     from hist

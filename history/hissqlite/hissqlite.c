@@ -504,7 +504,12 @@ hissqlite_lookup(void *history, const char *key, time_t *arrived,
 
     bind_key(stmt, key);
     status = sqlite3_step(stmt);
-    if (status == SQLITE_ROW) {
+    if (status == SQLITE_ROW && sqlite3_column_type(stmt, 3) != SQLITE_NULL) {
+        /* A remembered (token IS NULL) row falls through as not-found:
+           HISlookup means "have the article", matching hisv6, which returns
+           true only for a line carrying a token so callers like innd's
+           cancel path and grephistory never see a token-less hit.  HIScheck
+           is the existence test that also counts remembered entries. */
         found = true;
         if (arrived != NULL)
             *arrived = (time_t) sqlite3_column_int64(stmt, 0);
@@ -512,19 +517,14 @@ hissqlite_lookup(void *history, const char *key, time_t *arrived,
             *posted = (time_t) sqlite3_column_int64(stmt, 1);
         if (expires != NULL)
             *expires = (time_t) sqlite3_column_int64(stmt, 2);
-        if (token != NULL) {
-            if (sqlite3_column_type(stmt, 3) == SQLITE_NULL) {
-                /* Remembered entry: found, but no article. */
-                memset(token, 0, sizeof(TOKEN));
-                token->type = TOKEN_EMPTY;
-            } else if (!copy_blob(h, stmt, 3, token, sizeof(TOKEN),
-                                  "corrupt token blob in lookup")) {
-                /* Wrong-length token = corruption.  Treat as a lookup failure
-                   (reported above) rather than masking it as a no-article. */
-                found = false;
-            }
+        if (token != NULL
+            && !copy_blob(h, stmt, 3, token, sizeof(TOKEN),
+                          "corrupt token blob in lookup")) {
+            /* Wrong-length token = corruption.  Treat as a lookup failure
+               (reported above) rather than masking it as a no-article. */
+            found = false;
         }
-    } else if (status != SQLITE_DONE) {
+    } else if (status != SQLITE_ROW && status != SQLITE_DONE) {
         hissqlite_seterror(h, "lookup");
     }
     sqlite3_reset(stmt);

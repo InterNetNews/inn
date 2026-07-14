@@ -155,16 +155,14 @@ main(void)
     ok(2, reals_ok); /* real tokens and timestamps round-trip */
 
     {
-        TOKEN g1, g2;
         bool f1, f2;
 
-        memset(&g1, 0xff, sizeof(g1));
-        memset(&g2, 0xff, sizeof(g2));
-        /* Remembered entries are found but carry no token (TOKEN_EMPTY). */
-        f1 = HISlookup(h, "<m1@conv>", NULL, NULL, NULL, &g1)
-             && g1.type == TOKEN_EMPTY;
-        f2 = HISlookup(h, "<m2@conv>", NULL, NULL, NULL, &g2)
-             && g2.type == TOKEN_EMPTY;
+        /* Remembered entries are known to HIScheck (refused on re-offer) but
+           not found by HISlookup (no article), matching hisv6. */
+        f1 = HIScheck(h, "<m1@conv>")
+             && !HISlookup(h, "<m1@conv>", NULL, NULL, NULL, NULL);
+        f2 = HIScheck(h, "<m2@conv>")
+             && !HISlookup(h, "<m2@conv>", NULL, NULL, NULL, NULL);
         remembered_ok = f1 && f2;
     }
     ok(3, remembered_ok); /* remembered entries survived the migration */

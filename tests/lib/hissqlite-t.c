@@ -79,7 +79,9 @@ decide_keep_all(void *cookie UNUSED, time_t arrived UNUSED,
     return true;
 }
 
-/* Does HISlookup find this msgid, and (optionally) does it carry a token? */
+/* Does HISlookup find this msgid, and (optionally) does it carry a token?
+   HISlookup only reports token-bearing entries (as hisv6 does), so found
+   implies has_token; the flag is kept so assertions read explicitly. */
 static bool
 present_with_token(struct history *h, unsigned long n, bool *has_token,
                    TOKEN *out)
@@ -96,6 +98,20 @@ present_with_token(struct history *h, unsigned long n, bool *has_token,
         *out = token;
     free(msgid);
     return found;
+}
+
+/* Is this msgid a remembered entry: known to HIScheck (so it is refused on
+   re-offer) but not found by HISlookup (no article to fetch), matching the
+   hisv6 contract for token-less history lines? */
+static bool
+remembered(struct history *h, unsigned long n)
+{
+    char *msgid = make_msgid(n);
+    bool r;
+
+    r = HIScheck(h, msgid) && !HISlookup(h, msgid, NULL, NULL, NULL, NULL);
+    free(msgid);
+    return r;
 }
 
 int
@@ -159,7 +175,8 @@ main(void)
         free(m_abs);
     }
 
-    /* lookup: real -> token round-trips; remembered -> empty token */
+    /* lookup: real -> token round-trips; remembered -> not found (hisv6
+       parity: only HIScheck reports remembered entries) */
     {
         char *m = make_msgid(5);
         time_t arrived = 0, posted = 0, expires = -1;
@@ -169,8 +186,8 @@ main(void)
                   && memcmp(t2.token, token.token, sizeof(token.token)) == 0);
         free(m);
     }
-    ok(9, present_with_token(h, N_TOKEN + 2, &has_token, NULL) && !has_token);
-    ok(10, !present_with_token(h, 99999, NULL, NULL));
+    ok(9, remembered(h, N_TOKEN + 2));
+    ok(10, !present_with_token(h, 99999, NULL, NULL) && !remembered(h, 99999));
 
     /* walk (before mutations): total and token counts */
     wc.total = wc.with_token = 0;
@@ -194,7 +211,7 @@ main(void)
     {
         char *m = make_msgid(1); /* real -> remembered (NULL token) */
         HISreplace(h, m, BASE + 1, BASE + 1, 0, NULL);
-        ok(14, present_with_token(h, 1, &has_token, NULL) && !has_token);
+        ok(14, remembered(h, 1));
         free(m);
     }
 
@@ -204,11 +221,9 @@ main(void)
                      decide_drop_old));
     /* #10 (arrived BASE+10 < cutoff) -> now remembered; #90 still a token */
     {
-        bool r10 = present_with_token(h, 10, &has_token, NULL);
-        bool t10 = has_token;
-        bool r90 = present_with_token(h, 90, &has_token, NULL);
-        bool t90 = has_token;
-        ok(16, r10 && !t10 && r90 && t90);
+        bool r10 = remembered(h, 10);
+        bool t90 = present_with_token(h, 90, &has_token, NULL) && has_token;
+        ok(16, r10 && t90);
     }
 
     /* expire pass 2: remember-delete past the threshold */
