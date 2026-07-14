@@ -53,8 +53,8 @@ counts.
 
 Dump all history records as text, one per line: the hash in hexadecimal,
 the arrival, posting, and expiration timestamps (in seconds since epoch),
-and the storage API token in hexadecimal (or C<remembered> for a token-less
-entry).
+and the storage API token in its usual textual form, hexadecimal surrounded
+with C<@> (or C<remembered> for a token-less entry).
 
 =item B<-h>
 
