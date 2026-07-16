@@ -60,6 +60,13 @@ wanttrash:                   false
 wipcheck:                    5
 wipexpire:                   10
 
+# History Settings
+
+#hissqlitecachesize:         65536
+#hissqlitemmapsize:          0
+#hissqlitepagesize:          4096
+#hissqlitereadercachesize:   2000
+
 # Article Storage
 
 cnfscheckfudgesize:          0
