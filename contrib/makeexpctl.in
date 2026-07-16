@@ -3,6 +3,7 @@
 #
 # Create expire.ctl script based on recently read articles.  Argument gives
 # scale factor to use to adjust expires.
+# To be used in conjunction with contrib/findreadgroups.
 
 use warnings;
 
