@@ -54,7 +54,7 @@ PATH_INNSECRETSCONF	= ${PATHETC}/inn-secrets.conf
 
 PATH_ACTIVE		= ${PATHDB}/active
 PATH_ACTIVE_TIMES	= ${PATHDB}/active.times
-PATH_HISTORY		= ${PATHDB}/history
+PATH_HISTORY		= ${PATHHISTORY}/history
 PATH_NEWSGROUPS		= ${PATHDB}/newsgroups
 
 ##  Scripts from above, plus site-specific config files.

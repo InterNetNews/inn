@@ -27,19 +27,22 @@ L<Upgrading from 2.6 to 2.7>.
 
 =item *
 
-A new I<pathhistory> parameter has been added to F<inn.conf> for the
-directory that holds the history database files (the history(5) text file
-and its I<dbz> indices with the C<hisv6> history method, or F<history.sqlite>
-and its WAL files with C<hissqlite>).  The default is the value of I<pathdb>,
-so existing installations are unchanged if the parameter is left unset.
-Cancel and expireover tombstone logs stay under I<pathdb> (they are expiry
-state, not history files).  Separating history is especially useful with
-hissqlite on ZFS, where the dataset I<recordsize> should match the SQLite
-page size; see hissqlite(5).  Thanks to Kevin Bowling for this feature.
+A new I<pathhistory> parameter has been added to F<inn.conf> for the directory
+that holds the history database files (the history(5) text file and its
+I<dbz> indices with the C<hisv6> history method, or F<history.sqlite> and
+its WAL files with C<hissqlite>).  The default is the value of I<pathdb>, so
+existing installations are unchanged if the parameter is left unset.  For new
+installations, it can be set at configure time with the B<--with-history-dir>
+passed to C<configure>.  Cancel and expireover tombstone logs stay under
+I<pathdb> (they are expiry state, not history files).  Separating history
+is especially useful with hissqlite on ZFS, where the dataset I<recordsize>
+should match the SQLite page size; see hissqlite(5).  Thanks to Kevin Bowling
+for this feature.
 
 =item *
 
-The I<walmode> parameter in F<ovsqlite.conf> is now enabled by default for the ovsqlite overview method.
+The I<walmode> parameter in F<ovsqlite.conf> is now enabled by default for the
+ovsqlite overview method.
 
 =item *
 

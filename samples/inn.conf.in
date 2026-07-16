@@ -207,7 +207,7 @@ pathcontrol:                 @CONTROLDIR@
 pathdb:                      @DBDIR@
 pathetc:                     @sysconfdir@
 pathfilter:                  @FILTERDIR@
-pathhistory:                 @DBDIR@
+pathhistory:                 @HISTORYDIR@
 pathhttp:                    @HTTPDIR@
 pathincoming:                @SPOOLDIR@/incoming
 pathlog:                     @LOGDIR@

@@ -312,15 +312,17 @@ B<--with-tmp-dir> below).
 
 =item B<--with-db-dir>=PATH
 
-Sets the prefix for INN database files.  The default is F<PREFIX/db>, where
-PREFIX is F</usr/local/news> unless overridden with the option above.  The
-history database and the F<active> file will be stored in this directory, and
-writes to those files are an appreciable percentage of INN's disk activity.
-The history database can also be quite large (requiring up to S<2 GB> or
-more), and is rewritten to a new one during nightly B<expire> for the C<hisv6>
-history storage method, so this is a common portion of INN to move to a
-different file system.  To move only the history database, without the
-other database files, see the I<pathhistory> parameter in inn.conf(5).
+Sets the prefix for INN database files.  The default is F<PREFIX/db>,
+where PREFIX is F</usr/local/news> unless overridden with the option above.
+The history database and the F<active> file will be stored in this directory,
+and writes to those files are an appreciable percentage of INN's disk
+activity.  The history database can also be quite large (requiring up to
+S<2 GB> or more), and is rewritten to a new one during nightly B<expire> for
+the C<hisv6> history storage method, so this is a common portion of INN to
+move to a different file system.  To move only the history database, without
+the other database files, see the I<pathhistory> parameter in inn.conf(5).
+You can also set a dedicated path for the history database with the
+B<--with-history-dir> option given to C<configure>.
 
 =item B<--with-spool-dir>=PATH
 
