@@ -3,10 +3,11 @@
 #
 # Keep track of which groups are currently being read.  Takes logfile input
 # on stdin.
+# To be used in conjunction with contrib/makeexpctl and contrib/makestorconf.
 
 use warnings;
 
-$readfile = "$INN::Config::newsetc/readgroups";
+$readfile = "$INN::Config::pathdb/readgroups";
 
 $curtime = time;
 $oldtime = $curtime - 30 * 86400;    # 30 days in the past

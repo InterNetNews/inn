@@ -3,6 +3,7 @@
 #
 # Create storage.conf script based on recently read articles so as to put
 # read newsgroups into a timecaf spool area instead of the big CNFS area.
+# To be used in conjunction with contrib/findreadgroups.
 #
 # Written by Richard Michael Todd in 1999.
 #
@@ -12,7 +13,7 @@
 use warnings;
 
 $readfile = "$INN::Config::pathdb/readgroups";
-$outfile = "$INN::Config::pathdb/storage.conf";
+$outfile = "$INN::Config::pathetc/storage.conf";
 
 OUTLOOP:
 for ($level = 9; $level >= 2; --$level) {
