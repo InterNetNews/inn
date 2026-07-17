@@ -4,7 +4,7 @@ hissqlite-util - History manipulation utility for hissqlite
 
 =head1 SYNOPSIS
 
-B<hissqlite-util> [B<-AcdhV>] [B<-p> I<path>]
+B<hissqlite-util> [B<-AcdhsV>] [B<-p> I<path>]
 
 =head1 DESCRIPTION
 
@@ -12,7 +12,7 @@ B<hissqlite-util> is an administrative interface to the hissqlite history
 method for INN.  It only works on hissqlite history databases, not on any
 other type of INN history.  It allows the administrator to audit the
 database for problems, dump its contents, and report entry counts and the
-schema version.
+schema version.  It can also report database storage utilization.
 
 All of its actions are read-only, so it is safe to run while INN is running.
 B<hissqlite-util> opens the database directly; because B<innd> holds the
@@ -65,6 +65,24 @@ Print a usage message and exit.
 Act on the F<history.sqlite> database in I<path> instead of the default
 I<pathhistory> directory from F<inn.conf>.
 
+=item B<-s>
+
+Print database storage and history entry statistics.  The report contains
+the SQLite and schema versions, journal and auto-vacuum modes, page usage,
+database and journal file sizes, total, real and remembered entry counts,
+the number of real entries with an explicit expiration (I<expires> greater
+than zero; C<0> or C<NULL> means no article-level expiry), and the
+arrival-time range.  It remains available when B<innd> is not running.
+
+The database-derived values are collected from one consistent read snapshot.
+Logical size is the page count multiplied by the page size.  Non-freelist
+page capacity is an estimate based on SQLite's page accounting, not a measure
+of how full each page is.  Freelist pages can be reused by later writes or
+recovered with a full C<VACUUM>.  File sizes are point-in-time values and may
+change while B<innd> or another process is writing.  Files that do not
+currently exist, such as a WAL or rollback journal, have a reported size of
+zero.
+
 =item B<-V>
 
 Print the version of this tool and the database schema version.
@@ -80,6 +98,10 @@ Audit the history database for problems:
 Print entry counts for a database in F</news/db>:
 
     hissqlite-util -c -p /news/db
+
+Print storage and entry statistics:
+
+    hissqlite-util -s
 
 =head1 HISTORY
 

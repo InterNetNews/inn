@@ -14,7 +14,7 @@ use POSIX qw(strftime);
 $0 =~ s!.*/!!;
 
 # Version of this tool.
-my $VERSION = "1.0";
+my $VERSION = "1.1";
 
 # Bail out if the needed DBI Perl module is not installed.
 eval {
@@ -29,7 +29,7 @@ eval {
 my $dbfile = "history.sqlite";
 
 my $usage = "Usage:
-  $0 [-AcdhV] [-p path]
+  $0 [-AcdhsV] [-p path]
 
 Options:
   -A             Audit the history database for problems, and report them to
@@ -39,7 +39,8 @@ Options:
   -d             Dump all history records as text, one per line.
   -h             Print this help message.
   -p path        Read $dbfile database file in path directory instead of
-                 default \$INN::Config::pathhistory directory.
+                 default pathhistory directory as set in inn.conf.
+  -s             Print database storage and history entry statistics.
   -V             Print the version of this tool and the database schema
                  version.
 ";
@@ -50,7 +51,7 @@ sub HELP_MESSAGE {
 }
 
 my %opt;
-getopts("AcdhVp:", \%opt) || die $usage;
+getopts("AcdhsVp:", \%opt) || die $usage;
 
 HELP_MESSAGE() if defined($opt{'h'});
 
@@ -58,13 +59,19 @@ my $modes = 0;
 $modes++ if defined($opt{'A'});
 $modes++ if defined($opt{'c'});
 $modes++ if defined($opt{'d'});
+$modes++ if defined($opt{'s'});
 $modes++ if defined($opt{'V'});
 
 die "Only one action allowed at the same time\n\n$usage"
   if $modes > 1;
 
-my $dbdir = $opt{'p'} || $INN::Config::pathhistory;
-my $datasource = "dbi:SQLite:dbname=$dbdir/$dbfile";
+my $dbdir;
+{
+    no warnings 'once';
+    $dbdir = $opt{'p'} || $INN::Config::pathhistory;
+}
+my $dbpath = "$dbdir/$dbfile";
+my $datasource = "dbi:SQLite:dbname=$dbpath";
 
 # All implemented modes are read-only, so open the database read-only.
 # SQLITE_OPEN_READONLY is 0x00000001.
@@ -95,6 +102,8 @@ if (defined($opt{'V'})) {
     count_entries();
 } elsif (defined($opt{'d'})) {
     dump_history();
+} elsif (defined($opt{'s'})) {
+    dump_statistics();
 } else {
     # Default action: audit.
     audit_history();
@@ -112,16 +121,21 @@ sub get_version {
     return $version;
 }
 
-# Return a list of (total, real, remembered) entry counts.
+# Return a list of (total, real, remembered, explicitly expiring, earliest
+# arrival, latest arrival).  Compute them in one table scan; callers that only
+# need the first values can ignore the remainder.
 sub get_counts {
-    my ($total) = $dbh->selectrow_array("select count(*) from hist;");
-    my ($real)
-      = $dbh->selectrow_array(
-          "select count(*) from hist" . " where token is not null;");
-    my ($remembered)
-      = $dbh->selectrow_array(
-          "select count(*) from hist" . " where token is null;");
-    return ($total, $real, $remembered);
+    return $dbh->selectrow_array(
+        q{
+            select count(*),
+                   coalesce(sum(token is not null), 0),
+                   coalesce(sum(token is null), 0),
+                   coalesce(sum(token is not null and expires > 0), 0),
+                   min(arrived),
+                   max(arrived)
+                from hist;
+        },
+    );
 }
 
 # Print the tool version and the database schema version (-V option).
@@ -170,6 +184,87 @@ sub dump_history {
     }
 }
 
+# Return the size of a file, or 0 if the file does not exist.
+sub file_size {
+    my $path = shift;
+    my $size = -s $path;
+    return defined($size) ? $size : 0;
+}
+
+# Print database storage and entry statistics (-s).
+sub dump_statistics {
+    # DBD::SQLite's begin_work uses BEGIN IMMEDIATE, which requests a write
+    # lock.  Start a deferred transaction explicitly for this read-only
+    # snapshot.
+    $dbh->do("begin transaction;");
+    my ($sqlite_version) = $dbh->selectrow_array("select sqlite_version();");
+    my $schema_version = get_version();
+    my ($journal_mode) = $dbh->selectrow_array("pragma journal_mode;");
+    my ($auto_vacuum) = $dbh->selectrow_array("pragma auto_vacuum;");
+    my ($page_size) = $dbh->selectrow_array("pragma page_size;");
+    my ($page_count) = $dbh->selectrow_array("pragma page_count;");
+    my ($freelist_count) = $dbh->selectrow_array("pragma freelist_count;");
+    my ($total, $real, $remembered, $explicit_expiration, $minarrived,
+        $maxarrived) = get_counts();
+    $dbh->commit();
+
+    my $used_pages = $page_count - $freelist_count;
+    my $logical_size = $page_count * $page_size;
+    my $used_size = $used_pages * $page_size;
+    my $freelist_size = $freelist_count * $page_size;
+    my $freelist_share
+      = $page_count > 0 ? 100 * $freelist_count / $page_count : 0;
+    my $real_percent = $total > 0 ? 100 * $real / $total : 0;
+    my $remembered_percent = $total > 0 ? 100 * $remembered / $total : 0;
+    my @auto_vacuum_names = qw(none full incremental);
+    my $auto_vacuum_name
+      = defined($auto_vacuum_names[$auto_vacuum])
+      ? $auto_vacuum_names[$auto_vacuum]
+      : "unknown ($auto_vacuum)";
+    my $database_file_size = file_size($dbpath);
+    my $wal_file_size = file_size("$dbpath-wal");
+    my $shm_file_size = file_size("$dbpath-shm");
+    my $journal_file_size = file_size("$dbpath-journal");
+    my $total_file_size
+      = $database_file_size
+      + $wal_file_size
+      + $shm_file_size
+      + $journal_file_size;
+
+    $schema_version = defined($schema_version) ? $schema_version : "unknown";
+    print "Database file: $dbpath\n";
+    print "SQLite version: $sqlite_version\n";
+    print "Schema version: $schema_version\n";
+    print "Journal mode: $journal_mode\n";
+    print "Auto-vacuum: $auto_vacuum_name\n";
+    print "Page size: $page_size bytes\n";
+    print "Page count: $page_count\n";
+    print "Non-freelist pages: $used_pages\n";
+    print "Freelist pages: $freelist_count\n";
+    printf "Freelist share: %.1f%%\n", $freelist_share;
+    print "Logical database size: $logical_size bytes\n";
+    print "Non-freelist page capacity: $used_size bytes\n";
+    print "Freelist size: $freelist_size bytes\n";
+    print "Database file size: $database_file_size bytes\n";
+    print "WAL file size: $wal_file_size bytes\n";
+    print "Shared-memory file size: $shm_file_size bytes\n";
+    print "Rollback journal file size: $journal_file_size bytes\n";
+    print "Total SQLite file size: $total_file_size bytes\n";
+    print "Total entries: $total\n";
+    printf "Real entries: %d (%.1f%%)\n", $real, $real_percent;
+    printf "Remembered entries: %d (%.1f%%)\n",
+      $remembered, $remembered_percent;
+    print "Real entries with explicit expiration: $explicit_expiration\n";
+
+    if (defined($minarrived) && defined($maxarrived)) {
+        printf "Arrived range: %s .. %s\n",
+          strftime('%Y-%m-%d %H:%M:%S', localtime($minarrived)),
+          strftime('%Y-%m-%d %H:%M:%S', localtime($maxarrived));
+    } else {
+        print "Arrived range: (empty database)\n";
+    }
+}
+
 # Audit the history database for problems and report them (-A option, default).
 sub audit_history {
     my $problems = 0;
@@ -183,15 +278,16 @@ sub audit_history {
         $problems++;
     }
 
-    # Entry counts.
-    my ($total, $real, $remembered) = get_counts();
+    # Entry counts and arrival range.
+    my (
+        $total, $real,
+        $remembered, $explicit_expiration_unused,
+        $minarrived, $maxarrived,
+    ) = get_counts();
     print "Total entries: $total\n";
     print "Real entries (token not null): $real\n";
     print "Remembered entries (token null): $remembered\n";
 
-    # Arrived time range.
-    my ($minarrived, $maxarrived)
-      = $dbh->selectrow_array("select min(arrived), max(arrived) from hist;");
     if (defined($minarrived) and defined($maxarrived)) {
         printf "Arrived range: %s .. %s\n",
           strftime('%Y-%m-%d %H:%M:%S', localtime($minarrived)),

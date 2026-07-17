@@ -145,6 +145,8 @@ waits at most briefly.  (B<hissqlite-convert> is a one-time migration tool
 that reads a I<separate> source history, which must not be written while it
 runs; see hissqlite-convert(8).)
 
+C<hissqlite-util -s> reports database storage and entry statistics.
+
 =head1 EXPIRATION
 
 B<expire> runs against the live database in place: real articles past their
