@@ -18,6 +18,17 @@ F<ovsqlite.conf>.
 
 =item *
 
+If you wish to take benefit from the new I<pathhistory> parameter in
+F<inn.conf> that permits configuring a dedicated directory for the history
+database, previously necessarily in I<pathdb> amongst other various files,
+you are encouraged to set it, and manually move the history files to the
+corresponding directory while INN is not running.  Separating history is
+especially useful with the new hissqlite history storage method on ZFS, where
+the dataset I<recordsize> should match the SQLite page size; see hissqlite(5)
+for more details.
+
+=item *
+
 You may also take benefit from the new hissqlite history storage method based
 on SQLite.  See hissqlite(5) and hissqlite-convert(8) for more information and
 how to migrate from an existing hisv6 history database.
@@ -54,9 +65,7 @@ its WAL files with C<hissqlite>).  The default is the value of I<pathdb>, so
 existing installations are unchanged if the parameter is left unset.  For new
 installations, it can be set at configure time with the B<--with-history-dir>
 passed to C<configure>.  Cancel and expireover tombstone logs stay under
-I<pathdb> (they are expiry state, not history files).  Separating history
-is especially useful with hissqlite on ZFS, where the dataset I<recordsize>
-should match the SQLite page size; see hissqlite(5).  Thanks to Kevin Bowling
+I<pathdb> (they are expiry state, not history files).  Thanks to Kevin Bowling
 for this feature.
 
 =item *
