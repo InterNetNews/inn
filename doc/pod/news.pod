@@ -16,6 +16,12 @@ an overview database shared on a network filesystem between two different
 hosts, you need manually setting to false the I<walmode> parameter in
 F<ovsqlite.conf>.
 
+=item *
+
+You may also take benefit from the new hissqlite history storage method based
+on SQLite.  See hissqlite(5) and hissqlite-convert(8) for more information and
+how to migrate from an existing hisv6 history database.
+
 =back
 
 If you are upgrading from a version prior to S<INN 2.7>, see also
@@ -24,6 +30,20 @@ L<Upgrading from 2.6 to 2.7>.
 =head1 Changes in 2.8.0 (not yet released)
 
 =over 2
+
+=item *
+
+A new history storage method based on SQLite has been added, named
+C<hissqlite>, selectable instead of C<hisv6> via the I<hismethod> parameter
+in F<inn.conf> when INN is built with SQLite support.  It is accompanied
+with a history manipulation utility, B<hissqlite-util>, that performs some
+basic consistency checks and dump operations on an history database using
+the hissqlite method, and B<hissqlite-convert> that permits migrating an
+existing C<hisv6> history database.  See hissqlite(5) for more details.
+New I<hissqlitecachesize>, I<hissqlitemmapsize>, I<hissqlitepagesize> and
+I<hissqlitereadercachesize> parameters have also been added to F<inn.conf> to
+parameterize this new history storage method.  Many thanks to Keving Bowling
+for this great contribution!
 
 =item *
 
