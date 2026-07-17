@@ -30,7 +30,7 @@ eval {
 my $dbfile = "ovsqlite.db";
 
 my $usage = "Usage:
-  $0 [-AFghioO] [-a article] [-n newsgroup] [-p path]
+  $0 [-AFghioOs] [-a article] [-n newsgroup] [-p path]
 
 Options:
   -a article     Specify an article number or a range of article numbers on
@@ -51,7 +51,8 @@ Options:
   -O             Dump overview information for articles in the newsgroup
                  specified with -n, in the format used by overchan.
   -p path        Read $dbfile database file in path directory instead of
-                 default $INN::Config::pathoverview directory.
+                 default \$INN::Config::pathoverview directory.
+  -s             Print database storage and overview record statistics.
 ";
 
 sub HELP_MESSAGE {
@@ -63,7 +64,7 @@ my @unique_hash_keys_unused
   = qw(sqlite_allow_multiple_statements);    # perltidy -wuk
 
 my %opt;
-getopts("a:AFghioOn:p:", \%opt) || die $usage;
+getopts("a:AFghioOsn:p:", \%opt) || die $usage;
 
 HELP_MESSAGE() if defined($opt{'h'});
 
@@ -74,6 +75,7 @@ $modes++ if defined($opt{'g'});
 $modes++ if defined($opt{'i'});
 $modes++ if defined($opt{'o'});
 $modes++ if defined($opt{'O'});
+$modes++ if defined($opt{'s'});
 
 die "Can't use both -A and -F\n\n$usage"
   if defined($opt{'A'})
@@ -85,12 +87,21 @@ die "Only one action allowed at the same time\n\n$usage"
 die "A newsgroup must be specified with -n\n\n$usage"
   if (!defined($opt{'n'})
       && (defined($opt{'g'}) || defined($opt{'o'}) || defined($opt{'O'})));
+die "The -n option cannot be used with -s\n\n$usage"
+  if defined($opt{'n'}) and defined($opt{'s'});
+die "The -a option cannot be used with -s\n\n$usage"
+  if defined($opt{'a'}) and defined($opt{'s'});
 
 my ($low, $high, $compress, $basedict);
 my $sql_extraclause_artinfo = "";
 my $sql_extraclause_groupinfo = "";
-my $dbdir = $opt{'p'} || $INN::Config::pathoverview;
-my $datasource = "dbi:SQLite:dbname=$dbdir/$dbfile";
+my $dbdir;
+{
+    no warnings 'once';
+    $dbdir = $opt{'p'} || $INN::Config::pathoverview;
+}
+my $dbpath = "$dbdir/$dbfile";
+my $datasource = "dbi:SQLite:dbname=$dbpath";
 my $pausemsg = "ovsqlite-util fixes";    # Message when pausing INN.
                                          # Known line in innreport.
 my $ispaused = 0;
@@ -176,6 +187,8 @@ if (defined($opt{'A'}) or defined($opt{'F'})) {
     dump_artinfo_clients();
 } elsif (defined($opt{'O'})) {
     dump_artinfo_overchan();
+} elsif (defined($opt{'s'})) {
+    dump_statistics();
 }
 
 # Close the connection properly.
@@ -417,6 +430,111 @@ sub check_groupinfo_consistency {
 
     }
     pragma_foreign_keys(1);
+}
+
+# Return the size of a file, or 0 if the file does not exist.
+sub file_size {
+    my $path = shift;
+    my $size = -s $path;
+    return defined($size) ? $size : 0;
+}
+
+# Print database storage and overview record statistics (-s option).
+sub dump_statistics {
+    $dbh->do("savepoint ovsqlite_statistics;");
+    my ($sqlite_version)
+      = $dbh->selectrow_array("select sqlite_version();");
+    my ($schema_version)
+      = $dbh->selectrow_array(
+          "select value from misc where key = 'version';");
+    my ($journal_mode) = $dbh->selectrow_array("pragma journal_mode;");
+    my ($auto_vacuum) = $dbh->selectrow_array("pragma auto_vacuum;");
+    my ($page_size) = $dbh->selectrow_array("pragma page_size;");
+    my ($page_count) = $dbh->selectrow_array("pragma page_count;");
+    my ($freelist_count) = $dbh->selectrow_array("pragma freelist_count;");
+    my ($total_groups, $active_groups, $deleted_groups)
+      = $dbh->selectrow_array(
+        q{
+            select count(*),
+                   coalesce(sum(deleted = 0), 0),
+                   coalesce(sum(deleted > 0), 0)
+                from groupinfo;
+        },
+    );
+    my ($articles, $active_articles, $deleted_articles, $orphan_articles)
+      = $dbh->selectrow_array(
+        q{
+            with article_counts as
+                (select groupid, count(*) as articles
+                    from artinfo
+                    group by groupid)
+            select coalesce(sum(articles), 0),
+                   coalesce(sum(case when groupinfo.deleted = 0
+                                     then articles else 0 end), 0),
+                   coalesce(sum(case when groupinfo.deleted > 0
+                                     then articles else 0 end), 0),
+                   coalesce(sum(case when groupinfo.groupid is null
+                                     then articles else 0 end), 0)
+                from article_counts
+                    left join groupinfo using (groupid);
+        },
+    );
+    $dbh->do("release ovsqlite_statistics;");
+
+    my $used_pages = $page_count - $freelist_count;
+    my $logical_size = $page_count * $page_size;
+    my $used_size = $used_pages * $page_size;
+    my $freelist_size = $freelist_count * $page_size;
+    my $freelist_share
+      = $page_count > 0 ? 100 * $freelist_count / $page_count : 0;
+    my @auto_vacuum_names = qw(none full incremental);
+    my $auto_vacuum_name
+      = defined($auto_vacuum_names[$auto_vacuum])
+      ? $auto_vacuum_names[$auto_vacuum]
+      : "unknown ($auto_vacuum)";
+    my $compression = "unknown";
+    if (defined($compress)) {
+        $compression = $compress > 0 ? "enabled" : "disabled";
+    }
+    my $database_file_size = file_size($dbpath);
+    my $wal_file_size = file_size("$dbpath-wal");
+    my $shm_file_size = file_size("$dbpath-shm");
+    my $journal_file_size = file_size("$dbpath-journal");
+    my $total_file_size
+      = $database_file_size
+      + $wal_file_size
+      + $shm_file_size
+      + $journal_file_size;
+
+    $schema_version
+      = defined($schema_version) ? $schema_version : "unknown";
+
+    print "Database file: $dbpath\n";
+    print "SQLite version: $sqlite_version\n";
+    print "Schema version: $schema_version\n";
+    print "Journal mode: $journal_mode\n";
+    print "Auto-vacuum: $auto_vacuum_name\n";
+    print "Compression: $compression\n";
+    print "Page size: $page_size bytes\n";
+    print "Page count: $page_count\n";
+    print "Non-freelist pages: $used_pages\n";
+    print "Freelist pages: $freelist_count\n";
+    printf "Freelist share: %.1f%%\n", $freelist_share;
+    print "Logical database size: $logical_size bytes\n";
+    print "Non-freelist page capacity: $used_size bytes\n";
+    print "Freelist size: $freelist_size bytes\n";
+    print "Database file size: $database_file_size bytes\n";
+    print "WAL file size: $wal_file_size bytes\n";
+    print "Shared-memory file size: $shm_file_size bytes\n";
+    print "Rollback journal file size: $journal_file_size bytes\n";
+    print "Total SQLite file size: $total_file_size bytes\n";
+    print "Total groups: $total_groups\n";
+    print "Active groups: $active_groups\n";
+    print "Deleted groups: $deleted_groups\n";
+    print "Total articles: $articles\n";
+    print "Articles in active groups: $active_articles\n";
+    print "Articles in deleted groups: $deleted_articles\n";
+    print "Orphan articles: $orphan_articles\n";
 }
 
 # Dump overview information (-g option).

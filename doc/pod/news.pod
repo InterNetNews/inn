@@ -44,6 +44,17 @@ L<Upgrading from 2.6 to 2.7>.
 
 =item *
 
+A new B<-s> option in B<hissqlite-util> reports SQLite storage utilization,
+history entry counts and file sizes.
+
+=item *
+
+A new B<-s> option in B<ovsqlite-util> reports SQLite storage utilization,
+database and journal file sizes, and active, deleted and total overview
+record counts.
+
+=item *
+
 A new history storage method based on SQLite has been added, named
 C<hissqlite>, selectable instead of C<hisv6> via the I<hismethod> parameter
 in F<inn.conf> when INN is built with SQLite support.  It is accompanied
