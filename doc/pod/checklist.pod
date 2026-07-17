@@ -41,15 +41,17 @@ different partition, you can set the directories now (or later in I<pathnews>
 in F<inn.conf> if you change your mind).  By default,
 B<--prefix=/usr/local/news> is used.
 
-You probably want B<--with-perl>.  You might want to compile in TLS and
-SQLite, if your system supports them.  You will need to have the relevant
-external libraries to compile (depending on whether you use OpenSSL for TLS
-access to your news server, libcanlock to verify the authenticity of cancel
-articles, Perl and/or Python for spam and abuse filtering, etc.) and to
-correctly set the right paths to external programs (like for GnuPG to verify
-the authenticity of Usenet control messages).
+You probably want B<--with-perl>, and maybe also B<--with-python>.  You might
+want to compile in TLS, zlib and SQLite, if your system supports them.
+You will need to have the relevant external libraries to compile (depending
+on whether you use OpenSSL for TLS access to your news server, libcanlock
+to verify the authenticity of cancel articles, Perl and/or Python for spam
+and abuse filtering, etc.) and to correctly set the right paths to external
+programs (like for GnuPG to verify the authenticity of Usenet control
+messages).
 
-    ./configure --with-perl --with-openssl --with-sqlite3 --with-canlock ...
+    ./configure --with-perl --with-python --with-openssl \
+        --with-sqlite3 --with-canlock --with-zlib ...
     make
 
     su
@@ -101,17 +103,22 @@ is commonly set to C<localhost>), the maximum size of articles you accept
 (I<maxartsize>, set to S<1 MB> by default), and the abuse e-mail address
 (I<complaints>).
 
-To store overview data, start with tradindexed overview method, already set
-by default in the I<ovmethod> parameter, but know that there are various other
-options with their own pros and cons, as detailed in F<INSTALL>.  (Especially,
-the ovsqlite overview method is also a good choice if your INN installation
-has SQLite support.)
+To store overview data, start with the C<tradindexed> overview method,
+already set by default in the I<ovmethod> parameter, but know that there are
+various other options with their own pros and cons, as detailed in F<INSTALL>.
+(Especially, the C<ovsqlite> overview method is also a good choice if your INN
+installation has SQLite support.)
+
+Similarly, to store history data, start with the C<hisv6> history storage
+method, already set by default in the I<hismethod> parameter, but know there
+is also the C<hissqlite> history storage method which is a good choice if your
+INN installation has SQLite support.
 
 =item *
 
-To store articles, start with traditional spool (named tradspool), but know
-that there are various other options with their own pros and cons, as detailed
-in F<INSTALL>.
+To store articles, start with a traditional spool (named C<tradspool>), but
+know that there are various other options with their own pros and cons, as
+detailed in F<INSTALL>.
 
 The default F<storage.conf> file is already parameterized to use that storage
 method.
@@ -332,7 +339,8 @@ and F<readers-tls.conf>).  The syntax is similar for both files.  You then
 need to start a second B<nnrpd> to listen to these connections to NNTPS port
 563 and put something like that in your init scripts:
 
-    su news -s /bin/sh -c '<pathbin>/nnrpd -D -c <pathetc>/readers-tls.conf -p 563 -S'
+    su news -s /bin/sh \
+        -c '<pathbin>/nnrpd -D -c <pathetc>/readers-tls.conf -p 563 -S'
 
 Note that a news client which supports the STARTTLS command can also use
 the conventional NNTP port 119 to dynamically upgrade from unencrypted
