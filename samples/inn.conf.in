@@ -62,10 +62,10 @@ wipexpire:                   10
 
 # History Settings
 
-#hissqlitecachesize:         65536
-#hissqlitemmapsize:          0
-#hissqlitepagesize:          4096
-#hissqlitereadercachesize:   2000
+hissqlitecachesize:         65536
+hissqlitemmapsize:          0
+hissqlitepagesize:          4096
+hissqlitereadercachesize:   2000
 
 # Article Storage
 
