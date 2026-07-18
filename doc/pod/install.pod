@@ -188,7 +188,7 @@ versions you'll need:
     --with-python       Python 2.3.0 or higher, 2.5.0+ recommended
                         Python 3.3.0 or higher
     --with-sasl         Cyrus SASL 2.1.0 or higher
-    --with-sqlite3      SQLite 3.8.2 or higher, 3.20.0+ recommended
+    --with-sqlite3      SQLite 3.24.0 or higher
     --with-zlib         zlib 1.x or higher
 
 If any of these libraries (other than Perl or Python) are built shared and
@@ -477,14 +477,14 @@ explicitly passed to C<configure>.
 
 =item B<--with-sqlite3>=PATH
 
-Enables support for SQLite (3.8.2 or higher), which means that it
-will then be possible to use the ovsqlite overview method if you wish.
-Enabling this configure option doesn't mean you'll be required to use
-ovsqlite, but it does require that SQLite be installed on your system
-(including the header files, not just the runtime libraries).  If a
-path is given, it sets the installed directory of SQLite.  In case
-non-standard paths to the SQLite library are used, one or both of the
-options B<--with-sqlite3-include> and B<--with-sqlite3-lib> can be given
+Enables support for SQLite (3.24.0 or higher), which means that it
+will then be possible to use the ovsqlite overview method or the hissqlite
+history method if you wish.  Enabling this configure option doesn't mean
+you'll be required to use either method, but it does require that SQLite be
+installed on your system (including the header files, not just the runtime
+libraries).  If a path is given, it sets the installed directory of SQLite.
+In case non-standard paths to the SQLite library are used, one or both of
+the options B<--with-sqlite3-include> and B<--with-sqlite3-lib> can be given
 to C<configure> with a path.
 
 If the SQLite library is found at configure time, INN will be built

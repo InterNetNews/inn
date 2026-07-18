@@ -17,11 +17,6 @@
 #    include <sqlite3.h>
 #    include <stddef.h>
 
-/* SQLITE_PREPARE_PERSISTENT is defined in SQLite 3.20.0 and above. */
-#    ifndef SQLITE_PREPARE_PERSISTENT
-#        define SQLITE_PREPARE_PERSISTENT 0x00
-#    endif
-
 typedef struct sqlite_helper_t {
     size_t stmt_count;
     char const *text;

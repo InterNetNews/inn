@@ -59,7 +59,7 @@ AC_DEFUN([_INN_LIB_SQLITE3_INTERNAL],
      AC_COMPUTE_INT([_INN_LIB_SQLITE3_VERSION], [SQLITE_VERSION_NUMBER],
         [#include <sqlite3.h>])
      AS_IF([test "x$_INN_LIB_SQLITE3_VERSION" != x],
-        [AS_IF([test "$_INN_LIB_SQLITE3_VERSION" -ge 3008002],
+        [AS_IF([test "$_INN_LIB_SQLITE3_VERSION" -ge 3024000],
             [inn_cv_have_sqlite3=yes],
             [inn_cv_have_sqlite3=no])],
         [inn_cv_have_sqlite3=no])

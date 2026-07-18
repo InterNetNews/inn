@@ -11,23 +11,12 @@
 
 #ifdef HAVE_SQLITE3
 
-#    include <stdio.h>
 #    include <string.h>
-
-/* sqlite3_prepare_v3() is defined in SQLite 3.20.0 and above. */
-#    if SQLITE_VERSION_NUMBER >= 3020000
-#        define UNUSED_BEFORE_SQLITE_3_20
-#    else
-#        define UNUSED_BEFORE_SQLITE_3_20 UNUSED
-#        define sqlite3_prepare_v3(db, zSql, nByte, prepFlags, ppStmt, \
-                                   pzTail)                             \
-            sqlite3_prepare_v2(db, zSql, nByte, ppStmt, pzTail)
-#    endif
 
 int
 sqlite_helper_init(sqlite_helper_t const *helper, sqlite3_stmt **stmts,
                    sqlite3 *connection,
-                   unsigned int prepare_flags UNUSED_BEFORE_SQLITE_3_20,
+                   unsigned int prepare_flags,
                    char **errmsg)
 {
     int result;
