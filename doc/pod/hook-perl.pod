@@ -628,6 +628,8 @@ the number of messages per user, IP or domain, provides a set of powerful
 ban lists, supports RBLs and URIBLs, can handle connections that come from
 TOR and is able to deeply modify the headers.  It's designed for large sites.
 
+The project is no longer maintained.
+
 =item News Shogun
 
 URL: L<http://www.panix.com/shogun/> (by Aidan Cully)
@@ -635,6 +637,8 @@ URL: L<http://www.panix.com/shogun/> (by Aidan Cully)
 A posting filter for helping a site enforce Usenet-II soundness,
 and for quota'ing the number of messages any user can post to
 Usenet daily.  It uses F<filter_nnrpd.pl>.
+
+The project is no longer maintained.
 
 =back
 
