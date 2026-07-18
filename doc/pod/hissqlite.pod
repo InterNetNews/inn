@@ -5,8 +5,8 @@ hissqlite - SQLite-based history storage method for INN
 =head1 DESCRIPTION
 
 This method uses SQLite to store the history database, as an alternative to
-the default C<hisv6> method.  It requires version 3.8.2 or later of the
-SQLite library (3.20.0+ recommended).
+the default C<hisv6> method.  It requires version 3.24.0 or later of the
+SQLite library.
 
 SQLite source, documentation, etc. are available at
 L<https://www.sqlite.org/>.  One of the stated goals of the SQLite file

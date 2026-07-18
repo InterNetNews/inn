@@ -148,17 +148,16 @@ hooks in, you may also want to install S<Python 2.3.0> or later, or S<Python
 For support for authenticated control messages, you will need either PGP
 or GnuPG, the latter being recommended.  See F<INSTALL> for more details.
 
-For the C<ovdb> overview storage method, you'll need S<Berkeley
-DB 4.4> or later (4.7 or later recommended).  For the C<ovsqlite>
-overview storage method, you'll need S<SQLite 3.8.2> or later (3.20.0
-or later recommended).  If you have zlib available, you can also compress
-overview before it's stored into C<ovdb> or C<ovsqlite>, and enable the
-COMPRESS capability, an NNTP extension.  For support for news reading
-over TLS, you'll need OpenSSL or LibreSSL.  To support SASL authentication
-to B<nnrpd> or to feed newsgroups to an IMAP server with SASL
-authentication, you'll need the Cyrus SASL libraries.  INN can also
-check passwords against a Kerberos KDC; for this, you will need Kerberos
-libraries.
+For the C<ovdb> overview storage method, you'll need S<Berkeley DB 4.4> or
+later (4.7 or later recommended).  For the C<hissqlite> history storage method
+or the C<ovsqlite> overview storage method, you'll need S<SQLite 3.24.0> or
+later.  If you have zlib available, you can also compress overview before it's
+stored into C<ovdb> or C<ovsqlite>, and enable the COMPRESS capability, an
+NNTP extension.  For support for news reading over TLS, you'll need OpenSSL or
+LibreSSL.  To support SASL authentication to B<nnrpd> or to feed newsgroups to
+an IMAP server with SASL authentication, you'll need the Cyrus SASL libraries.
+INN can also check passwords against a Kerberos KDC; for this, you will need
+Kerberos libraries.
 
 =head1 Getting Started
 

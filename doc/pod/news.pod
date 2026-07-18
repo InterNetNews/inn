@@ -7,6 +7,11 @@ intervention may be needed:
 
 =item *
 
+The minimum supported SQLite version is now 3.24.0, released in June 2018.
+Older versions are no longer accepted at configure time.
+
+=item *
+
 SQLite's Write-Ahead Logging journal mode is now enabled by default.  This
 setting notably improves read performance when multiple B<nnrpd> processes
 access the overview database simultaneously.  However, it does not work on

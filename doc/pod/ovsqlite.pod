@@ -5,7 +5,7 @@ ovsqlite - SQLite-based overview storage method for INN
 =head1 DESCRIPTION
 
 This method uses SQLite to store overview data.  It requires version
-3.8.2 or later of the SQLite library (3.20.0+ recommended).
+3.24.0 or later of the SQLite library.
 
 SQLite source, documentation, etc. are available at
 L<https://www.sqlite.org/>.  Ones of the stated goals of the SQLite

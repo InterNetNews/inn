@@ -183,11 +183,12 @@ main(int argc, char *argv[])
     /* Plain INSERT (not OR IGNORE): a duplicate hash returns SQLITE_CONSTRAINT
        so convert_cb can count it instead of silently dropping the row. */
     checked(st.db,
-            sqlite3_prepare_v2(st.db,
+            sqlite3_prepare_v3(st.db,
                                "insert into hist"
                                "(hash, arrived, posted, expires, token)"
                                " values(?1, ?2, ?3, ?4, ?5)",
-                               -1, &st.insert, NULL),
+                               -1, SQLITE_PREPARE_PERSISTENT, &st.insert,
+                               NULL),
             "prepare insert");
 
     src = HISopen(srcpath, srcmethod, HIS_RDONLY);
