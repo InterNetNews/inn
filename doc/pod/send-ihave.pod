@@ -63,10 +63,10 @@ articles may be posted, each one containing up to 1000 Message-IDs.
 
 Make sure the C<to.news.server.com> pseudo-newsgroup exists on your server (or
 the C<to> pseudo-newsgroup if I<mergetogroups> is set to true in F<inn.conf>),
-and that ihave control articles are not filtered (the default Cleanfeed
-configuration rejects them).  These control articles will be filed in the
-C<control> pseudo-newsgroup (or C<control.ihave> if it exists), or C<to>
-if I<mergetogroups> is set to true.
+and that ihave control articles are not filtered (the default Cleanfeed /
+cleanfeed-ng configuration rejects them).  These control articles will be
+filed in the C<control> pseudo-newsgroup (or C<control.ihave> if it exists),
+or C<to> if I<mergetogroups> is set to true.
 
 You now have to propagate them with any method you want to the remote server.
 You probably already had one set up, in which case you only have to add

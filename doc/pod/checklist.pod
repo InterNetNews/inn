@@ -268,9 +268,12 @@ articles like spam (see the perl-nocem(8) man page).
 =item *
 
 You may want to install a spam and abuse filter.  Good choices
-are either Cleanfeed (a widely used Perl filter you can find at
-L<http://www.mixmin.net/cleanfeed/>) or PyClean (also a great Python filter
-you can find at L<https://github.com/crooks/PyClean>).
+are either cleanfeed-ng, the maintained and lightweight
+continuation at L<https://github.com/infybofh/cleanfeed-ng/> of
+the historical Cleanfeed filter (a widely used Perl filter you can
+find at L<http://www.mixmin.net/cleanfeed/> but you should go for
+cleanfeed-ng) or PyClean (also a great Python filter you can find at
+L<https://github.com/crooks/PyClean>).
 
 You need to have an INN installation built with Perl and/or Python support to
 be able to use these filters.
