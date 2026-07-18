@@ -1174,19 +1174,33 @@ Kondou to inn-workers) on the old server if it uses a hisv6 history method:
         | tr . / > <pathoutgoing in inn.conf>/list
     innxmit server list
 
+or these commands if it uses a hissqlite history method:
+
+    perl -ne 'chomp; \
+        our ($hash, $arrived, $posted, $expires, $_) = split " "; \
+        print "$_\n" if $_ and $_ =~ /^@/' <(hissqlite-util -d -O arrival) \
+        > <pathoutgoing in inn.conf>/list
+    innxmit server list
+
 where <pathhistory> is the path to the directory containing the history
 file (usually ~news/db), <pathoutgoing> is the path to the outgoing spool
 directory (usually ~news/spool/outgoing), and server is the name of the
 new news server to which you're feeding the articles.  The result file
 contains tokens ordered by arrival time on the old server (which is
-usually roughly the same as the posting time).  In case the history
-file was not populated chronologically, it is better to sort it by
-posting time so that articles are fed in the right order.  This can be
-achieved with the following command:
+usually roughly the same as the posting time).
+
+In case the history file was not populated chronologically, it is better
+to sort it by posting time so that articles are fed in the right order.
+This can be achieved with the preliminary following command for a hisv6
+history method, which will generate a history.sorted file sorted by
+posting time:
 
     sort -t '~' -k3n < history > history.sorted
 
-And then, consider history.sorted instead of history for the next steps.
+And then, use history.sorted instead of history in the above Perl command
+for the next steps.  In case a hissqlite history method is used, just adapt
+the argument given to hissqlite-util in the above command, using
+"-O posting" instead of "-O arrival".
 
 If the new server has just been installed or is known not to already have
 the articles you will feed it, you may want to add the "-c" flag to
@@ -1204,7 +1218,8 @@ with INN).
     convdate -n '15 Apr 2014 20:42 +0200' '16 Apr 2014 12:37 +0200'
 
 returns the two corresponding timestamps 1397586540 and 1397644620 that
-can then be used to retrieve a subset of articles to feed:
+can then be used to retrieve a subset of articles to feed.  For a hisv6
+history method, use:
 
     cd <pathhistory in inn.conf>
     perl -ne 'chomp; our ($hash, $timestamps, $_) = split " "; \
@@ -1212,6 +1227,15 @@ can then be used to retrieve a subset of articles to feed:
         print "$_\n" if $_ and $arrived >= 1397586540 \
             and $arrived <= 1397644620' history \
         | tr . / > <pathoutgoing in inn.conf>/list
+    innxmit server list
+
+and for a hissqlite history method, use:
+
+    perl -ne 'chomp; \
+        our ($hash, $arrived, $posted, $expires, $_) = split " "; \
+        print "$_\n" if $_ and $_ =~ /^@/ and $arrived >= 1397586540 \
+            and $arrived <= 1397644620' <(hissqlite-util -d -O arrival) \
+        > <pathoutgoing in inn.conf>/list
     innxmit server list
 
 Other conditions may be added in the print line to select a subset of
