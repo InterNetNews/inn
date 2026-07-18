@@ -67,7 +67,7 @@ die "Only one action allowed at the same time\n\n$usage"
 
 my $dbdir;
 {
-    no warnings 'once';
+    no warnings 'once';    ##  no critic (ProhibitNoWarnings)
     $dbdir = $opt{'p'} || $INN::Config::pathhistory;
 }
 my $dbpath = "$dbdir/$dbfile";
@@ -125,7 +125,7 @@ sub get_version {
 # arrival, latest arrival).  Compute them in one table scan; callers that only
 # need the first values can ignore the remainder.
 sub get_counts {
-    return $dbh->selectrow_array(
+    my @array = $dbh->selectrow_array(
         q{
             select count(*),
                    coalesce(sum(token is not null), 0),
@@ -136,6 +136,7 @@ sub get_counts {
                 from hist;
         },
     );
+    return @array;
 }
 
 # Print the tool version and the database schema version (-V option).
@@ -148,7 +149,11 @@ sub print_version {
 
 # Print total, real, and remembered entry counts (-c option).
 sub count_entries {
-    my ($total, $real, $remembered) = get_counts();
+    my (
+        $total, $real, $remembered, $explicit_expiration_unused,
+        $minarrived_unused,
+        $maxarrived_unused,
+    ) = get_counts();
     print "total $total\n";
     print "real $real\n";
     print "remembered $remembered\n";
@@ -204,8 +209,10 @@ sub dump_statistics {
     my ($page_size) = $dbh->selectrow_array("pragma page_size;");
     my ($page_count) = $dbh->selectrow_array("pragma page_count;");
     my ($freelist_count) = $dbh->selectrow_array("pragma freelist_count;");
-    my ($total, $real, $remembered, $explicit_expiration, $minarrived,
-        $maxarrived) = get_counts();
+    my (
+        $total, $real, $remembered, $explicit_expiration, $minarrived,
+        $maxarrived,
+    ) = get_counts();
     $dbh->commit();
 
     my $used_pages = $page_count - $freelist_count;
@@ -280,9 +287,8 @@ sub audit_history {
 
     # Entry counts and arrival range.
     my (
-        $total, $real,
-        $remembered, $explicit_expiration_unused,
-        $minarrived, $maxarrived,
+        $total, $real, $remembered, $explicit_expiration_unused, $minarrived,
+        $maxarrived,
     ) = get_counts();
     print "Total entries: $total\n";
     print "Real entries (token not null): $real\n";

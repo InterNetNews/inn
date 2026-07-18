@@ -99,7 +99,7 @@ my $sql_extraclause_artinfo = "";
 my $sql_extraclause_groupinfo = "";
 my $dbdir;
 {
-    no warnings 'once';
+    no warnings 'once';    ##  no critic (ProhibitNoWarnings)
     $dbdir = $opt{'p'} || $INN::Config::pathoverview;
 }
 my $dbpath = "$dbdir/$dbfile";
