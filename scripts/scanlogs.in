@@ -265,6 +265,7 @@ OLD_SYSLOG=${OLD}/${BASE}.0
 if [ -s ${OLD_SYSLOG} ]; then
     echo Syslog critical messages:
     cat ${OLD_SYSLOG} | head -n ${MAXERRLINES}
+    echo ''
     echo ---------
     echo ''
 fi
@@ -276,6 +277,7 @@ OLD_SYSLOG=${OLD}/${BASE}.0
 if [ -s ${OLD_SYSLOG} ]; then
     echo Syslog error messages:
     cat ${OLD_SYSLOG} | head -n ${MAXERRLINES}
+    echo ''
     echo ---------
     echo ''
 fi
@@ -287,6 +289,7 @@ OLD_ERRLOG=${OLD}/${BASE}.0
 if [ -s ${OLD_ERRLOG} ]; then
     echo Error log:
     cat ${OLD_ERRLOG} | head -n ${MAXERRLINES}
+    echo ''
     echo ---------
     echo ''
 fi
@@ -313,6 +316,7 @@ if [ -s ${OLD_SYSLOG} -o -s ${OLD_LOG} ]; then
         ${OLD_LOG} ${OLD_SYSLOG} ${OLD_PERLNOCEM} >${INNREPORT}
     if [ -s ${INNREPORT} ]; then
         cat ${INNREPORT}
+        echo ''
         echo ---------
         echo ''
     fi

@@ -560,6 +560,7 @@ if ${DOMAIL}; then
     if [ -s ${EXPLOG} ]; then
         echo 'Expire messages:'
         cat ${EXPLOG}
+        echo ''
         echo '---------'
         echo ''
     fi
