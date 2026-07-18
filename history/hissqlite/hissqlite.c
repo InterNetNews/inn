@@ -253,6 +253,42 @@ hissqlite_is_wal(struct hissqlite *h)
 }
 
 /*
+**  Estimate the entry count from allocated database bytes.  The prepared
+**  query reads all three table-valued PRAGMAs in one statement, so they share
+**  one WAL snapshot even while another connection is writing.
+*/
+static bool
+hissqlite_entryestimate(struct hissqlite *h, size_t *out)
+{
+    sqlite3_stmt *stmt;
+    sqlite3_int64 bytes;
+    uint64_t estimate;
+    bool ok;
+    static const char query[] =
+        "select (page_count - freelist_count) * page_size"
+        " from pragma_page_count(), pragma_freelist_count(),"
+        " pragma_page_size()";
+
+    if (h->db == NULL)
+        return false;
+    if (sqlite3_prepare_v2(h->db, query, -1, &stmt, NULL) != SQLITE_OK) {
+        hissqlite_seterror(h, "prepare entry estimate");
+        return false;
+    }
+    ok = sqlite3_step(stmt) == SQLITE_ROW;
+    bytes = ok ? sqlite3_column_int64(stmt, 0) : -1;
+    if (!ok)
+        hissqlite_seterror(h, "estimate entries");
+    sqlite3_finalize(stmt);
+    if (bytes < 0)
+        return false;
+
+    estimate = (uint64_t) bytes / HISSQLITE_MIN_ROW_BYTES;
+    *out = estimate > SIZE_MAX ? SIZE_MAX : (size_t) estimate;
+    return true;
+}
+
+/*
 **  Open (or create) the database named by h->path and prepare the statement
 **  sets, using h->flags.  Factored out of hissqlite_open so the deferred-path
 **  pattern -- HISopen(NULL, ...) followed by HISCTLS_PATH, as makehistory uses
@@ -860,6 +896,15 @@ hissqlite_ctl(void *history, int selector, void *val)
            way.  See hissqlite_expire(). */
         *(bool *) val = true;
         return true;
+    case HISCTLG_ENTRYESTIMATE:
+        /* (page_count - freelist_count) * page_size is the allocated data
+           size as seen by this connection's snapshot (WAL included), read
+           from the database header in O(1); dividing by the smallest
+           possible row footprint overestimates the row count.  An exact
+           count(*) has no thin index to use on this WITHOUT ROWID table, so
+           it would traverse the whole clustered B-tree -- the very scan
+           callers such as expireover are about to make via HISwalk. */
+        return hissqlite_entryestimate(h, val);
     case HISCTLS_PATH:
         /* Deferred-open path (makehistory): HISopen(NULL) left the database
            unopened; set the real path now and perform the open/create.  Refuse

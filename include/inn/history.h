@@ -91,7 +91,16 @@ enum {
      * so the caller must initialise it to false.  expire(8) uses this to
      * decide whether to open the history read/write (in place) or read-only
      * (rebuild-and-swap, the hisv6 model). */
-    HISCTLG_INPLACEEXPIRE
+    HISCTLG_INPLACEEXPIRE,
+
+    /* (size_t) get a cheap, conservative overestimate of the number of
+     * entries in the history database, without scanning it, suitable for
+     * sizing data structures such as Bloom filters.  Each backend derives
+     * the estimate from its own on-disk layout.  Returns false (leaving the
+     * value untouched) if no estimate can be made; callers should fall back
+     * to their own default sizing.  expireover(8) uses this to size its
+     * Bloom filter before walking the history database. */
+    HISCTLG_ENTRYESTIMATE
 };
 
 struct history *HISopen(const char *, const char *, int);

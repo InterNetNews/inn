@@ -124,7 +124,7 @@ main(void)
     struct walkcount wc;
     bool has_token;
 
-    test_init(32);
+    test_init(34);
 
     strlcpy(tmpdir, "hissqlite-XXXXXX", sizeof(tmpdir));
     if (mkdtemp(tmpdir) == NULL)
@@ -480,6 +480,36 @@ main(void)
             HISclose(ar);
         if (aw != NULL)
             HISclose(aw);
+    }
+
+    /* HISCTLG_ENTRYESTIMATE: a cheap, conservative overestimate of the entry
+       count (expireover relies on it to size its Bloom filter).  The main
+       database peaked at N_TOKEN + N_REMEMBER rows and pages are never
+       returned to the filesystem, so the estimate must be at least that. */
+    {
+        struct history *eh;
+        size_t est = 0;
+
+        eh = HISopen(histpath, "hissqlite", HIS_RDONLY);
+        ok(33, eh != NULL && HISctl(eh, HISCTLG_ENTRYESTIMATE, &est)
+                   && est >= N_TOKEN + N_REMEMBER);
+        if (eh != NULL)
+            HISclose(eh);
+    }
+
+    /* hisv6 implements the estimate too (empty text file -> exactly 0,
+       distinguishable from left-untouched by pre-loading a sentinel). */
+    {
+        struct history *hv;
+        size_t est = (size_t) -1;
+        char hv6path[160];
+
+        snprintf(hv6path, sizeof(hv6path), "%s/hv6", tmpdir);
+        hv = HISopen(hv6path, "hisv6", HIS_RDWR);
+        ok(34, hv != NULL && HISctl(hv, HISCTLG_ENTRYESTIMATE, &est)
+                   && est == 0);
+        if (hv != NULL)
+            HISclose(hv);
     }
 
     {

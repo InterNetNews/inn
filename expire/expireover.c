@@ -483,19 +483,14 @@ main(int argc, char *argv[])
        fall through to HISlookup for correctness (handles articles added after
        the walk). */
     if (innconf->expirebloomfp > 0 && !always_stat) {
-        struct stat st;
-        char *histpath;
         size_t estimated = 0;
-        /* Minimum history line: 34 (hash) + 1 (tab) + 1 (arrived)
-         * + 1 (newline).  Dividing file size by this gives a conservative
-         * overestimate of entries, which is what we want for Bloom sizing. */
-        const size_t min_history_line = 37;
 
-        histpath = concatpath(innconf->pathhistory, INN_PATH_HISTORY);
-        if (stat(histpath, &st) == 0)
-            estimated = st.st_size / min_history_line;
-        else
-            warn("can't stat %s, Bloom filter will be undersized", histpath);
+        /* Each history backend derives a conservative overestimate of its
+           entry count from its own on-disk layout (hisv6: text file size /
+           minimum line; hissqlite: allocated pages / minimum row). */
+        if (!HISctl(history, HISCTLG_ENTRYESTIMATE, &estimated))
+            warn("can't estimate history entries, Bloom filter will be"
+                 " undersized");
         bloom = bloom_create(estimated, innconf->expirebloomfp);
         if (!HISwalk(history, NULL, bloom, build_bloom_cb)) {
             warn("can't walk history for Bloom filter, using per-article"
@@ -504,7 +499,6 @@ main(int argc, char *argv[])
             bloom = NULL;
         }
         OVctl(OVTOKENCACHE, &bloom);
-        free(histpath);
     }
 
     /* Loop through each line of the input file and process each group,
