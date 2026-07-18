@@ -6,7 +6,7 @@ ovsqlite-util - Overview manipulation utility for ovsqlite
 
 =head1 SYNOPSIS
 
-B<ovsqlite-util> [B<-AFghioO>] [B<-a> I<article>] [B<-n> I<newsgroup>]
+B<ovsqlite-util> [B<-AFghioOs>] [B<-a> I<article>] [B<-n> I<newsgroup>]
 [B<-p> I<path>]
 
 =head1 DESCRIPTION
@@ -64,7 +64,7 @@ in the group.  Passing C<-> for I<article> is therefore equivalent to not
 using the B<-a> option at all.
 
 Only useful in combination with the B<-g>, B<-o> and B<-O> options to dump
-overview information.
+overview information.  It cannot be combined with B<-s>.
 
 =item B<-A>
 
@@ -116,7 +116,8 @@ not given, the entire master index will be dumped.
 =item B<-n> I<newsgroup>
 
 Specify the newsgroup on which to act, required for the B<-g>, B<-o>, and
-B<-O> options, and optional for the B<-i> option.
+B<-O> options, and optional for the B<-i> option.  It cannot be combined
+with B<-s>.
 
 =item B<-o>
 
@@ -151,6 +152,23 @@ dump to the information for a single article or a range of article numbers.
 Act on the overview database rooted in I<path>, overriding the overview
 path specified in the I<pathoverview> parameter in F<inn.conf>.
 
+=item B<-s>
+
+Print database storage and overview record statistics.  The report contains
+the SQLite and schema versions, journal and auto-vacuum modes, compression
+status, page usage, database and journal file sizes, and counts of active and
+deleted newsgroups, their articles, and any orphaned article records.  It
+remains available when B<ovsqlite-server> is not running.
+
+Database-derived values are collected from one consistent read snapshot.
+The logical database size is the page count multiplied by the page size.
+Non-freelist page capacity is an estimate derived from SQLite's page
+accounting, not a measure of how full each page is.  Freelist pages can be
+reused by later writes or recovered with a full C<VACUUM>.  File sizes are
+point-in-time values and may change while the server is writing.  Files that
+do not currently exist, such as a WAL or rollback journal, have a reported
+size of zero.
+
 =back
 
 =head1 EXAMPLES
@@ -179,6 +197,10 @@ Audit the entire overview database for any problems:
 If problems were reported, fix them with:
 
     ovsqlite-util -F
+
+Print storage and record statistics:
+
+    ovsqlite-util -s
 
 =head1 HISTORY
 

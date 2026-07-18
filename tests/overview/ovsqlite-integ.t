@@ -14,6 +14,19 @@ printcount() {
     count=$(expr $count + 1)
 }
 
+# runtests preserves its caller's working directory.  Normalize to the test
+# build directory so this test works when runtests is called from either the
+# repository root or the tests directory.
+test_root=${C_TAP_BUILD:-}
+if [ -z "$test_root" ]; then
+    test_root=$(dirname "$0")
+    test_root=$(cd "$test_root/.." && pwd)
+fi
+if ! cd "$test_root"; then
+    echo "Bail out! cannot change to test directory $test_root"
+    exit 1
+fi
+
 # Find the right directory.
 dirs='../data data tests/data'
 for dir in $dirs; do
@@ -30,6 +43,7 @@ fi
 server="../../storage/ovsqlite/ovsqlite-server"
 writer="overview/ovsqlite-write.t"
 reader="overview/ovsqlite-read.t"
+util_source="../storage/ovsqlite/ovsqlite-util.in"
 
 # When run from the tests directory, adjust paths.
 if [ ! -x "$server" ]; then
@@ -55,7 +69,7 @@ for prog in "$server" "$writer" "$reader"; do
     fi
 done
 
-echo 13
+echo 21
 
 # Set up temp directory with config files.  Use absolute paths because
 # the C test programs chdir to the test data directory before reading
@@ -151,7 +165,79 @@ else
     printcount "ok" "# server stopped (signal)"
 fi
 
-# Tests 6-10: run the reader (5 TAP tests from inside).
+# Tests 6-13: report database statistics with ovsqlite-util.
+# Run the source directly with -p so the test does not depend on an installed
+# INN::Config and innconfval.
+if [ ! -r "$util_source" ] \
+    || ! perl -MDBI -MDBD::SQLite -MCompress::Zlib -e 1 \
+        >/dev/null 2>&1; then
+    printcount "ok" "# skip ovsqlite-util dependencies unavailable"
+    printcount "ok" "# skip ovsqlite-util dependencies unavailable"
+    printcount "ok" "# skip ovsqlite-util dependencies unavailable"
+    printcount "ok" "# skip ovsqlite-util dependencies unavailable"
+    printcount "ok" "# skip ovsqlite-util dependencies unavailable"
+    printcount "ok" "# skip ovsqlite-util dependencies unavailable"
+    printcount "ok" "# skip ovsqlite-util dependencies unavailable"
+    printcount "ok" "# skip ovsqlite-util dependencies unavailable"
+else
+    stats_output=$(perl "$util_source" -s -p "$tmpdir" 2>&1)
+    stats_rc=$?
+    if [ $stats_rc -eq 0 ]; then
+        printcount "ok" "# statistics command"
+    else
+        echo "# ovsqlite-util -s failed (rc=$stats_rc):"
+        echo "$stats_output" | sed 's/^/# /'
+        printcount "not ok" "# statistics command"
+    fi
+    if echo "$stats_output" | grep -q '^Schema version: 1$'; then
+        printcount "ok" "# schema version statistic"
+    else
+        printcount "not ok" "# schema version statistic"
+    fi
+    if echo "$stats_output" | grep -q '^Journal mode: wal$'; then
+        printcount "ok" "# journal mode statistic"
+    else
+        printcount "not ok" "# journal mode statistic"
+    fi
+    if echo "$stats_output" | grep -q '^Compression: enabled$'; then
+        printcount "ok" "# compression statistic"
+    else
+        printcount "not ok" "# compression statistic"
+    fi
+    if echo "$stats_output" | grep -q '^Page count: [1-9][0-9]*$'; then
+        printcount "ok" "# page count statistic"
+    else
+        printcount "not ok" "# page count statistic"
+    fi
+    if echo "$stats_output" | grep -q '^Total groups: 11$' \
+        && echo "$stats_output" | grep -q '^Active groups: 11$' \
+        && echo "$stats_output" | grep -q '^Deleted groups: 0$'; then
+        printcount "ok" "# group count statistics"
+    else
+        echo "# unexpected -s group counts:"
+        echo "$stats_output" | sed 's/^/# /'
+        printcount "not ok" "# group count statistics"
+    fi
+    if echo "$stats_output" | grep -q '^Total articles: 99$' \
+        && echo "$stats_output" \
+        | grep -q '^Articles in active groups: 99$' \
+        && echo "$stats_output" \
+        | grep -q '^Articles in deleted groups: 0$' \
+        && echo "$stats_output" | grep -q '^Orphan articles: 0$'; then
+        printcount "ok" "# article count statistics"
+    else
+        echo "# unexpected -s article counts:"
+        echo "$stats_output" | sed 's/^/# /'
+        printcount "not ok" "# article count statistics"
+    fi
+    if echo "$stats_output" | grep -q '^WAL file size: [0-9][0-9]* bytes$'; then
+        printcount "ok" "# WAL file size statistic"
+    else
+        printcount "not ok" "# WAL file size statistic"
+    fi
+fi
+
+# Tests 14-18: run the reader (5 TAP tests from inside).
 reader_output=$($reader 2>&1)
 reader_rc=$?
 reader_count=$(echo "$reader_output" | grep -c "^ok ")
@@ -171,7 +257,7 @@ else
     printcount "not ok" "# reopen"
 fi
 
-# Tests 11-13: server restart resilience.
+# Tests 19-21: server restart resilience.
 # Simulate INN restart: start a new server against the existing WAL database,
 # shut it down, verify the reader can still read all data.  This is the
 # scenario where nnrpd outlives a server restart cycle.
