@@ -78,8 +78,6 @@ $modes++ if defined($opt{'O'});
 die "Can't use both -A and -F\n\n$usage"
   if defined($opt{'A'})
   and defined($opt{'F'});
-die "No action specified\n\n$usage"
-  if $modes == 0;
 die "Only one action allowed at the same time\n\n$usage"
   if $modes > 1;
 die "A newsgroup must be specified with -n\n\n$usage"
@@ -165,10 +163,7 @@ if (defined($opt{'F'})) {
     $ispaused = 1;
 }
 
-if (defined($opt{'A'}) or defined($opt{'F'})) {
-    # Run the checks, and fix them if -F given.
-    check_groupinfo_consistency();
-} elsif (defined($opt{'g'})) {
+if (defined($opt{'g'})) {
     dump_overview();
 } elsif (defined($opt{'i'})) {
     dump_groupinfo();
@@ -176,6 +171,9 @@ if (defined($opt{'A'}) or defined($opt{'F'})) {
     dump_artinfo_clients();
 } elsif (defined($opt{'O'})) {
     dump_artinfo_overchan();
+} else {
+    # Default action: audit, and also fix if -F is given.
+    check_groupinfo_consistency();
 }
 
 # Close the connection properly.
