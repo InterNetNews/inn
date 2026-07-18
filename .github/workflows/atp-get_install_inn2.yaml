@@ -1,0 +1,72 @@
+# Demonstrate how to properly `apt-get install inn2` in a GitHub Action.
+# Configure the inn2 instance so that other code can test interactions with the inn2 server.
+
+name: InterNetNews2
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+jobs:
+  inn2:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: cat "localhost.localdomain" > /etc/hostname
+        run: |
+          echo "localhost.localdomain" > hostname
+          sudo mv hostname /etc/
+          cat /etc/hostname
+      # The next commands usually pass, but not always!!!
+      - run: |
+          sudo apt-get update -qq
+          sudo apt-get install --yes inn2
+      # - run: cat /etc/news/inn.conf  # Useful for debugging
+      - run: systemctl status inn2
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.12  # nntplib was removed from the Standard Library in Python 3.13.
+
+      - name: nntplib_demo
+        shell: python
+        run: |
+          import nntplib  # Removed from the Standard Library in Python 3.13.
+          import pathlib
+          with nntplib.NNTP("localhost", readermode=True) as nntp_server:
+              print(f"{nntp_server = }")
+              # print(f"{nntp_server.starttls() = }")  # nntplib.NNTPTemporaryError: 401 MODE-READER
+              print(f"{nntp_server.nntp_version = }")
+              print(f"{nntp_server.nntp_implementation = }")
+              print(f"{nntp_server.getwelcome() = }")
+              print(f"{nntp_server.getcapabilities() = }")
+              print(f"{nntp_server.list() = }")
+              print("News group list:")
+              print("\n".join(
+                  f"{i}. {group_info.group}" for i, group_info in enumerate(nntp_server.list()[1], 1)
+              ))
+              # Ensure the 'local.test' group has no articles.
+              resp, count, first, last, name = nntp_server.group('local.test')
+              print(f"Group '{name}' has {count} articles, range {first} to {last}.")
+              # Post an article to the 'local.test' group.
+              msg = pathlib.Path("contrib/inn_article_001.txt").read_text()
+              # print(f"{msg = }")
+              response = nntp_server.post(msg.encode("utf-8"))
+              print(f"{response = }")
+              # Verify that the article is there.
+              resp, count, first, last, name = nntp_server.group('local.test')
+              print(f"Group '{name}' has {count} articles, range {first} to {last}.")
+              # Read the article.
+              stat = nntp_server.stat()  # last() and next() both fail
+              # print(f"{stat = }")
+              article = nntp_server.article(stat[2])
+              print(f"{article = }")
+              # Print the lines of the article
+              print("\n".join(line.decode("utf-8") for line in article[1].lines))
+              # Print the overview information
+              resp, count, first, last, name = nntp_server.group('local.test')
+              # print(resp, count, first, last, name)
+              resp, overviews = nntp_server.over((first, last))
+              for id, over in overviews:
+                  print(id, nntplib.decode_header(over['subject']))
