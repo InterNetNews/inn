@@ -4,7 +4,7 @@ hissqlite-util - History manipulation utility for hissqlite
 
 =head1 SYNOPSIS
 
-B<hissqlite-util> [B<-AcdhsV>] [B<-p> I<path>]
+B<hissqlite-util> [B<-AcdhsV>] [B<-O> I<order>] [B<-p> I<path>]
 
 =head1 DESCRIPTION
 
@@ -60,6 +60,15 @@ with C<@> (or C<remembered> for a token-less entry).
 
 Print a usage message and exit.
 
+=item B<-O> I<order>
+
+Sort history records by I<order> time when dumped with B<-d>.  Possible values
+for I<order> are C<arrival>, C<expiration> and C<posting>.
+
+When sorting by arrival or expiration time, history records with a similar
+such time are then also sorted by posting time.  When sorting by posting time,
+history records with a similar such time are then also sorted by arrival time.
+
 =item B<-p> I<path>
 
 Act on the F<history.sqlite> database in I<path> instead of the default
@@ -98,6 +107,10 @@ Audit the history database for problems:
 Print entry counts for a database in F</news/db>:
 
     hissqlite-util -c -p /news/db
+
+Dump history records by posting time:
+
+    hissqlite-util -d -O posting
 
 Print storage and entry statistics:
 

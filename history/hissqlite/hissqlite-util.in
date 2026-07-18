@@ -14,7 +14,7 @@ use POSIX qw(strftime);
 $0 =~ s!.*/!!;
 
 # Version of this tool.
-my $VERSION = "1.1";
+my $VERSION = "1.2";
 
 # Bail out if the needed DBI Perl module is not installed.
 eval {
@@ -29,7 +29,7 @@ eval {
 my $dbfile = "history.sqlite";
 
 my $usage = "Usage:
-  $0 [-AcdhsV] [-p path]
+  $0 [-AcdhsV] [-O order] [-p path]
 
 Options:
   -A             Audit the history database for problems, and report them to
@@ -38,6 +38,8 @@ Options:
   -c             Print total, real, and remembered entry counts.
   -d             Dump all history records as text, one per line.
   -h             Print this help message.
+  -O order       Sort history records by order time when dumped with -d.
+                 order can be \"arrival\", \"expiration\" or \"posting\".
   -p path        Read $dbfile database file in path directory instead of
                  default pathhistory directory as set in inn.conf.
   -s             Print database storage and history entry statistics.
@@ -51,7 +53,7 @@ sub HELP_MESSAGE {
 }
 
 my %opt;
-getopts("AcdhsVp:", \%opt) || die $usage;
+getopts("AcdhO:p:sV", \%opt) || die $usage;
 
 HELP_MESSAGE() if defined($opt{'h'});
 
@@ -64,6 +66,14 @@ $modes++ if defined($opt{'V'});
 
 die "Only one action allowed at the same time\n\n$usage"
   if $modes > 1;
+die "Can't use -O without -d\n\n$usage"
+  if defined($opt{'O'})
+  and not defined($opt{'d'});
+die "Invalid order given to -O\n\n$usage"
+  if defined($opt{'O'})
+  and $opt{'O'} ne "arrival"
+  and $opt{'O'} ne "expiration"
+  and $opt{'O'} ne "posting";
 
 my $dbdir;
 {
@@ -163,12 +173,24 @@ sub count_entries {
 sub dump_history {
     my $statement;
 
+    my $order = $opt{'O'};
+    my $sql_extraclause = '';
+
+    if (defined($order)) {
+        if ($order eq "arrival") {
+            $sql_extraclause = "order by arrived,posted";
+        } elsif ($order eq "expiration") {
+            $sql_extraclause = "order by expires,posted";
+        } elsif ($order eq "posting") {
+            $sql_extraclause = "order by posted,arrived";
+        }
+    }
     # hex() renders a BLOB as uppercase hex, or an empty string for a
     # remembered entry's missing token.
     $statement = $dbh->prepare(
-        q{
+        qq{
             select hex(hash), arrived, posted, expires, hex(token)
-                from hist;
+                from hist $sql_extraclause;
         },
     );
     $statement->execute();
