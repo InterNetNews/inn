@@ -98,6 +98,7 @@ our %batcher_articles;
 our %batcher_bytes;
 our %batcher_elapsed;
 our %batcher_offered;
+our %cleanfeed_ng_events;
 our %cnfsstat;
 our %cnfsstat_cycles;
 our %cnfsstat_rate;
@@ -938,11 +939,24 @@ sub collect($$$$$$) {
           if $left =~ /CNFS(?:-sm)?: metacycbuff \S+ cycbuff is moved to /o;
         # From XBATCH
         return 1 if $left =~ /\S+:\d+ accepted batch size \d+/o;
-        # Cleanfeed status reports
+        # cleanfeed-ng structured audit/rejection events.
+        if ($left
+            =~ /^filter: cleanfeed_event action=(\S+) rule=(\S+)(?:\s|$)/o)
+        {
+            $cleanfeed_ng_events{"$1\t$2"}++;
+            return 1;
+        }
+        # Routine Cleanfeed and cleanfeed-ng housekeeping messages.  These are
+        # expected operational notices, not errors, and therefore need not be
+        # repeated in the daily "Unknown entries" section.
         return 1 if $left =~ /^filter: status/o;
         return 1 if $left =~ /^filter: Reloading bad files/o;
+        return 1 if $left =~ /^filter: Reloading external cleanfeed lists/o;
         return 1 if $left =~ /^filter: Saved EMP database/o;
         return 1 if $left =~ /^filter: Restored EMP database/o;
+        return 1 if $left =~ /^filter: metrics articles=/o;
+        return 1 if $left =~ /^filter: cleanfeed-ng runtime version=/o;
+        return 1 if $left =~ /^filter: Meow unto the greatness of Fluffy/o;
         # PyClean status reports
         return 1 if $left =~ /^python: pyclean successfully hooked into INN/o;
         # Using the stathist parameter
