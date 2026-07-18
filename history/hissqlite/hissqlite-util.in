@@ -163,8 +163,8 @@ sub count_entries {
 sub dump_history {
     my $statement;
 
-    # hex() renders a BLOB as uppercase hex, or NULL for a remembered entry's
-    # missing token.
+    # hex() renders a BLOB as uppercase hex, or an empty string for a
+    # remembered entry's missing token.
     $statement = $dbh->prepare(
         q{
             select hex(hash), arrived, posted, expires, hex(token)
@@ -175,9 +175,9 @@ sub dump_history {
 
     while (my @row = $statement->fetchrow_array()) {
         my ($hash, $arrived, $posted, $expires, $token) = @row;
-        $posted = defined($posted) ? $posted : '-';
-        $expires = defined($expires) ? $expires : '-';
-        if (!defined($token)) {
+        $posted = defined($posted) ? $posted : '0';
+        $expires = defined($expires) ? $expires : '0';
+        if (!defined($token) || $token eq '') {
             $token = 'remembered';
         } else {
             # The token column stores the raw storage API token, so its hex
