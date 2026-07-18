@@ -30,7 +30,8 @@ libinnhist - Routines for managing INN history
         HISCTLS_NPAIRS,
         HISCTLS_IGNOREOLD,
         HISCTLS_STATINTERVAL,
-        HISCTLG_INPLACEEXPIRE
+        HISCTLG_INPLACEEXPIRE,
+        HISCTLG_ENTRYESTIMATE
     };
 
     struct history *HISopen(const char *path, const char *method,
@@ -327,6 +328,18 @@ so the caller must initialise it to false.  I<val> should be a pointer to a
 value of type B<bool> and will not be modified by the call.  expire(8) uses
 this to decide whether to open the history read/write (in place) or read-only
 (rebuild-and-swap, the hisv6 model).
+
+=item C<HISCTLG_ENTRYESTIMATE> (size_t *)
+
+Get a cheap, conservative overestimate of the number of entries in the
+history database, without scanning it, suitable for sizing data structures
+such as Bloom filters.  Each backend derives the estimate from its own
+on-disk layout: C<hisv6> divides the text file size by the minimum history
+line length, C<hissqlite> divides the allocated database pages by the
+minimum row footprint.  Returns false and leaves the value untouched if no
+estimate can be made; callers should fall back to their own default sizing.
+I<val> should be a pointer to a value of type B<size_t>.  expireover(8)
+uses this to size its Bloom filter before walking the history database.
 
 =back
 

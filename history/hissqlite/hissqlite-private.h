@@ -38,6 +38,15 @@
    long expire does not pin the WAL. */
 #define HISSQLITE_EXPIRE_BATCH    10000
 
+/* Smallest possible on-disk footprint of a hist row, for the
+   HISCTLG_ENTRYESTIMATE overestimate (allocated bytes / this >= row count).
+   The minimum row is a remembered entry (expires/token NULL): record header
+   (6) + hash (16) + arrived (4) + posted (4) payload, plus the payload-length
+   varint and 2-byte cell pointer, ~33 bytes; real article rows, page headers,
+   B-tree fill factor, and interior pages only push the true per-row cost
+   higher.  32 keeps the division a strict overestimate. */
+#define HISSQLITE_MIN_ROW_BYTES   32
+
 /* HIS_INCORE (a bulk rebuild, makehistory) commits writes in transactions of
    this many rows instead of one each; matches hissqlite-convert's
    COMMIT_EVERY.  See the batch_* helpers in hissqlite.c. */
