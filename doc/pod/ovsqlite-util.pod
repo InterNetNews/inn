@@ -72,7 +72,7 @@ Audit the entire overview database for problems.  Currently, only one
 consistency check is performed: the verification that the low water mark, the
 high water mark and the article count of each newsgroup match the reality of
 articles present in overview.  No changes will be made to the database, but
-problems will be reported to standard error.
+problems will be reported to standard error.  This is the default action.
 
 =item B<-F>
 
@@ -193,6 +193,10 @@ Dump the overview information for articles 45 and higher in example.test:
 Audit the entire overview database for any problems:
 
     ovsqlite-util -A
+
+If problems were reported, fix them with:
+
+    ovsqlite-util -F
 
 Print storage and record statistics:
 
