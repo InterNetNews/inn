@@ -655,8 +655,9 @@ which make use of this filter mechanism.
 
 URL: L<https://github.com/crooks/PyClean> (maintained by Steve Crook)
 
-PyClean performs a similar role to the original Perl-based Cleanfeed,
-an extremely powerful spam filter on Usenet.  It uses F<filter_innd.py>.
+PyClean performs a similar role to the original Perl-based Cleanfeed (now
+maintained as cleanfeed-ng), an extremely powerful spam filter on Usenet.
+It uses F<filter_innd.py>.
 
 =back
 

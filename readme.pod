@@ -345,19 +345,26 @@ answer questions about it.
 
 =over 4
 
-=item Cleanfeed
+=item cleanfeed-ng
 
-URL: L<https://www.mixmin.net/cleanfeed/> (maintained by Steve Crook)
+URL: L<https://github.com/infybofh/cleanfeed-ng/> (maintained by Ivo Gandolfo)
 
-Cleanfeed is an extremely powerful spam filter, probably the most widely
-used spam filter on Usenet currently.  It catches excessive multiposting
-and a host of other things, and is highly configurable.  Note that it
-requires that INN be built with Perl support (the B<--with-perl> option to
-configure).
+cleanfeed-ng is a maintained, lightweight continuation of the historical
+Cleanfeed filter.  It is designed for server-to-server Usenet transit
+filtering, with particular attention to predictable behaviour, low overhead,
+safe configuration changes, and useful diagnostics.
 
-Cleanfeed was originally developed by Jeremy Nixon who maintained it
-until 1998.  Then Marco d'Itri until 2002.  Steve Crook has been
-maintaining it since 2007.
+cleanfeed-ng is an extremely powerful spam filter, probably the most widely
+used spam filter on Usenet currently.  It catches excessive multiposting and a
+host of other things, and is highly configurable.  Note that it requires the
+MD5 Perl module and that INN be built with Perl support (the B<--with-perl>
+option to configure).
+
+Since 2026, cleanfeed-ng has continued the historical work of Cleanfeed,
+originally developed by Jeremy Nixon, who maintained it until 1998.
+Further development was then taken on by Marco d'Itri until 2002, followed
+by later updates and maintenance by Steve Crook from 2007 to 2020 (at
+L<http://www.mixmin.net/cleanfeed/> but no longer maintained).
 
 A Python-based variant of Cleanfeed, named PyClean, also exists and
 can be found at L<https://github.com/crooks/PyClean>.
