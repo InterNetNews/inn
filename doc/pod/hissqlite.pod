@@ -146,6 +146,60 @@ that reads a I<separate> source history, which must not be written while it
 runs; see hissqlite-convert(8).)
 
 C<hissqlite-util -s> reports database storage and entry statistics.
+C<hissqlite-util -v> vacuums the database when freelist space should be
+reclaimed; see L</VACUUMING>.
+
+=head1 VACUUMING
+
+hissqlite does B<not> vacuum the database automatically, and that is
+intentional.
+
+When rows are deleted (for example when B<expire> drops remembered
+Message-IDs past I</remember/>), SQLite does not usually shrink the file.
+It places free pages on a freelist and reuses them for later inserts.  For a
+news spool that receives and expires at a steady rate, the database therefore
+grows to a high-water mark and then stays there: freelist pages absorb the
+churn of expire and intake without constantly extending or truncating the
+file.  That behaviour is efficient.  Keeping the high-water mark avoids
+repeated filesystem allocations, keeps more of the B-tree's working set in a
+stable file layout, and means expire does not pay the cost of a full rewrite.
+
+A full C<VACUUM> rewrites the entire database into a compact copy and
+replaces the original.  It reclaims freelist space (and can apply a new page
+size if C<PRAGMA page_size> was set beforehand), but it needs free disk space
+on the order of the current file size, takes time proportional to the
+database size, and needs exclusive write access while it runs.  Automatic
+vacuuming after every expire would therefore be expensive and usually
+pointless: the next day of traffic would grow the file back toward the same
+high-water mark.
+
+Vacuum manually with B<hissqlite-util> B<-v> only when the smaller size is
+actually wanted for the long term, for example:
+
+=over 2
+
+=item *
+
+After a large, permanent reduction in retention (so the spool will not grow
+back to the old size).
+
+=item *
+
+After a bulk delete or migration that left a large freelist (check with
+B<hissqlite-util> B<-s>; freelist share is reported there).
+
+=item *
+
+When changing I<hissqlitepagesize> on an existing database.  The page size is
+applied only when the database is created; changing it later requires setting
+C<PRAGMA page_size> and vacuuming (or rebuilding with B<makehistory> /
+B<hissqlite-convert>).  Prefer matching the page size to the filesystem block
+or ZFS I<recordsize> from the start; see I<hissqlitepagesize> above.
+
+=back
+
+In normal operation, leave freelist pages alone and treat the high-water mark
+as the steady-state size of an expiring spool.
 
 =head1 EXPIRATION
 

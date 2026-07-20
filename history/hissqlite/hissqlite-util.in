@@ -14,7 +14,7 @@ use POSIX qw(strftime);
 $0 =~ s!.*/!!;
 
 # Version of this tool.
-my $VERSION = "1.2";
+my $VERSION = "1.3";
 
 # Bail out if the needed DBI Perl module is not installed.
 eval {
@@ -29,7 +29,7 @@ eval {
 my $dbfile = "history.sqlite";
 
 my $usage = "Usage:
-  $0 [-AcdhsV] [-O order] [-p path]
+  $0 [-AcdhsvV] [-O order] [-p path]
 
 Options:
   -A             Audit the history database for problems, and report them to
@@ -43,6 +43,7 @@ Options:
   -p path        Read $dbfile database file in path directory instead of
                  default pathhistory directory as set in inn.conf.
   -s             Print database storage and history entry statistics.
+  -v             Vacuum the database (rewrite to reclaim freelist space).
   -V             Print the version of this tool and the database schema
                  version.
 ";
@@ -53,7 +54,7 @@ sub HELP_MESSAGE {
 }
 
 my %opt;
-getopts("AcdhO:p:sV", \%opt) || die $usage;
+getopts("AcdhO:p:svV", \%opt) || die $usage;
 
 HELP_MESSAGE() if defined($opt{'h'});
 
@@ -62,6 +63,7 @@ $modes++ if defined($opt{'A'});
 $modes++ if defined($opt{'c'});
 $modes++ if defined($opt{'d'});
 $modes++ if defined($opt{'s'});
+$modes++ if defined($opt{'v'});
 $modes++ if defined($opt{'V'});
 
 die "Only one action allowed at the same time\n\n$usage"
@@ -82,25 +84,29 @@ my $dbdir;
 }
 my $dbpath = "$dbdir/$dbfile";
 my $datasource = "dbi:SQLite:dbname=$dbpath";
+my $pausemsg = "hissqlite-util vacuum";
+my $ispaused = 0;
 
-# All implemented modes are read-only, so open the database read-only.
+# Read-only modes open the database read-only.  Vacuum needs write access.
 # SQLITE_OPEN_READONLY is 0x00000001.
 my $SQLITE_OPEN_READONLY = 0x00000001;
+my $need_write = defined($opt{'v'});
 
 # Open the connection.  The username and password fields are left empty.
 # Enabling RaiseError permits not checking every return error codes.
-my $dbh = DBI->connect(
-    $datasource, '', '',
-    {
-        PrintError        => 0,
-        RaiseError        => 1,
-        AutoCommit        => 1,
-        sqlite_open_flags => $SQLITE_OPEN_READONLY,
-    },
+my %connect_attr = (
+    PrintError => 0,
+    RaiseError => 1,
+    AutoCommit => 1,
 );
+$connect_attr{sqlite_open_flags} = $SQLITE_OPEN_READONLY
+  if not $need_write;
+
+my $dbh = DBI->connect($datasource, '', '', \%connect_attr);
 
 # Extra safety net against any accidental write in the read-only modes.
-$dbh->do("pragma query_only = 1;");
+$dbh->do("pragma query_only = 1;")
+  if not $need_write;
 
 # Raise the busy timeout value to a huge number of milliseconds to prevent
 # timeouts because of database locks while innd holds the writer.
@@ -114,6 +120,9 @@ if (defined($opt{'V'})) {
     dump_history();
 } elsif (defined($opt{'s'})) {
     dump_statistics();
+} elsif (defined($opt{'v'})) {
+    pause_if_running();
+    vacuum_database();
 } else {
     # Default action: audit.
     audit_history();
@@ -123,6 +132,17 @@ if (defined($opt{'V'})) {
 $dbh->disconnect;
 
 exit(0);
+
+END {
+    # In case we bail out while being paused, make sure that the show goes on!
+    if ($ispaused) {
+        if (system "$INN::Config::newsbin/ctlinnd -s go '$pausemsg'") {
+            die "$0: failed to resume INN with "
+              . "\"ctlinnd -s go '$pausemsg'\" command "
+              . "=> please check why and *manually* resume it\n";
+        }
+    }
+}
 
 # Return the schema version stored in the misc table, or undef if absent.
 sub get_version {
@@ -216,6 +236,81 @@ sub file_size {
     my $path = shift;
     my $size = -s $path;
     return defined($size) ? $size : 0;
+}
+
+# Collect page and freelist statistics for vacuum before/after reporting.
+sub page_stats {
+    my ($page_size) = $dbh->selectrow_array("pragma page_size;");
+    my ($page_count) = $dbh->selectrow_array("pragma page_count;");
+    my ($freelist_count) = $dbh->selectrow_array("pragma freelist_count;");
+    my $logical_size = $page_count * $page_size;
+    my $freelist_size = $freelist_count * $page_size;
+    return ($page_size, $page_count, $freelist_count, $logical_size,
+      $freelist_size);
+}
+
+# Pause a running innd so it is not writing during VACUUM.  If innd is not
+# running (or ctlinnd is unavailable, as when this script is run from the
+# source tree with -p), proceed offline.
+sub pause_if_running {
+    my $ctlinnd;
+    {
+        no warnings 'once';    ##  no critic (ProhibitNoWarnings)
+        $ctlinnd = defined($INN::Config::newsbin)
+          ? "$INN::Config::newsbin/ctlinnd"
+          : undef;
+    }
+    return if !defined($ctlinnd) || !-x $ctlinnd;
+
+    # ctlinnd mode fails when innd is not running.
+    return if system("$ctlinnd -s mode >/dev/null 2>&1") != 0;
+
+    if (system("$ctlinnd -s pause '$pausemsg'")) {
+        die "$0: failed to pause INN, aborting\n";
+    }
+    $ispaused = 1;
+}
+
+# Rewrite the database to reclaim freelist pages (-v option).
+sub vacuum_database {
+    my (
+        $page_size, $page_count, $freelist_count, $logical_size,
+        $freelist_size,
+    ) = page_stats();
+    my $file_size = file_size($dbpath);
+
+    print "Database file: $dbpath\n";
+    print "Page size: $page_size bytes\n";
+    print "Before vacuum:\n";
+    print "  Page count: $page_count\n";
+    print "  Freelist pages: $freelist_count\n";
+    print "  Logical database size: $logical_size bytes\n";
+    print "  Freelist size: $freelist_size bytes\n";
+    print "  Database file size: $file_size bytes\n";
+
+    if ($freelist_count == 0) {
+        print "No freelist pages to reclaim; vacuuming anyway to "
+          . "compact the file.\n";
+    }
+
+    # VACUUM rewrites the whole database.  Free disk space roughly equal to
+    # the current file size is required for the temporary copy.
+    print "Running VACUUM (this may take a while)...\n";
+    $dbh->do("vacuum;");
+
+    (
+        $page_size, $page_count, $freelist_count, $logical_size,
+        $freelist_size,
+    ) = page_stats();
+    $file_size = file_size($dbpath);
+
+    print "After vacuum:\n";
+    print "  Page count: $page_count\n";
+    print "  Freelist pages: $freelist_count\n";
+    print "  Logical database size: $logical_size bytes\n";
+    print "  Freelist size: $freelist_size bytes\n";
+    print "  Database file size: $file_size bytes\n";
+    print "Vacuum complete.\n";
 }
 
 # Print database storage and entry statistics (-s).

@@ -30,7 +30,7 @@ eval {
 my $dbfile = "ovsqlite.db";
 
 my $usage = "Usage:
-  $0 [-AFghioOs] [-a article] [-n newsgroup] [-p path]
+  $0 [-AFghioOsv] [-a article] [-n newsgroup] [-p path]
 
 Options:
   -a article     Specify an article number or a range of article numbers on
@@ -53,6 +53,7 @@ Options:
   -p path        Read $dbfile database file in path directory instead of
                  default pathoverview directory as set in inn.conf.
   -s             Print database storage and overview record statistics.
+  -v             Vacuum the database (rewrite to reclaim freelist space).
 ";
 
 sub HELP_MESSAGE {
@@ -64,7 +65,7 @@ my @unique_hash_keys_unused
   = qw(sqlite_allow_multiple_statements);    # perltidy -wuk
 
 my %opt;
-getopts("a:AFghin:oOp:s", \%opt) || die $usage;
+getopts("a:AFghin:oOp:sv", \%opt) || die $usage;
 
 HELP_MESSAGE() if defined($opt{'h'});
 
@@ -76,6 +77,7 @@ $modes++ if defined($opt{'i'});
 $modes++ if defined($opt{'o'});
 $modes++ if defined($opt{'O'});
 $modes++ if defined($opt{'s'});
+$modes++ if defined($opt{'v'});
 
 die "Can't use both -A and -F\n\n$usage"
   if defined($opt{'A'})
@@ -85,12 +87,12 @@ die "Only one action allowed at the same time\n\n$usage"
 die "A newsgroup must be specified with -n\n\n$usage"
   if (!defined($opt{'n'})
       && (defined($opt{'g'}) || defined($opt{'o'}) || defined($opt{'O'})));
-die "The -n option cannot be used with -s\n\n$usage"
+die "The -n option cannot be used with -s or -v\n\n$usage"
   if defined($opt{'n'})
-  and defined($opt{'s'});
-die "The -a option cannot be used with -s\n\n$usage"
+  and (defined($opt{'s'}) || defined($opt{'v'}));
+die "The -a option cannot be used with -s or -v\n\n$usage"
   if defined($opt{'a'})
-  and defined($opt{'s'});
+  and (defined($opt{'s'}) || defined($opt{'v'}));
 
 my ($low, $high, $compress, $basedict);
 my $sql_extraclause_artinfo = "";
@@ -102,8 +104,9 @@ my $dbdir;
 }
 my $dbpath = "$dbdir/$dbfile";
 my $datasource = "dbi:SQLite:dbname=$dbpath";
-my $pausemsg = "ovsqlite-util fixes";    # Message when pausing INN.
-                                         # Known line in innreport.
+# Pause message for -F and -v; keep the -F wording for innreport recognition.
+my $pausemsg
+  = defined($opt{'v'}) ? "ovsqlite-util vacuum" : "ovsqlite-util fixes";
 my $ispaused = 0;
 
 # To determine the length of compressed overview data.
@@ -168,12 +171,15 @@ if (defined($opt{'a'})) {
 load_settings();
 
 # Pause the server if changes need being done, so that the overview is not
-# updated by another process at the same time.
+# updated by another process at the same time.  Vacuum pauses a running innd
+# when possible, but also works offline (news system stopped).
 if (defined($opt{'F'})) {
     if (system "$INN::Config::newsbin/ctlinnd -s pause '$pausemsg'") {
         die "$0: failed to pause INN, aborting\n";
     }
     $ispaused = 1;
+} elsif (defined($opt{'v'})) {
+    pause_if_running();
 }
 
 if (defined($opt{'g'})) {
@@ -186,6 +192,8 @@ if (defined($opt{'g'})) {
     dump_artinfo_overchan();
 } elsif (defined($opt{'s'})) {
     dump_statistics();
+} elsif (defined($opt{'v'})) {
+    vacuum_database();
 } else {
     # Default action: audit, and also fix if -F is given.
     check_groupinfo_consistency();
@@ -437,6 +445,87 @@ sub file_size {
     my $path = shift;
     my $size = -s $path;
     return defined($size) ? $size : 0;
+}
+
+# Collect page and freelist statistics for vacuum before/after reporting.
+sub page_stats {
+    my ($page_size) = $dbh->selectrow_array("pragma page_size;");
+    my ($page_count) = $dbh->selectrow_array("pragma page_count;");
+    my ($freelist_count) = $dbh->selectrow_array("pragma freelist_count;");
+    my $logical_size = $page_count * $page_size;
+    my $freelist_size = $freelist_count * $page_size;
+    return ($page_size, $page_count, $freelist_count, $logical_size,
+      $freelist_size);
+}
+
+# Pause a running innd so it is not writing during VACUUM.  If innd is not
+# running (or ctlinnd is unavailable, as when this script is run from the
+# source tree with -p), proceed offline.  VACUUM still needs exclusive access
+# to the database file, so stop ovsqlite-server (and prefer a quiet period
+# with few nnrpd readers) for large vacuums; see ovsqlite-util(8).
+sub pause_if_running {
+    my $ctlinnd;
+    {
+        no warnings 'once';    ##  no critic (ProhibitNoWarnings)
+        $ctlinnd = defined($INN::Config::newsbin)
+          ? "$INN::Config::newsbin/ctlinnd"
+          : undef;
+    }
+    return if !defined($ctlinnd) || !-x $ctlinnd;
+
+    # ctlinnd mode fails when innd is not running.
+    return if system("$ctlinnd -s mode >/dev/null 2>&1") != 0;
+
+    if (system("$ctlinnd -s pause '$pausemsg'")) {
+        die "$0: failed to pause INN, aborting\n";
+    }
+    $ispaused = 1;
+}
+
+# Rewrite the database to reclaim freelist pages (-v option).
+# VACUUM cannot run inside a transaction, so temporarily enable AutoCommit.
+sub vacuum_database {
+    my (
+        $page_size, $page_count, $freelist_count, $logical_size,
+        $freelist_size,
+    ) = page_stats();
+    my $file_size = file_size($dbpath);
+
+    print "Database file: $dbpath\n";
+    print "Page size: $page_size bytes\n";
+    print "Before vacuum:\n";
+    print "  Page count: $page_count\n";
+    print "  Freelist pages: $freelist_count\n";
+    print "  Logical database size: $logical_size bytes\n";
+    print "  Freelist size: $freelist_size bytes\n";
+    print "  Database file size: $file_size bytes\n";
+
+    if ($freelist_count == 0) {
+        print "No freelist pages to reclaim; vacuuming anyway to "
+          . "compact the file.\n";
+    }
+
+    # VACUUM rewrites the whole database.  Free disk space roughly equal to
+    # the current file size is required for the temporary copy.
+    print "Running VACUUM (this may take a while)...\n";
+    {
+        local $dbh->{AutoCommit} = 1;    ## no critic (ProhibitLocalVars)
+        $dbh->do("vacuum;");
+    }
+
+    (
+        $page_size, $page_count, $freelist_count, $logical_size,
+        $freelist_size,
+    ) = page_stats();
+    $file_size = file_size($dbpath);
+
+    print "After vacuum:\n";
+    print "  Page count: $page_count\n";
+    print "  Freelist pages: $freelist_count\n";
+    print "  Logical database size: $logical_size bytes\n";
+    print "  Freelist size: $freelist_size bytes\n";
+    print "  Database file size: $file_size bytes\n";
+    print "Vacuum complete.\n";
 }
 
 # Print database storage and overview record statistics (-s option).
