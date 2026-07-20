@@ -1,6 +1,7 @@
 #! /bin/sh
 #
-# Smoke test for hissqlite-util -s and -c against a minimal history database.
+# Smoke test for hissqlite-util -s, -c, and -v against a minimal history
+# database.
 #
 # Written by Kevin Bowling in 2026.
 
@@ -39,13 +40,14 @@ if [ ! -r "$util_source" ] \
     exit 0
 fi
 
-echo 5
+echo 7
 
 tmpdir="$(pwd)/his-tmp-util"
 rm -rf "$tmpdir"
 mkdir -p "$tmpdir"
 
-# Create a minimal hissqlite schema with one real and one remembered entry.
+# Create a minimal hissqlite schema with one real and one remembered entry,
+# then delete many filler rows so freelist pages exist for the vacuum test.
 if ! perl -MDBI -MDBD::SQLite -e '
 use strict;
 use warnings;
@@ -86,6 +88,20 @@ $dbh->do(q{
         values(?, ?, ?, ?, ?)
 }, undef, pack("H*", "ffeeddccbbaa99887766554433221100"),
     1600000001, 1600000001, 0, undef);
+# Insert and delete filler rows so VACUUM has freelist pages to reclaim.
+my $ins = $dbh->prepare(q{
+    insert into hist(hash, arrived, posted, expires, token)
+        values(?, ?, ?, ?, ?)
+});
+for my $i (1 .. 500) {
+    my $hash = pack("N", $i) . ("\0" x 12);
+    $ins->execute($hash, 1600001000 + $i, 1600001000 + $i, 0, undef);
+}
+my $keep1 = pack("H*", "00112233445566778899aabbccddeeff");
+my $keep2 = pack("H*", "ffeeddccbbaa99887766554433221100");
+$dbh->do(q{
+    delete from hist where hash != ? and hash != ?
+}, undef, $keep1, $keep2);
 $dbh->disconnect;
 ' "$tmpdir/history.sqlite"; then
     printcount "not ok" "# create test database"
@@ -93,6 +109,8 @@ $dbh->disconnect;
     printcount "not ok" "# schema version statistic"
     printcount "not ok" "# entry counts"
     printcount "not ok" "# count command"
+    printcount "not ok" "# vacuum command"
+    printcount "not ok" "# counts after vacuum"
     rm -rf "$tmpdir"
     exit 1
 fi
@@ -102,6 +120,10 @@ stats_output=$(perl "$util_source" -s -p "$tmpdir" 2>&1)
 stats_rc=$?
 count_output=$(perl "$util_source" -c -p "$tmpdir" 2>&1)
 count_rc=$?
+vac_output=$(perl "$util_source" -v -p "$tmpdir" 2>&1)
+vac_rc=$?
+count_after=$(perl "$util_source" -c -p "$tmpdir" 2>&1)
+count_after_rc=$?
 
 if [ $stats_rc -eq 0 ]; then
     printcount "ok" "# statistics command"
@@ -138,6 +160,27 @@ else
     echo "# hissqlite-util -c failed (rc=$count_rc):"
     echo "$count_output" | sed 's/^/# /'
     printcount "not ok" "# count command"
+fi
+
+if [ $vac_rc -eq 0 ] \
+    && echo "$vac_output" | grep -q '^Vacuum complete\.$' \
+    && echo "$vac_output" | grep -q '^  Freelist pages: 0$'; then
+    printcount "ok" "# vacuum command"
+else
+    echo "# hissqlite-util -v failed (rc=$vac_rc):"
+    echo "$vac_output" | sed 's/^/# /'
+    printcount "not ok" "# vacuum command"
+fi
+
+if [ $count_after_rc -eq 0 ] \
+    && echo "$count_after" | grep -q '^total 2$' \
+    && echo "$count_after" | grep -q '^real 1$' \
+    && echo "$count_after" | grep -q '^remembered 1$'; then
+    printcount "ok" "# counts after vacuum"
+else
+    echo "# counts after vacuum unexpected (rc=$count_after_rc):"
+    echo "$count_after" | sed 's/^/# /'
+    printcount "not ok" "# counts after vacuum"
 fi
 
 rm -rf "$tmpdir"

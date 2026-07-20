@@ -65,7 +65,9 @@ The new hissqlite history storage method is accompanied with a history
 manipulation utility, B<hissqlite-util>, also contributed by Kevin Bowling,
 that performs some basic consistency checks and dump operations on an history
 database using the hissqlite method.  It can also report SQLite storage
-utilization, history entry counts and file sizes.
+utilization, history entry counts and file sizes, and vacuum the database
+with B<-v> to reclaim freelist space when needed (not required in normal
+steady-state operation; see hissqlite(5)).
 
 =item *
 
@@ -120,6 +122,14 @@ to Roman Donchenko for the code simplification and cleaning.
 A new B<-s> option in B<ovsqlite-util> reports SQLite storage utilization,
 database and journal file sizes, and active, deleted and total overview record
 counts.  Thanks to Kevin Bowling for this enhancement.
+
+=item *
+
+A new B<-v> option in B<ovsqlite-util> runs SQLite C<VACUUM> to reclaim
+freelist pages after large permanent shrinks of retention or bulk deletes.
+Vacuuming is not automatic and is usually unnecessary for a steady-state
+expiring spool (the freelist high-water mark is left in place on purpose);
+see ovsqlite(5).  Thanks to Kevin Bowling for this enhancement.
 
 =item *
 
