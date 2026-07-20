@@ -6,7 +6,7 @@ ovsqlite-util - Overview manipulation utility for ovsqlite
 
 =head1 SYNOPSIS
 
-B<ovsqlite-util> [B<-AFghioOs>] [B<-a> I<article>] [B<-n> I<newsgroup>]
+B<ovsqlite-util> [B<-AFghioOsv>] [B<-a> I<article>] [B<-n> I<newsgroup>]
 [B<-p> I<path>]
 
 =head1 DESCRIPTION
@@ -16,7 +16,8 @@ method for INN.  It only works on ovsqlite overview databases, not on any
 other type of INN overview.  (See dedicated ovdb_stat(8) and tdx-util(8)
 programs for ovdb and tradindexed overview methods.)  It allows the
 administrator to dump various information about the internal state of the
-overview, audit it for errors, and fix these errors.
+overview, audit it for errors, fix these errors, and vacuum the database
+to reclaim free pages.
 
 To audit the entire overview database for problems, use B<-A>.  The checks
 can take an extended period of time, depending on the number of newsgroups
@@ -26,7 +27,9 @@ reported to standard error.  Use B<-F> to correct the errors found.
 It is safe to run this utility while the server is running.  In case fixes
 should be made to the database (when using the B<-F> flag), B<ovsqlite-util>
 will properly pause the server before performing its operations, and then
-resume it.
+resume it.  The B<-v> (vacuum) flag also pauses a running B<innd> when
+possible; for a large vacuum it is better to stop the news system so
+B<ovsqlite-server> and readers are not holding the database open.
 
 The number of overview records stored in the database can be obtained with the
 C<inndf -n> command.
@@ -164,10 +167,38 @@ Database-derived values are collected from one consistent read snapshot.
 The logical database size is the page count multiplied by the page size.
 Non-freelist page capacity is an estimate derived from SQLite's page
 accounting, not a measure of how full each page is.  Freelist pages can be
-reused by later writes or recovered with a full C<VACUUM>.  File sizes are
-point-in-time values and may change while the server is writing.  Files that
-do not currently exist, such as a WAL or rollback journal, have a reported
-size of zero.
+reused by later writes or recovered with a full C<VACUUM> (see B<-v>).  File
+sizes are point-in-time values and may change while the server is writing.
+Files that do not currently exist, such as a WAL or rollback journal, have a
+reported size of zero.
+
+=item B<-v>
+
+Vacuum the overview database: rewrite it with SQLite C<VACUUM> so freelist
+pages are removed and the file shrinks toward its logical size.  Prints
+page and freelist statistics before and after the rewrite.  It cannot be
+combined with B<-n> or B<-a>.
+
+A vacuum needs free disk space roughly equal to the current database file
+size (SQLite builds a compact copy, then replaces the original).  On a
+large overview this can take a long time and needs exclusive access to the
+database.  When B<innd> is running, it is paused for the duration.  For a
+reliable vacuum on a busy server, stop the news system with B<rc.news stop>
+first so B<ovsqlite-server> and B<nnrpd> are not holding connections open;
+otherwise C<VACUUM> waits on the busy timeout until other connections
+release their locks.
+
+Vacuuming is not needed in normal operation.  SQLite keeps deleted pages on
+a freelist and reuses them for later inserts, so a steady-state spool that
+expires roughly as much as it receives tends to stabilize near a high-water
+mark size.  That high-water mark is usually desirable: the file does not
+churn on every expireover run, and subsequent growth can reuse free pages
+without extending the file.  Run B<-v> only when you deliberately want a
+smaller file, for example after a large permanent reduction in retention,
+after purging many groups, or when changing the page size of an existing
+database (which requires a vacuum; see ovsqlite(5)).
+
+See also L</VACUUMING> in ovsqlite(5).
 
 =back
 
@@ -202,12 +233,17 @@ Print storage and record statistics:
 
     ovsqlite-util -s
 
+After shrinking retention and letting expireover finish, reclaim freelist
+space (preferably with the news system stopped):
+
+    ovsqlite-util -v
+
 =head1 HISTORY
 
 Written by Julien ÉLIE for InterNetNews.
 
 =head1 SEE ALSO
 
-expireover(8), inndf(8), makehistory(8), nnrpd(8), ovsqlite(5).
+expireover(8), inndf(8), makehistory(8), nnrpd(8), ovsqlite(5), rc.news(8).
 
 =cut

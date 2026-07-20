@@ -4,20 +4,26 @@ hissqlite-util - History manipulation utility for hissqlite
 
 =head1 SYNOPSIS
 
-B<hissqlite-util> [B<-AcdhsV>] [B<-O> I<order>] [B<-p> I<path>]
+B<hissqlite-util> [B<-AcdhsvV>] [B<-O> I<order>] [B<-p> I<path>]
 
 =head1 DESCRIPTION
 
 B<hissqlite-util> is an administrative interface to the hissqlite history
 method for INN.  It only works on hissqlite history databases, not on any
 other type of INN history.  It allows the administrator to audit the
-database for problems, dump its contents, and report entry counts and the
-schema version.  It can also report database storage utilization.
+database for problems, dump its contents, report entry counts and the
+schema version, report database storage utilization, and vacuum the
+database to reclaim free pages.
 
-All of its actions are read-only, so it is safe to run while INN is running.
-B<hissqlite-util> opens the database directly; because B<innd> holds the
-write lock for only a single statement at a time, it waits at most briefly
-for any in-progress write.
+All actions except B<-v> are read-only, so it is safe to run them while
+INN is running.  B<hissqlite-util> opens the database directly; because
+B<innd> holds the write lock for only a single statement at a time, it
+waits at most briefly for any in-progress write.
+
+The B<-v> option rewrites the database file (SQLite C<VACUUM>) and needs
+write access.  When B<innd> is running, B<hissqlite-util> pauses it for the
+duration of the vacuum and resumes it afterwards.  When the news system is
+stopped, the vacuum runs offline.
 
 =head1 REQUIREMENTS
 
@@ -87,10 +93,34 @@ The database-derived values are collected from one consistent read snapshot.
 Logical size is the page count multiplied by the page size.  Non-freelist
 page capacity is an estimate based on SQLite's page accounting, not a measure
 of how full each page is.  Freelist pages can be reused by later writes or
-recovered with a full C<VACUUM>.  File sizes are point-in-time values and may
-change while B<innd> or another process is writing.  Files that do not
-currently exist, such as a WAL or rollback journal, have a reported size of
-zero.
+recovered with a full C<VACUUM> (see B<-v>).  File sizes are point-in-time
+values and may change while B<innd> or another process is writing.  Files
+that do not currently exist, such as a WAL or rollback journal, have a
+reported size of zero.
+
+=item B<-v>
+
+Vacuum the history database: rewrite it with SQLite C<VACUUM> so freelist
+pages are removed and the file shrinks toward its logical size.  Prints
+page and freelist statistics before and after the rewrite.
+
+A vacuum needs free disk space roughly equal to the current database file
+size (SQLite builds a compact copy, then replaces the original).  On a
+large history this can take a long time and will block other writers; when
+B<innd> is running, it is paused for the duration.  Readers may block while
+the exclusive rewrite runs.
+
+Vacuuming is not needed in normal operation.  SQLite keeps deleted pages on
+a freelist and reuses them for later inserts, so a steady-state spool that
+expires roughly as much as it receives tends to stabilize near a high-water
+mark size.  That high-water mark is usually desirable: the file does not
+churn on every expire, and subsequent growth can reuse free pages without
+extending the file.  Run B<-v> only when you deliberately want a smaller
+file, for example after a large permanent reduction in retention (so the
+spool will not grow back to the old size), after a bulk delete, or when
+changing the page size (which requires a vacuum; see hissqlite(5)).
+
+See also L</VACUUMING> in hissqlite(5).
 
 =item B<-V>
 
@@ -115,6 +145,10 @@ Dump history records by posting time:
 Print storage and entry statistics:
 
     hissqlite-util -s
+
+After shrinking retention and letting expire finish, reclaim freelist space:
+
+    hissqlite-util -v
 
 =head1 HISTORY
 

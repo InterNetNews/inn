@@ -181,6 +181,64 @@ for read operations.  This eliminates the IPC round-trip and server
 serialization bottleneck, allowing read performance to scale with the
 number of concurrent readers.
 
+=head1 VACUUMING
+
+ovsqlite does B<not> vacuum the database automatically, and that is
+intentional.
+
+When overview rows are deleted (for example by B<expireover>), SQLite does
+not usually shrink F<ovsqlite.db>.  It places free pages on a freelist and
+reuses them for later inserts.  For a news spool that receives and expires
+at a steady rate, the overview database therefore grows to a high-water mark
+and then stays there: freelist pages absorb the churn of expireover and
+intake without constantly extending or truncating the file.  That behaviour
+is efficient.  Keeping the high-water mark avoids repeated filesystem
+allocations and means expireover does not pay the cost of a full rewrite on
+every run.
+
+A full C<VACUUM> rewrites the entire database into a compact copy and
+replaces the original.  It reclaims freelist space (and can apply a new page
+size if C<PRAGMA page_size> was set beforehand), but it needs free disk space
+on the order of the current file size, takes time proportional to the
+database size, and needs exclusive access while it runs.  Automatic
+vacuuming after every expireover would therefore be expensive and usually
+pointless: the next day of traffic would grow the file back toward the same
+high-water mark.
+
+Vacuum manually with B<ovsqlite-util> B<-v> only when the smaller size is
+actually wanted for the long term, for example:
+
+=over 2
+
+=item *
+
+After a large, permanent reduction in retention (so the overview will not
+grow back to the old size).
+
+=item *
+
+After purging many newsgroups or other bulk deletes that left a large
+freelist (check with B<ovsqlite-util> B<-s>; freelist share is reported
+there).
+
+=item *
+
+When changing I<pagesize> on an existing database.  The I<pagesize>
+parameter in F<ovsqlite.conf> is consulted only when creating a new database.
+To change the page size of an existing overview, stop the news system, set
+C<PRAGMA page_size> to the desired value, and vacuum (B<ovsqlite-util> B<-v>
+reclaims freelist space; applying a new page size can be done with the
+B<sqlite3> CLI as C<PRAGMA page_size=N; VACUUM;> on the stopped database),
+or rebuild overview with B<makehistory>.  Prefer choosing an appropriate
+page size when the database is first created.
+
+=back
+
+For a large vacuum, stop the news system with B<rc.news stop> so
+B<ovsqlite-server> and B<nnrpd> are not holding the database open.  In normal
+operation, leave freelist pages alone and treat the high-water mark as the
+steady-state size of an expiring spool.
+
 =head1 HISTORY
 
 Initial implementation of ovsqlite written by Bo Lindbergh

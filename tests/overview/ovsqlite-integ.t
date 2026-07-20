@@ -69,7 +69,7 @@ for prog in "$server" "$writer" "$reader"; do
     fi
 done
 
-echo 21
+echo 23
 
 # Set up temp directory with config files.  Use absolute paths because
 # the C test programs chdir to the test data directory before reading
@@ -165,12 +165,15 @@ else
     printcount "ok" "# server stopped (signal)"
 fi
 
-# Tests 6-13: report database statistics with ovsqlite-util.
+# Tests 6-15: report database statistics and vacuum with ovsqlite-util.
 # Run the source directly with -p so the test does not depend on an installed
-# INN::Config and innconfval.
+# INN::Config and innconfval.  The server is already stopped, so vacuum can
+# take an exclusive lock offline.
 if [ ! -r "$util_source" ] \
     || ! perl -MDBI -MDBD::SQLite -MCompress::Zlib -e 1 \
         >/dev/null 2>&1; then
+    printcount "ok" "# skip ovsqlite-util dependencies unavailable"
+    printcount "ok" "# skip ovsqlite-util dependencies unavailable"
     printcount "ok" "# skip ovsqlite-util dependencies unavailable"
     printcount "ok" "# skip ovsqlite-util dependencies unavailable"
     printcount "ok" "# skip ovsqlite-util dependencies unavailable"
@@ -235,9 +238,30 @@ else
     else
         printcount "not ok" "# WAL file size statistic"
     fi
+
+    vac_output=$(perl "$util_source" -v -p "$tmpdir" 2>&1)
+    vac_rc=$?
+    if [ $vac_rc -eq 0 ] \
+        && echo "$vac_output" | grep -q '^Vacuum complete\.$'; then
+        printcount "ok" "# vacuum command"
+    else
+        echo "# ovsqlite-util -v failed (rc=$vac_rc):"
+        echo "$vac_output" | sed 's/^/# /'
+        printcount "not ok" "# vacuum command"
+    fi
+
+    stats_after=$(perl "$util_source" -s -p "$tmpdir" 2>&1)
+    if echo "$stats_after" | grep -q '^Total articles: 99$' \
+        && echo "$stats_after" | grep -q '^Total groups: 11$'; then
+        printcount "ok" "# counts after vacuum"
+    else
+        echo "# unexpected counts after vacuum:"
+        echo "$stats_after" | sed 's/^/# /'
+        printcount "not ok" "# counts after vacuum"
+    fi
 fi
 
-# Tests 14-18: run the reader (5 TAP tests from inside).
+# Tests 16-20: run the reader (5 TAP tests from inside).
 reader_output=$($reader 2>&1)
 reader_rc=$?
 reader_count=$(echo "$reader_output" | grep -c "^ok ")
@@ -257,7 +281,7 @@ else
     printcount "not ok" "# reopen"
 fi
 
-# Tests 19-21: server restart resilience.
+# Tests 21-23: server restart resilience.
 # Simulate INN restart: start a new server against the existing WAL database,
 # shut it down, verify the reader can still read all data.  This is the
 # scenario where nnrpd outlives a server restart cycle.
