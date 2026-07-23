@@ -141,6 +141,14 @@ mapping overview data fails.  Many thanks to Kevin Bowling for the patches.
 
 =item *
 
+Fixed a long-standing use-after-reallocation in B<innd> when generating the
+Xref header field for an article crossposted to enough newsgroups to grow the
+internal buffer.  This bug could cause a spurious C<no matching entry in
+storage.conf> error and throttle the server.  Thanks to Jesse Rehmer for the
+report.
+
+=item *
+
 Two new options have been added to B<ovsqlite-util>.  The B<-s> option reports
 SQLite storage utilization, database and journal file sizes, and active,
 deleted and total overview record counts.  The B<-v> option runs SQLite
