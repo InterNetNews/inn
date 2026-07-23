@@ -109,6 +109,14 @@ Support for old insecure OpenSSL and LibreSSL versions have been dropped.
 You will have to use at least S<OpenSSL 1.1.1> or S<LibreSSL 2.8.0>.  Thanks
 to Roman Donchenko for the code simplification and cleaning.
 
+=item *
+
+Fixed a long-standing use-after-reallocation in B<innd> when generating the
+Xref header field for an article crossposted to enough newsgroups to grow the
+internal buffer.  This bug could cause a spurious C<no matching entry in
+storage.conf> error and throttle the server.  Thanks to Jesse Rehmer for the
+report.
+
 =back
 
 =head1 Changes in 2.7.5 (not yet released)

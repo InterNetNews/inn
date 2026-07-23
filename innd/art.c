@@ -1449,8 +1449,8 @@ ARTpoisongroup(char *name)
 static bool
 ARTassignnumbers(ARTDATA *data)
 {
-    char *p, *q;
-    int i, len, linelen, buflen;
+    char *p;
+    int i, len, linelen, buflen, replicoffset;
     NEWSGROUP *ngp;
 
     if (data->XrefBufLength == 0) {
@@ -1459,7 +1459,9 @@ ARTassignnumbers(ARTDATA *data)
         strncpy(data->Xref, Path.data, Path.used - 1);
     }
     len = Path.used - 1;
-    p = q = data->Xref + len;
+    /* Keep an offset because xrealloc() below may move the Xref buffer. */
+    replicoffset = len + 1;
+    p = data->Xref + len;
     for (linelen = i = 0; (ngp = GroupPointers[i]) != NULL; i++) {
         /* If already went to this group (i.e., multiple groups are aliased
          * into it), then skip it. */
@@ -1509,8 +1511,8 @@ ARTassignnumbers(ARTDATA *data)
     p[1] = '\n';
     /* data->XrefLength includes trailing "\r\n". */
     data->XrefLength = len + 2;
-    data->Replic = q + 1;
-    data->ReplicLength = len - (q + 1 - data->Xref);
+    data->Replic = data->Xref + replicoffset;
+    data->ReplicLength = len - replicoffset;
 
     return true;
 }
