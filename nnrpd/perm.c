@@ -469,6 +469,8 @@ copy_accessgroup(ACCESSGROUP *orig)
         ret->backoff_db = xstrdup(orig->backoff_db);
     if (orig->newsmaster)
         ret->newsmaster = xstrdup(orig->newsmaster);
+    if (orig->addcanlockuser)
+        ret->addcanlockuser = xstrdup(orig->addcanlockuser);
     return (ret);
 }
 
@@ -607,6 +609,8 @@ free_accessgroup(ACCESSGROUP *del)
         free(del->backoff_db);
     if (del->newsmaster)
         free(del->newsmaster);
+    if (del->addcanlockuser)
+        free(del->addcanlockuser);
     free(del);
 }
 
