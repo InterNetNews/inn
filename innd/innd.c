@@ -476,8 +476,10 @@ main(int ac, char *av[])
             innconf->maxartsize = strtoul(optarg, NULL, 10);
             break;
         case 'm':
-            if (ModeReason)
+            if (ModeReason) {
                 free(ModeReason);
+                ModeReason = NULL;
+            }
             switch (*optarg) {
             default:
                 Usage();
