@@ -112,8 +112,9 @@ int
 main(void)
 {
     struct client *client;
+    char *result;
 
-    plan(12 * 6);
+    plan(12 * 6 + 2);
 
     client = client_new();
 
@@ -136,5 +137,15 @@ main(void)
     test_external(client, "partial-error", NULL,
                   "example.com auth: program error: This is an error\n");
 
+    errors_capture();
+    result = auth_external(client, "", ".", NULL, NULL);
+    errors_uncapture();
+    is_string(NULL, result, "empty external command returns no user");
+    is_string("example.com auth: empty external command\n", errors,
+              "empty external command is reported");
+    free(errors);
+    errors = NULL;
+
+    free(client);
     return 0;
 }
