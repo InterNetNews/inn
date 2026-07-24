@@ -1703,6 +1703,10 @@ PERMgetpermissions(void)
     char *user[2];
     static ACCESSGROUP *noaccessconf;
 
+    free(VirtualPath);
+    VirtualPath = NULL;
+    VirtualPathlen = 0;
+
     if (ConfigBit == NULL) {
         if (PERMMAX % 8 == 0)
             ConfigBitsize = PERMMAX / 8;
@@ -1869,8 +1873,6 @@ PERMgetpermissions(void)
                       NNTP_FAIL_TERMINATING);
                 ExitWithStats(1, true);
             }
-            if (VirtualPath)
-                free(VirtualPath);
             if (strcasecmp(innconf->pathhost, PERMaccessconf->pathhost) == 0) {
                 /* Use domain, if pathhost in access realm matches one in
                  * inn.conf to differentiate virtual host. */
@@ -1892,8 +1894,7 @@ PERMgetpermissions(void)
                     concat(PERMaccessconf->pathhost, "!", (char *) 0);
             }
             VirtualPathlen = strlen(VirtualPath);
-        } else
-            VirtualPathlen = 0;
+        }
     } else {
         if (!noaccessconf)
             noaccessconf = xmalloc(sizeof(ACCESSGROUP));
