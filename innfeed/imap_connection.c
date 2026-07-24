@@ -1241,8 +1241,9 @@ AddControlMsg(connection_t *cxn, Article art, Buffer *bufs,
         /* huh?!? */
         d_printf(0, "%s:%u internal error in addControlMsg()\n",
                  hostPeerName(cxn->myHost), cxn->ident);
+        res = RET_FAIL;
     }
-    return RET_FAIL;
+    return res;
 }
 
 /*
