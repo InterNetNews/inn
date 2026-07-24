@@ -495,7 +495,7 @@ static long
 index_find(struct group_index *index, const char *group)
 {
     HASH hash;
-    long loc;
+    long loc, steps;
 
     if (index->header == NULL || index->entries == NULL)
         return -1;
@@ -504,9 +504,13 @@ index_find(struct group_index *index, const char *group)
         return -1;
     loc = index->header->hash[index_bucket(hash)].recno;
 
-    while (loc >= 0) {
+    for (steps = 0; loc >= 0; steps++) {
         struct group_entry *entry;
 
+        if (steps >= index->count) {
+            warn("tradindexed: loop in group index");
+            return -1;
+        }
         if (loc >= index->count) {
             if (!index_maybe_remap(index, loc)) {
                 return -1;
@@ -526,6 +530,8 @@ index_find(struct group_index *index, const char *group)
         }
         loc = entry->next.recno;
     }
+    if (loc != -1)
+        warn("tradindexed: invalid negative index %ld", loc);
     return -1;
 }
 
@@ -553,14 +559,18 @@ static long
 index_unlink_hash(struct group_index *index, HASH hash)
 {
     int *parent;
-    long current;
+    long current, steps;
 
     parent = &index->header->hash[index_bucket(hash)].recno;
     current = *parent;
 
-    while (current >= 0) {
+    for (steps = 0; current >= 0; steps++) {
         struct group_entry *entry;
 
+        if (steps >= index->count) {
+            warn("tradindexed: loop in group index");
+            return -1;
+        }
         if (current >= index->count) {
             if (!index_maybe_remap(index, current)) {
                 return -1;
@@ -585,6 +595,8 @@ index_unlink_hash(struct group_index *index, HASH hash)
         parent = &entry->next.recno;
         current = *parent;
     }
+    if (current != -1)
+        warn("tradindexed: invalid negative index %ld", current);
     return -1;
 }
 
@@ -662,6 +674,13 @@ tdx_index_add(struct group_index *index, const char *group, ARTNUM low,
             return false;
         }
     loc = index->header->freelist.recno;
+    if (loc < 0 || loc >= index->count
+        || index->entries[loc].next.recno < -1
+        || index->entries[loc].next.recno >= index->count) {
+        warn("tradindexed: invalid free list entry %ld", loc);
+        index_lock(index->fd, INN_LOCK_UNLOCK);
+        return false;
+    }
     index->header->freelist.recno = index->entries[loc].next.recno;
     inn_msync_page(&index->header->freelist, sizeof(struct loc), MS_ASYNC);
 
@@ -1131,7 +1150,7 @@ void
 tdx_index_dump(struct group_index *index, FILE *output)
 {
     int bucket;
-    long current;
+    long current, steps;
     struct group_entry *entry;
     struct hash *hashmap;
     struct hashmap *group;
@@ -1142,9 +1161,16 @@ tdx_index_dump(struct group_index *index, FILE *output)
     hashmap = hashmap_load();
     for (bucket = 0; bucket < TDX_HASH_SIZE; bucket++) {
         current = index->header->hash[bucket].recno;
-        while (current != -1) {
-            if (!index_maybe_remap(index, current))
-                return;
+        for (steps = 0; current >= 0; steps++) {
+            if (steps >= index->count) {
+                warn("tradindexed: loop in group index bucket %d", bucket);
+                goto done;
+            }
+            if (!index_maybe_remap(index, current)
+                || current >= index->count) {
+                warn("tradindexed: entry %ld out of range", current);
+                goto done;
+            }
             entry = index->entries + current;
             name = NULL;
             if (hashmap != NULL) {
@@ -1157,11 +1183,16 @@ tdx_index_dump(struct group_index *index, FILE *output)
             tdx_index_print(name, entry, output);
             if (current == entry->next.recno) {
                 warn("tradindexed: index loop for entry %ld", current);
-                return;
+                goto done;
             }
             current = entry->next.recno;
         }
+        if (current != -1) {
+            warn("tradindexed: invalid negative index %ld", current);
+            goto done;
+        }
     }
+done:
     if (hashmap != NULL)
         hash_free(hashmap);
 }
