@@ -4,6 +4,11 @@
 **  Run an external resolver or authenticator to determine the username of the
 **  client and return that information to INN.  For more information about the
 **  protocol used, see doc/external-auth.
+**
+**  Rewritten by Russ Allbery in 2005.
+**
+**  Various bug fixes, code and documentation improvements since then
+**  in 2005, 2008, 2011, 2014, 2017, 2020, 2021, 2023, 2026.
 */
 
 #include "portable/system.h"
@@ -41,34 +46,37 @@ static struct process *
 start_process(struct client *client, const char *command, const char *dir)
 {
     struct process *process;
-    int rd[2], wr[2], er[2];
+    int rd[2] = {-1, -1};
+    int wr[2] = {-1, -1};
+    int er[2] = {-1, -1};
     pid_t pid;
-    char *path;
+    const char *path;
+    char *allocated_path = NULL;
     struct vector *args;
 
     /* Parse the command and find the path to the binary. */
     args = vector_split_space(command, NULL);
+    if (args->count == 0) {
+        warn("%s auth: empty external command", client->host);
+        vector_free(args);
+        return NULL;
+    }
     path = args->strings[0];
     if (path[0] != '/') {
-        path = concatpath(dir, path);
+        allocated_path = concatpath(dir, path);
+        path = allocated_path;
     }
 
     /* Set up the pipes and run the program. */
     if (pipe(rd) < 0 || pipe(wr) < 0 || pipe(er) < 0) {
         syswarn("%s auth: cannot create pipe", client->host);
-        return NULL;
+        goto fail;
     }
     pid = fork();
     switch (pid) {
     case -1:
-        close(rd[0]);
-        close(rd[1]);
-        close(wr[0]);
-        close(wr[1]);
-        close(er[0]);
-        close(er[1]);
         syswarn("%s auth: cannot fork", client->host);
-        return NULL;
+        goto fail;
     case 0:
         if (dup2(wr[0], 0) < 0 || dup2(rd[1], 1) < 0 || dup2(er[1], 2) < 0) {
             syswarn("%s auth: cannot set up file descriptors", client->host);
@@ -95,7 +103,26 @@ start_process(struct client *client, const char *command, const char *dir)
     process->read_fd = rd[0];
     process->write_fd = wr[1];
     process->error_fd = er[0];
+    free(allocated_path);
+    vector_free(args);
     return process;
+
+fail:
+    if (rd[0] >= 0)
+        close(rd[0]);
+    if (rd[1] >= 0)
+        close(rd[1]);
+    if (wr[0] >= 0)
+        close(wr[0]);
+    if (wr[1] >= 0)
+        close(wr[1]);
+    if (er[0] >= 0)
+        close(er[0]);
+    if (er[1] >= 0)
+        close(er[1]);
+    free(allocated_path);
+    vector_free(args);
+    return NULL;
 }
 
 
