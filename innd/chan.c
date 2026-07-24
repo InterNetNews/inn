@@ -556,7 +556,7 @@ CHANname(CHANNEL *cp)
 CHANNEL *
 CHANfromdescriptor(int fd)
 {
-    if (fd < 0 || fd > channels.table_size)
+    if (fd < 0 || fd >= channels.table_size)
         return NULL;
     return &channels.table[fd];
 }
