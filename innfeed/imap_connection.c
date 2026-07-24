@@ -293,7 +293,6 @@ typedef struct connection_s {
     lmtp_capabilities_t *lmtp_capabilities;
 
     int lmtp_disconnects;
-    char *lmtp_tofree_str;
 
     article_queue_t *current_article;
     Buffer *current_bufs;
@@ -341,7 +340,6 @@ typedef struct connection_s {
 
     imap_state_t imap_state;
     int imap_disconnects;
-    char *imap_tofree_str;
 
     char imap_currentTag[IMAP_TAGLENGTH + 1];
     int imap_tag_num;
@@ -655,6 +653,9 @@ PopFromQueue(Q_t *q, article_queue_t **item)
 static void
 ReQueue(connection_t *cxn, Q_t *q, article_queue_t *entry)
 {
+    if (entry == cxn->current_article)
+        cxn->current_article = NULL;
+
     /* look at the time it's been here */
     entry->nextsend =
         time(NULL) + (entry->trys * 30); /* xxx better formula? */
@@ -703,6 +704,9 @@ QueueForgetAbout(connection_t *cxn, article_queue_t *item,
                  enum failure_type failed)
 {
     Article art = NULL;
+
+    if (item == cxn->current_article)
+        cxn->current_article = NULL;
 
     switch (item->type) {
     case DELIVER:
@@ -935,7 +939,8 @@ WriteToWire(connection_t *cxn, EndpRWCB callback, EndPoint endp, Buffer *array)
     if (array == NULL)
         return RET_FAIL;
 
-    prepareWrite(endp, array, NULL, callback, cxn);
+    if (!prepareWrite(endp, array, NULL, callback, cxn))
+        return RET_FAIL;
 
     return RET_OK;
 }
@@ -953,10 +958,13 @@ WriteToWire_str(connection_t *cxn, EndpRWCB callback, EndPoint endp, char *str,
 
     buff = newBufferByCharP(str, slen + 1, slen);
     ASSERT(buff != NULL);
+    bufferSetDeletedCbk(buff, free, str);
 
     writeArr = makeBufferArray(buff, NULL);
 
     result = WriteToWire(cxn, callback, endp, writeArr);
+    if (result != RET_OK)
+        freeBufferArray(writeArr);
 
     return result;
 }
@@ -964,6 +972,8 @@ WriteToWire_str(connection_t *cxn, EndpRWCB callback, EndPoint endp, char *str,
 static conn_ret
 WriteToWire_imapstr(connection_t *cxn, char *str, int slen)
 {
+    conn_ret result;
+
     /* prepare the timeouts */
     clearTimer(cxn->imap_readBlockedTimerId);
 
@@ -973,13 +983,17 @@ WriteToWire_imapstr(connection_t *cxn, char *str, int slen)
     if (cxn->imap_writeTimeout > 0)
         cxn->imap_writeBlockedTimerId =
             prepareSleep(imap_writeTimeoutCbk, cxn->imap_writeTimeout, cxn);
-    cxn->imap_tofree_str = str;
-    return WriteToWire_str(cxn, imap_writeCB, cxn->imap_endpoint, str, slen);
+    result = WriteToWire_str(cxn, imap_writeCB, cxn->imap_endpoint, str, slen);
+    if (result != RET_OK)
+        clearTimer(cxn->imap_writeBlockedTimerId);
+    return result;
 }
 
 static conn_ret
 WriteToWire_lmtpstr(connection_t *cxn, char *str, int slen)
 {
+    conn_ret result;
+
     /* prepare the timeouts */
     clearTimer(cxn->lmtp_readBlockedTimerId);
 
@@ -990,8 +1004,10 @@ WriteToWire_lmtpstr(connection_t *cxn, char *str, int slen)
         cxn->lmtp_writeBlockedTimerId =
             prepareSleep(lmtp_writeTimeoutCbk, cxn->lmtp_writeTimeout, cxn);
 
-    cxn->lmtp_tofree_str = str;
-    return WriteToWire_str(cxn, lmtp_writeCB, cxn->lmtp_endpoint, str, slen);
+    result = WriteToWire_str(cxn, lmtp_writeCB, cxn->lmtp_endpoint, str, slen);
+    if (result != RET_OK)
+        clearTimer(cxn->lmtp_writeBlockedTimerId);
+    return result;
 }
 
 static conn_ret
@@ -1875,8 +1891,10 @@ imap_DisconnectNoDelete(connection_t *cxn)
     clearTimer(cxn->imap_readBlockedTimerId);
     clearTimer(cxn->imap_writeBlockedTimerId);
 
-    DeferAllArticles(
-        cxn, &(cxn->imap_controlMsg_q)); /* give any articles back to Host */
+    /* Give the active item and any queued items back to the host. */
+    if (cxn->current_control != NULL)
+        QueueForgetAbout(cxn, cxn->current_control, MSG_GIVE_BACK);
+    DeferAllArticles(cxn, &(cxn->imap_controlMsg_q));
 
     cxn->imap_state = IMAP_DISCONNECTED;
 
@@ -1933,7 +1951,15 @@ lmtp_DisconnectNoDelete(connection_t *cxn)
     clearTimer(cxn->lmtp_readBlockedTimerId);
     clearTimer(cxn->lmtp_writeBlockedTimerId);
 
-    /* give any articles back to Host */
+    /* Release locally-owned buffers before returning the active article. */
+    if (cxn->current_bufs != NULL) {
+        freeBufferArray(cxn->current_bufs);
+        cxn->current_bufs = NULL;
+    }
+    if (cxn->current_article != NULL)
+        QueueForgetAbout(cxn, cxn->current_article, MSG_GIVE_BACK);
+
+    /* Give any queued articles back to the host. */
     DeferAllArticles(cxn, &(cxn->lmtp_todeliver_q));
 
     cxn->lmtp_state = LMTP_DISCONNECTED;
@@ -2192,8 +2218,10 @@ lmtp_authenticate(connection_t *cxn)
 
         saslresult = sasl_encode64(out, outlen, inbase64, outlen * 2 + 8,
                                    (unsigned *) &inbase64len);
-        if (saslresult != SASL_OK)
+        if (saslresult != SASL_OK) {
+            free(inbase64);
             return RET_FAIL;
+        }
         p = concat("AUTH ", mechusing, " ", inbase64, "\r\n", (char *) 0);
         free(inbase64);
     }
@@ -2247,6 +2275,8 @@ lmtp_getauthline(char *str, char **line, int *linelen)
                                (unsigned *) linelen);
     if (saslresult != SASL_OK) {
         d_printf(0, "?:?:LMTP base64 decoding error\n");
+        free(*line);
+        *line = NULL;
         return STAT_NO;
     }
 
@@ -2255,18 +2285,21 @@ lmtp_getauthline(char *str, char **line, int *linelen)
 #endif /* HAVE_SASL */
 
 static void
-lmtp_writeCB(EndPoint e UNUSED, IoStatus i UNUSED, Buffer *b, void *d)
+lmtp_writeCB(EndPoint e, IoStatus i, Buffer *b, void *d)
 {
     connection_t *cxn = (connection_t *) d;
     Buffer *readBuffers;
 
     clearTimer(cxn->lmtp_writeBlockedTimerId);
 
-    /* Free the string that was written */
+    /* Free the buffers and their attached string. */
     freeBufferArray(b);
-    if (cxn->lmtp_tofree_str != NULL) {
-        free(cxn->lmtp_tofree_str);
-        cxn->lmtp_tofree_str = NULL;
+    if (i != IoDone) {
+        errno = endPointErrno(e);
+        syslog(LOG_ERR, "%s:%u LMTP write failed: %m",
+               hostPeerName(cxn->myHost), cxn->ident);
+        lmtp_Disconnect(cxn);
+        return;
     }
 
     /* set up to receive */
@@ -2332,18 +2365,21 @@ lmtp_writeCB(EndPoint e UNUSED, IoStatus i UNUSED, Buffer *b, void *d)
 
 
 static void
-imap_writeCB(EndPoint e UNUSED, IoStatus i UNUSED, Buffer *b, void *d)
+imap_writeCB(EndPoint e, IoStatus i, Buffer *b, void *d)
 {
     connection_t *cxn = (connection_t *) d;
     Buffer *readBuffers;
 
     clearTimer(cxn->imap_writeBlockedTimerId);
 
-    /* free the string we just wrote out */
+    /* Free the buffers and their attached string. */
     freeBufferArray(b);
-    if (cxn->imap_tofree_str != NULL) {
-        free(cxn->imap_tofree_str);
-        cxn->imap_tofree_str = NULL;
+    if (i != IoDone) {
+        errno = endPointErrno(e);
+        syslog(LOG_ERR, "%s:%u IMAP write failed: %m",
+               hostPeerName(cxn->myHost), cxn->ident);
+        imap_Disconnect(cxn);
+        return;
     }
 
     /* set up to receive */
@@ -2471,8 +2507,10 @@ imap_sendAuthStep(connection_t *cxn, char *str)
     saslresult = sasl_encode64(out, outlen, inbase64, outlen * 2 + 8,
                                (unsigned *) &inbase64len);
 
-    if (saslresult != SASL_OK)
+    if (saslresult != SASL_OK) {
+        free(inbase64);
         return RET_FAIL;
+    }
 
     /* Append endline. */
     strlcpy(inbase64 + inbase64len, "\r\n", outlen * 2 + 10 - inbase64len);
@@ -3437,6 +3475,7 @@ reset:
                          hostPeerName(cxn->myHost), cxn->ident,
                          sasl_errstring(saslresult, NULL, NULL));
 
+                free(inbase64);
                 lmtp_Disconnect(cxn);
                 return;
             }
@@ -3556,6 +3595,8 @@ reset:
                          hostPeerName(cxn->myHost), cxn->ident);
             }
 
+            freeBufferArray(cxn->current_bufs);
+            cxn->current_bufs = NULL;
             ReQueue(cxn, &(cxn->lmtp_todeliver_q), cxn->current_article);
 
             cxn->lmtp_state = LMTP_AUTHED_IDLE;
@@ -3567,6 +3608,8 @@ reset:
                 lmtp_Disconnect(cxn);
                 return;
             }
+            /* The endpoint owns the array once the write is registered. */
+            cxn->current_bufs = NULL;
 
             cxn->lmtp_state = LMTP_WRITING_CONTENTS;
         }
@@ -3877,19 +3920,23 @@ retry:
 
     switch (item->type) {
     case CREATE_FOLDER:
-        imap_CreateGroup(cxn, item->data.control->folder);
+        result = imap_CreateGroup(cxn, item->data.control->folder);
         break;
 
     case CANCEL_MSG:
-        imap_CancelMsg(cxn, item->data.control->folder);
+        result = imap_CancelMsg(cxn, item->data.control->folder);
         break;
 
     case DELETE_FOLDER:
-        imap_DeleteGroup(cxn, item->data.control->folder);
+        result = imap_DeleteGroup(cxn, item->data.control->folder);
         break;
     default:
+        result = RET_FAIL;
         break;
     }
+
+    if (result != RET_OK)
+        imap_Disconnect(cxn);
 
     return;
 }
@@ -3975,12 +4022,14 @@ retry:
     if (result == RET_OK) {
         result = AddControlMsg(cxn, item->data.article, bufs, control_header,
                                control_header_end, 1);
+        freeBufferArray(bufs);
         if (result != RET_OK) {
             d_printf(1, "%s:%u Error adding to [imap] control queue\n",
                      hostPeerName(cxn->myHost), cxn->ident);
             ReQueue(cxn, &(cxn->lmtp_todeliver_q), item);
             return;
         }
+        free(item);
 
         switch (cxn->imap_state) {
         case IMAP_IDLE_AUTHED:
@@ -4006,10 +4055,8 @@ retry:
         goto retry;
     }
 
-    if (cxn->current_bufs != NULL) {
-        /* freeBufferArray(cxn->current_bufs); */
-        cxn->current_bufs = NULL;
-    }
+    if (cxn->current_bufs != NULL)
+        freeBufferArray(cxn->current_bufs);
     cxn->current_bufs = bufs;
     cxn->current_article = item;
 
@@ -4028,6 +4075,8 @@ retry:
     if ((result != RET_OK) || (rcpt_list == NULL)) {
         d_printf(1, "%s:%u Didn't find Newsgroups header field\n",
                  hostPeerName(cxn->myHost), cxn->ident);
+        freeBufferArray(cxn->current_bufs);
+        cxn->current_bufs = NULL;
         QueueForgetAbout(cxn, cxn->current_article, MSG_FAIL_DELIVER);
         goto retry;
     }
@@ -4042,6 +4091,7 @@ retry:
     p = concat("RSET\r\n"
                "MAIL FROM:<",
                mailfrom_name, ">\r\n", rcpt_list, "DATA\r\n", (char *) 0);
+    free(rcpt_list);
 
     cxn->lmtp_state = LMTP_WRITING_UPTODATA;
     result = WriteToWire_lmtpstr(cxn, p, strlen(p));
@@ -4277,11 +4327,13 @@ newConnection(Host host, unsigned int ident, const char *ipname,
     /* setup mailfrom user */
     if (gethostname(hostname, MAXHOSTNAMELEN) != 0) {
         d_printf(0, "%s gethostname failed\n", ipname);
+        free(cxn->ServerName);
+        free(cxn);
         return NULL;
     }
 
-
-    mailfrom_name = concat("news@", hostname, (char *) 0);
+    if (mailfrom_name == NULL)
+        mailfrom_name = concat("news@", hostname, (char *) 0);
 
     cxn->next = gCxnList;
     gCxnList = cxn;
