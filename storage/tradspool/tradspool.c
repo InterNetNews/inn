@@ -813,6 +813,12 @@ OpenArticle(const char *path, RETRTYPE amount)
         close(fd);
         return NULL;
     }
+    if (sb.st_size < 0 || sb.st_size > UINT_MAX) {
+        SMseterror(SMERR_UNDEFINED, "article is too large");
+        free(art);
+        close(fd);
+        return NULL;
+    }
 
     art->arrived = sb.st_mtime;
 
@@ -859,7 +865,7 @@ OpenArticle(const char *path, RETRTYPE amount)
     } else {
         private->mmapped = false;
         private->artbase = xmalloc(private->artlen);
-        if (read(fd, private->artbase, private->artlen) < 0) {
+        if (xread(fd, private->artbase, private->artlen) < 0) {
             SMseterror(SMERR_UNDEFINED, NULL);
             syswarn("tradspool: could not read article %s", path);
             free(private->artbase);
@@ -872,6 +878,7 @@ OpenArticle(const char *path, RETRTYPE amount)
         if (p == NULL || p == private->artbase) {
             SMseterror(SMERR_UNDEFINED, NULL);
             syswarn("tradspool: apparently corrupt article %s", path);
+            free(private->artbase);
             free(art->private);
             free(art);
             close(fd);
