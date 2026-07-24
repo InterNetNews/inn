@@ -432,6 +432,7 @@ static void imap_Disconnect(connection_t *cxn);
 static void lmtp_DisconnectNoDelete(connection_t *cxn);
 static void imap_DisconnectNoDelete(connection_t *cxn);
 static conn_ret imap_listenintro(connection_t *cxn);
+static void CloseEndpoint(EndPoint *endpoint, int *sockfd);
 
 static void imap_writeTimeoutCbk(TimeoutId id, void *data);
 static void lmtp_writeTimeoutCbk(TimeoutId id, void *data);
@@ -1467,6 +1468,42 @@ SetSASLProperties(sasl_conn_t *conn, int sock, int minssf, int maxssf)
 /************************* Startup functions
  * **********************************/
 
+/*
+ * Close a protocol endpoint, or a socket that has not yet been transferred
+ * to an endpoint.
+ */
+static void
+CloseEndpoint(EndPoint *endpoint, int *sockfd)
+{
+    if (*endpoint != NULL) {
+        delEndPoint(*endpoint);
+        *endpoint = NULL;
+    } else if (*sockfd >= 0) {
+        close(*sockfd);
+    }
+    *sockfd = -1;
+}
+
+static void
+ClearLMTPCapabilities(connection_t *cxn)
+{
+    if (cxn->lmtp_capabilities == NULL)
+        return;
+    free(cxn->lmtp_capabilities->saslmechs);
+    free(cxn->lmtp_capabilities);
+    cxn->lmtp_capabilities = NULL;
+}
+
+static void
+ClearIMAPCapabilities(connection_t *cxn)
+{
+    if (cxn->imap_capabilities == NULL)
+        return;
+    free(cxn->imap_capabilities->saslmechs);
+    free(cxn->imap_capabilities);
+    cxn->imap_capabilities = NULL;
+}
+
 static conn_ret
 Initialize(connection_t *cxn, int respTimeout)
 {
@@ -1543,6 +1580,7 @@ init_net(char *serverFQDN, int port, int *sock)
     struct sockaddr_in addr;
     struct hostent *hp;
 
+    *sock = -1;
     if ((hp = gethostbyname(serverFQDN)) == NULL) {
         d_printf(0, "gethostbyname(): %s\n", strerror(errno));
         return RET_FAIL;
@@ -1560,6 +1598,8 @@ init_net(char *serverFQDN, int port, int *sock)
 
     if (connect((*sock), (struct sockaddr *) &addr, sizeof(addr)) < 0) {
         d_printf(0, "connect(): %s\n", strerror(errno));
+        close(*sock);
+        *sock = -1;
         return RET_FAIL;
     }
 
@@ -1582,6 +1622,9 @@ SetupLMTPConnection(connection_t *cxn, char *serverName, int port)
                  cxn->ident);
         return RET_FAIL;
     }
+
+    CloseEndpoint(&cxn->lmtp_endpoint, &cxn->sockfd_lmtp);
+    ClearLMTPCapabilities(cxn);
 
 #ifdef HAVE_SASL
     /* Free the SASL connection if we already had one */
@@ -1617,16 +1660,11 @@ SetupLMTPConnection(connection_t *cxn, char *serverName, int port)
     cxn->lmtp_respBuffer = xmalloc(4096);
     cxn->lmtp_respBuffer[0] = '\0';
 
-    /* Free if we had an existing one */
-    if (cxn->lmtp_endpoint != NULL) {
-        delEndPoint(cxn->lmtp_endpoint);
-        cxn->lmtp_endpoint = NULL;
-    }
-
     cxn->lmtp_endpoint = newEndPoint(cxn->sockfd_lmtp);
     if (cxn->lmtp_endpoint == NULL) {
         d_printf(0, "%s:%u:LMTP failure creating endpoint\n",
                  hostPeerName(cxn->myHost), cxn->ident);
+        CloseEndpoint(&cxn->lmtp_endpoint, &cxn->sockfd_lmtp);
         return RET_FAIL;
     }
 
@@ -1637,6 +1675,7 @@ SetupLMTPConnection(connection_t *cxn, char *serverName, int port)
     if (result != RET_OK) {
         d_printf(0, "%s:%u:LMTP error setting SASL properties\n",
                  hostPeerName(cxn->myHost), cxn->ident);
+        CloseEndpoint(&cxn->lmtp_endpoint, &cxn->sockfd_lmtp);
         return RET_FAIL;
     }
 #endif /* HAVE_SASL */
@@ -1660,6 +1699,9 @@ SetupIMAPConnection(connection_t *cxn, char *serverName, int port)
                  cxn->ident);
         return RET_FAIL;
     }
+
+    CloseEndpoint(&cxn->imap_endpoint, &cxn->imap_sockfd);
+    ClearIMAPCapabilities(cxn);
 
 #ifdef HAVE_SASL
     /* Free the SASL connection if we already had one */
@@ -1693,16 +1735,11 @@ SetupIMAPConnection(connection_t *cxn, char *serverName, int port)
     cxn->imap_respBuffer = xmalloc(4096);
     cxn->imap_respBuffer[0] = '\0';
 
-    /* Free if we had an existing one */
-    if (cxn->imap_endpoint != NULL) {
-        delEndPoint(cxn->imap_endpoint);
-        cxn->imap_endpoint = NULL;
-    }
-
     cxn->imap_endpoint = newEndPoint(cxn->imap_sockfd);
     if (cxn->imap_endpoint == NULL) {
         d_printf(0, "%s:%u:IMAP Failure creating imap endpoint\n",
                  hostPeerName(cxn->myHost), cxn->ident);
+        CloseEndpoint(&cxn->imap_endpoint, &cxn->imap_sockfd);
         return RET_FAIL;
     }
 
@@ -1712,6 +1749,7 @@ SetupIMAPConnection(connection_t *cxn, char *serverName, int port)
     if (result != RET_OK) {
         d_printf(0, "%s:%u:IMAP Error setting sasl properties",
                  hostPeerName(cxn->myHost), cxn->ident);
+        CloseEndpoint(&cxn->imap_endpoint, &cxn->imap_sockfd);
         return result;
     }
 #endif /* HAVE_SASL */
@@ -1806,6 +1844,8 @@ imap_Connect(connection_t *cxn)
 
     /* Listen to the intro and start the authenticating process */
     result = imap_listenintro(cxn);
+    if (result != RET_OK)
+        CloseEndpoint(&cxn->imap_endpoint, &cxn->imap_sockfd);
 
     return result;
 }
@@ -1893,6 +1933,8 @@ imap_DisconnectNoDelete(connection_t *cxn)
     clearTimer(cxn->imap_readBlockedTimerId);
     clearTimer(cxn->imap_writeBlockedTimerId);
 
+    CloseEndpoint(&cxn->imap_endpoint, &cxn->imap_sockfd);
+
     /* Give the active item and any queued items back to the host. */
     if (cxn->current_control != NULL)
         QueueForgetAbout(cxn, cxn->current_control, MSG_GIVE_BACK);
@@ -1902,7 +1944,8 @@ imap_DisconnectNoDelete(connection_t *cxn)
 
     cxn->imap_disconnects++;
 
-    cxn->imap_respBuffer[0] = '\0';
+    if (cxn->imap_respBuffer != NULL)
+        cxn->imap_respBuffer[0] = '\0';
 
     if (cxn->issue_quit == 0)
         prepareReopenCbk(cxn, 0);
@@ -1941,6 +1984,8 @@ lmtp_Connect(connection_t *cxn)
 
     /* Listen to the intro */
     result = lmtp_listenintro(cxn);
+    if (result != RET_OK)
+        CloseEndpoint(&cxn->lmtp_endpoint, &cxn->sockfd_lmtp);
 
     return result;
 }
@@ -1953,6 +1998,8 @@ lmtp_DisconnectNoDelete(connection_t *cxn)
     cxn->lmtp_sleepTimerId = 0;
     clearTimer(cxn->lmtp_readBlockedTimerId);
     clearTimer(cxn->lmtp_writeBlockedTimerId);
+
+    CloseEndpoint(&cxn->lmtp_endpoint, &cxn->sockfd_lmtp);
 
     /* Release locally-owned buffers before returning the active article. */
     if (cxn->current_bufs != NULL) {
@@ -1969,7 +2016,8 @@ lmtp_DisconnectNoDelete(connection_t *cxn)
 
     cxn->lmtp_disconnects++;
 
-    cxn->lmtp_respBuffer[0] = '\0';
+    if (cxn->lmtp_respBuffer != NULL)
+        cxn->lmtp_respBuffer[0] = '\0';
 
     if (cxn->issue_quit == 0)
         prepareReopenCbk(cxn, 1);
@@ -2147,14 +2195,7 @@ lmtp_getcapabilities(connection_t *cxn)
     conn_ret result;
     char *p;
 
-    if (cxn->lmtp_capabilities != NULL) {
-        if (cxn->lmtp_capabilities->saslmechs) {
-            free(cxn->lmtp_capabilities->saslmechs);
-        }
-        free(cxn->lmtp_capabilities);
-        cxn->lmtp_capabilities = NULL;
-    }
-
+    ClearLMTPCapabilities(cxn);
     cxn->lmtp_capabilities = xcalloc(1, sizeof(lmtp_capabilities_t));
     cxn->lmtp_capabilities->saslmechs = NULL;
 
@@ -3219,10 +3260,8 @@ reset:
             d_printf(1, "%s:%u:IMAP Read quit response\n",
                      hostPeerName(cxn->myHost), cxn->ident);
 
-            cxn->imap_state = IMAP_DISCONNECTED;
-
-            DeleteIfDisconnected(cxn);
-            break;
+            imap_Disconnect(cxn);
+            return;
 
         default:
             d_printf(0, "%s:%u:IMAP I don't understand state %u [%s]\n",
@@ -3675,10 +3714,8 @@ reset:
         d_printf(1, "%s:%u:LMTP read quit\n", hostPeerName(cxn->myHost),
                  cxn->ident);
 
-        cxn->lmtp_state = LMTP_DISCONNECTED;
-
-        DeleteIfDisconnected(cxn);
-        break;
+        lmtp_Disconnect(cxn);
+        return;
 
     default:
 
@@ -4241,10 +4278,16 @@ delConnection(Connection cxn)
 
     ASSERT(c != NULL);
 
-    if (cxn->lmtp_endpoint != NULL)
-        delEndPoint(cxn->lmtp_endpoint);
-    if (cxn->imap_endpoint != NULL)
-        delEndPoint(cxn->imap_endpoint);
+    CloseEndpoint(&cxn->lmtp_endpoint, &cxn->sockfd_lmtp);
+    CloseEndpoint(&cxn->imap_endpoint, &cxn->imap_sockfd);
+    ClearLMTPCapabilities(cxn);
+    ClearIMAPCapabilities(cxn);
+#ifdef HAVE_SASL
+    if (cxn->saslconn_lmtp != NULL)
+        sasl_dispose(&cxn->saslconn_lmtp);
+    if (cxn->imap_saslconn != NULL)
+        sasl_dispose(&cxn->imap_saslconn);
+#endif /* HAVE_SASL */
 
     delBuffer(cxn->imap_rBuffer);
     delBuffer(cxn->lmtp_rBuffer);
@@ -4323,6 +4366,8 @@ newConnection(Host host, unsigned int ident, const char *ipname,
 
     /* allocate connection structure */
     cxn = xcalloc(1, sizeof(connection_t));
+    cxn->sockfd_lmtp = -1;
+    cxn->imap_sockfd = -1;
 
     cxn->ident = ident;
     cxn->ServerName = xstrdup(ipname);
