@@ -3,7 +3,7 @@
 **
 **  Originally written in 1999.
 **  Various bug fixes, code and documentation improvements since then
-**  in 1999-2010, 2013-2017, 2019-2025.
+**  in 1999-2010, 2013-2017, 2019-2026.
 */
 
 /*
@@ -730,6 +730,13 @@ ovbuffinit_disks(void)
             strncpy(buf, dpx.totala, OVBUFFLASIZ);
             buf[OVBUFFLASIZ] = '\0';
             ovbuff->totalblk = hex2offt(buf);
+            if (ovbuff->base > ovbuff->len
+                || (off_t) ovbuff->totalblk
+                       != (ovbuff->len - ovbuff->base) / OV_BLOCKSIZE) {
+                warn("buffindexed: invalid block count for %s", ovbuff->path);
+                ovlock(ovbuff, INN_LOCK_UNLOCK);
+                return false;
+            }
 
             if (rpx->version == 0) {
                 /* no binary data available. use character data */
@@ -746,6 +753,12 @@ ovbuffinit_disks(void)
                  */
                 ovbuff->usedblk = rpx->usedblk;
                 ovbuff->freeblk = rpx->freeblk;
+            }
+            if (ovbuff->usedblk > ovbuff->totalblk
+                || ovbuff->freeblk > ovbuff->totalblk) {
+                warn("buffindexed: invalid block usage for %s", ovbuff->path);
+                ovlock(ovbuff, INN_LOCK_UNLOCK);
+                return false;
             }
             Needunlink = false;
         } else {
@@ -865,6 +878,25 @@ getovbuff(OV ov)
             return ovbuff;
     }
     return NULL;
+}
+
+static bool
+ovblockvalid(const OVBUFF *ovbuff, unsigned int blocknum)
+{
+    off_t blocks;
+
+    if (ovbuff->base > ovbuff->len)
+        return false;
+    blocks = (ovbuff->len - ovbuff->base) / OV_BLOCKSIZE;
+    return blocknum < (unsigned long) blocks;
+}
+
+static bool
+ovindexspanvalid(const OVINDEX *index)
+{
+    return index->offset >= 0 && index->len >= 0
+           && index->offset <= OV_BLOCKSIZE
+           && index->len <= OV_BLOCKSIZE - index->offset;
 }
 
 #ifdef OV_DEBUG
@@ -1793,7 +1825,7 @@ ovgroupmmap(GROUPENTRY *ge, ARTNUM low, ARTNUM high, bool needov)
     OV ov = ge->baseindex;
     OVBUFF *ovbuff;
     GROUPDATABLOCK *gdb;
-    int pagefudge, limit, i, count, len;
+    int pagefudge, limit, i, capacity, count, len;
     off_t offset, mmapoffset;
     OVBLOCK *ovblock;
     void *addr;
@@ -1806,14 +1838,25 @@ ovgroupmmap(GROUPENTRY *ge, ARTNUM low, ARTNUM high, bool needov)
     Gibcount = ge->count;
     if (Gibcount == 0)
         return true;
-    Gib = xmalloc(Gibcount * sizeof(OVINDEX));
+    if (Gibcount < 0) {
+        warn("buffindexed: negative overview count");
+        return false;
+    }
+    capacity = Gibcount > OV_FUDGE ? OV_FUDGE : Gibcount;
+    Gib = xmalloc(capacity * sizeof(OVINDEX));
     count = 0;
     while (ov.index != NULLINDEX) {
+        for (giblist = Giblist; giblist != NULL; giblist = giblist->next)
+            if (giblist->ov.index == ov.index
+                && giblist->ov.blocknum == ov.blocknum) {
+                warn("buffindexed: loop in overview index blocks");
+                ovgroupunmap();
+                return false;
+            }
         ovbuff = getovbuff(ov);
-        if (ovbuff == NULL) {
-            warn("buffindexed: ovgroupmmap ovbuff is null(ovindex is %d, "
-                 "ovblock is %u",
-                 ov.index, ov.blocknum);
+        if (ovbuff == NULL || !ovblockvalid(ovbuff, ov.blocknum)) {
+            warn("buffindexed: invalid index block %d:%u", ov.index,
+                 ov.blocknum);
             ovgroupunmap();
             return false;
         }
@@ -1832,13 +1875,25 @@ ovgroupmmap(GROUPENTRY *ge, ARTNUM low, ARTNUM high, bool needov)
         if (ov.index == ge->curindex.index
             && ov.blocknum == ge->curindex.blocknum) {
             limit = ge->curindexoffset;
+            if (limit < 0 || (size_t) limit > OVINDEXMAX) {
+                warn("buffindexed: invalid index entry count %d", limit);
+                munmap(addr, len);
+                ovgroupunmap();
+                return false;
+            }
         } else {
             limit = OVINDEXMAX;
         }
         for (i = 0; i < limit; i++) {
-            if (Gibcount == count) {
-                Gibcount += OV_FUDGE;
-                Gib = xrealloc(Gib, Gibcount * sizeof(OVINDEX));
+            if (capacity == count) {
+                if (capacity > INT_MAX - OV_FUDGE) {
+                    warn("buffindexed: too many overview index entries");
+                    munmap(addr, len);
+                    ovgroupunmap();
+                    return false;
+                }
+                capacity += OV_FUDGE;
+                Gib = xreallocarray(Gib, capacity, sizeof(OVINDEX));
             }
             Gib[count++] = ovblock->ovindex[i];
         }
@@ -1870,7 +1925,7 @@ ovgroupmmap(GROUPENTRY *ge, ARTNUM low, ARTNUM high, bool needov)
         if (gdb != NULL)
             continue;
         ovbuff = getovbuff(ov);
-        if (ovbuff == NULL)
+        if (ovbuff == NULL || !ovblockvalid(ovbuff, ov.blocknum))
             continue;
         gdb = xmalloc(sizeof(GROUPDATABLOCK));
         gdb->datablk = ov;
@@ -1889,11 +1944,9 @@ ovgroupmmap(GROUPENTRY *ge, ARTNUM low, ARTNUM high, bool needov)
         for (gdb = groupdatablock[i]; gdb != NULL; gdb = gdb->next) {
             ov = gdb->datablk;
             ovbuff = getovbuff(ov);
-            if (ovbuff == NULL) {
-                warn("buffindexed: ovgroupmmap could not get ovbuff block for"
-                     " new, %d, %u",
+            if (ovbuff == NULL || !ovblockvalid(ovbuff, ov.blocknum)) {
+                warn("buffindexed: invalid overview data block %d:%u",
                      ov.index, ov.blocknum);
-                free(gdb);
                 ovgroupunmap();
                 return false;
             }
@@ -2005,6 +2058,16 @@ ovsearch(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *token,
             if (artnum)
                 *artnum = Gib[search->cur].artnum;
         } else {
+            srchov.index = Gib[search->cur].index;
+            srchov.blocknum = Gib[search->cur].blocknum;
+            ovbuff = getovbuff(srchov);
+            if (ovbuff == NULL || !ovblockvalid(ovbuff, srchov.blocknum)
+                || !ovindexspanvalid(&Gib[search->cur])) {
+                warn("buffindexed: invalid overview entry for article %lu",
+                     (unsigned long) Gib[search->cur].artnum);
+                search->cur++;
+                return false;
+            }
             if (artnum)
                 *artnum = Gib[search->cur].artnum;
             if (len)
@@ -2014,8 +2077,6 @@ ovsearch(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *token,
             if (expires)
                 *expires = Gib[search->cur].expires;
             if (data) {
-                srchov.index = Gib[search->cur].index;
-                srchov.blocknum = Gib[search->cur].blocknum;
                 gdb = searchgdb(&srchov);
                 if (gdb == NULL) {
                     if (len)
@@ -2039,8 +2100,8 @@ ovsearch(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *token,
                     if (newblock) {
                         search->gdb.datablk.blocknum = srchov.blocknum;
                         search->gdb.datablk.index = srchov.index;
-                        ovbuff = getovbuff(srchov);
-                        if (ovbuff == NULL) {
+                        if (ovbuff == NULL
+                            || !ovblockvalid(ovbuff, srchov.blocknum)) {
                             warn("buffindexed: ovsearch could not get ovbuff"
                                  " block for new, %d, %u",
                                  srchov.index, srchov.blocknum);
