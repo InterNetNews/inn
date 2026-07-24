@@ -7,6 +7,8 @@
 #include "conffile.h"
 #include "inn/libinn.h"
 
+static int cfeof(CONFFILE *);
+
 static int
 getconfline(CONFFILE *F, char *buffer, size_t length)
 {
@@ -18,7 +20,9 @@ getconfline(CONFFILE *F, char *buffer, size_t length)
             return 1;
         }
     } else if (F->array) {
-        strlcpy(buffer, F->array[F->lineno], F->sbuf);
+        if (cfeof(F)
+            || strlcpy(buffer, F->array[F->lineno], length) >= length)
+            return 1;
     }
     F->lineno++;
     if (strlen(F->buf) >= F->sbuf - 1) {
@@ -34,7 +38,7 @@ cfeof(CONFFILE *F)
     if (F->f) {
         return feof(F->f);
     } else if (F->array) {
-        return (F->lineno == F->array_len);
+        return (F->lineno >= F->array_len);
     } else {
         return 1;
     }
@@ -145,7 +149,8 @@ CONFfclose(CONFFILE *f)
 {
     if (!f)
         return; /* No conf file */
-    fclose(f->f);
+    if (f->f != NULL)
+        fclose(f->f);
     if (f->buf)
         free(f->buf);
     if (f->filename)
