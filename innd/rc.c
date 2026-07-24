@@ -630,7 +630,7 @@ RCreader(CHANNEL *cp)
                 NCwritereply(new, (char *) NCgreeting);
             }
         }
-    } else if (AnyIncoming && !rp->Skip) {
+    } else if (AnyIncoming && (i < 0 || !rp->Skip)) {
         if ((new = NCcreate(fd, false, false)) != NULL) {
             NCwritereply(new, (char *) NCgreeting);
         }
