@@ -4,7 +4,7 @@
 **  Rewritten and cleaned by Scott Fritchie from its INN 1.5.1 incarnation
 **  in 1998.
 **  Various bug fixes, code and documentation improvements since then
-**  in 1998-2011, 2014, 2015, 2017-2025.
+**  in 1998-2011, 2014, 2015, 2017-2026.
 */
 
 #include "portable/system.h"
@@ -68,6 +68,29 @@ static int metabuff_update = METACYCBUFF_UPDATE;
 static int refresh_interval = REFRESH_INTERVAL;
 
 static CYCBUFF *CNFSgetcycbuffbyname(char *name);
+
+static bool
+CNFSReadFully(int fd, void *buffer, size_t length, off_t offset)
+{
+    char *p = buffer;
+
+    while (length > 0) {
+        ssize_t count;
+
+        do {
+            count = pread(fd, p, length, offset);
+        } while (count < 0 && errno == EINTR);
+        if (count <= 0) {
+            if (count == 0)
+                errno = EIO;
+            return false;
+        }
+        p += count;
+        length -= count;
+        offset += count;
+    }
+    return true;
+}
 
 
 /*
@@ -1584,7 +1607,8 @@ cnfs_retrieve(const TOKEN token, const RETRTYPE amount)
     } else {
         private->base = xmalloc(ntohl(cah.size));
         pagefudge = 0;
-        if (pread(cycbuff->fd, private->base, ntohl(cah.size), offset) < 0) {
+        if (!CNFSReadFully(cycbuff->fd, private->base, ntohl(cah.size),
+                           offset)) {
             SMseterror(SMERR_UNDEFINED, "read failed");
             syswarn("CNFS: could not read token %s %s:0x%s:%u",
                     TokenToText(token), cycbuffname,
@@ -1979,7 +2003,8 @@ cnfs_next(ARTHANDLE *article, const RETRTYPE amount)
     } else {
         private->base = xmalloc(ntohl(cah.size));
         pagefudge = 0;
-        if (pread(cycbuff->fd, private->base, ntohl(cah.size), offset) < 0) {
+        if (!CNFSReadFully(cycbuff->fd, private->base, ntohl(cah.size),
+                           offset)) {
             art->data = NULL;
             art->len = 0;
             art->token = NULL;

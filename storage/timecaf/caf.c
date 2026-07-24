@@ -5,7 +5,7 @@
 **  in INN1.8 by rmtodd 3/27/98.
 **
 **  Various bug fixes, code and documentation improvements since then
-**  in 1999-2004, 2006, 2007, 2009, 2013, 2016, 2018-2022, 2024.
+**  in 1999-2004, 2006, 2007, 2009, 2013, 2016, 2018-2022, 2024, 2026.
 */
 
 #include "portable/system.h"
@@ -636,12 +636,18 @@ CAFOpenArtRead(const char *path, ARTNUM art, size_t *len)
     /* I'm not sure if this fstat is worth the speed hit, but unless we check
        here, we may simply segfault when we try to access mmap'd space beyond
        the end of the file.  I think robustness wins. */
-    if (fstat(fd, &st) == 0)
-        if (tocent.Size + tocent.Offset > (size_t) st.st_size) {
-            CAFError(CAF_ERR_IO);
-            close(fd);
-            return -1;
-        }
+    if (fstat(fd, &st) < 0) {
+        CAFError(CAF_ERR_IO);
+        close(fd);
+        return -1;
+    }
+    if (st.st_size < 0 || tocent.Offset < 0
+        || tocent.Size > (size_t) st.st_size
+        || (size_t) tocent.Offset > (size_t) st.st_size - tocent.Size) {
+        CAFError(CAF_ERR_BADFILE);
+        close(fd);
+        return -1;
+    }
 
     *len = tocent.Size;
     return fd;
@@ -1150,7 +1156,7 @@ int
 CAFOpenReadTOC(char *path, CAFHEADER *ch, CAFTOCENT **tocpp)
 {
     int fd;
-    int nb;
+    size_t count, nb;
     CAFTOCENT *tocp;
     off_t offset;
 
@@ -1174,19 +1180,29 @@ CAFOpenReadTOC(char *path, CAFHEADER *ch, CAFTOCENT **tocpp)
     }
 
     /* Allocate memory for TOC. */
-    tocp = xmalloc((ch->High - ch->Low + 1) * sizeof(CAFTOCENT));
-    nb = (sizeof(CAFTOCENT))
-         * (ch->High - ch->Low + 1); /* # bytes to read for toc. */
+    if (ch->High < ch->Low || ch->High - ch->Low >= ch->NumSlots
+        || ch->High - ch->Low + 1 > SIZE_MAX / sizeof(CAFTOCENT)) {
+        CAFError(CAF_ERR_BADFILE);
+        close(fd);
+        return -1;
+    }
+    count = ch->High - ch->Low + 1;
+    nb = sizeof(CAFTOCENT) * count;
+    tocp = xmalloc(nb);
 
     /* seek to beginning of TOC */
     offset = sizeof(CAFHEADER) + ch->FreeZoneTabSize;
 
     if (lseek(fd, offset, SEEK_SET) < 0) {
         CAFError(CAF_ERR_IO);
+        free(tocp);
+        close(fd);
         return -1;
     }
 
     if (OurRead(fd, tocp, nb) < 0) {
+        free(tocp);
+        close(fd);
         return -1;
     }
 
@@ -1312,9 +1328,11 @@ CAFRemoveMultArts(char *path, unsigned int narts, ARTNUM *artnums)
     /* need to update header. */
     if (lseek(fd, 0, SEEK_SET) < 0) {
         CAFError(CAF_ERR_IO);
+        close(fd);
         return -1;
     }
     if (OurWrite(fd, &head, sizeof(CAFHEADER)) < 0) {
+        close(fd);
         return -1;
     }
 
