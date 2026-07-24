@@ -51,6 +51,7 @@
 #include "inn/qio.h"
 #include "inn/sequence.h"
 #include "inn/timer.h"
+#include <ctype.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <limits.h>
@@ -101,6 +102,7 @@ hisv6_splitline(const char *line, const char **error, HASH *hash,
 {
     const char *p = line;
     char *end;
+    size_t i;
     unsigned long l;
     int r = 0;
 
@@ -110,13 +112,19 @@ hisv6_splitline(const char *line, const char **error, HASH *hash,
         return -1;
     }
     ++p;
-    if (hash)
-        *hash = TextToHash(p);
-    p += 32;
-    if (*p != ']') {
+    for (i = 0; i < 32; i++) {
+        if (p[i] == '\0' || !isxdigit((unsigned char) p[i])) {
+            *error = "invalid hash in history line";
+            return -1;
+        }
+    }
+    if (p[32] != ']') {
         *error = "`]' missing from history line";
         return -1;
     }
+    if (hash)
+        *hash = TextToHash(p);
+    p += 32;
     ++p;
     r |= HISV6_HAVE_HASH;
     if (*p != HISV6_FIELDSEP) {
