@@ -4,7 +4,7 @@
 **  Originally written by Richard Michael Todd <rmtodd@mailhost.ecn.ou.edu>
 **  in 1998.
 **  Various bug fixes, code and documentation improvements since then
-**  in 1998-2010, 2014, 2015, 2017, 2021-2025.
+**  in 1998-2010, 2014, 2015, 2017, 2021-2026.
 */
 
 #include "portable/system.h"
@@ -1197,7 +1197,7 @@ tradspool_next(ARTHANDLE *article, const RETRTYPE amount)
         xrefhdr = wire_findheader(art->data, art->len, "Xref", true);
         if (xrefhdr != NULL) {
             if ((xrefs = CrackXref(xrefhdr, &numxrefs)) == NULL
-                || numxrefs == 0) {
+                || numxrefs < 2) {
                 art->len = 0;
             } else {
                 /* assumes first one is the original */
