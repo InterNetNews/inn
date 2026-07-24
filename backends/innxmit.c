@@ -1121,6 +1121,7 @@ main(int ac, char *av[])
     volatile int port = NNTP_PORT;
     bool val;
     char *path;
+    size_t patharticleslen;
     volatile unsigned int ConnectTimeout;
     volatile unsigned int TotalTimeout;
 
@@ -1130,6 +1131,7 @@ main(int ac, char *av[])
     /* Set defaults. */
     if (!innconf_read(NULL))
         exit(1);
+    patharticleslen = strlen(innconf->patharticles);
 
     ConnectTimeout = 0;
     TotalTimeout = 0;
@@ -1392,11 +1394,10 @@ main(int ac, char *av[])
             continue;
 
         /* Split the line into possibly two fields. */
-        if (Article[0] == '/' && Article[strlen(innconf->patharticles)] == '/'
-            && strncmp(Article, innconf->patharticles,
-                       strlen(innconf->patharticles))
-                   == 0)
-            Article += strlen(innconf->patharticles) + 1;
+        if (Article[0] == '/'
+            && strncmp(Article, innconf->patharticles, patharticleslen) == 0
+            && Article[patharticleslen] == '/')
+            Article += patharticleslen + 1;
         if ((MessageID = strchr(Article, ' ')) != NULL) {
             *MessageID++ = '\0';
             if (*MessageID != '<' || (p = strrchr(MessageID, '>')) == NULL
