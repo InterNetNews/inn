@@ -1197,7 +1197,7 @@ tradspool_next(ARTHANDLE *article, const RETRTYPE amount)
         xrefhdr = wire_findheader(art->data, art->len, "Xref", true);
         if (xrefhdr != NULL) {
             if ((xrefs = CrackXref(xrefhdr, &numxrefs)) == NULL
-                || numxrefs == 0) {
+                || numxrefs < 2) {
                 art->len = 0;
             } else {
                 /* assumes first one is the original */
