@@ -455,6 +455,8 @@ timecaf_store(const ARTHANDLE article, const STORAGECLASS class)
                  CAFErrorStr());
             SMseterror(SMERR_UNDEFINED, NULL);
             free(path);
+            WritingFile.path = NULL;
+            WritingFile.fd = -1;
             token.type = TOKEN_EMPTY;
             return token;
         }
@@ -578,7 +580,7 @@ OpenArticle(const char *path, ARTNUM artnum, const RETRTYPE amount)
 
     if ((p = wire_findbody(private->artdata, private->artlen)) == NULL) {
         SMseterror(SMERR_NOBODY, NULL);
-        if (innconf->articlemmap)
+        if (innconf->articlemmap && private->mmapbase != NULL)
             munmap(private->mmapbase, private->mmaplen);
         else
             free(private->artdata);
@@ -829,7 +831,7 @@ timecaf_next(ARTHANDLE *article, const RETRTYPE amount)
         priv = *(PRIV_TIMECAF *) article->private;
         free(article->private);
         free(article);
-        if (innconf->articlemmap)
+        if (innconf->articlemmap && priv.mmapbase != NULL)
             munmap(priv.mmapbase, priv.mmaplen);
         else
             free(priv.artdata);
@@ -901,7 +903,7 @@ timecaf_next(ARTHANDLE *article, const RETRTYPE amount)
         art->type = TOKEN_TIMECAF;
         art->data = NULL;
         art->len = 0;
-        art->private = xmalloc(sizeof(PRIV_TIMECAF));
+        art->private = xcalloc(1, sizeof(PRIV_TIMECAF));
     }
     newpriv = (PRIV_TIMECAF *) art->private;
     newpriv->top = priv.top;
