@@ -48,6 +48,7 @@ dump_index(const char *group)
         entry = tdx_index_entry(index, group);
         if (entry == NULL) {
             warn("cannot find group %s", group);
+            tdx_index_close(index);
             return;
         }
         tdx_index_print(group, entry, stdout);
@@ -72,11 +73,13 @@ dump_group_index(const char *group)
     entry = tdx_index_entry(index, group);
     if (entry == NULL) {
         warn("cannot find group %s in the index", group);
+        tdx_index_close(index);
         return;
     }
     data = tdx_data_open(index, group, entry);
     if (data == NULL) {
         warn("cannot open group %s", group);
+        tdx_index_close(index);
         return;
     }
     tdx_data_index_dump(data, stdout);
@@ -110,14 +113,15 @@ dump_overview(const char *group, ARTNUM low, ARTNUM high, bool overchan)
     entry = tdx_index_entry(index, group);
     if (entry == NULL) {
         warn("cannot find group %s", group);
+        tdx_index_close(index);
         return;
     }
     data = tdx_data_open(index, group, entry);
     if (data == NULL) {
         warn("cannot open group %s", group);
+        tdx_index_close(index);
         return;
     }
-    data->refcount++;
 
     if (low == 0)
         low = entry->low;
@@ -130,11 +134,14 @@ dump_overview(const char *group, ARTNUM low, ARTNUM high, bool overchan)
             puts("Article not found");
         else
             warn("cannot open search in %s: %lu - %lu", group, low, high);
+        tdx_data_close(data);
         tdx_index_close(index);
         return;
     }
     while (tdx_search(search, &article)) {
         if (overchan) {
+            if (article.overlen < 3)
+                continue;
             p = memchr(article.overview, '\t', article.overlen - 3);
             if (p == NULL)
                 continue;
@@ -144,6 +151,8 @@ dump_overview(const char *group, ARTNUM low, ARTNUM high, bool overchan)
                    (unsigned long) article.expires);
             fwrite(p, article.overlen - 2 - (p - article.overview), 1, stdout);
         } else {
+            if (article.overlen < 2)
+                continue;
             fwrite(article.overview, article.overlen - 2, 1, stdout);
             printf("\tArticle: %lu\tToken: %s", article.number,
                    TokenToText(article.token));
