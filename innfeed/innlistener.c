@@ -432,9 +432,8 @@ newArticleCommand(EndPoint ep, IoStatus i, Buffer *buffs, void *data)
             if (*next == '\r')
                 next++;
 
-            endc--;
-            if (*endc != '\r')
-                endc++;
+            if (endc > cmd && endc[-1] == '\r')
+                endc--;
 
             *endc = '\0';
 
