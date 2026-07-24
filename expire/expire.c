@@ -780,6 +780,7 @@ main(int ac, char *av[])
             EXPusepost = true;
             break;
         case 'r':
+            free(EXPreason);
             EXPreason = xstrdup(optarg);
             break;
         case 's':
@@ -853,6 +854,7 @@ main(int ac, char *av[])
             EXPreason = xstrdup(buff);
         }
     } else {
+        free(EXPreason);
         EXPreason = NULL;
     }
 
