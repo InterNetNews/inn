@@ -306,17 +306,26 @@ strel(int i)
 static bool
 REMwrite(char *p, int i, bool escdot)
 {
-    int size;
+    size_t capacity, needed, size;
 
-    /* Buffer too full? */
-    if (REMbuffend - REMbuffptr < i + 3) {
+    if (i < 0)
+        return false;
+
+    /* Space for the payload, optional dot-escape, and CRLF. */
+    needed = (size_t) i + 3;
+    if ((size_t) (REMbuffend - REMbuffptr) < needed) {
         if (!REMflush())
             return false;
-        if (REMbuffend - REMbuffer < i + 3) {
-            /* Line too long -- grow buffer. */
-            size = i * 2;
+        capacity = (size_t) (REMbuffend - REMbuffer);
+        if (capacity < needed) {
+            /* Line too long -- grow buffer without overflowing size_t. */
+            if (needed > SIZE_MAX / 2)
+                size = needed;
+            else
+                size = needed * 2;
             REMbuffer = xrealloc(REMbuffer, size);
-            REMbuffend = &REMbuffer[size];
+            REMbuffptr = REMbuffer;
+            REMbuffend = REMbuffer + size;
         }
     }
 
