@@ -526,20 +526,43 @@ OpenArticle(const char *path, ARTNUM artnum, const RETRTYPE amount)
 
     private = xmalloc(sizeof(PRIV_TIMECAF));
     art->private = (void *) private;
+    if (len > UINT_MAX) {
+        SMseterror(SMERR_UNDEFINED, "article is too large");
+        close(fd);
+        free(art->private);
+        free(art);
+        return NULL;
+    }
     private->artlen = len;
     if (innconf->articlemmap) {
         off_t curoff, tmpoff;
         size_t delta;
 
         curoff = lseek(fd, (off_t) 0, SEEK_CUR);
+        if (curoff < 0) {
+            SMseterror(SMERR_UNDEFINED, NULL);
+            syswarn("timecaf: could not locate article");
+            close(fd);
+            free(art->private);
+            free(art);
+            return NULL;
+        }
         delta = curoff % pagesize;
         tmpoff = curoff - delta;
+        if (len > SIZE_MAX - delta) {
+            SMseterror(SMERR_UNDEFINED, "article mapping is too large");
+            close(fd);
+            free(art->private);
+            free(art);
+            return NULL;
+        }
         private->mmaplen = len + delta;
         if ((private->mmapbase = mmap(NULL, private->mmaplen, PROT_READ,
                                       MAP_SHARED, fd, tmpoff))
             == MAP_FAILED) {
             SMseterror(SMERR_UNDEFINED, NULL);
             syswarn("timecaf: could not mmap article");
+            close(fd);
             free(art->private);
             free(art);
             return NULL;
@@ -552,9 +575,10 @@ OpenArticle(const char *path, ARTNUM artnum, const RETRTYPE amount)
         private->artdata = private->mmapbase + delta;
     } else {
         private->artdata = xmalloc(private->artlen);
-        if (read(fd, private->artdata, private->artlen) < 0) {
+        if (xread(fd, private->artdata, private->artlen) < 0) {
             SMseterror(SMERR_UNDEFINED, NULL);
             syswarn("timecaf: could not read article");
+            close(fd);
             free(private->artdata);
             free(art->private);
             free(art);
@@ -598,8 +622,8 @@ OpenArticle(const char *path, ARTNUM artnum, const RETRTYPE amount)
     }
 
     if (amount == RETR_BODY) {
-        art->data = p + 4;
-        art->len = art->len - (private->artdata - p - 4);
+        art->data = p;
+        art->len = private->artlen - (p - private->artdata);
         return art;
     }
     SMseterror(SMERR_UNDEFINED, "Invalid retrieve request");
@@ -819,7 +843,9 @@ timecaf_next(ARTHANDLE *article, const RETRTYPE amount)
 
     length = strlen(innconf->patharticles) + 32;
     path = xmalloc(length);
-    if (article == NULL) {
+    if (article == NULL || article->private == NULL) {
+        if (article != NULL)
+            free(article);
         priv.top = NULL;
         priv.sec = NULL;
         priv.ter = NULL;
@@ -903,6 +929,8 @@ timecaf_next(ARTHANDLE *article, const RETRTYPE amount)
         art->type = TOKEN_TIMECAF;
         art->data = NULL;
         art->len = 0;
+        art->private = xcalloc(1, sizeof(PRIV_TIMECAF));
+    } else if (art->private == NULL) {
         art->private = xcalloc(1, sizeof(PRIV_TIMECAF));
     }
     newpriv = (PRIV_TIMECAF *) art->private;
