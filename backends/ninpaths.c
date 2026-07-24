@@ -244,8 +244,10 @@ readdump(FILE *f)
                &at)
         != 6)
         formerr(0);
+    if (sit <= 0 || (unsigned long) sit > SIZE_MAX / sizeof(struct nrec *))
+        formerr(0);
 
-    n = calloc(sit, sizeof(struct nrec *));
+    n = calloc((size_t) sit, sizeof(struct nrec *));
     if (!n) {
         fprintf(stderr, "error: out of memory\n");
         goto error;
@@ -266,6 +268,8 @@ readdump(FILE *f)
     if (!strncmp(v, "3.0", 3)) {
         /* Read 3.0-format L-records */
         while (fscanf(f, "%d!%d!%ld ", &a, &b, &l) == 3) {
+            if (a < 0 || a >= sit || b < 0 || b >= sit)
+                formerr(4);
             t = tallyrec(n[a], n[b]);
             if (!t)
                 goto error;
@@ -276,9 +280,11 @@ readdump(FILE *f)
         /* Read L-records */
         while (fscanf(f, " :%d", &a) == 1) {
             while ((i = fscanf(f, "!%d,%ld", &b, &l)) > 0) {
-                t = tallyrec(n[a], n[b]);
                 if (i < 2)
                     l = 1;
+                if (a < 0 || a >= sit || b < 0 || b >= sit)
+                    formerr(4);
+                t = tallyrec(n[a], n[b]);
                 if (!t)
                     goto error;
                 t->tally += l;
