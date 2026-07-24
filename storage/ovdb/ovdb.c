@@ -401,6 +401,7 @@ client_disconnect(void)
     if (clientfd != -1) {
         rs.what = CMD_QUIT;
         csend(&rs, sizeof(rs));
+        close(clientfd);
     }
     clientfd = -1;
 }
