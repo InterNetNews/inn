@@ -97,6 +97,7 @@ PERMgeneric(char *av[], char *accesslist, size_t size)
     size_t j;
     int i, pan[2], status;
     pid_t pid;
+    ssize_t count;
     struct stat stb;
 
     av += 2;
@@ -159,6 +160,8 @@ PERMgeneric(char *av[], char *accesslist, size_t size)
         if (i == (long) innconf->maxforks) {
             Reply("%d Can't fork %s\r\n", NNTP_FAIL_ACTION, strerror(errno));
             syslog(L_FATAL, "can't fork %s %m", av[0]);
+            close(pan[PIPE_READ]);
+            close(pan[PIPE_WRITE]);
             return -1;
         }
         syslog(L_NOTICE, "can't fork %s -- waiting", av[0]);
@@ -194,12 +197,14 @@ PERMgeneric(char *av[], char *accesslist, size_t size)
     }
 
     close(pan[PIPE_WRITE]);
-    if (read(pan[PIPE_READ], path, sizeof(path)) < 0) {
+    count = read(pan[PIPE_READ], path, sizeof(path));
+    close(pan[PIPE_READ]);
+    waitpid(pid, &status, 0);
+    if (count < 0) {
         syslog(L_FATAL, "can't read %s %m", path);
         return 0;
     }
 
-    waitpid(pid, &status, 0);
     if (!WIFEXITED(status) || WEXITSTATUS(status) != 0)
         return 0;
 
