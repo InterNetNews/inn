@@ -226,6 +226,7 @@ build_path(const char *group, const char *number, struct config *config,
            struct buffer *path)
 {
     char *p;
+    size_t group_start;
 
     /* Initialize the path buffer to config-root followed by /. */
     if (path == NULL)
@@ -235,8 +236,9 @@ build_path(const char *group, const char *number, struct config *config,
 
     /* Append the group name, replacing dots with slashes unless we're using a
        flat structure. */
-    p = path->data + path->left;
+    group_start = path->left;
     buffer_append(path, group, strlen(group));
+    p = path->data + group_start;
     if (!config->flat)
         for (; (size_t) (p - path->data) < path->left; p++)
             if (*p == '.')
@@ -261,6 +263,16 @@ build_path(const char *group, const char *number, struct config *config,
     buffer_append(path, "", 1);
     return path;
 }
+
+#ifdef TESTING
+struct buffer *
+archive_test_build_path(const char *root, const char *group, const char *number)
+{
+    struct config config = {root, NULL, NULL, false, false};
+
+    return build_path(group, number, &config, NULL);
+}
+#endif
 
 
 /*
