@@ -52,6 +52,11 @@
 **  value to the type specified by the user.  group_parameter_get can
 **  therefore be the same for all parameter types, with all of the variations
 **  encapsulated in the convert_* functions.
+**
+**  Written by Russ Allbery in 2001.
+**
+**  Various bug fixes, code and documentation improvements since then
+**  in 2001-2004, 2006, 2007, 2009, 2014, 2016, 2021, 2022, 2024, 2026.
 */
 
 #include "portable/system.h"
@@ -499,6 +504,11 @@ token_quoted_string(struct config_file *file)
             return;
         case '\\':
             i++;
+            if (file->current[i] == '\0') {
+                offset = file->current - file->buffer;
+                if (!file_read_more(file, offset))
+                    goto unterminated;
+            }
             if (file->current[i] == '\n')
                 file->line++;
 
@@ -517,14 +527,8 @@ token_quoted_string(struct config_file *file)
             status = file_read_more(file, offset);
             if (status)
                 i--;
-            else {
-                warn("%s:%u: end of file encountered while parsing quoted"
-                     " string",
-                     file->filename, file->line);
-                file->token.type = TOKEN_ERROR;
-                file->error = true;
-                return;
-            }
+            else
+                goto unterminated;
 
             /* If the last character of the previous buffer was CR and the
                first character that we just read was LF, the CR must have been
@@ -541,6 +545,13 @@ token_quoted_string(struct config_file *file)
     file->token.type = TOKEN_QSTRING;
     file->token.string = xstrndup(file->current, i);
     file->current += i;
+    return;
+
+unterminated:
+    warn("%s:%u: end of file encountered while parsing quoted string",
+         file->filename, file->line);
+    file->token.type = TOKEN_ERROR;
+    file->error = true;
 }
 
 

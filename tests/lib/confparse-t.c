@@ -1,4 +1,10 @@
-/* confparse test suite. */
+/*  confparse test suite.
+**
+**  Written by Russ Allbery in 2001.
+**
+**  Various bug fixes, code and documentation improvements since then
+**  in 2001, 2002, 2004-2006, 2014, 2016, 2018, 2021, 2024, 2026.
+*/
 
 #include "portable/system.h"
 
@@ -358,7 +364,7 @@ main(void)
     int n;
     FILE *tmpconfig;
 
-    test_init(373);
+    test_init(376);
 
     if (access("../data/config/valid", F_OK) == 0) {
         if (chdir("../data") < 0) {
@@ -698,7 +704,32 @@ main(void)
     n = test_warnings_uint(n);
     n = test_warnings_real(n);
     n = test_warnings_string(n);
-    test_warnings_list(n);
+    n = test_warnings_list(n);
+
+    /* An escape at the last byte of a read buffer must pull in the escaped
+       character before the parser examines it. */
+    tmpconfig = fopen("config/tmp", "w");
+    if (tmpconfig == NULL)
+        sysdie("cannot create config/tmp");
+    fputs("parameter: \"", tmpconfig);
+    length = BUFSIZ - 2 - strlen("parameter: \"");
+    long_value = xcalloc(length + 2, 1);
+    memset(long_value, 'a', length);
+    long_value[length] = '\n';
+    while (length-- > 0)
+        fputc('a', tmpconfig);
+    fputs("\\n\"\n", tmpconfig);
+    fclose(tmpconfig);
+    group = config_parse_file("config/tmp");
+    ok(n++, group != NULL);
+    s_value = NULL;
+    ok(n++,
+       group != NULL && config_param_string(group, "parameter", &s_value));
+    ok_string(n++, long_value, s_value);
+    if (group != NULL)
+        config_free(group);
+    unlink("config/tmp");
+    free(long_value);
 
     return 0;
 }
