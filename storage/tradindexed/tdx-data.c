@@ -550,8 +550,7 @@ tdx_search(struct search *search, struct article *artdata)
        problem here. */
     if (entry->offset < 0 || entry->length < 0
         || entry->offset > search->data->datalen
-        || (size_t) entry->length
-               > search->data->datalen - (size_t) entry->offset) {
+        || (off_t) entry->length > search->data->datalen - entry->offset) {
         search->data->remapoutoforder = true;
         warn("Invalid or inaccessible entry for article %lu in %s.IDX:"
              " offset %lu length %lu datalength %lu",
@@ -729,21 +728,22 @@ tdx_data_pack_start(struct group_data *data, ARTNUM artnum)
         goto fail;
     }
     if (close(fd) < 0) {
+        fd = -1;
         syswarn("tradindexed: cannot close %s.IDX-NEW", data->path);
         goto fail;
     }
+    fd = -1;
     data->base = base;
     data->indexinode = st.st_ino;
     return true;
 
 fail:
-    if (fd >= 0) {
+    if (fd >= 0)
         close(fd);
-        idxfile = concat(data->path, ".IDX-NEW", (char *) 0);
-        if (unlink(idxfile) < 0)
-            syswarn("tradindexed: cannot unlink %s", idxfile);
-        free(idxfile);
-    }
+    idxfile = concat(data->path, ".IDX-NEW", (char *) 0);
+    if (unlink(idxfile) < 0)
+        syswarn("tradindexed: cannot unlink %s", idxfile);
+    free(idxfile);
     return false;
 }
 
@@ -870,7 +870,7 @@ tdx_data_expire_start(const char *group, struct group_data *data,
                       struct group_entry *index, struct history *history)
 {
     struct group_data *new_data;
-    struct search *search;
+    struct search *search = NULL;
     struct article article;
     ARTNUM high;
 
@@ -883,9 +883,12 @@ tdx_data_expire_start(const char *group, struct group_data *data,
        so that we can treat all errors on opening a search as errors. */
     high = index->high > 0 ? index->high : data->base;
     new_data->high = high;
+    data->refcount++;
     search = tdx_search_open(data, data->base, high, high);
-    if (search == NULL)
+    if (search == NULL) {
+        data->refcount--;
         goto fail;
+    }
 
     /* Loop through all of the articles in the group, adding the ones that are
        still valid to the new index. */
@@ -918,10 +921,16 @@ tdx_data_expire_start(const char *group, struct group_data *data,
     }
 
     /* Done; the rest happens in tdx_data_rebuild_finish. */
+    tdx_search_close(search);
+    data->refcount--;
     tdx_data_close(new_data);
     return true;
 
 fail:
+    if (search != NULL) {
+        tdx_search_close(search);
+        data->refcount--;
+    }
     tdx_data_delete(group, "-NEW");
     tdx_data_close(new_data);
     return false;
@@ -1022,7 +1031,7 @@ entry_audit(struct group_data *data, struct index_entry *entry,
         return;
     }
     if (entry->offset < 0 || entry->offset > data->datalen
-        || entry->length > data->datalen) {
+        || (off_t) entry->length > data->datalen) {
         warn("tradindexed: offset %lu or length %lu out of bounds for %s:%lu",
              (unsigned long) entry->offset, (unsigned long) entry->length,
              group, article);
@@ -1030,7 +1039,7 @@ entry_audit(struct group_data *data, struct index_entry *entry,
             goto clear;
         return;
     }
-    if ((size_t) entry->length > data->datalen - (size_t) entry->offset) {
+    if ((off_t) entry->length > data->datalen - entry->offset) {
         warn("tradindexed: offset %lu plus length %lu out of bounds for"
              " %s:%lu",
              (unsigned long) entry->offset, (unsigned long) entry->length,
@@ -1074,8 +1083,10 @@ tdx_data_audit(const char *group, struct group_entry *index, bool fix)
     bool changed = false;
 
     data = tdx_data_new(group, true);
-    if (!tdx_data_open_files(data))
+    if (!tdx_data_open_files(data)) {
+        tdx_data_close(data);
         return;
+    }
     if (!map_index(data))
         goto end;
     if (!map_data(data))
