@@ -173,9 +173,11 @@ EXPgetnum(int line, char *word, time_t *v, const char *name)
 static bool
 EXPreadfile(FILE *F)
 {
+    char *end;
     char *p;
     int i;
     int j;
+    long storage_class;
     bool SawDefault;
     char buff[BUFSIZ];
     char *fields[7];
@@ -239,9 +241,14 @@ EXPreadfile(FILE *F)
                 j = NUM_STORAGE_CLASSES;
                 SawDefault = true;
             } else {
-                j = atoi(fields[0]);
-                if ((j < 0) || (j >= NUM_STORAGE_CLASSES))
-                    warn("bad storage class %d on line %d", j, i);
+                errno = 0;
+                storage_class = strtol(fields[0], &end, 10);
+                if (errno != 0 || *end != '\0' || storage_class < 0
+                    || storage_class >= NUM_STORAGE_CLASSES) {
+                    warn("bad storage class %s on line %d", fields[0], i);
+                    return false;
+                }
+                j = storage_class;
             }
 
             if (!EXPgetnum(i, fields[1], &EXPclasses[j].Keep, "keep")
