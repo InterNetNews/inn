@@ -595,9 +595,11 @@ ARTsendmmap(SENDTYPE what)
     if (what == SThead) {
         SendIOv(".\r\n", 3);
         ARTgetsize += 3;
-    } else if (memcmp((ARThandle->data + ARThandle->len - 5), "\r\n.\r\n",
-                      5)) {
-        if (memcmp((ARThandle->data + ARThandle->len - 2), "\r\n", 2)) {
+    } else if (ARThandle->len < 5
+               || memcmp(ARThandle->data + ARThandle->len - 5, "\r\n.\r\n", 5)
+                      != 0) {
+        if (ARThandle->len < 2
+            || memcmp(ARThandle->data + ARThandle->len - 2, "\r\n", 2) != 0) {
             SendIOv("\r\n.\r\n", 5);
             ARTgetsize += 5;
         } else {

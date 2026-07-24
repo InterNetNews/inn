@@ -668,7 +668,7 @@ DoArt(ARTHANDLE *art)
             /* Parse the article only once. */
             if (!hasCounts
                 && (p = wire_findbody(art->data, art->len)) != NULL) {
-                end = art->data + art->len;
+                end = art->data + art->len - 1;
                 /* p is at the beginning of the body, if any. */
                 for (; *p != '\0';) {
                     /* p is at the beginning of a new line, if any. */
