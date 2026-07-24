@@ -14,6 +14,31 @@
 #if defined(HAVE_CANLOCK)
 #    include <libcanlock-3/canlock.h>
 
+static bool
+alloc_canlock_buffer(char **canbuff, size_t *length)
+{
+    size_t count;
+
+    *canbuff = NULL;
+    if (secrets->canlockadmin->count
+        > SIZE_MAX - secrets->canlockuser->count)
+        return false;
+    count = secrets->canlockadmin->count + secrets->canlockuser->count;
+    if (count > (SIZE_MAX - 1) / 87)
+        return false;
+    *length = 87 * count + 1;
+    *canbuff = xmalloc(*length);
+    **canbuff = '\0';
+    return true;
+}
+
+static void
+free_canlock_buffer(char **canbuff)
+{
+    free(*canbuff);
+    *canbuff = NULL;
+}
+
 
 /*  Generate c-lock elements for the Cancel-Lock header field.
 **  This function expects a Message-ID, a username (possibly NULL) and the
@@ -42,12 +67,10 @@ gen_cancel_lock(const char *msgid, const char *username, char **canbuff)
     size_t i;
     size_t msgidlen;
     size_t canlockseclen;
-    size_t canbufflen =
-        (85 + 2) * (secrets->canlockadmin->count + secrets->canlockuser->count)
-        + 1; /* Computation explained above, with 2 extra bytes. */
+    size_t canbufflen;
 
-    *canbuff = xmalloc(canbufflen);
-    **canbuff = '\0';
+    if (!alloc_canlock_buffer(canbuff, &canbufflen))
+        return false;
 
     /* Grab the message-ID without leading and trailing spaces to obtain the
      * right data for the computation of c-lock elements. */
@@ -85,7 +108,7 @@ gen_cancel_lock(const char *msgid, const char *username, char **canbuff)
                     canlockseclen, (const unsigned char *) msgidstart,
                     msgidlen);
                 if (c_lock == NULL) {
-                    free(canbuff);
+                    free_canlock_buffer(canbuff);
                     return false;
                 }
 
@@ -101,7 +124,7 @@ gen_cancel_lock(const char *msgid, const char *username, char **canbuff)
                     canlockseclen, (const unsigned char *) msgidstart,
                     msgidlen);
                 if (c_lock == NULL) {
-                    free(canbuff);
+                    free_canlock_buffer(canbuff);
                     return false;
                 }
 
@@ -129,7 +152,7 @@ gen_cancel_lock(const char *msgid, const char *username, char **canbuff)
                                          (const unsigned char *) datalock,
                                          usernamelen + msgidlen);
                     if (c_lock == NULL) {
-                        free(canbuff);
+                        free_canlock_buffer(canbuff);
                         free(datalock);
                         return false;
                     }
@@ -147,7 +170,7 @@ gen_cancel_lock(const char *msgid, const char *username, char **canbuff)
                                          (const unsigned char *) datalock,
                                          usernamelen + msgidlen);
                     if (c_lock == NULL) {
-                        free(canbuff);
+                        free_canlock_buffer(canbuff);
                         free(datalock);
                         return false;
                     }
@@ -200,14 +223,12 @@ gen_cancel_key(const char *hdrcontrol, const char *hdrsupersedes,
     size_t i;
     size_t msgidlen;
     size_t canlockseclen;
-    size_t canbufflen =
-        (85 + 2) * (secrets->canlockadmin->count + secrets->canlockuser->count)
-        + 1; /* Computation explained above, with 2 extra bytes. */
+    size_t canbufflen;
     size_t usernamelen = 0;
     bool gencankey = false;
 
-    *canbuff = xmalloc(canbufflen);
-    **canbuff = '\0';
+    if (!alloc_canlock_buffer(canbuff, &canbufflen))
+        return false;
 
     /* Find the start of the Message-ID. */
     if (hdrcontrol != NULL) {
@@ -253,7 +274,7 @@ gen_cancel_key(const char *hdrcontrol, const char *hdrsupersedes,
                             canlockseclen, (const unsigned char *) datalock,
                             usernamelen + msgidlen);
                         if (c_key == NULL) {
-                            free(canbuff);
+                            free_canlock_buffer(canbuff);
                             free(datalock);
                             return false;
                         }
@@ -271,7 +292,7 @@ gen_cancel_key(const char *hdrcontrol, const char *hdrsupersedes,
                             canlockseclen, (const unsigned char *) datalock,
                             usernamelen + msgidlen);
                         if (c_key == NULL) {
-                            free(canbuff);
+                            free_canlock_buffer(canbuff);
                             free(datalock);
                             return false;
                         }
@@ -297,7 +318,7 @@ gen_cancel_key(const char *hdrcontrol, const char *hdrsupersedes,
                             canlockseclen, (const unsigned char *) msgidstart,
                             msgidlen);
                         if (c_key == NULL) {
-                            free(canbuff);
+                            free_canlock_buffer(canbuff);
                             return false;
                         }
 
@@ -314,7 +335,7 @@ gen_cancel_key(const char *hdrcontrol, const char *hdrsupersedes,
                             canlockseclen, (const unsigned char *) msgidstart,
                             msgidlen);
                         if (c_key == NULL) {
-                            free(canbuff);
+                            free_canlock_buffer(canbuff);
                             return false;
                         }
 
@@ -327,6 +348,8 @@ gen_cancel_key(const char *hdrcontrol, const char *hdrsupersedes,
         }
     }
 
+    if (!gencankey)
+        free_canlock_buffer(canbuff);
     return gencankey;
 }
 
