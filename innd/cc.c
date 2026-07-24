@@ -372,8 +372,8 @@ CCbegin(char *av[])
     /* Find the named site. */
     length = strlen(av[0]);
     for (strings = SITEreadfile(true), i = 0; (p = strings[i]) != NULL; i++)
-        if ((p[length] == NF_FIELD_SEP || p[length] == NF_SUBFIELD_SEP)
-            && strncasecmp(p, av[0], length) == 0) {
+        if (strncasecmp(p, av[0], length) == 0
+            && (p[length] == NF_FIELD_SEP || p[length] == NF_SUBFIELD_SEP)) {
             p = xstrdup(p);
             break;
         }
@@ -425,12 +425,15 @@ CCbegin(char *av[])
 static const char *
 CCdochange(NEWSGROUP *ngp, char *Rest)
 {
-    int length;
+    const char *end;
+    size_t length;
     char *p;
 
     if (ngp->Rest[0] == Rest[0]) {
         length = strlen(Rest);
-        if (ngp->Rest[length] == '\n' && strncmp(ngp->Rest, Rest, length) == 0)
+        end = strchr(ngp->Rest, '\n');
+        if (end != NULL && (size_t) (end - ngp->Rest) == length
+            && memcmp(ngp->Rest, Rest, length) == 0)
             return "0 Group status unchanged";
     }
     if (Mode != OMrunning)
