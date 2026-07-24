@@ -490,14 +490,14 @@ main(int ac, char *av[])
 
         if (fstat(fd, &statbuf)) {
             syswarn("cannot stat %s, skipping", XBATCHname);
-            close(i);
+            close(fd);
             continue;
         }
 
         XBATCHsize = statbuf.st_size;
         if (XBATCHsize == 0) {
             warn("batch file %s is zero length, skipping", XBATCHname);
-            close(i);
+            close(fd);
             unlink(XBATCHname);
             continue;
         } else if (XBATCHsize > XBATCHbuffersize) {
