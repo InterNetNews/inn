@@ -13,6 +13,7 @@
 
 #include "portable/system.h"
 
+#include <errno.h>
 #include <fcntl.h>
 
 #include "inn/libinn.h"
@@ -38,12 +39,13 @@ bool
 fdreserve(int fdnum)
 {
     static int allocated = 0;
-    int i, start = allocated;
+    int i;
 
     if (fdnum <= 0) {
         if (Reserved_fd != NULL) {
             for (i = 0; i < Maxfd; i++) {
-                fclose(Reserved_fd[i]);
+                if (Reserved_fd[i] != NULL)
+                    fclose(Reserved_fd[i]);
             }
             free(Reserved_fd);
             Reserved_fd = NULL;
@@ -55,25 +57,32 @@ fdreserve(int fdnum)
 
     /* Allocate Reserved_fd or extend it when needed. */
     if (Reserved_fd == NULL) {
-        Reserved_fd = xmalloc(fdnum * sizeof(FILE *));
+        Reserved_fd = xcalloc(fdnum, sizeof(FILE *));
         allocated = fdnum;
     } else {
         if (allocated < fdnum) {
-            Reserved_fd = xrealloc(Reserved_fd, fdnum * sizeof(FILE *));
+            Reserved_fd = xreallocarray(Reserved_fd, fdnum, sizeof(FILE *));
+            memset(Reserved_fd + allocated, 0,
+                   (fdnum - allocated) * sizeof(FILE *));
             allocated = fdnum;
         } else if (Maxfd > fdnum) {
             for (i = fdnum; i < Maxfd; i++) {
-                fclose(Reserved_fd[i]);
+                if (Reserved_fd[i] != NULL)
+                    fclose(Reserved_fd[i]);
+                Reserved_fd[i] = NULL;
             }
         }
     }
 
-    for (i = start; i < fdnum; i++) {
+    for (i = 0; i < fdnum; i++) {
+        if (Reserved_fd[i] != NULL)
+            continue;
         if (((Reserved_fd[i] = fopen("/dev/null", "r")) == NULL)) {
             /* In case a file descriptor cannot be reserved,
              * close all of them. */
-            for (--i; i >= 0; i--)
-                fclose(Reserved_fd[i]);
+            for (i = 0; i < fdnum; i++)
+                if (Reserved_fd[i] != NULL)
+                    fclose(Reserved_fd[i]);
             free(Reserved_fd);
             Reserved_fd = NULL;
             allocated = 0;
@@ -104,11 +113,17 @@ Fopen(const char *name, const char *mode, int fdindex)
     if (name == NULL || *name == '\0')
         return NULL;
 
-    if (fdindex < 0 || fdindex > Maxfd || Reserved_fd[fdindex] == NULL)
+    if (fdindex < 0 || fdindex >= Maxfd || Reserved_fd[fdindex] == NULL)
         return fopen(name, mode);
 
     if ((nfp = freopen(name, mode, Reserved_fd[fdindex])) == NULL) {
-        Reserved_fd[fdindex] = freopen("/dev/null", "r", Reserved_fd[fdindex]);
+        int oerrno = errno;
+
+        /* A failed freopen closes the original stream, so it cannot be
+         * passed to freopen again.  Replenish the reserved slot with a new
+         * stream instead. */
+        Reserved_fd[fdindex] = fopen("/dev/null", "r");
+        errno = oerrno;
         return NULL;
     }
 
@@ -125,6 +140,7 @@ int
 Fclose(FILE *fp)
 {
     int i;
+    FILE *nfp;
 
     if (fp == NULL)
         return 0;
@@ -137,6 +153,16 @@ Fclose(FILE *fp)
     if (i >= Maxfd)
         return fclose(fp);
 
-    Reserved_fd[i] = freopen("/dev/null", "r", Reserved_fd[i]);
+    nfp = freopen("/dev/null", "r", Reserved_fd[i]);
+    if (nfp == NULL) {
+        int oerrno = errno;
+
+        /* A failed freopen closes the original stream, so replenish the
+         * reserved slot with a new stream. */
+        Reserved_fd[i] = fopen("/dev/null", "r");
+        errno = oerrno;
+        return EOF;
+    }
+    Reserved_fd[i] = nfp;
     return 0;
 }

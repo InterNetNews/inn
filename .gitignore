@@ -229,6 +229,7 @@
 /tests/lib/pwrite.t
 /tests/lib/qio.t
 /tests/lib/reallocarray.t
+/tests/lib/reservedfd.t
 /tests/lib/setenv.t
 /tests/lib/snprintf.t
 /tests/lib/strlcat.t

@@ -44,6 +44,7 @@ lib/pread
 lib/pwrite
 lib/qio
 lib/reallocarray
+lib/reservedfd
 lib/setenv
 lib/snprintf
 lib/strlcat

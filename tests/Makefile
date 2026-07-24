@@ -28,7 +28,7 @@ TESTS	= authprogs/ident.t expire/tombstone.t expire/tombstone-hisexpire.t \
 	lib/messageid.t lib/messages.t lib/mkstemp.t \
 	lib/network/addr-ipv4.t lib/network/addr-ipv6.t \
 	lib/network/client.t lib/network/server.t \
-	lib/pread.t lib/pwrite.t lib/qio.t lib/reallocarray.t \
+	lib/pread.t lib/pwrite.t lib/qio.t lib/reallocarray.t lib/reservedfd.t \
 	lib/setenv.t lib/snprintf.t lib/strlcat.t \
 	lib/strlcpy.t lib/tst.t lib/uwildmat.t lib/vector.t lib/wire.t \
 	lib/xwrite.t nnrpd/auth-ext.t overview/api.t overview/buffindexed.t \
@@ -255,6 +255,9 @@ lib/reallocarray.o: ../lib/reallocarray.c
 
 lib/reallocarray.t: lib/reallocarray.o lib/reallocarray-t.o tap/basic.o $(LIBINN)
 	$(LINK) lib/reallocarray.o lib/reallocarray-t.o tap/basic.o $(LIBINN)
+
+lib/reservedfd.t: lib/reservedfd-t.o tap/basic.o $(LIBINN)
+	$(LINK) lib/reservedfd-t.o tap/basic.o $(LIBINN) $(LIBS)
 
 lib/setenv.o: ../lib/setenv.c
 	$(CC) $(CFLAGS) -DTESTING -c -o $@ ../lib/setenv.c
