@@ -992,7 +992,7 @@ static IoStatus
 doExcept(EndPoint endp)
 {
     int optval;
-    socklen_t size;
+    socklen_t size = sizeof(optval);
     int fd = endPointFd(endp);
 
     if (getsockopt(fd, SOL_SOCKET, SO_ERROR, (char *) &optval, &size) != 0)
