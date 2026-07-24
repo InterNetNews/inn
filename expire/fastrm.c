@@ -114,8 +114,16 @@ static void
 filelist_insert(filelist *list, char *name)
 {
     if (list->count == list->size) {
-        list->size = (list->size == 0) ? 16 : list->size * 2;
-        list->files = xrealloc(list->files, list->size * sizeof(char *));
+        size_t newsize;
+
+        if (list->size == 0)
+            newsize = 16;
+        else if (list->size > INT_MAX / 2)
+            die("file list grew too large");
+        else
+            newsize = (size_t) list->size * 2;
+        list->files = xreallocarray(list->files, newsize, sizeof(char *));
+        list->size = (int) newsize;
     }
     list->files[list->count++] = xstrdup(name);
 }
