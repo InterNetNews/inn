@@ -77,7 +77,7 @@ ReadSys(const char *sys)
         continue;
 
     /* Scan the file, glue all multi-line entries. */
-    for (strings = xmalloc((i + 1) * sizeof(char *)), i = 0, to = p = data;
+    for (strings = xmalloc((i + 2) * sizeof(char *)), i = 0, to = p = data;
          *p;) {
         for (site = to; *p;) {
             if (*p == '\n') {
