@@ -307,9 +307,10 @@ trim_ws(char *string)
     if (len == 0)
         return;
 
-    for (p = string + len - 1; p >= string && isspace((unsigned char) *p); p--)
-        /* nada */;
-    *++p = '\0';
+    p = string + len;
+    while (p > string && isspace((unsigned char) p[-1]))
+        p--;
+    *p = '\0';
 }
 
 

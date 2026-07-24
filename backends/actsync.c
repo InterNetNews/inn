@@ -1307,10 +1307,9 @@ get_ignore(char *filename, int *len)
         }
 
         /* remove any trailing spaces and tabs */
-        for (p = &line[strlen(line) - 1];
-             p >= line && (*p == ' ' || *p == '\t'); --p) {
-            *p = '\0';
-        }
+        p = line + strlen(line);
+        while (p > line && (p[-1] == ' ' || p[-1] == '\t'))
+            *--p = '\0';
 
         /* ignore line if the remainder of the line is empty */
         if (line[0] == '\0') {
