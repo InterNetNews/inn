@@ -785,7 +785,8 @@ groupid_new(group_id_t *gno, DB_TXN *tid)
         }
     }
 
-    if (val.size % sizeof(group_id_t)) {
+    if (val.size < sizeof(group_id_t)
+        || val.size % sizeof(group_id_t) != 0) {
         warn("OVDB: invalid size (%u) for !groupid_freelist", val.size);
         return EINVAL;
     }
@@ -834,7 +835,8 @@ groupid_free(group_id_t gno, DB_TXN *tid)
         return ret;
     }
 
-    if (val.size % sizeof(group_id_t)) {
+    if (val.size < sizeof(group_id_t)
+        || val.size % sizeof(group_id_t) != 0) {
         warn("OVDB: invalid size (%u) for !groupid_freelist", val.size);
         return EINVAL;
     }
@@ -1097,7 +1099,7 @@ delete_old_stuff(int forgotton)
 
     while ((ret = cursor->c_get(cursor, &key, &val, DB_NEXT)) == 0) {
         if (key.size == sizeof("!groupid_freelist")
-            && !strcmp("!groupid_freelist", key.data))
+            && memcmp("!groupid_freelist", key.data, key.size) == 0)
             continue;
         if (val.size != sizeof(struct groupinfo)) {
             warn("OVDB: delete_old_stuff: wrong size for groupinfo record");
@@ -2177,24 +2179,32 @@ myuncompress(char *buf, size_t buflen, size_t *newlen)
     uint32_t sz;
     int ret;
 
+    if (buflen <= sizeof(sz)) {
+        warn("OVDB: compressed value is truncated");
+        return NULL;
+    }
+
     memcpy(&sz, buf, sizeof(sz));
     sz = ntohl(sz);
+    if (sz == 0 || sz > MAX_UNZIP_SZ) {
+        warn("OVDB: compressed value has bogus size: %u", sz);
+        return NULL;
+    }
 
     if (sz >= dbuflen) {
-        if (dbuflen == 0) {
-            dbuflen = sz + 512;
+        dbuflen = sz + 1;
+        if (dbuf == NULL) {
             dbuf = xmalloc(dbuflen);
         } else {
-            dbuflen = sz + 512;
             dbuf = xrealloc(dbuf, dbuflen);
         }
     }
-    ulen = dbuflen - 1;
+    ulen = sz;
 
     ret = uncompress((Bytef *) dbuf, &ulen, (Bytef *) (buf + sizeof(uint32_t)),
                      buflen - sizeof(uint32_t));
-    if (ret != Z_OK) {
-        warn("OVDB: uncompress failed");
+    if (ret != Z_OK || ulen != sz) {
+        warn("OVDB: uncompress failed or returned the wrong size");
         return NULL;
     }
     dbuf[ulen] = 0; /* paranoia */
@@ -2304,14 +2314,14 @@ ovdb_search(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *token,
     struct ovdata ovd;
     uint32_t sz = 0;
     struct datakey dk;
-    int ret;
+    int i, ret;
     char *dp;
 
     if (clientmode) {
         struct rs_cmd rs;
         struct rs_srch repl;
         static char *databuf;
-        static int buflen = 0;
+        static size_t buflen = 0;
 
         rs.what = CMD_SRCH;
         rs.handle = handle;
@@ -2321,18 +2331,18 @@ ovdb_search(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *token,
         if (crecv(&repl, sizeof(repl)) < 0)
             return false;
 
-        if (repl.status != CMD_SRCH)
+        if (repl.status != CMD_SRCH || repl.len < 0)
             return false;
-        if (repl.len > buflen) {
-            if (buflen == 0) {
-                buflen = repl.len + 512;
+        if ((size_t) repl.len > buflen) {
+            buflen = repl.len;
+            if (databuf == NULL) {
                 databuf = xmalloc(buflen);
             } else {
-                buflen = repl.len + 512;
                 databuf = xrealloc(databuf, buflen);
             }
         }
-        crecv(databuf, repl.len);
+        if (repl.len > 0 && crecv(databuf, repl.len) < 0)
+            return false;
 
         if (artnum)
             *artnum = repl.artnum;
@@ -2345,6 +2355,14 @@ ovdb_search(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *token,
         if (data)
             *data = databuf;
         return true;
+    }
+
+    for (i = 0; i < nsearches; i++)
+        if (s == searches[i])
+            break;
+    if (i == nsearches) {
+        warn("OVDB: search: invalid search handle");
+        return false;
     }
 
     switch (s->state) {
@@ -2418,6 +2436,14 @@ ovdb_search(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *token,
         s->cursor = NULL;
         return false;
     }
+    if ((len || data)
+        && val.size - sizeof(struct ovdata) > (size_t) INT_MAX) {
+        warn("OVDB: search: value is too large");
+        s->state = 3;
+        s->cursor->c_close(s->cursor);
+        s->cursor = NULL;
+        return false;
+    }
 
     if (ntohl(dk.artnum) == s->lastart) {
         s->state = 2;
@@ -2441,9 +2467,14 @@ ovdb_search(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *token,
         /* data is compressed */
         memcpy(&sz, dp, sizeof(uint32_t));
         sz = ntohl(sz);
-        if (sz > MAX_UNZIP_SZ) { /* sanity check */
+        if (sz == 0 || sz > MAX_UNZIP_SZ) { /* sanity check */
             warn("OVDB: search: bogus sz: %u", sz);
-            sz = 0;
+            s->state = 3;
+            if (s->cursor != NULL) {
+                s->cursor->c_close(s->cursor);
+                s->cursor = NULL;
+            }
+            return false;
         }
     }
 #    endif
@@ -2458,12 +2489,14 @@ ovdb_search(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *token,
 
     if (data) {
 #    ifdef HAVE_ZLIB
-        if (sz && val.size > sizeof(struct ovdata) + sizeof(uint32_t)) {
+        if (sz) {
             *data = myuncompress(dp, val.size - sizeof(struct ovdata), NULL);
             if (*data == NULL) {
                 s->state = 3;
-                s->cursor->c_close(s->cursor);
-                s->cursor = NULL;
+                if (s->cursor != NULL) {
+                    s->cursor->c_close(s->cursor);
+                    s->cursor = NULL;
+                }
                 return false;
             }
         } else
@@ -2488,14 +2521,18 @@ ovdb_closesearch(void *handle)
     } else {
         struct ovdbsearch *s = (struct ovdbsearch *) handle;
 
+        for (i = 0; i < nsearches; i++) {
+            if (s == searches[i])
+                break;
+        }
+        if (i == nsearches) {
+            warn("OVDB: closesearch: invalid search handle");
+            return;
+        }
+
         if (s->cursor)
             s->cursor->c_close(s->cursor);
 
-        for (i = 0; i < nsearches; i++) {
-            if (s == searches[i]) {
-                break;
-            }
-        }
         nsearches--;
         for (; i < nsearches; i++) {
             searches[i] = searches[i + 1];
@@ -2863,7 +2900,7 @@ ovdb_expiregroup(const char *group, int *lo, struct history *h)
                 char *p = (char *) val.data + sizeof(ovd);
                 size_t sz = val.size - sizeof(ovd);
 #    ifdef HAVE_ZLIB
-                if (*p == 0)
+                if (sz > sizeof(uint32_t) && *p == 0)
                     p = myuncompress(p, sz, &sz);
                 if (p == NULL) {
                     p = (char *) "";

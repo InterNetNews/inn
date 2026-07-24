@@ -177,6 +177,7 @@ file_open_index(struct group_data *data, const char *suffix)
     if (fstat(data->indexfd, &st) < 0) {
         syswarn("tradindexed: cannot stat %s.%s", data->path, suffix);
         close(data->indexfd);
+        data->indexfd = -1;
         return false;
     }
     data->indexinode = st.st_ino;
@@ -249,10 +250,14 @@ tdx_data_open_files(struct group_data *data)
     return true;
 
 fail:
-    if (data->indexfd >= 0)
+    if (data->indexfd >= 0) {
         close(data->indexfd);
-    if (data->datafd >= 0)
+        data->indexfd = -1;
+    }
+    if (data->datafd >= 0) {
         close(data->datafd);
+        data->datafd = -1;
+    }
     return false;
 }
 
@@ -303,7 +308,12 @@ map_index(struct group_data *data)
     r = fstat(data->indexfd, &st);
     if (r == -1) {
         if (errno == ESTALE) {
-            r = file_open_index(data, NULL);
+            if (!file_open_index(data, NULL))
+                return false;
+            r = fstat(data->indexfd, &st);
+            if (r == -1)
+                syswarn("tradindexed: cannot stat reopened %s.IDX",
+                        data->path);
         } else {
             syswarn("tradindexed: cannot stat %s.IDX", data->path);
         }
@@ -328,7 +338,12 @@ map_data(struct group_data *data)
     r = fstat(data->datafd, &st);
     if (r == -1) {
         if (errno == ESTALE) {
-            r = file_open_data(data, NULL);
+            if (!file_open_data(data, NULL))
+                return false;
+            r = fstat(data->datafd, &st);
+            if (r == -1)
+                syswarn("tradindexed: cannot stat reopened %s.DAT",
+                        data->path);
         } else {
             syswarn("tradindexed: cannot stat %s.DAT", data->path);
         }
@@ -337,7 +352,7 @@ map_data(struct group_data *data)
         return false;
     data->datalen = st.st_size;
     data->data = map_file(data->datafd, data->datalen, data->path, "DAT");
-    return (data->data == NULL && data->indexlen > 0) ? false : true;
+    return (data->data == NULL && data->datalen > 0) ? false : true;
 }
 
 
@@ -501,14 +516,17 @@ bool
 tdx_search(struct search *search, struct article *artdata)
 {
     struct index_entry *entry;
-    size_t max;
+    size_t count, max;
 
     if (search == NULL || search->data == NULL)
         return false;
     if (search->data->index == NULL || search->data->data == NULL)
         return false;
 
-    max = (search->data->indexlen / sizeof(struct index_entry)) - 1;
+    count = search->data->indexlen / sizeof(struct index_entry);
+    if (search->current >= count)
+        return false;
+    max = count - 1;
     entry = search->data->index + search->current;
     while (search->current <= search->limit && search->current <= max) {
         if (entry->length != 0)
@@ -525,7 +543,10 @@ tdx_search(struct search *search, struct article *artdata)
        seems not to be an issue in limited testing, although write caching
        that leads to on-disk IDX and DAT being out of sync could trigger a
        problem here. */
-    if (entry->offset + entry->length > search->data->datalen) {
+    if (entry->offset < 0 || entry->length < 0
+        || (size_t) entry->offset > search->data->datalen
+        || (size_t) entry->length
+               > search->data->datalen - (size_t) entry->offset) {
         search->data->remapoutoforder = true;
         warn("Invalid or inaccessible entry for article %lu in %s.IDX:"
              " offset %lu length %lu datalength %lu",
@@ -995,7 +1016,8 @@ entry_audit(struct group_data *data, struct index_entry *entry,
             goto clear;
         return;
     }
-    if (entry->offset > data->datalen || entry->length > data->datalen) {
+    if (entry->offset < 0 || (size_t) entry->offset > data->datalen
+        || (size_t) entry->length > data->datalen) {
         warn("tradindexed: offset %lu or length %lu out of bounds for %s:%lu",
              (unsigned long) entry->offset, (unsigned long) entry->length,
              group, article);
@@ -1003,7 +1025,7 @@ entry_audit(struct group_data *data, struct index_entry *entry,
             goto clear;
         return;
     }
-    if (entry->offset + entry->length > data->datalen) {
+    if ((size_t) entry->length > data->datalen - (size_t) entry->offset) {
         warn("tradindexed: offset %lu plus length %lu out of bounds for"
              " %s:%lu",
              (unsigned long) entry->offset, (unsigned long) entry->length,

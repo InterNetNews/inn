@@ -365,7 +365,8 @@ EXPreadfile(FILE *F)
             *p = '\0';
         else
             p = buff + strlen(buff);
-        while (--p >= buff) {
+        while (p > buff) {
+            p--;
             if (isspace((unsigned char) *p))
                 *p = '\0';
             else
@@ -375,6 +376,11 @@ EXPreadfile(FILE *F)
             continue;
         if ((j = EXPsplit(buff, ':', fields, ARRAY_SIZE(fields))) == -1) {
             fprintf(stderr, "Line %d too many fields\n", i);
+            free(patterns);
+            return false;
+        }
+        if (j == 0) {
+            fprintf(stderr, "Line %d bad format\n", i);
             free(patterns);
             return false;
         }
@@ -697,6 +703,11 @@ OVfindheaderindex(void)
         krps = xmalloc(nGroups * sizeof(enum KRP));
         path = concatpath(innconf->pathetc, INN_PATH_EXPIRECTL);
         F = fopen(path, "r");
+        if (F == NULL) {
+            fprintf(stderr, "Can't read %s, %s\n", path, strerror(errno));
+            free(path);
+            exit(1);
+        }
         free(path);
         if (!EXPreadfile(F)) {
             fclose(F);
