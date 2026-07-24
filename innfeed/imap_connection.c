@@ -426,10 +426,13 @@ static void QueueForgetAbout(connection_t *cxn, article_queue_t *item,
 
 static void delConnection(Connection cxn);
 static void DeleteIfDisconnected(Connection cxn);
+static void DisconnectBothAndDelete(Connection cxn, bool notify_dead);
 static void DeferAllArticles(connection_t *cxn, Q_t *q);
 
 static void lmtp_Disconnect(connection_t *cxn);
 static void imap_Disconnect(connection_t *cxn);
+static void lmtp_DisconnectNoDelete(connection_t *cxn);
+static void imap_DisconnectNoDelete(connection_t *cxn);
 static conn_ret imap_listenintro(connection_t *cxn);
 
 static void imap_writeTimeoutCbk(TimeoutId id, void *data);
@@ -1757,7 +1760,10 @@ lmtp_listenintro(connection_t *cxn)
 
     /* set up to receive */
     readBuffers = makeBufferArray(bufferTakeRef(cxn->lmtp_rBuffer), NULL);
-    prepareRead(cxn->lmtp_endpoint, readBuffers, lmtp_readCB, cxn, 5);
+    if (!prepareRead(cxn->lmtp_endpoint, readBuffers, lmtp_readCB, cxn, 5)) {
+        freeBufferArray(readBuffers);
+        return RET_FAIL;
+    }
 
     cxn->lmtp_state = LMTP_READING_INTRO;
 
@@ -1774,8 +1780,10 @@ imap_Connect(connection_t *cxn)
 
     ASSERT(cxn->imap_sleepTimerId == 0);
 
-    /* make the IMAP connection */ SetupIMAPConnection(cxn, cxn->ServerName,
-                                                       IMAP_PORT);
+    /* Make the IMAP connection. */
+    result = SetupIMAPConnection(cxn, cxn->ServerName, IMAP_PORT);
+    if (result != RET_OK)
+        return result;
 
     /* Listen to the intro and start the authenticating process */
     result = imap_listenintro(cxn);
@@ -1826,9 +1834,7 @@ imap_readTimeoutCbk(TimeoutId id, void *data)
     cxnLogStats(cxn, true);
 
     if (cxn->imap_state == IMAP_DISCONNECTED) {
-        imap_Disconnect(cxn);
-        lmtp_Disconnect(cxn);
-        delConnection(cxn);
+        DisconnectBothAndDelete(cxn, false);
     } else {
         imap_Disconnect(cxn);
     }
@@ -1861,7 +1867,7 @@ imap_reopenTimeoutCbk(TimeoutId id, void *data)
 }
 
 static void
-imap_Disconnect(connection_t *cxn)
+imap_DisconnectNoDelete(connection_t *cxn)
 {
     clearTimer(cxn->imap_sleepTimerId);
     cxn->imap_sleepTimerId = 0;
@@ -1880,6 +1886,12 @@ imap_Disconnect(connection_t *cxn)
     if (cxn->issue_quit == 0)
         prepareReopenCbk(cxn, 0);
 
+}
+
+static void
+imap_Disconnect(connection_t *cxn)
+{
+    imap_DisconnectNoDelete(cxn);
     DeleteIfDisconnected(cxn);
 }
 
@@ -1914,7 +1926,7 @@ lmtp_Connect(connection_t *cxn)
 
 
 static void
-lmtp_Disconnect(connection_t *cxn)
+lmtp_DisconnectNoDelete(connection_t *cxn)
 {
     clearTimer(cxn->lmtp_sleepTimerId);
     cxn->lmtp_sleepTimerId = 0;
@@ -1933,6 +1945,12 @@ lmtp_Disconnect(connection_t *cxn)
     if (cxn->issue_quit == 0)
         prepareReopenCbk(cxn, 1);
 
+}
+
+static void
+lmtp_Disconnect(connection_t *cxn)
+{
+    lmtp_DisconnectNoDelete(cxn);
     DeleteIfDisconnected(cxn);
 }
 
@@ -2029,9 +2047,7 @@ lmtp_readTimeoutCbk(TimeoutId id, void *data)
     cxnLogStats(cxn, true);
 
     if (cxn->lmtp_state == LMTP_DISCONNECTED) {
-        imap_Disconnect(cxn);
-        lmtp_Disconnect(cxn);
-        delConnection(cxn);
+        DisconnectBothAndDelete(cxn, false);
     } else {
         lmtp_Disconnect(cxn);
     }
@@ -2256,7 +2272,11 @@ lmtp_writeCB(EndPoint e UNUSED, IoStatus i UNUSED, Buffer *b, void *d)
 
     /* set up to receive */
     readBuffers = makeBufferArray(bufferTakeRef(cxn->lmtp_rBuffer), NULL);
-    prepareRead(cxn->lmtp_endpoint, readBuffers, lmtp_readCB, cxn, 5);
+    if (!prepareRead(cxn->lmtp_endpoint, readBuffers, lmtp_readCB, cxn, 5)) {
+        freeBufferArray(readBuffers);
+        lmtp_Disconnect(cxn);
+        return;
+    }
 
     /* set up the response timer. */
     clearTimer(cxn->lmtp_readBlockedTimerId);
@@ -2329,7 +2349,11 @@ imap_writeCB(EndPoint e UNUSED, IoStatus i UNUSED, Buffer *b, void *d)
 
     /* set up to receive */
     readBuffers = makeBufferArray(bufferTakeRef(cxn->imap_rBuffer), NULL);
-    prepareRead(cxn->imap_endpoint, readBuffers, imap_readCB, cxn, 5);
+    if (!prepareRead(cxn->imap_endpoint, readBuffers, imap_readCB, cxn, 5)) {
+        freeBufferArray(readBuffers);
+        imap_Disconnect(cxn);
+        return;
+    }
 
     /* set up the response timer. */
     clearTimer(cxn->imap_readBlockedTimerId);
@@ -2729,7 +2753,10 @@ imap_listenintro(connection_t *cxn)
 
     /* set up to receive */
     readBuffers = makeBufferArray(bufferTakeRef(cxn->imap_rBuffer), NULL);
-    prepareRead(cxn->imap_endpoint, readBuffers, imap_readCB, cxn, 5);
+    if (!prepareRead(cxn->imap_endpoint, readBuffers, imap_readCB, cxn, 5)) {
+        freeBufferArray(readBuffers);
+        return RET_FAIL;
+    }
 
     cxn->imap_state = IMAP_READING_INTRO;
 
@@ -2857,11 +2884,13 @@ reset:
         readBuffers = makeBufferArray(bufferTakeRef(cxn->imap_rBuffer), NULL);
 
         if (!prepareRead(e, readBuffers, imap_readCB, cxn, 1)) {
+            freeBufferArray(readBuffers);
             imap_Disconnect(cxn);
         }
         return;
 
     } else if (ret != RET_OK) {
+        imap_Disconnect(cxn);
         return;
     }
 
@@ -3253,7 +3282,11 @@ reset:
 
         /* set up to receive some more */
         readBuffers = makeBufferArray(bufferTakeRef(cxn->lmtp_rBuffer), NULL);
-        prepareRead(cxn->lmtp_endpoint, readBuffers, lmtp_readCB, cxn, 5);
+        if (!prepareRead(cxn->lmtp_endpoint, readBuffers, lmtp_readCB, cxn,
+                         5)) {
+            freeBufferArray(readBuffers);
+            lmtp_Disconnect(cxn);
+        }
         return;
     }
 
@@ -4024,6 +4057,7 @@ retry:
     if (deliver_to_header) {
         char *to_list, *to_list_end;
         int i, len;
+        size_t to_list_len;
 
         result = FindHeader(cxn->current_bufs, "Followup-To", &to_list,
                             &to_list_end);
@@ -4045,8 +4079,10 @@ retry:
             cxn->current_bufs[i] = cxn->current_bufs[i - 1];
         }
 
+        to_list_len = strlen(to_list);
         cxn->current_bufs[0] =
-            newBufferByCharP(to_list, strlen(to_list + 1), strlen(to_list));
+            newBufferByCharP(to_list, to_list_len + 1, to_list_len);
+        bufferSetDeletedCbk(cxn->current_bufs[0], free, to_list);
     }
 
     hostArticleOffered(cxn->myHost, cxn);
@@ -4325,6 +4361,22 @@ DeleteIfDisconnected(Connection cxn)
     }
 }
 
+/*
+ * Disconnect both protocol endpoints before deleting the shared connection.
+ * issue_quit value 4 suppresses the normal delete-on-second-disconnect path,
+ * which would otherwise free cxn between these two calls.
+ */
+static void
+DisconnectBothAndDelete(Connection cxn, bool notify_dead)
+{
+    cxn->issue_quit = 4;
+    imap_DisconnectNoDelete(cxn);
+    lmtp_DisconnectNoDelete(cxn);
+    if (notify_dead)
+        hostCxnDead(cxn->myHost, cxn);
+    delConnection(cxn);
+}
+
 /* puts the connection into the wait state (i.e. waits for an article
    before initiating a connect). Can only be called right after
    newConnection returns, or while the Connection is in the (internal)
@@ -4335,6 +4387,7 @@ cxnWait(Connection cxn)
     cxn->issue_quit = 1;
 
     QuitIfIdle(cxn);
+    DeleteIfDisconnected(cxn);
 }
 
 /* The Connection will disconnect as if cxnDisconnect were called and then
@@ -4345,6 +4398,7 @@ cxnFlush(Connection cxn)
     cxn->issue_quit = 2;
 
     QuitIfIdle(cxn);
+    DeleteIfDisconnected(cxn);
 }
 
 
@@ -4375,6 +4429,7 @@ cxnTerminate(Connection cxn)
     DeferAllArticles(cxn, &(cxn->imap_controlMsg_q));
 
     QuitIfIdle(cxn);
+    DeleteIfDisconnected(cxn);
 }
 
 /* Blow away the connection gracelessly and immediately clean up */
@@ -4389,11 +4444,7 @@ cxnNuke(Connection cxn)
     DeferAllArticles(cxn, &(cxn->lmtp_todeliver_q));
     DeferAllArticles(cxn, &(cxn->imap_controlMsg_q));
 
-    imap_Disconnect(cxn);
-    lmtp_Disconnect(cxn);
-
-    hostCxnDead(cxn->myHost, cxn);
-    delConnection(cxn);
+    DisconnectBothAndDelete(cxn, true);
 }
 
 /*
