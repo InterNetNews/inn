@@ -1429,16 +1429,13 @@ main(int argc, char *argv[])
 
     if ((PERMaccessconf && PERMaccessconf->readertrack)
         || (!PERMaccessconf && innconf->readertrack)) {
-        int len;
         syslog(L_NOTICE, "%s Tracking Enabled (%s)", Client.host, Username);
         pid = getpid();
         gettimeofday(&tv, NULL);
         count += pid;
         vid = tv.tv_sec ^ tv.tv_usec ^ pid ^ count;
-        len = strlen("innconf->pathlog") + strlen("/tracklogs/log-") + BUFSIZ;
-        LocalLogFileName = xmalloc(len);
-        sprintf(LocalLogFileName, "%s/tracklogs/log-%u", innconf->pathlog,
-                vid);
+        xasprintf(&LocalLogFileName, "%s/tracklogs/log-%u", innconf->pathlog,
+                  vid);
         if ((locallog = fopen(LocalLogFileName, "w")) == NULL) {
             LocalLogDirName = concatpath(innconf->pathlog, "tracklogs");
             MakeDirectory(LocalLogDirName, false);
