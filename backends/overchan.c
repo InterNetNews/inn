@@ -99,11 +99,15 @@ write_overview(struct overview *overview, struct overview_data *data,
     const char *xref = NULL;
 
     statistics->articles++;
-    for (p = data->overview + data->overlen - 1; p > data->overview + 5; p--)
-        if (*p == ':' && strncasecmp(p - 5, "\tXref", 5) == 0) {
-            xref = p + 2;
-            break;
-        }
+    if (data->overlen >= 6)
+        for (p = data->overview + data->overlen - 1; p >= data->overview + 5;
+             p--)
+            if (*p == ':' && strncasecmp(p - 5, "\tXref", 5) == 0) {
+                xref = p + 1;
+                if (xref < data->overview + data->overlen && *xref == ' ')
+                    xref++;
+                break;
+            }
     if (xref == NULL) {
         warn("no Xref found in overview data %s", data->overview);
         return;
