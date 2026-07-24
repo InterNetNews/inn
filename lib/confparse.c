@@ -499,6 +499,11 @@ token_quoted_string(struct config_file *file)
             return;
         case '\\':
             i++;
+            if (file->current[i] == '\0') {
+                offset = file->current - file->buffer;
+                if (!file_read_more(file, offset))
+                    goto unterminated;
+            }
             if (file->current[i] == '\n')
                 file->line++;
 
@@ -517,14 +522,8 @@ token_quoted_string(struct config_file *file)
             status = file_read_more(file, offset);
             if (status)
                 i--;
-            else {
-                warn("%s:%u: end of file encountered while parsing quoted"
-                     " string",
-                     file->filename, file->line);
-                file->token.type = TOKEN_ERROR;
-                file->error = true;
-                return;
-            }
+            else
+                goto unterminated;
 
             /* If the last character of the previous buffer was CR and the
                first character that we just read was LF, the CR must have been
@@ -541,6 +540,13 @@ token_quoted_string(struct config_file *file)
     file->token.type = TOKEN_QSTRING;
     file->token.string = xstrndup(file->current, i);
     file->current += i;
+    return;
+
+unterminated:
+    warn("%s:%u: end of file encountered while parsing quoted string",
+         file->filename, file->line);
+    file->token.type = TOKEN_ERROR;
+    file->error = true;
 }
 
 
