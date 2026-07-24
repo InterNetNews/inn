@@ -109,6 +109,16 @@ Support for old insecure OpenSSL and LibreSSL versions have been dropped.
 You will have to use at least S<OpenSSL 1.1.1> or S<LibreSSL 2.8.0>.  Thanks
 to Roman Donchenko for the code simplification and cleaning.
 
+=item *
+
+Hardened several older code paths against memory-safety failures.  This
+includes buffer growth and concatenation in B<innfeed>, IMAP and LMTP
+response parsing, bounded parsing of overview records during expiration,
+validation of corrupt OVDB records and search handles, reserved file
+descriptor management, and hexadecimal and uuencoded data handling.  Reader
+tracking and virtual-host permission state, batch error cleanup, and file-list
+growth in expiration tools were also corrected.
+
 =back
 
 =head1 Changes in 2.7.5 (not yet released)
