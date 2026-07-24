@@ -83,6 +83,7 @@ network_innbind(int fd, int family, const char *address, unsigned short port)
     char *path;
     char buff[128];
     int pipefds[2];
+    int original_fd = fd;
     pid_t child, result;
     int status;
 
@@ -100,6 +101,9 @@ network_innbind(int fd, int family, const char *address, unsigned short port)
     child = fork();
     if (child < 0) {
         syswarn("cannot fork innbind for %s, port %hu", address, port);
+        socket_close(pipefds[0]);
+        socket_close(pipefds[1]);
+        free(path);
         return INVALID_SOCKET;
     } else if (child == 0) {
         /* Restore signal disposition and mask */
@@ -109,6 +113,8 @@ network_innbind(int fd, int family, const char *address, unsigned short port)
         if (dup2(pipefds[1], 1) < 0)
             sysdie("cannot dup pipe to stdout");
         socket_close(pipefds[0]);
+        if (pipefds[1] != 1)
+            socket_close(pipefds[1]);
         if (execl(path, path, buff, (char *) 0) < 0)
             sysdie("cannot exec innbind for %s, port %hu", address, port);
     }
@@ -132,6 +138,7 @@ network_innbind(int fd, int family, const char *address, unsigned short port)
     } else if (strcmp(buff, "ok\n") != 0) {
         fd = INVALID_SOCKET;
     }
+    socket_close(pipefds[0]);
 
     /* Wait for the results of the child process. */
     do {
@@ -139,12 +146,16 @@ network_innbind(int fd, int family, const char *address, unsigned short port)
     } while (result == -1 && errno == EINTR);
     if (result != child) {
         syswarn("cannot wait for innbind for %s, port %hu", address, port);
+        if (fd != INVALID_SOCKET && fd != original_fd)
+            socket_close(fd);
         return INVALID_SOCKET;
     }
     if (WIFEXITED(status) && WEXITSTATUS(status) == 0)
         return fd;
     else {
         warn("innbind failed for %s, port %hu", address, port);
+        if (fd != INVALID_SOCKET && fd != original_fd)
+            socket_close(fd);
         return INVALID_SOCKET;
     }
 }
