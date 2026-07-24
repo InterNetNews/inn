@@ -99,7 +99,7 @@ main(void)
 {
     char *p;
     int c;
-    char b3[3];
+    char b3[3] = {0, 0, 0};
 
     for (p = b3; (c = getchar()) != EOF;) {
         *p++ = (char) c;
