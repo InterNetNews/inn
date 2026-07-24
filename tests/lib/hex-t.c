@@ -18,7 +18,7 @@ main(void)
     unsigned char dout[4];
     char tout[9];
 
-    test_init(16);
+    test_init(17);
 
     inn_encode_hex(d1, sizeof(d1), tout, sizeof(tout));
     ok_string(1, t1, tout);
@@ -39,23 +39,25 @@ main(void)
     ok_string(8, "0102B", tout);
     inn_encode_hex(d2, sizeof(d2), tout, 1);
     ok_string(9, "", tout);
+    inn_encode_hex(d2, SIZE_MAX / 2 + 1, tout, 3);
+    ok_string(10, "01", tout);
 
     inn_decode_hex(t1, dout, sizeof(dout));
-    ok(10, memcmp(d1, dout, sizeof(dout)) == 0);
+    ok(11, memcmp(d1, dout, sizeof(dout)) == 0);
     inn_decode_hex(t2, dout, sizeof(dout));
-    ok(11, memcmp(d2, dout, sizeof(dout)) == 0);
+    ok(12, memcmp(d2, dout, sizeof(dout)) == 0);
     inn_decode_hex(t3, dout, sizeof(dout));
-    ok(12, memcmp(d3, dout, sizeof(dout)) == 0);
+    ok(13, memcmp(d3, dout, sizeof(dout)) == 0);
     inn_decode_hex(t4, dout, sizeof(dout));
-    ok(13, memcmp(d2, dout, sizeof(dout)) == 0);
+    ok(14, memcmp(d2, dout, sizeof(dout)) == 0);
 
     inn_decode_hex(t2, dout, sizeof(dout));
     inn_decode_hex(t1, dout, 1);
-    ok(14, memcmp("", dout, 1) == 0);
-    ok(15, memcmp("\2\276\277", dout + 1, 3) == 0);
+    ok(15, memcmp("", dout, 1) == 0);
+    ok(16, memcmp("\2\276\277", dout + 1, 3) == 0);
     inn_decode_hex(t2, dout, sizeof(dout));
     inn_decode_hex(t1, dout, 0);
-    ok(16, memcmp(d2, dout, sizeof(dout)) == 0);
+    ok(17, memcmp(d2, dout, sizeof(dout)) == 0);
 
     return 0;
 }

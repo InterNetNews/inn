@@ -23,19 +23,17 @@ inn_encode_hex(const unsigned char *data, size_t length, char *buffer,
                size_t buflen)
 {
     static const char hex[] = "0123456789ABCDEF";
-    const unsigned char *p;
-    unsigned int i;
+    size_t input, output;
 
     if (buflen == 0)
         return;
-    for (p = data, i = 0; i < length && (i * 2) < (buflen - 1); p++, i++) {
-        buffer[i * 2] = hex[(*p & 0xf0) >> 4];
-        buffer[(i * 2) + 1] = hex[(*p & 0x0f)];
+    for (input = 0, output = 0; input < length && output < buflen - 1;
+         input++) {
+        buffer[output++] = hex[(data[input] & 0xf0) >> 4];
+        if (output < buflen - 1)
+            buffer[output++] = hex[data[input] & 0x0f];
     }
-    if (length * 2 > buflen - 1)
-        buffer[buflen - 1] = '\0';
-    else
-        buffer[length * 2] = '\0';
+    buffer[output] = '\0';
 }
 
 
@@ -52,7 +50,7 @@ inn_encode_hex(const unsigned char *data, size_t length, char *buffer,
 void
 inn_decode_hex(const char *data, unsigned char *buffer, size_t buflen)
 {
-    unsigned int i;
+    size_t i;
     unsigned char part;
 
     if (buflen == 0)
