@@ -291,6 +291,13 @@ line_read(struct line *line, int timeout, const char **p, size_t *len,
 
     assert(line != NULL);
     assert(line->start != NULL);
+    assert(p != NULL);
+    assert(len != NULL);
+    *p = "";
+    *len = 0;
+    if (stripped != NULL)
+        *stripped = 0;
+
     /* Shuffle any trailing portion not yet processed to the start of
      * the buffer. */
     if (line->remaining != 0) {
