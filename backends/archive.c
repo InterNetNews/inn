@@ -285,6 +285,10 @@ process_article(ARTHANDLE *art, const char *token, struct config *config)
         return;
     }
     end = wire_endheader(start, art->data + art->len - 1);
+    if (end == NULL) {
+        warn("unterminated Xref header field in %s", token);
+        return;
+    }
     xref = xstrndup(start, end - start);
     for (p = xref; *p != '\0'; p++)
         if (*p == '\r' || *p == '\n')
@@ -293,6 +297,7 @@ process_article(ARTHANDLE *art, const char *token, struct config *config)
     if (groups->count < 2) {
         warn("bogus Xref header field in %s", token);
         free(xref);
+        cvector_free(groups);
         return;
     }
 
