@@ -41,7 +41,7 @@ wire_findbody(const char *article, size_t length)
 
     /* Jump from \r to \r and give up if we're too close to the end. */
     end = article + length;
-    for (p = (char *) article; (p + 4) <= end; ++p) {
+    for (p = (char *) article; (size_t) (end - p) >= 4; ++p) {
         p = memchr(p, '\r', end - p - 3);
         if (p == NULL)
             break;
@@ -65,8 +65,10 @@ wire_nextline(const char *article, const char *end)
 {
     char *p;
 
-    for (p = (char *) article; (p + 2) <= end; ++p) {
-        p = memchr(p, '\r', end - p - 2);
+    if (article > end)
+        return NULL;
+    for (p = (char *) article; end - p >= 2; ++p) {
+        p = memchr(p, '\r', end - p - 1);
         if (p == NULL)
             break;
         if (p[1] == '\n') {
@@ -105,7 +107,7 @@ skip_fws_bounded(char *text, const char *end)
     char *p;
 
     for (p = text; p <= end; p++) {
-        if (p < end + 1 && p[0] == '\r' && p[1] == '\n' && ISWHITE(p[2]))
+        if (end - p >= 2 && p[0] == '\r' && p[1] == '\n' && ISWHITE(p[2]))
             p += 2;
         if (!ISWHITE(*p))
             return p;
@@ -131,6 +133,8 @@ wire_findheader(const char *article, size_t length, const char *header,
     ptrdiff_t headerlen;
 
     headerlen = strlen(header);
+    if (length == 0)
+        return NULL;
     end = article + length - 1;
 
     /* There has to be enough space left in the article for at least the

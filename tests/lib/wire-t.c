@@ -44,7 +44,7 @@ main(void)
     struct stat st;
     size_t wire_size, native_size, size;
 
-    test_init(58);
+    test_init(64);
 
     end = ta + sizeof(ta) - 1;
     p = end - 4;
@@ -137,6 +137,9 @@ main(void)
 
     free(article);
 
+    ok(37, wire_findheader("", 0, "X", true) == NULL);
+    ok(38, wire_findheader("X: \r\n", 5, "X", true) == NULL);
+
     /* Tests for wire to native conversion and vice versa. */
     wire = read_file("articles/wire-7", &st);
     wire_size = st.st_size;
@@ -144,13 +147,13 @@ main(void)
     native_size = st.st_size;
 
     article = wire_from_native(native, native_size, &size);
-    ok_int(37, wire_size, size);
-    ok(38, memcmp(wire, article, wire_size) == 0);
+    ok_int(39, wire_size, size);
+    ok(40, memcmp(wire, article, wire_size) == 0);
     free(article);
 
     article = wire_to_native(wire, wire_size, &size);
-    ok_int(39, native_size, size);
-    ok(40, memcmp(native, article, native_size) == 0);
+    ok_int(41, native_size, size);
+    ok(42, memcmp(native, article, native_size) == 0);
     free(article);
     free(wire);
     free(native);
@@ -159,47 +162,57 @@ main(void)
     wire = xstrdup("From: f@example.com\n\nSome body.\n");
     wire_size = strlen(wire);
     article = wire_to_native(wire, wire_size, &size);
-    ok_int(41, wire_size, size);
-    ok_string(42, wire, article);
+    ok_int(43, wire_size, size);
+    ok_string(44, wire, article);
     free(wire);
     free(article);
 
     /* An empty article. */
     article = wire_to_native("", 0, &size);
-    ok_int(43, 0, size);
-    ok_string(44, "", article);
-    free(article);
-    article = wire_to_native(".\r\n", 3, &size);
     ok_int(45, 0, size);
     ok_string(46, "", article);
+    free(article);
+    article = wire_to_native(".\r\n", 3, &size);
+    ok_int(47, 0, size);
+    ok_string(48, "", article);
     article = wire_from_native("", 0, &size);
-    ok_int(47, 3, size);
-    ok_string(48, ".\r\n", article);
+    ok_int(49, 3, size);
+    ok_string(50, ".\r\n", article);
     free(article);
 
     /* Nasty partial articles. */
     article = wire_to_native("T: f\r\n\r\n.\r", 10, &size);
-    ok_int(49, 8, size);
-    ok_string(50, "T: f\n\n.\r", article);
+    ok_int(51, 8, size);
+    ok_string(52, "T: f\n\n.\r", article);
     free(article);
     article = wire_to_native("T: f\r\n\r\n.", 9, &size);
-    ok_int(51, 7, size);
-    ok_string(52, "T: f\n\n.", article);
+    ok_int(53, 7, size);
+    ok_string(54, "T: f\n\n.", article);
     free(article);
     article = wire_to_native("..\r\n.\r\n", 7, &size);
-    ok_int(53, 2, size);
-    ok_string(54, ".\n", article);
+    ok_int(55, 2, size);
+    ok_string(56, ".\n", article);
     free(article);
 
     /* Articles containing nul. */
     article = wire_to_native("T: f\0\r\n\r\n..\r\n.\r\n", 16, &size);
-    ok_int(55, 9, size);
-    ok(56, memcmp("T: f\0\n\n.\n", article, 9) == 0);
+    ok_int(57, 9, size);
+    ok(58, memcmp("T: f\0\n\n.\n", article, 9) == 0);
     free(article);
     article = wire_from_native("T: f\0\n\n.\n", 9, &size);
-    ok_int(57, 16, size);
-    ok(58, memcmp("T: f\0\r\n\r\n..\r\n.\r\n", article, 16) == 0);
+    ok_int(59, 16, size);
+    ok(60, memcmp("T: f\0\r\n\r\n..\r\n.\r\n", article, 16) == 0);
     free(article);
+
+    /* wire_nextline takes an inclusive pointer to the final octet. */
+    p = "x";
+    ok(61, wire_nextline(p, p) == NULL);
+    p = "\r\n";
+    ok(62, wire_nextline(p, p + 1) == NULL);
+    p = "\r\nx";
+    ok(63, wire_nextline(p, p + 2) == p + 2);
+    p = "x\r\nx";
+    ok(64, wire_nextline(p, p + 3) == p + 3);
 
     return 0;
 }

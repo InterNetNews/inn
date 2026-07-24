@@ -21,9 +21,9 @@ BEGIN_DECLS
    your article is bodyless). */
 char *wire_findbody(const char *, size_t);
 
-/* Given a pointer into an article and a pointer to the end of the article,
-   find the start of the next line or return NULL if there are no more lines
-   remaining in the article. */
+/* Given a pointer into an article and a pointer to its final octet, find the
+   start of the next line or return NULL if there are no more lines remaining
+   in the article. */
 char *wire_nextline(const char *, const char *end);
 
 /* Given a pointer to the start of an article and the name of a header field,
