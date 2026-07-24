@@ -57,7 +57,7 @@
  * All rights reserved.
  *
  * Various bug fixes, code and documentation improvements since then
- * in 1997-2004, 2006-2011, 2014-2018, 2021, 2022, 2024.
+ * in 1997-2004, 2006-2011, 2014-2018, 2021, 2022, 2024, 2026.
  *
  * Permission to use and modify is hereby granted so long as this
  * notice remains.  Use at your own risk.  No warranty is implied.
@@ -1307,10 +1307,9 @@ get_ignore(char *filename, int *len)
         }
 
         /* remove any trailing spaces and tabs */
-        for (p = &line[strlen(line) - 1];
-             p >= line && (*p == ' ' || *p == '\t'); --p) {
-            *p = '\0';
-        }
+        p = line + strlen(line);
+        while (p > line && (p[-1] == ' ' || p[-1] == '\t'))
+            *--p = '\0';
 
         /* ignore line if the remainder of the line is empty */
         if (line[0] == '\0') {
