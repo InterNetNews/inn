@@ -111,9 +111,10 @@ void buffer_swap(struct buffer *, struct buffer *)
  * Find the given string in the unconsumed data in a buffer.  start is an
  * offset into the unused data specifying where to start the search (to save
  * time with multiple searches).  Pass 0 to start the search at the beginning
- * of the unused data.  Returns true if the terminator is found, putting the
- * offset (into the unused data space) of the beginning of the terminator into
- * the fourth argument.  Returns false if the terminator isn't found.
+ * of the unused data.  The string must be nonempty; an empty string returns
+ * false.  Returns true if the terminator is found, putting the offset (into
+ * the unused data space) of the beginning of the terminator into the fourth
+ * argument.  Returns false if the terminator isn't found.
  */
 bool buffer_find_string(struct buffer *, const char *, size_t start,
                         size_t *offset) __attribute__((__nonnull__));

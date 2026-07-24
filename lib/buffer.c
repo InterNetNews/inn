@@ -82,9 +82,12 @@ buffer_free(struct buffer *buffer)
 void
 buffer_resize(struct buffer *buffer, size_t size)
 {
-    if (size < buffer->size)
+    if (size <= buffer->size)
         return;
-    buffer->size = (size + 1023) & ~1023UL;
+    if (size <= SIZE_MAX - 1023)
+        buffer->size = (size + 1023) & ~((size_t) 1023);
+    else
+        buffer->size = size;
     buffer->data = xrealloc(buffer->data, buffer->size);
 }
 
@@ -151,17 +154,21 @@ buffer_append_vsprintf(struct buffer *buffer, const char *format, va_list args)
     ssize_t status;
     va_list args_copy;
 
+    assert(buffer->used <= SIZE_MAX - buffer->left);
     total = buffer->used + buffer->left;
+    assert(total <= buffer->size);
     avail = buffer->size - total;
     va_copy(args_copy, args);
-    status = vsnprintf(buffer->data + total, avail, format, args_copy);
+    status = vsnprintf(avail > 0 ? buffer->data + total : NULL, avail, format,
+                       args_copy);
     va_end(args_copy);
     if (status < 0)
         return;
     if ((size_t) status < avail) {
         buffer->left += status;
     } else {
-        buffer_resize(buffer, total + status + 1);
+        assert((size_t) status < SIZE_MAX - total);
+        buffer_resize(buffer, total + (size_t) status + 1);
         avail = buffer->size - total;
         status = vsnprintf(buffer->data + total, avail, format, args);
         if (status < 0 || (size_t) status >= avail)
@@ -247,6 +254,8 @@ buffer_find_string(struct buffer *buffer, const char *string, size_t start,
 
     if (buffer->data == NULL)
         return false;
+    if (start > buffer->left || string[0] == '\0')
+        return false;
     length = strlen(string);
     do {
         data = buffer->data + buffer->used + start;
@@ -271,10 +280,17 @@ ssize_t
 buffer_read(struct buffer *buffer, int fd)
 {
     ssize_t count;
+    size_t available, used;
+    void *data;
 
     do {
-        size_t used = buffer->used + buffer->left;
-        count = read(fd, buffer->data + used, buffer->size - used);
+        assert(buffer->used <= SIZE_MAX - buffer->left);
+        used = buffer->used + buffer->left;
+        assert(used <= buffer->size);
+        available = buffer->size - used;
+        data = available > 0 ? buffer->data + used : NULL;
+
+        count = read(fd, data, available);
     } while (count == -1 && (errno == EAGAIN || errno == EINTR));
     if (count > 0)
         buffer->left += count;
@@ -291,13 +307,17 @@ bool
 buffer_read_all(struct buffer *buffer, int fd)
 {
     ssize_t count;
+    size_t size, used;
 
     if (buffer->size == 0)
         buffer_resize(buffer, 1024);
     do {
-        size_t used = buffer->used + buffer->left;
-        if (buffer->size <= used)
-            buffer_resize(buffer, buffer->size * 2);
+        assert(buffer->used <= SIZE_MAX - buffer->left);
+        used = buffer->used + buffer->left;
+        if (buffer->size <= used) {
+            size = buffer->size > SIZE_MAX / 2 ? SIZE_MAX : buffer->size * 2;
+            buffer_resize(buffer, size);
+        }
         count = buffer_read(buffer, fd);
     } while (count > 0);
     return (count == 0);
@@ -315,10 +335,17 @@ bool
 buffer_read_file(struct buffer *buffer, int fd)
 {
     struct stat st;
-    size_t used = buffer->used + buffer->left;
+    size_t used;
+
+    assert(buffer->used <= SIZE_MAX - buffer->left);
+    used = buffer->used + buffer->left;
 
     if (fstat(fd, &st) < 0)
         return false;
-    buffer_resize(buffer, st.st_size + used);
+    if (st.st_size < 0 || (uintmax_t) st.st_size > SIZE_MAX - used) {
+        errno = EOVERFLOW;
+        return false;
+    }
+    buffer_resize(buffer, (size_t) st.st_size + used);
     return buffer_read_all(buffer, fd);
 }

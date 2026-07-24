@@ -72,7 +72,7 @@ main(void)
     ssize_t count;
     size_t offset;
 
-    plan(89);
+    plan(91);
 
     /* buffer_set, buffer_append, buffer_swap */
     buffer_set(&one, test_string1, sizeof(test_string1));
@@ -168,6 +168,10 @@ main(void)
     ok(buffer_find_string(three, "\r\n", 0, &offset),
        "finding the string on the whole buffer works");
     is_int(1023, offset, "and returns the correct location");
+    ok(!buffer_find_string(three, "\r\n", three->left + 1, &offset),
+       "search starting past the buffered data fails safely");
+    ok(!buffer_find_string(three, "", 0, &offset),
+       "searching for an empty string fails safely");
     three->used += 400;
     three->left -= 400;
     buffer_compact(three);
