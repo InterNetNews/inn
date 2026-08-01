@@ -1,4 +1,7 @@
-/* Test suite for reserved stdio file descriptors. */
+/*  Test suite for reserved stdio file descriptors.
+**
+**  Written by Kevin Bowling in 2026.
+*/
 
 #include "portable/system.h"
 

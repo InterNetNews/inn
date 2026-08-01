@@ -139,6 +139,17 @@ section is also generated in daily Usenet reports to summarize audit and
 rejection events.  Thanks to Ivo Gandolfo for the feature and maintaning
 cleanfeed-ng.
 
+=item *
+
+Fixed about twenty correctness and resource-lifetime defects in several
+programs thanks to Kevin Bowling.  They notably address stale pointers after
+buffer growth in B<innxmit>, descriptors and heap ownership in B<innxbatch>
+and B<innbind>, stale mode reasons in B<expire>, deterministic partial
+encoding in the C<c7unbatch> batch processor for B<rnews>, trusted-input
+bounds checks and one past-channel descriptor in B<innd>, various leakages
+in the external authentication helper of B<nnrpd>, and IMAP/LMTP connection
+lifecycle problems in B<imapfeed>.
+
 =back
 
 =head1 Changes in 2.7.4 (2026-06-22)
