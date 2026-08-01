@@ -625,17 +625,21 @@ Further development was then taken on by Marco d'Itri until 2002, followed
 by later updates and maintenance by Steve Crook from 2007 to 2020 (at
 L<http://www.mixmin.net/cleanfeed/> but no longer maintained).
 
-=item Postfilter
+=item Postfilter-NG
 
-URL: L<https://github.com/Aioe/postfilter> (by Paolo Amoroso)
+URL: L<https://github.com/infybofh/postfilter-ng/> (maintained by Ivo Gandolfo)
 
-Postfilter is an B<nnrpd> Perl filter (F<filter_nnrpd.pl>) which scans all
-messages sent by local users in order to block abuses.  Postfilter can limit
-the number of messages per user, IP or domain, provides a set of powerful
-ban lists, supports RBLs and URIBLs, can handle connections that come from
-TOR and is able to deeply modify the headers.  It's designed for large sites.
+Postfilter-NG is an B<nnrpd> Perl filter (F<filter_nnrpd.pl>) which scans
+all messages sent by local users in order to block abuses.  Postfilter-NG
+validates articles before acceptance, applies text and binary policies,
+records searchable audit events in SQLite, and supports staged deployment
+through audit mode.  It can limit the number of messages per user, IP or
+domain, provides a set of powerful ban lists, supports RBLs and URIBLs,
+can handle connections that come from TOR and is able to deeply modify the
+headers.  It is designed for large sites.
 
-The project is no longer maintained.
+Since 2026, Postfilter-NG has continued the historical work of Postfilter,
+originally developed in 2005 by Paolo Amoroso, who maintained it until 2020.
 
 =item News Shogun
 
