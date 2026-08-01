@@ -10,6 +10,14 @@ counts.  Thanks to Kevin Bowling for this enhancement.
 
 =item *
 
+A new B<-v> option in B<ovsqlite-util> runs SQLite C<VACUUM> to reclaim
+freelist pages after large permanent shrinks of retention or bulk deletes.
+Vacuuming is not automatic and is usually unnecessary for a steady-state
+expiring spool (the freelist high-water mark is left in place on purpose);
+see ovsqlite(5).  Thanks to Kevin Bowling for this enhancement.
+
+=item *
+
 B<innreport> now recognizes the logs of cleanfeed-ng, the maintained and
 lightweight continuation of the historical Cleanfeed filter.  A dedicated
 section is also generated in daily Usenet reports to summarize audit and
