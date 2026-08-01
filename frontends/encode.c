@@ -3,7 +3,7 @@
 **  From @(#)encode.c 1.3 5/15/85, distributed with B2.11 News.
 **
 **  Various bug fixes, code and documentation improvements since then
-**  in 1997-2000, 2002, 2003, 2021, 2024.
+**  in 1997-2000, 2002, 2003, 2021, 2024, 2026.
 **
 **  The encoding uses characters from 0x20 (' ') through 0x7A ('z').
 **  (That fits nicely into the UUCP 'f' protocol by Piet Beertema.) First,

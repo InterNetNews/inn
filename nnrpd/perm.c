@@ -1,6 +1,11 @@
 /*
 **  How to figure out where a user comes from, and what that user can do once
 **  we know who he is.
+**
+**  Originally written by Aidan Cully <aidan@panix.com> in 1998
+**
+**  Various bug fixes, code and documentation improvements since then
+**  in 1998-2006, 2008-2011, 2013-2016, 2021-2023, 2026.
 */
 
 #include "portable/system.h"
