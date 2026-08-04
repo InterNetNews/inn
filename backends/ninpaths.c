@@ -8,7 +8,7 @@
 **
 **  Various bug fixes, code and documentation improvements since then
 **  in 2001-2003, 2005, 2009, 2010, 2013, 2015, 2017, 2018, 2021, 2022, 2024,
-**  2025.
+**  2025, 2026.
 */
 
 #include "portable/system.h"
