@@ -813,7 +813,7 @@ OpenArticle(const char *path, RETRTYPE amount)
         close(fd);
         return NULL;
     }
-    if (sb.st_size < 0 || sb.st_size > UINT_MAX) {
+    if (sb.st_size < 0 || (unsigned int) sb.st_size > UINT_MAX) {
         SMseterror(SMERR_UNDEFINED, "article is too large");
         free(art);
         close(fd);
