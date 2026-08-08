@@ -1768,6 +1768,8 @@ ovgroupunmap(void)
     for (i = 0; i < GROUPDATAHASHSIZE; i++) {
         for (gdb = groupdatablock[i]; gdb != NULL; gdb = gdbnext) {
             gdbnext = gdb->next;
+            if (gdb->mmapped)
+                munmap(gdb->addr, gdb->len);
             free(gdb);
         }
         groupdatablock[i] = NULL;
@@ -1958,7 +1960,6 @@ ovgroupmmap(GROUPENTRY *ge, ARTNUM low, ARTNUM high, bool needov)
                                   ovbuff->fd, mmapoffset))
                 == MAP_FAILED) {
                 syswarn("buffindexed: ovgroupmmap could not mmap data block");
-                free(gdb);
                 ovgroupunmap();
                 return false;
             }
@@ -2150,19 +2151,11 @@ static void
 ovclosesearch(void *handle, bool freeblock)
 {
     OVSEARCH *search = (OVSEARCH *) handle;
-    GROUPDATABLOCK *gdb;
-    int i;
 #ifdef OV_DEBUG
     GROUPENTRY *ge;
     GROUPLOC gloc;
 #endif /* OV_DEBUG */
 
-    for (i = 0; i < GROUPDATAHASHSIZE; i++) {
-        for (gdb = groupdatablock[i]; gdb != NULL; gdb = gdb->next) {
-            if (gdb->mmapped)
-                munmap(gdb->addr, gdb->len);
-        }
-    }
     if (search->gdb.mmapped)
         munmap(search->gdb.addr, search->gdb.len);
     if (freeblock) {
