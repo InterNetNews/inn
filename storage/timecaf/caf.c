@@ -126,15 +126,7 @@ OurRead(int fd, void *buf, size_t n)
 static int
 OurWrite(int fd, const void *buf, size_t n)
 {
-    ssize_t rval;
-
-    rval = write(fd, buf, n);
-    if (rval < 0) {
-        CAFError(CAF_ERR_IO);
-        return -1;
-    }
-    if ((size_t) rval < n) {
-        /* not enough data written */
+    if (xwrite(fd, buf, n) < 0) {
         CAFError(CAF_ERR_IO);
         return -1;
     }
