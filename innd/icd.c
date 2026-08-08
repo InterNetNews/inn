@@ -454,7 +454,12 @@ ICDreadactive(char **endp)
                ICDactpath);
         exit(1);
     }
-    ICDactsize = Sb.st_size;
+    if (Sb.st_size < 0 || (uintmax_t) Sb.st_size > INT_MAX) {
+        syslog(L_FATAL, "%s active file %s is too large", LogName, ICDactpath);
+        exit(1);
+    }
+    ICDactsize = (int) Sb.st_size;
+
     ICDactpointer = mmap(NULL, ICDactsize, PROT_READ | PROT_WRITE, MAP_SHARED,
                          ICDactfd, 0);
     if (ICDactpointer == (char *) -1) {
@@ -465,11 +470,29 @@ ICDreadactive(char **endp)
 
 #else /* !HAVE_MMAP */
 
+    /* Reject an already-oversized active file before asking the generic
+       reader to allocate it.  ICDactsize below still comes from the exact
+       stat used to size and read the returned buffer. */
+    if (fstat(ICDactfd, &Sb) < 0) {
+        syslog(L_FATAL, "%s cant fstat %d %s %m", LogName, ICDactfd,
+               ICDactpath);
+        exit(1);
+    }
+    if (Sb.st_size < 0 || (uintmax_t) Sb.st_size > INT_MAX) {
+        syslog(L_FATAL, "%s active file %s is too large", LogName, ICDactpath);
+        exit(1);
+    }
     if ((ICDactpointer = ReadInDescriptor(ICDactfd, &Sb)) == NULL) {
         syslog(L_FATAL, "%s cant read %s %m", LogName, ICDactpath);
         exit(1);
     }
-    ICDactsize = Sb.st_size;
+    if (Sb.st_size < 0 || (uintmax_t) Sb.st_size > INT_MAX) {
+        free(ICDactpointer);
+        ICDactpointer = NULL;
+        syslog(L_FATAL, "%s active file %s is too large", LogName, ICDactpath);
+        exit(1);
+    }
+    ICDactsize = (int) Sb.st_size;
 
 #endif /* HAVE_MMAP */
 

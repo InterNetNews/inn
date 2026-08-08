@@ -46,6 +46,7 @@ lib/network/server
 lib/pread
 lib/pwrite
 lib/qio
+lib/readin
 lib/reallocarray
 lib/reservedfd
 lib/setenv
