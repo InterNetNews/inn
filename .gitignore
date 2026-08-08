@@ -265,6 +265,7 @@
 /tests/overview/tradindexed.t
 /tests/overview/xref.t
 /tests/perl/minimum-version.t
+/tests/storage/caf.t
 /tests/storage/cancel-tombstone.t
 /tests/util/innbind.t
 **/.libs/

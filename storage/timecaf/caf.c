@@ -21,6 +21,9 @@
 #define CAF_INNARDS 1
 #include "caf.h"
 
+/* Define this instead of littering bitmap formulas with semi-mysterious 8s. */
+#define BYTEWIDTH 8
+
 /* following code lifted from inndf.c */
 
 #ifdef HAVE_STATVFS
@@ -96,17 +99,25 @@ CAFError(int code)
 static int
 OurRead(int fd, void *buf, size_t n)
 {
+    char *p = buf;
     ssize_t rval;
+    size_t request;
 
-    rval = read(fd, buf, n);
-    if (rval < 0) {
-        CAFError(CAF_ERR_IO);
-        return -1;
-    }
-    if ((size_t) rval < n) {
-        /* not enough data! */
-        CAFError(CAF_ERR_BADFILE);
-        return -1;
+    while (n > 0) {
+        request = n > (size_t) SSIZE_MAX ? (size_t) SSIZE_MAX : n;
+        do {
+            rval = read(fd, p, request);
+        } while (rval < 0 && errno == EINTR);
+        if (rval < 0) {
+            CAFError(CAF_ERR_IO);
+            return -1;
+        }
+        if (rval == 0) {
+            CAFError(CAF_ERR_BADFILE);
+            return -1;
+        }
+        p += rval;
+        n -= (size_t) rval;
     }
     return 0;
 }
@@ -150,7 +161,72 @@ CAFReadHeader(int fd, CAFHEADER *h)
         CAFError(CAF_ERR_BADFILE);
         return -1;
     }
+    /* BlockSize was zero in some old CAF headers, where it meant the
+       default.  Normalize it before validating or using bitmap arithmetic. */
+    if (h->BlockSize == 0)
+        h->BlockSize = CAF_DEFAULT_BLOCKSIZE;
     return 0;
+}
+
+/* Validate the variable-sized bitmap and TOC fields from a CAF header and
+   return the TOC values in types suitable for allocation and positioning.
+   The output pointers are optional. */
+static bool
+CAFGetTOCInfo(const CAFHEADER *head, size_t *countp, size_t *bytesp,
+              off_t *offsetp)
+{
+    ARTNUM span;
+    size_t bitmap_bytes, count, offset;
+    uintmax_t reserved_bytes, toc_end;
+    off_t file_offset;
+
+    if (head->BlockSize < sizeof(CAFHEADER)
+        || head->FreeZoneIndexSize
+               != head->BlockSize - sizeof(CAFHEADER)
+        || head->FreeZoneIndexSize > UINT_MAX / BYTEWIDTH
+        || SIZE_MAX / head->BlockSize / head->BlockSize < BYTEWIDTH)
+        return false;
+    if (head->FreeZoneIndexSize
+        > (SIZE_MAX - head->FreeZoneIndexSize)
+              / (head->BlockSize * (size_t) BYTEWIDTH))
+        return false;
+    bitmap_bytes =
+        head->FreeZoneIndexSize
+        + head->BlockSize * head->FreeZoneIndexSize * (size_t) BYTEWIDTH;
+    if (head->FreeZoneTabSize != bitmap_bytes)
+        return false;
+
+    if (head->High < head->Low || head->NumSlots == 0)
+        return false;
+    span = head->High - head->Low;
+    if (span >= head->NumSlots
+        || (uintmax_t) head->NumSlots > SIZE_MAX / sizeof(CAFTOCENT))
+        return false;
+
+    if (head->FreeZoneTabSize > SIZE_MAX - sizeof(CAFHEADER))
+        return false;
+    offset = sizeof(CAFHEADER) + head->FreeZoneTabSize;
+    file_offset = (off_t) offset;
+    if (file_offset < 0 || (uintmax_t) file_offset != (uintmax_t) offset)
+        return false;
+
+    reserved_bytes = (uintmax_t) head->NumSlots * sizeof(CAFTOCENT);
+    if ((uintmax_t) offset > UINTMAX_MAX - reserved_bytes)
+        return false;
+    toc_end = (uintmax_t) offset + reserved_bytes;
+    if (head->StartDataBlock < 0
+        || toc_end > (uintmax_t) head->StartDataBlock
+        || head->StartDataBlock % head->BlockSize != 0)
+        return false;
+
+    count = (size_t) span + 1;
+    if (countp != NULL)
+        *countp = count;
+    if (bytesp != NULL)
+        *bytesp = count * sizeof(CAFTOCENT);
+    if (offsetp != NULL)
+        *offsetp = file_offset;
+    return true;
 }
 
 /*
@@ -160,10 +236,19 @@ CAFReadHeader(int fd, CAFHEADER *h)
 static int
 CAFSeekTOCEnt(int fd, CAFHEADER *head, ARTNUM art)
 {
+    ARTNUM slot;
     off_t offset;
 
-    offset = sizeof(CAFHEADER) + head->FreeZoneTabSize;
-    offset += (art - head->Low) * sizeof(CAFTOCENT);
+    if (!CAFGetTOCInfo(head, NULL, NULL, &offset) || art < head->Low) {
+        CAFError(CAF_ERR_BADFILE);
+        return -1;
+    }
+    slot = art - head->Low;
+    if (slot >= head->NumSlots) {
+        CAFError(CAF_ERR_BADFILE);
+        return -1;
+    }
+    offset += (off_t) ((uintmax_t) slot * sizeof(CAFTOCENT));
     if (lseek(fd, offset, SEEK_SET) < 0) {
         CAFError(CAF_ERR_IO);
         return -1;
@@ -232,17 +317,19 @@ CAFDisposeBitmap(CAFBITMAP *bm)
 ** Read the index bitmap from a CAF file, return a CAFBITMAP structure.
 */
 
-/* Define this instead of littering all our formulas with semi-mysterious 8s.
- */
-#define BYTEWIDTH 8
-
 CAFBITMAP *
 CAFReadFreeBM(int fd, CAFHEADER *h)
 {
     size_t i;
     struct stat statbuf;
     CAFBITMAP *bm;
+    off_t max_offset;
+    uintmax_t max_data;
 
+    if (!CAFGetTOCInfo(h, NULL, NULL, NULL)) {
+        CAFError(CAF_ERR_BADFILE);
+        return NULL;
+    }
     if (lseek(fd, sizeof(CAFHEADER), SEEK_SET) < 0) {
         CAFError(CAF_ERR_IO);
         return NULL;
@@ -251,8 +338,9 @@ CAFReadFreeBM(int fd, CAFHEADER *h)
 
     bm->FreeZoneTabSize = h->FreeZoneTabSize;
     bm->FreeZoneIndexSize = h->FreeZoneIndexSize;
-    bm->NumBMB = BYTEWIDTH * bm->FreeZoneIndexSize;
-    bm->BytesPerBMB = (h->BlockSize) * (h->BlockSize * BYTEWIDTH);
+    bm->NumBMB = (unsigned int) (BYTEWIDTH * bm->FreeZoneIndexSize);
+    bm->BytesPerBMB =
+        (size_t) h->BlockSize * h->BlockSize * (size_t) BYTEWIDTH;
     bm->BlockSize = h->BlockSize;
 
     bm->Blocks = xmalloc(bm->NumBMB * sizeof(CAFBMB *));
@@ -274,9 +362,27 @@ CAFReadFreeBM(int fd, CAFHEADER *h)
         CAFDisposeBitmap(bm);
         return NULL;
     }
-    /* round st_size down to a mult. of BlockSize */
-    bm->MaxDataBlock =
-        (statbuf.st_size / bm->BlockSize) * bm->BlockSize + bm->BlockSize;
+    /* Round st_size down to a multiple of BlockSize and then point at the
+       following block, rejecting an off_t wrap at the top of the file. */
+    if (statbuf.st_size < 0) {
+        CAFError(CAF_ERR_BADFILE);
+        CAFDisposeBitmap(bm);
+        return NULL;
+    }
+    max_data = ((uintmax_t) statbuf.st_size / bm->BlockSize) * bm->BlockSize;
+    if (max_data > UINTMAX_MAX - bm->BlockSize) {
+        CAFError(CAF_ERR_BADFILE);
+        CAFDisposeBitmap(bm);
+        return NULL;
+    }
+    max_data += bm->BlockSize;
+    max_offset = (off_t) max_data;
+    if (max_offset < 0 || (uintmax_t) max_offset != max_data) {
+        CAFError(CAF_ERR_BADFILE);
+        CAFDisposeBitmap(bm);
+        return NULL;
+    }
+    bm->MaxDataBlock = max_offset;
     /* (note: MaxDataBlock points to the block *after* the last block of the
      * file. */
     return bm;
@@ -287,10 +393,30 @@ CAFReadFreeBM(int fd, CAFHEADER *h)
 ** the new BMB appropriately.
 ** Return NULL on failure, and the BMB * on success.
 */
+static bool
+CAFBMBOffset(unsigned int blkno, const CAFBITMAP *bm, off_t *offset)
+{
+    uintmax_t block, bytes;
+
+    block = (uintmax_t) blkno + 1;
+    if (bm->BlockSize == 0 || block > UINTMAX_MAX / bm->BlockSize) {
+        errno = EOVERFLOW;
+        return false;
+    }
+    bytes = block * bm->BlockSize;
+    *offset = (off_t) bytes;
+    if (*offset < 0 || (uintmax_t) *offset != bytes) {
+        errno = EOVERFLOW;
+        return false;
+    }
+    return true;
+}
+
 static CAFBMB *
 CAFFetchBMB(unsigned int blkno, int fd, CAFBITMAP *bm)
 {
     CAFBMB *newbmb;
+    off_t offset;
 
     ASSERT(blkno < bm->NumBMB);
     /* if already in memory, don't need to do anything. */
@@ -310,7 +436,13 @@ CAFFetchBMB(unsigned int blkno, int fd, CAFBITMAP *bm)
 
     newbmb->BMBBits = xmalloc(bm->BlockSize);
 
-    if (lseek(fd, (blkno + 1) * bm->BlockSize, SEEK_SET) < 0) {
+    if (!CAFBMBOffset(blkno, bm, &offset)) {
+        free(newbmb->BMBBits);
+        free(newbmb);
+        CAFError(CAF_ERR_BADFILE);
+        return NULL;
+    }
+    if (lseek(fd, offset, SEEK_SET) < 0) {
         free(newbmb->BMBBits);
         free(newbmb);
         CAFError(CAF_ERR_IO);
@@ -335,6 +467,7 @@ static int
 CAFFlushBMB(unsigned int blkno, int fd, CAFBITMAP *bm)
 {
     CAFBMB *bmb;
+    off_t offset;
 
     ASSERT(blkno < bm->NumBMB);
 
@@ -345,7 +478,11 @@ CAFFlushBMB(unsigned int blkno, int fd, CAFBITMAP *bm)
     if (!bmb->Dirty)
         return 0;
 
-    if (lseek(fd, (blkno + 1) * bm->BlockSize, SEEK_SET) < 0) {
+    if (!CAFBMBOffset(blkno, bm, &offset)) {
+        CAFError(CAF_ERR_BADFILE);
+        return -1;
+    }
+    if (lseek(fd, offset, SEEK_SET) < 0) {
         CAFError(CAF_ERR_IO);
         return -1;
     }
@@ -607,6 +744,11 @@ CAFOpenArtRead(const char *path, ARTNUM art, size_t *len)
         close(fd);
         return -1;
     }
+    if (!CAFGetTOCInfo(&head, NULL, NULL, NULL)) {
+        CAFError(CAF_ERR_BADFILE);
+        close(fd);
+        return -1;
+    }
 
     /* Is the requested article even in the file? */
     if (art < head.Low || art > head.High) {
@@ -642,8 +784,9 @@ CAFOpenArtRead(const char *path, ARTNUM art, size_t *len)
         return -1;
     }
     if (st.st_size < 0 || tocent.Offset < 0
-        || tocent.Size > (size_t) st.st_size
-        || (size_t) tocent.Offset > (size_t) st.st_size - tocent.Size) {
+        || (uintmax_t) tocent.Size > (uintmax_t) st.st_size
+        || (uintmax_t) tocent.Offset
+               > (uintmax_t) st.st_size - tocent.Size) {
         CAFError(CAF_ERR_BADFILE);
         close(fd);
         return -1;
@@ -710,8 +853,15 @@ CAFCreateCAFFile(char *cfpath, ARTNUM artnum, ARTNUM tocsize, size_t estcfsize,
     char path[SPOOLNAMEBUFF];
     char finalpath[SPOOLNAMEBUFF];
     off_t offset;
+    uintmax_t rounded, table_end, toc_bytes;
     char nulls[1];
 
+    if (tocsize == 0
+        || (uintmax_t) tocsize > SIZE_MAX / sizeof(CAFTOCENT)) {
+        errno = EOVERFLOW;
+        CAFError(CAF_ERR_IO);
+        return -1;
+    }
     strlcpy(finalpath, cfpath, sizeof(finalpath));
     /* create path with PID attached */
     snprintf(path, sizeof(path), "%s.%lu", cfpath, (unsigned long) getpid());
@@ -741,9 +891,38 @@ CAFCreateCAFFile(char *cfpath, ARTNUM artnum, ARTNUM tocsize, size_t estcfsize,
     head.FreeZoneTabSize =
         head.FreeZoneIndexSize
         + head.BlockSize * head.FreeZoneIndexSize * BYTEWIDTH;
-    head.StartDataBlock = CAFRoundOffsetUp(
-        sizeof(CAFHEADER) + head.FreeZoneTabSize + tocsize * sizeof(CAFTOCENT),
-        head.BlockSize);
+    toc_bytes = (uintmax_t) tocsize * sizeof(CAFTOCENT);
+    if ((uintmax_t) head.FreeZoneTabSize
+            > UINTMAX_MAX - sizeof(CAFHEADER)
+        || toc_bytes
+               > UINTMAX_MAX - sizeof(CAFHEADER) - head.FreeZoneTabSize) {
+        errno = EOVERFLOW;
+        CAFError(CAF_ERR_IO);
+        close(fd);
+        unlink(path);
+        return -1;
+    }
+    table_end = sizeof(CAFHEADER) + head.FreeZoneTabSize + toc_bytes;
+    if (table_end > UINTMAX_MAX - (head.BlockSize - 1)) {
+        errno = EOVERFLOW;
+        CAFError(CAF_ERR_IO);
+        close(fd);
+        unlink(path);
+        return -1;
+    }
+    rounded = ((table_end + head.BlockSize - 1) / head.BlockSize)
+              * head.BlockSize;
+    head.StartDataBlock = (off_t) rounded;
+    offset = (off_t) table_end;
+    if (head.StartDataBlock < 0
+        || (uintmax_t) head.StartDataBlock != rounded || offset < 0
+        || (uintmax_t) offset != table_end) {
+        errno = EOVERFLOW;
+        CAFError(CAF_ERR_IO);
+        close(fd);
+        unlink(path);
+        return -1;
+    }
 
     head.spare[0] = head.spare[1] = head.spare[2] = 0;
 
@@ -752,11 +931,9 @@ CAFCreateCAFFile(char *cfpath, ARTNUM artnum, ARTNUM tocsize, size_t estcfsize,
         return -1;
     }
 
-    offset =
-        sizeof(CAFHEADER) + head.FreeZoneTabSize + sizeof(CAFTOCENT) * tocsize;
-
     if (lseek(fd, offset, SEEK_SET) < 0) {
         CAFError(CAF_ERR_IO);
+        close(fd);
         return -1;
     }
     /*
@@ -900,6 +1077,11 @@ CAFStartWriteFd(int fd, ARTNUM *artp, size_t size)
         close(fd);
         return -1;
     }
+    if (!CAFGetTOCInfo(&head, NULL, NULL, NULL)) {
+        CAFError(CAF_ERR_BADFILE);
+        close(fd);
+        return -1;
+    }
 
     /* check for zero article number and  handle accordingly. */
     art = *artp;
@@ -911,7 +1093,7 @@ CAFStartWriteFd(int fd, ARTNUM *artp, size_t size)
     }
 
     /* Is the requested article even in the file? */
-    if (art < head.Low || art >= head.Low + head.NumSlots) {
+    if (art < head.Low || art - head.Low >= head.NumSlots) {
         CAFError(CAF_ERR_ARTWONTFIT);
         close(fd);
         return -1;
@@ -1159,6 +1341,7 @@ CAFOpenReadTOC(char *path, CAFHEADER *ch, CAFTOCENT **tocpp)
     size_t count, nb;
     CAFTOCENT *tocp;
     off_t offset;
+    struct stat st;
 
     if ((fd = open(path, O_RDONLY)) < 0) {
         /*
@@ -1180,18 +1363,23 @@ CAFOpenReadTOC(char *path, CAFHEADER *ch, CAFTOCENT **tocpp)
     }
 
     /* Allocate memory for TOC. */
-    if (ch->High < ch->Low || ch->High - ch->Low >= ch->NumSlots
-        || ch->High - ch->Low + 1 > SIZE_MAX / sizeof(CAFTOCENT)) {
+    if (!CAFGetTOCInfo(ch, &count, &nb, &offset)) {
         CAFError(CAF_ERR_BADFILE);
         close(fd);
         return -1;
     }
-    count = ch->High - ch->Low + 1;
-    nb = sizeof(CAFTOCENT) * count;
+    if (fstat(fd, &st) < 0) {
+        CAFError(CAF_ERR_IO);
+        close(fd);
+        return -1;
+    }
+    if (st.st_size < 0
+        || (uintmax_t) offset + nb > (uintmax_t) st.st_size) {
+        CAFError(CAF_ERR_BADFILE);
+        close(fd);
+        return -1;
+    }
     tocp = xmalloc(nb);
-
-    /* seek to beginning of TOC */
-    offset = sizeof(CAFHEADER) + ch->FreeZoneTabSize;
 
     if (lseek(fd, offset, SEEK_SET) < 0) {
         CAFError(CAF_ERR_IO);
@@ -1223,11 +1411,13 @@ int
 CAFRemoveMultArts(char *path, unsigned int narts, ARTNUM *artnums)
 {
     int fd;
+    struct stat statbuf;
     CAFHEADER head;
     CAFTOCENT tocent;
     CAFBITMAP *freebitmap;
     ARTNUM art;
-    unsigned int numblksfreed, i, j;
+    size_t freed_bytes, i, numblksfreed;
+    unsigned int j;
     off_t curblk;
     int errorfound = false;
 
@@ -1262,6 +1452,22 @@ CAFRemoveMultArts(char *path, unsigned int narts, ARTNUM *artnums)
         close(fd);
         return -1;
     }
+    if (!CAFGetTOCInfo(&head, NULL, NULL, NULL)) {
+        CAFError(CAF_ERR_BADFILE);
+        close(fd);
+        return -1;
+    }
+    if (fstat(fd, &statbuf) < 0) {
+        CAFError(CAF_ERR_IO);
+        close(fd);
+        return -1;
+    }
+    if (statbuf.st_size < 0
+        || (uintmax_t) head.StartDataBlock > (uintmax_t) statbuf.st_size) {
+        CAFError(CAF_ERR_BADFILE);
+        close(fd);
+        return -1;
+    }
 
     if ((freebitmap = CAFReadFreeBM(fd, &head)) == NULL) {
         close(fd);
@@ -1292,7 +1498,31 @@ CAFRemoveMultArts(char *path, unsigned int narts, ARTNUM *artnums)
                          missing */
         }
 
-        numblksfreed = (tocent.Size + head.BlockSize - 1) / head.BlockSize;
+        if (tocent.Offset < head.StartDataBlock
+            || (uintmax_t) tocent.Size > (uintmax_t) statbuf.st_size
+            || (uintmax_t) tocent.Offset
+                   > (uintmax_t) statbuf.st_size - tocent.Size) {
+            CAFError(CAF_ERR_BADFILE);
+            close(fd);
+            CAFDisposeBitmap(freebitmap);
+            return -1;
+        }
+        numblksfreed = tocent.Size / head.BlockSize;
+        if (tocent.Size % head.BlockSize != 0)
+            numblksfreed++;
+        if (numblksfreed > SIZE_MAX / head.BlockSize) {
+            CAFError(CAF_ERR_BADFILE);
+            close(fd);
+            CAFDisposeBitmap(freebitmap);
+            return -1;
+        }
+        freed_bytes = numblksfreed * head.BlockSize;
+        if (head.Free > SIZE_MAX - freed_bytes) {
+            CAFError(CAF_ERR_BADFILE);
+            close(fd);
+            CAFDisposeBitmap(freebitmap);
+            return -1;
+        }
 
         /* Mark all the blocks as free. */
         for (curblk = tocent.Offset, i = 0; i < numblksfreed;
@@ -1300,7 +1530,7 @@ CAFRemoveMultArts(char *path, unsigned int narts, ARTNUM *artnums)
             CAFSetBlockFree(freebitmap, fd, curblk, 1);
         }
         /* Note the amount of free space added. */
-        head.Free += numblksfreed * head.BlockSize;
+        head.Free += freed_bytes;
         /* and mark the tocent as a deleted entry. */
         tocent.Size = 0;
 
@@ -1434,24 +1664,22 @@ CAFClean(char *path, int verbose, double PercentFreeThreshold)
     size_t pathlen;
     CAFHEADER head, newhead;
     int fdin, fdout;
-    ARTNUM newlow;
-    ARTNUM i;
+    ARTNUM newlow, newtocsize;
     CAFTOCENT *tocarray, *tocp;
     CAFTOCENT *newtocarray, *newtocp;
-    size_t newtocsize;
+    size_t active_count, toc_bytes, toc_count, toc_index;
     FILE *infile, *outfile;
-    off_t startoffset, newstartoffset;
+    off_t datasize, newstartoffset, startoffset, toc_offset;
     char buf[BUFSIZ];
-    int nbytes;
-    size_t ncur;
-    int n;
+    size_t n, nbytes, ncur;
     unsigned int blocksize;
     char *zerobuff;
     struct stat statbuf;
-    size_t datasize;
+    size_t estimated_size;
     double percentfree;
     int toc_needs_expansion;
     int toc_needs_compacting;
+    bool found_article, invalid_data_region, invalid_free_counter;
 
 #ifdef STATFUNCT
     struct STATSTRUC fsinfo;
@@ -1470,8 +1698,10 @@ CAFClean(char *path, int verbose, double PercentFreeThreshold)
             */
             if (errno != ENOENT) {
                 CAFError(CAF_ERR_IO);
+                free(newpath);
                 return -1;
             } else {
+                free(newpath);
                 return 0;
             }
         }
@@ -1493,6 +1723,7 @@ CAFClean(char *path, int verbose, double PercentFreeThreshold)
     /* Fetch the header */
     if (CAFReadHeader(fdin, &head) < 0) {
         close(fdin);
+        free(newpath);
         return -1;
     }
 
@@ -1501,14 +1732,37 @@ CAFClean(char *path, int verbose, double PercentFreeThreshold)
         close(fdin);
         CAFError(CAF_ERR_IO);
         perror(path);
+        free(newpath);
+        return -1;
+    }
+    if (!CAFGetTOCInfo(&head, &toc_count, &toc_bytes, &toc_offset)
+        || statbuf.st_size < 0
+        || (uintmax_t) toc_offset > UINTMAX_MAX - toc_bytes
+        || (uintmax_t) toc_offset + toc_bytes
+               > (uintmax_t) statbuf.st_size) {
+        close(fdin);
+        CAFError(CAF_ERR_BADFILE);
+        free(newpath);
         return -1;
     }
 
-    /* compute amount of actual data in file. */
-    datasize = statbuf.st_size - head.StartDataBlock;
-    if (datasize == 0) {
+    /* Defer rejecting a damaged data boundary until after checking whether
+       the TOC is empty.  An empty orphan can still be safely unlinked. */
+    invalid_data_region =
+        (uintmax_t) head.StartDataBlock > (uintmax_t) statbuf.st_size;
+    datasize = invalid_data_region ? 0
+                                   : statbuf.st_size - head.StartDataBlock;
+    invalid_free_counter =
+        !invalid_data_region
+        && (uintmax_t) head.Free > (uintmax_t) datasize;
+    if (invalid_data_region || datasize == 0) {
         /* nothing in the file, set percentfree==0 so won't bother cleaning */
         percentfree = 0;
+    } else if (invalid_free_counter) {
+        /* The old cleaner recovered from an inflated Free counter by doing a
+           full clean.  Keep that behavior, but validate every copied article
+           before rewriting the header with Free reset to zero. */
+        percentfree = 100.0;
     } else {
         percentfree = (100.0 * (double) head.Free) / (double) datasize;
     }
@@ -1518,59 +1772,62 @@ CAFClean(char *path, int verbose, double PercentFreeThreshold)
     ** we can decide if a clean or a compaction is needed.
     */
 
-    lseek(fdin, 0L, SEEK_SET);
-
     /* make input file stdio-buffered. */
     if ((infile = fdopen(fdin, "r+")) == NULL) {
         CAFError(CAF_ERR_IO);
         close(fdin);
+        free(newpath);
         return -1;
     }
 
-    /* Allocate memory for TOC. */
-    tocarray = xmalloc((head.High - head.Low + 1) * sizeof(CAFTOCENT));
-
-    fseeko(infile, (off_t) (sizeof(CAFHEADER) + head.FreeZoneTabSize),
-           SEEK_SET);
-
-    n = fread(tocarray, sizeof(CAFTOCENT), (head.High - head.Low + 1), infile);
-    if (n < 0) {
+    /* Allocate memory for and read the TOC. */
+    tocarray = xmalloc(toc_bytes);
+    if (fseeko(infile, toc_offset, SEEK_SET) < 0) {
         CAFError(CAF_ERR_IO);
         fclose(infile);
         free(tocarray);
         free(newpath);
         return -1;
     }
-
-    if ((unsigned long) n < (head.High - head.Low + 1)) {
-        CAFError(CAF_ERR_BADFILE);
+    n = fread(tocarray, sizeof(CAFTOCENT), toc_count, infile);
+    if (n != toc_count) {
+        CAFError(ferror(infile) ? CAF_ERR_IO : CAF_ERR_BADFILE);
         fclose(infile);
         free(tocarray);
         free(newpath);
         return -1;
     }
 
-    /* Scan to see what the new lower bound for CAF file should be. */
-    newlow = head.High + 1;
-
-    for (tocp = tocarray, i = head.Low; i <= head.High; ++tocp, ++i) {
+    /* Find the new lower bound.  Validate article spans only if we actually
+       clean the file; compaction and the no-op path do not dereference them,
+       and must continue to tolerate a torn entry left by a crash. */
+    found_article = false;
+    newlow = head.Low;
+    for (toc_index = 0; toc_index < toc_count; toc_index++) {
+        tocp = &tocarray[toc_index];
         if (tocp->Size != 0) {
-            newlow = i;
+            newlow = head.Low + toc_index;
+            found_article = true;
             break;
         }
     }
 
-    /*
-    ** if newlow is head.High+1, the TOC is completely empty and we can
-    ** just remove the entire file.
-    */
-    if (newlow == head.High + 1) {
+    /* If the TOC is completely empty, remove the entire file. */
+    if (!found_article) {
         unlink(path);
         fclose(infile);
         free(tocarray);
         free(newpath);
         return 0;
     }
+    if (invalid_data_region) {
+        CAFError(CAF_ERR_BADFILE);
+        fclose(infile);
+        free(tocarray);
+        free(newpath);
+        return -1;
+    }
+    active_count = (size_t) (head.High - newlow) + 1;
 
     /*
     ** Ah. NOW we get to decide if we need a clean!
@@ -1589,16 +1846,16 @@ CAFClean(char *path, int verbose, double PercentFreeThreshold)
     }
 
     toc_needs_compacting = 0;
-    if ((head.Low + head.NumSlots - head.NumSlots / TOC_COMPACT_RATIO)
-        <= head.High) {
+    if (head.High - head.Low
+        >= head.NumSlots - head.NumSlots / TOC_COMPACT_RATIO) {
         toc_needs_compacting = 1;
     }
 
-    if ((percentfree < PercentFreeThreshold) && (!toc_needs_expansion)) {
+    if (!invalid_free_counter && (percentfree < PercentFreeThreshold)
+        && (!toc_needs_expansion)) {
         /* no cleaning, but do we need a TOC compaction ? */
         if (toc_needs_compacting) {
-            int delta;
-            CAFTOCENT *tocp2;
+            size_t delta;
 
             if (verbose) {
                 printf("Compacting   %s: Free=%lu (%f%%)\n", path,
@@ -1608,18 +1865,16 @@ CAFClean(char *path, int verbose, double PercentFreeThreshold)
             delta = newlow - head.Low;
 
             /* slide TOC array down delta units. */
-            for (i = newlow, tocp = tocarray, tocp2 = tocarray + delta;
-                 i <= head.High; ++i) {
-                *tocp++ = *tocp2++;
-            }
+            memmove(tocarray, tocarray + delta,
+                    active_count * sizeof(CAFTOCENT));
 
             head.Low = newlow;
             /* note we don't set LastCleaned, this doesn't count a a clean. */
             /* (XXX: do we need a LastCompacted as well? might be nice.) */
 
             /*  write new header on top of old */
-            fseeko(infile, 0, SEEK_SET);
-            if (fwrite(&head, sizeof(CAFHEADER), 1, infile) < 1) {
+            if (fseeko(infile, 0, SEEK_SET) < 0
+                || fwrite(&head, sizeof(CAFHEADER), 1, infile) < 1) {
                 CAFError(CAF_ERR_IO);
                 free(tocarray);
                 free(newpath);
@@ -1630,18 +1885,15 @@ CAFClean(char *path, int verbose, double PercentFreeThreshold)
             ** this next fseeko might actually fail, because we have buffered
             ** stuff that might fail on write.
             */
-            if (fseeko(infile, sizeof(CAFHEADER) + head.FreeZoneTabSize,
-                       SEEK_SET)
-                < 0) {
+            if (fseeko(infile, toc_offset, SEEK_SET) < 0) {
                 perror(path);
                 free(tocarray);
                 free(newpath);
                 fclose(infile);
                 return -1;
             }
-            if (fwrite(tocarray, sizeof(CAFTOCENT), head.High - newlow + 1,
-                       infile)
-                    < head.High - newlow + 1
+            if (fwrite(tocarray, sizeof(CAFTOCENT), active_count, infile)
+                    < active_count
                 || fflush(infile) < 0) {
                 CAFError(CAF_ERR_IO);
                 free(tocarray);
@@ -1667,6 +1919,23 @@ CAFClean(char *path, int verbose, double PercentFreeThreshold)
         }
     }
 
+    /* A full clean copies article data, so reject entries that point outside
+       the data region rather than seeking through corrupt metadata. */
+    for (toc_index = newlow - head.Low; toc_index < toc_count; toc_index++) {
+        tocp = &tocarray[toc_index];
+        if (tocp->Size != 0
+            && (tocp->Offset < head.StartDataBlock
+                || (uintmax_t) tocp->Size > (uintmax_t) statbuf.st_size
+                || (uintmax_t) tocp->Offset
+                       > (uintmax_t) statbuf.st_size - tocp->Size)) {
+            CAFError(CAF_ERR_BADFILE);
+            fclose(infile);
+            free(tocarray);
+            free(newpath);
+            return -1;
+        }
+    }
+
     /*
     ** If OS supports it, try to check for free space and skip this file if
     ** not enough free space on this filesystem.
@@ -1683,8 +1952,10 @@ CAFClean(char *path, int verbose, double PercentFreeThreshold)
         (CAFRoundOffsetUp((n), fsinfo.STATMULTI) / fsinfo.STATMULTI)
 
         num_diskblocks_needed =
-            RoundIt((head.High - head.Low + 1) * sizeof(CAFTOCENT))
-            + RoundIt(datasize - head.Free) + RoundIt(head.BlockSize);
+            RoundIt(toc_bytes)
+            + RoundIt(invalid_free_counter ? datasize
+                                           : datasize - (off_t) head.Free)
+            + RoundIt(head.BlockSize);
         if (num_diskblocks_needed > (long_int_type) fsinfo.STATAVAIL) {
             if (verbose) {
                 printf("CANNOT clean %s: needs %" LLFORMAT " blocks, "
@@ -1709,12 +1980,31 @@ CAFClean(char *path, int verbose, double PercentFreeThreshold)
     /* decide on proper size for new TOC */
     newtocsize = CAF_DEFAULT_TOC_SIZE;
     if (head.High - newlow > newtocsize / TOC_CLEAN_RATIO) {
+        if ((uintmax_t) (head.High - newlow)
+            > ULONG_MAX / TOC_CLEAN_RATIO) {
+            CAFError(CAF_ERR_BADFILE);
+            fclose(infile);
+            free(tocarray);
+            free(newpath);
+            return -1;
+        }
         newtocsize = TOC_CLEAN_RATIO * (head.High - newlow);
+    }
+    if (newtocsize == 0
+        || (uintmax_t) newtocsize > SIZE_MAX / sizeof(CAFTOCENT)) {
+        CAFError(CAF_ERR_BADFILE);
+        fclose(infile);
+        free(tocarray);
+        free(newpath);
+        return -1;
     }
 
     /* try to create new CAF file with some temp. pathname */
     /* note: new CAF file is created in flocked state. */
-    if ((fdout = CAFCreateCAFFile(path, newlow, newtocsize, statbuf.st_size, 1,
+    estimated_size = ((uintmax_t) statbuf.st_size > SIZE_MAX)
+                         ? SIZE_MAX
+                         : (size_t) statbuf.st_size;
+    if ((fdout = CAFCreateCAFFile(path, newlow, newtocsize, estimated_size, 1,
                                   newpath, pathlen))
         < 0) {
         fclose(infile);
@@ -1725,6 +2015,7 @@ CAFClean(char *path, int verbose, double PercentFreeThreshold)
 
     if ((outfile = fdopen(fdout, "w+")) == NULL) {
         CAFError(CAF_ERR_IO);
+        close(fdout);
         fclose(infile);
         free(tocarray);
         unlink(newpath);
@@ -1732,7 +2023,7 @@ CAFClean(char *path, int verbose, double PercentFreeThreshold)
         return -1;
     }
 
-    newtocarray = xcalloc((head.High - newlow + 1), sizeof(CAFTOCENT));
+    newtocarray = xcalloc(active_count, sizeof(CAFTOCENT));
 
     if (fseeko(outfile, 0, SEEK_SET) < 0) {
         perror(newpath);
@@ -1766,10 +2057,20 @@ CAFClean(char *path, int verbose, double PercentFreeThreshold)
     zerobuff = xcalloc(blocksize, 1);
 
     /* seek to end of output file/place to start writing new articles */
-    fseeko(outfile, 0, SEEK_END);
+    if (fseeko(outfile, 0, SEEK_END) < 0) {
+        CAFError(CAF_ERR_IO);
+        goto errorexit;
+    }
     startoffset = ftello(outfile);
+    if (startoffset < 0) {
+        CAFError(CAF_ERR_IO);
+        goto errorexit;
+    }
     startoffset = CAFRoundOffsetUp(startoffset, blocksize);
-    fseeko(outfile, (off_t) startoffset, SEEK_SET);
+    if (startoffset < 0 || fseeko(outfile, startoffset, SEEK_SET) < 0) {
+        CAFError(CAF_ERR_IO);
+        goto errorexit;
+    }
 
     /*
     ** Note: startoffset will always give the start offset of the next
@@ -1781,15 +2082,19 @@ CAFClean(char *path, int verbose, double PercentFreeThreshold)
     ** file and new TOC.
     */
 
-    for (tocp = tocarray, i = head.Low; i <= head.High; ++tocp, ++i) {
+    for (toc_index = newlow - head.Low; toc_index < toc_count; toc_index++) {
+        tocp = &tocarray[toc_index];
         if (tocp->Size != 0) {
-            newtocp = &newtocarray[i - newlow];
+            newtocp = &newtocarray[toc_index - (newlow - head.Low)];
             newtocp->Offset = startoffset;
             newtocp->Size = tocp->Size;
             newtocp->ModTime = tocp->ModTime;
 
             /* seek to right place in input. */
-            fseeko(infile, (off_t) tocp->Offset, SEEK_SET);
+            if (fseeko(infile, tocp->Offset, SEEK_SET) < 0) {
+                CAFError(CAF_ERR_IO);
+                goto errorexit;
+            }
 
             nbytes = tocp->Size;
             while (nbytes > 0) {
@@ -1883,8 +2188,8 @@ CAFClean(char *path, int verbose, double PercentFreeThreshold)
         return -1;
     }
 
-    if (fwrite(newtocarray, sizeof(CAFTOCENT), head.High - newlow + 1, outfile)
-            < head.High - newlow + 1
+    if (fwrite(newtocarray, sizeof(CAFTOCENT), active_count, outfile)
+            < active_count
         || fflush(outfile) < 0) {
         CAFError(CAF_ERR_IO);
         free(newtocarray);

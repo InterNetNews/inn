@@ -36,7 +36,7 @@ TESTS	= authprogs/ident.t expire/tombstone.t expire/tombstone-hisexpire.t \
 	lib/strlcpy.t lib/tst.t lib/uwildmat.t lib/vector.t lib/wire.t \
 	lib/xwrite.t nnrpd/auth-ext.t overview/api.t overview/buffindexed.t \
 	overview/ovsqlite.t overview/tradindexed.t overview/xref.t \
-	storage/cancel-tombstone.t util/innbind.t
+	storage/caf.t storage/cancel-tombstone.t util/innbind.t
 
 ##  Extra stuff that needs to be built before tests can be run.
 
@@ -361,6 +361,9 @@ overview/xref.t: overview/xref-t.o tap/basic.o $(STORAGEDEPS)
 
 perl/minimum-version.t: perl/minimum-version.t.in $(FIXSCRIPT)
 	$(FIX) -i perl/minimum-version.t.in
+
+storage/caf.t: storage/caf-t.o tap/basic.o $(STORAGEDEPS)
+	$(LINKDEPS) storage/caf-t.o tap/basic.o $(STORAGELIBS) $(LIBS)
 
 storage/cancel-tombstone.t: storage/cancel-tombstone-t.o tap/basic.o \
 	    $(STORAGEDEPS)
