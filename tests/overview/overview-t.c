@@ -1,4 +1,10 @@
-/* Overview test suite, usable for any of the overview methods. */
+/* Overview test suite, usable for any of the overview methods.
+**
+**  Written by Russ Allbery in 2003.
+**
+**  Various bug fixes, code and documentation improvements since then
+**  in 2003-2007, 2009, 2010, 2014-2016, 2018, 2020-2023, 2026.
+*/
 
 /* Compile this program with OVTYPE defined to one of the valid overview
    methods (not surrounded in quotes) to generate a binary that tests that
@@ -9,6 +15,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <sys/stat.h>
+#include <sys/wait.h>
 
 #include "inn/hashtab.h"
 #include "inn/innconf.h"
@@ -493,13 +500,76 @@ overview_verify_full_search(const char *data)
     return status;
 }
 
+/* Verify that a read-only buffindexed process can remap group.index after a
+   writer grows it.  This specifically exercises mmap protection on the rare
+   remap path rather than the protection used during initial open. */
+static bool
+overview_verify_readonly_remap(void)
+{
+    char flag[] = NF_FLAG_OK_STRING;
+    char group[64];
+    char target[] = "remap.1024";
+    char byte;
+    int ready[2], resume[2], result[2];
+    int i, low, high, count, seenflag, status;
+    pid_t child;
+    bool okay = true;
+
+    if (pipe(ready) < 0 || pipe(resume) < 0 || pipe(result) < 0)
+        sysdie("Cannot create remap test pipes");
+    child = fork();
+    if (child < 0)
+        sysdie("Cannot fork remap test child");
+    if (child == 0) {
+        close(ready[0]);
+        close(resume[1]);
+        close(result[0]);
+        OVclose();
+        byte = OVopen(OV_READ) ? 1 : 0;
+        if (write(ready[1], &byte, 1) != 1 || byte == 0)
+            _exit(1);
+        if (read(resume[0], &byte, 1) != 1)
+            _exit(1);
+        byte = OVgroupstats(target, &low, &high, &count, &seenflag) ? 1 : 0;
+        if (write(result[1], &byte, 1) != 1)
+            _exit(1);
+        OVclose();
+        _exit(0);
+    }
+
+    close(ready[1]);
+    close(resume[0]);
+    close(result[1]);
+    if (read(ready[0], &byte, 1) != 1 || byte == 0)
+        okay = false;
+    for (i = 0; i <= 1024; i++) {
+        snprintf(group, sizeof(group), "remap.%d", i);
+        if (!OVgroupadd(group, 1, 0, flag))
+            okay = false;
+    }
+    byte = 1;
+    if (write(resume[1], &byte, 1) != 1)
+        okay = false;
+    if (read(result[0], &byte, 1) != 1 || byte == 0)
+        okay = false;
+    close(ready[0]);
+    close(resume[1]);
+    close(result[0]);
+    if (waitpid(child, &status, 0) != child || !WIFEXITED(status)
+        || WEXITSTATUS(status) != 0)
+        okay = false;
+    return okay;
+}
+
 int
 main(void)
 {
     struct hash *groups;
     bool status;
+    int fd;
+    char trailing = 0;
 
-    test_init(21);
+    test_init(23);
 
     if (access("../data/overview/basic", F_OK) == 0) {
         if (chdir("../data") < 0) {
@@ -567,9 +637,32 @@ main(void)
     ok(20, overview_verify_data("overview/bogus"));
     hash_free(groups);
     OVclose();
+
+    if (strcmp(innconf->ovmethod, "buffindexed") == 0) {
+        if (!overview_init())
+            die("Opening the overview database failed, cannot continue");
+        status = overview_verify_readonly_remap();
+        OVclose();
+        ok(21, status);
+    } else {
+        skip(21, "read-only remap test is buffindexed-specific");
+    }
+
+    if (strcmp(innconf->ovmethod, "buffindexed") == 0) {
+        fd = open("ov-tmp/group.index", O_WRONLY | O_APPEND);
+        if (fd < 0 || xwrite(fd, &trailing, 1) != 1)
+            sysbail("cannot append partial group.index entry");
+        close(fd);
+        status = OVopen(OV_READ | OV_WRITE);
+        ok(22, !status);
+        if (status)
+            OVclose();
+    } else {
+        skip(22, "partial group.index test is buffindexed-specific");
+    }
     if (system("/bin/rm -rf ov-tmp") < 0)
         sysdie("Cannot rm ov-tmp");
-    ok(21, true);
+    ok(23, true);
 
     return 0;
 }
