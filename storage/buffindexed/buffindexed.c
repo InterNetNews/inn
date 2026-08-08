@@ -2538,7 +2538,13 @@ buffindexed_expiregroup(const char *group, int *lo, struct history *h)
     OVSEARCH search = {0};
 
     if (group == NULL) {
-        for (i = 0; i < GROUPheader->freelist.recno; i++) {
+        /* Refresh a mapping that may have been extended by another writer,
+           then inspect every slot.  Empty slots have count zero, while -1 in
+           the freelist means all slots have been allocated. */
+        gloc.recno = INT_MAX;
+        if (!GROUPremapifneeded(gloc, false))
+            return false;
+        for (i = 0; i < GROUPcount; i++) {
             gloc.recno = i;
             GROUPlock(gloc, INN_LOCK_WRITE);
             ge = &GROUPentries[gloc.recno];
