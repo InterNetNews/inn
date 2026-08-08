@@ -34,7 +34,7 @@
 
 typedef struct {
     char *artbase;       /* start of the article data -- may be mmaped */
-    unsigned int artlen; /* art length. */
+    size_t artlen;       /* art length. */
     int nextindex;
     char *curdirname;
     DIR *curdir;
@@ -813,7 +813,9 @@ OpenArticle(const char *path, RETRTYPE amount)
         close(fd);
         return NULL;
     }
-    if (sb.st_size < 0 || (unsigned int) sb.st_size > UINT_MAX) {
+    /* Keep the historical per-article policy limit even though artlen is a
+       size_t.  Larger corrupt spool files must not reach fatal xmalloc. */
+    if (sb.st_size < 0 || (uintmax_t) sb.st_size > UINT_MAX) {
         SMseterror(SMERR_UNDEFINED, "article is too large");
         free(art);
         close(fd);
@@ -824,10 +826,10 @@ OpenArticle(const char *path, RETRTYPE amount)
 
     private = xmalloc(sizeof(PRIV_TRADSPOOL));
     art->private = (void *) private;
-    private->artlen = sb.st_size;
+    private->artlen = (size_t) sb.st_size;
     if (innconf->articlemmap) {
         if ((private->artbase =
-                 mmap(NULL, sb.st_size, PROT_READ, MAP_SHARED, fd, 0))
+                 mmap(NULL, private->artlen, PROT_READ, MAP_SHARED, fd, 0))
             == MAP_FAILED) {
             SMseterror(SMERR_UNDEFINED, NULL);
             syswarn("tradspool: could not mmap article %s", path);
@@ -837,9 +839,9 @@ OpenArticle(const char *path, RETRTYPE amount)
             return NULL;
         }
         if (amount == RETR_ALL)
-            madvise(private->artbase, sb.st_size, MADV_WILLNEED);
+            madvise(private->artbase, private->artlen, MADV_WILLNEED);
         else
-            madvise(private->artbase, sb.st_size, MADV_SEQUENTIAL);
+            madvise(private->artbase, private->artlen, MADV_SEQUENTIAL);
 
         /* consider coexisting both wireformatted and nonwireformatted */
         p = memchr(private->artbase, '\n', private->artlen);
@@ -857,6 +859,15 @@ OpenArticle(const char *path, RETRTYPE amount)
         } else {
             wfarticle =
                 wire_from_native(private->artbase, private->artlen, &wflen);
+            if (wfarticle == NULL) {
+                SMseterror(SMERR_UNDEFINED,
+                           "article is too large after wire formatting");
+                munmap(private->artbase, private->artlen);
+                free(art->private);
+                free(art);
+                close(fd);
+                return NULL;
+            }
             munmap(private->artbase, private->artlen);
             private->artbase = wfarticle;
             private->artlen = wflen;
@@ -865,7 +876,7 @@ OpenArticle(const char *path, RETRTYPE amount)
     } else {
         private->mmapped = false;
         private->artbase = xmalloc(private->artlen);
-        if (xread(fd, private->artbase, private->artlen) < 0) {
+        if (xread(fd, private->artbase, sb.st_size) < 0) {
             SMseterror(SMERR_UNDEFINED, NULL);
             syswarn("tradspool: could not read article %s", path);
             free(private->artbase);
@@ -888,6 +899,15 @@ OpenArticle(const char *path, RETRTYPE amount)
             /* need to make a wireformat copy of the article */
             wfarticle =
                 wire_from_native(private->artbase, private->artlen, &wflen);
+            if (wfarticle == NULL) {
+                SMseterror(SMERR_UNDEFINED,
+                           "article is too large after wire formatting");
+                free(private->artbase);
+                free(art->private);
+                free(art);
+                close(fd);
+                return NULL;
+            }
             free(private->artbase);
             private->artbase = wfarticle;
             private->artlen = wflen;

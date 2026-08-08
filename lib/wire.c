@@ -23,6 +23,7 @@
 #include "portable/system.h"
 
 #include <assert.h>
+#include <errno.h>
 
 #include "inn/libinn.h"
 #include "inn/wire.h"
@@ -195,23 +196,36 @@ char *
 wire_from_native(const char *article, size_t len, size_t *newlen)
 {
     size_t bytes;
+    size_t extra;
+    size_t extra_limit;
     char *newart;
     const char *p;
     char *dest;
     bool at_start = true;
 
+    *newlen = 0;
+    if (len > SIZE_MAX - 4) {
+        errno = EOVERFLOW;
+        return NULL;
+    }
+    extra_limit = SIZE_MAX - 4 - len;
+
     /* First go thru article and count number of bytes we need.  Add a CR for
        every LF and an extra character for any period at the beginning of a
-       line for dot-stuffing.  Add 3 characters at the end for .\r\n. */
-    for (bytes = 0, p = article; p < article + len; p++) {
+       line for dot-stuffing.  Each input byte adds at most one extra byte,
+       so extra cannot overflow.  Add 3 characters at the end for .\r\n. */
+    for (extra = 0, p = article; p < article + len; p++) {
         if (at_start && *p == '.')
-            bytes++;
-        bytes++;
+            extra++;
         at_start = (*p == '\n');
         if (at_start)
-            bytes++;
+            extra++;
     }
-    bytes += 3;
+    if (extra > extra_limit) {
+        errno = EOVERFLOW;
+        return NULL;
+    }
+    bytes = len + extra + 3;
 
     /* Now copy the article, making the required changes. */
     newart = xmalloc(bytes + 1);

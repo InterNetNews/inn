@@ -232,6 +232,8 @@ main(void)
     if (article == NULL)
         sysdie("Cannot read articles/xref");
     wire = wire_from_native(article, strlen(article), &size);
+    if (wire == NULL)
+        sysdie("Cannot convert articles/xref to wire format");
     free(article);
     handle.type = TOKEN_EMPTY;
     handle.data = wire;
