@@ -76,6 +76,9 @@ void tdx_cache_free(struct cache *);
 
 /* tdx-group.c */
 
+/* Validate a group index size and return its entry count. */
+bool tdx_index_entry_count(off_t, int *);
+
 /* Open the group index and return an opaque data structure to use for further
    queries. */
 struct group_index *tdx_index_open(bool writable);
