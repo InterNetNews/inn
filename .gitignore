@@ -239,6 +239,7 @@
 /tests/lib/pread.t
 /tests/lib/pwrite.t
 /tests/lib/qio.t
+/tests/lib/readin.t
 /tests/lib/reallocarray.t
 /tests/lib/reservedfd.t
 /tests/lib/setenv.t
@@ -261,9 +262,11 @@
 /tests/overview/ovsqlite.t
 /tests/overview/ovsqlite-read.t
 /tests/overview/ovsqlite-write.t
+/tests/overview/tdx-group.t
 /tests/overview/tradindexed.t
 /tests/overview/xref.t
 /tests/perl/minimum-version.t
+/tests/storage/caf.t
 /tests/storage/cancel-tombstone.t
 /tests/util/innbind.t
 **/.libs/

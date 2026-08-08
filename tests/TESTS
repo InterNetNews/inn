@@ -46,6 +46,7 @@ lib/network/server
 lib/pread
 lib/pwrite
 lib/qio
+lib/readin
 lib/reallocarray
 lib/reservedfd
 lib/setenv
@@ -64,10 +65,12 @@ overview/buffindexed
 overview/overchan
 overview/ovsqlite
 overview/ovsqlite-integ
+overview/tdx-group
 overview/tradindexed
 overview/xref
 perl/minimum-version
 storage/archive
+storage/caf
 storage/cancel-tombstone
 storage/makehistory
 storage/sm

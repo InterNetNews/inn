@@ -1062,14 +1062,21 @@ article_open(const char *path, const char *id)
             return NULL;
         if (fstat(fd, &st) < 0) {
             syswarn("requeue %s", path);
+            close(fd);
+            Requeue(path, id);
+            return NULL;
+        }
+        if (st.st_size < 0 || (uintmax_t) st.st_size > SIZE_MAX) {
+            warn("requeue %s: article is too large", path);
+            close(fd);
             Requeue(path, id);
             return NULL;
         }
         article = xmalloc(sizeof(ARTHANDLE));
         article->type = TOKEN_EMPTY;
-        article->len = st.st_size;
+        article->len = (size_t) st.st_size;
         data = xmalloc(article->len);
-        if (xread(fd, data, article->len) < 0) {
+        if (xread(fd, data, st.st_size) < 0) {
             syswarn("requeue %s", path);
             free(data);
             free(article);
@@ -1088,6 +1095,13 @@ article_open(const char *path, const char *id)
         }
         if (p[-1] != '\r') {
             p = wire_from_native(data, article->len, &length);
+            if (p == NULL) {
+                syswarn("requeue %s: cannot convert article", path);
+                free(data);
+                free(article);
+                Requeue(path, id);
+                return NULL;
+            }
             free(data);
             data = p;
             article->len = length;

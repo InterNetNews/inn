@@ -319,6 +319,11 @@ buffer_read_file(struct buffer *buffer, int fd)
 
     if (fstat(fd, &st) < 0)
         return false;
-    buffer_resize(buffer, st.st_size + used);
+    if (st.st_size < 0 || used > SIZE_MAX - 1023
+        || (uintmax_t) st.st_size > SIZE_MAX - used - 1023) {
+        errno = EOVERFLOW;
+        return false;
+    }
+    buffer_resize(buffer, (size_t) st.st_size + used);
     return buffer_read_all(buffer, fd);
 }

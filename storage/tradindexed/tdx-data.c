@@ -53,7 +53,7 @@ static int file_open(const char *base, const char *suffix, bool writable,
                      bool append);
 static bool file_open_index(struct group_data *, const char *suffix);
 static bool file_open_data(struct group_data *, const char *suffix);
-static void *map_file(int fd, size_t length, const char *base,
+static void *map_file(int fd, off_t length, const char *base,
                       const char *suffix);
 static bool map_index(struct group_data *data);
 static bool map_data(struct group_data *data);
@@ -273,25 +273,29 @@ fail:
 **  error reporting.
 */
 static void *
-map_file(int fd, size_t length, const char *base, const char *suffix)
+map_file(int fd, off_t length, const char *base, const char *suffix)
 {
     char *data;
+    size_t size;
 
+    if (length < 0 || (uintmax_t) length > SIZE_MAX) {
+        errno = EOVERFLOW;
+        syswarn("tradindexed: %s.%s is too large", base, suffix);
+        return NULL;
+    }
     if (length == 0)
         return NULL;
+    size = (size_t) length;
 
     if (!innconf->tradindexedmmap) {
-        ssize_t status;
-
-        data = xmalloc(length);
-        status = read(fd, data, length);
-        if ((size_t) status != length) {
+        data = xmalloc(size);
+        if (lseek(fd, 0, SEEK_SET) < 0 || xread(fd, data, length) < 0) {
             syswarn("tradindexed: cannot read data file %s.%s", base, suffix);
             free(data);
             return NULL;
         }
     } else {
-        data = mmap(NULL, length, PROT_READ, MAP_SHARED, fd, 0);
+        data = mmap(NULL, size, PROT_READ, MAP_SHARED, fd, 0);
         if (data == MAP_FAILED) {
             syswarn("tradindexed: cannot mmap %s.%s", base, suffix);
             return NULL;
@@ -327,7 +331,7 @@ map_index(struct group_data *data)
         return false;
     data->indexlen = st.st_size;
     data->index = map_file(data->indexfd, data->indexlen, data->path, "IDX");
-    return (data->index == NULL && data->indexlen > 0) ? false : true;
+    return data->index != NULL || data->indexlen == 0;
 }
 
 
@@ -357,7 +361,7 @@ map_data(struct group_data *data)
         return false;
     data->datalen = st.st_size;
     data->data = map_file(data->datafd, data->datalen, data->path, "DAT");
-    return (data->data == NULL && data->datalen > 0) ? false : true;
+    return data->data != NULL || data->datalen == 0;
 }
 
 
@@ -374,7 +378,7 @@ unmap_file(void *data, off_t length, const char *base, const char *suffix)
     if (!innconf->tradindexedmmap)
         free(data);
     else {
-        if (munmap(data, length) < 0)
+        if (munmap(data, (size_t) length) < 0)
             syswarn("tradindexed: cannot munmap %s.%s", base, suffix);
     }
     return;

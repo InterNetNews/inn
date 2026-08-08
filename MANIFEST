@@ -1013,6 +1013,7 @@ tests/lib/network/server-t.c          Tests for lib/network.c (server-oriented)
 tests/lib/pread-t.c                   Tests for lib/pread.c
 tests/lib/pwrite-t.c                  Tests for lib/pwrite.c
 tests/lib/qio-t.c                     Tests for lib/qio.c
+tests/lib/readin-t.c                  Tests for lib/readin.c
 tests/lib/reallocarray-t.c            Tests for lib/reallocarray.c
 tests/lib/reservedfd-t.c              Tests for reserved file descriptors
 tests/lib/setenv-t.c                  Tests for lib/setenv.c
@@ -1037,12 +1038,14 @@ tests/overview/ovsqlite-integ.t       Integration test for ovsqlite direct reade
 tests/overview/ovsqlite-read-t.c      Direct reader verification for integration test
 tests/overview/ovsqlite-t.c           Unit tests for ovsqlite direct reader
 tests/overview/ovsqlite-write-t.c     Writer helper for ovsqlite integration test
+tests/overview/tdx-group-t.c          Tests for tradindexed group index sizes
 tests/overview/xref-t.c               Test storing overview data by Xref
 tests/perl                            Test suite for Perl scripts (Directory)
 tests/perl/minimum-version.t.in       Tests for not too-new features of Perl
 tests/runtests.c                      The test suite driver program
 tests/storage                         Test suite for storage (Directory)
 tests/storage/archive.t               Tests for backends/archive
+tests/storage/caf-t.c                 Tests for CAF file validation and cleaning
 tests/storage/cancel-tombstone-t.c    Tests for SMcanceltombstone
 tests/storage/makehistory.t           Tests for expire/makehistory
 tests/storage/sm.t                    Tests for frontends/sm

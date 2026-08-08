@@ -120,8 +120,12 @@ ok_article(int n, const char *path, const char *error, bool slow, bool shift)
     enum channel_state expected;
 
     article = ReadInFile(path, &st);
+    if (article == NULL)
+        sysbail("cannot read %s", path);
     len = st.st_size;
     wire = wire_from_native(article, len, &wirelen);
+    if (wire == NULL)
+        sysbail("cannot convert %s to wire format", path);
     cp = fake_channel();
     offset = shift ? random() % 50 : 0;
     cp->Start = offset;

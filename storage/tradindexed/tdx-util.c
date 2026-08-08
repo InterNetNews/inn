@@ -338,18 +338,24 @@ group_rebuild(const char *group, const char *path)
     for (file = 0; file < files->count; file++) {
         filename = concatpath(path, files->strings[file]);
         article = ReadInFile(filename, &st);
-        size = st.st_size;
         if (article == NULL) {
             syswarn("cannot read in %s", filename);
             free(filename);
             continue;
         }
+        size = (size_t) st.st_size;
 
         /* Check to see if the article is not in wire format.  If it isn't,
            convert it.  We only check the first line ending. */
         p = strchr(article, '\n');
         if (p != NULL && (p == article || p[-1] != '\r')) {
             wireformat = wire_from_native(article, size, &length);
+            if (wireformat == NULL) {
+                syswarn("cannot convert %s to wire format", filename);
+                free(filename);
+                free(article);
+                continue;
+            }
             free(article);
             article = wireformat;
             size = length;
