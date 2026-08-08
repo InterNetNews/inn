@@ -849,7 +849,7 @@ CAFCreateCAFFile(char *cfpath, ARTNUM artnum, ARTNUM tocsize, size_t estcfsize,
                  int nolink, char *temppath, size_t pathlen)
 {
     CAFHEADER head;
-    int fd;
+    int fd, oerrno;
     char path[SPOOLNAMEBUFF];
     char finalpath[SPOOLNAMEBUFF];
     off_t offset;
@@ -898,17 +898,13 @@ CAFCreateCAFFile(char *cfpath, ARTNUM artnum, ARTNUM tocsize, size_t estcfsize,
                > UINTMAX_MAX - sizeof(CAFHEADER) - head.FreeZoneTabSize) {
         errno = EOVERFLOW;
         CAFError(CAF_ERR_IO);
-        close(fd);
-        unlink(path);
-        return -1;
+        goto fail;
     }
     table_end = sizeof(CAFHEADER) + head.FreeZoneTabSize + toc_bytes;
     if (table_end > UINTMAX_MAX - (head.BlockSize - 1)) {
         errno = EOVERFLOW;
         CAFError(CAF_ERR_IO);
-        close(fd);
-        unlink(path);
-        return -1;
+        goto fail;
     }
     rounded = ((table_end + head.BlockSize - 1) / head.BlockSize)
               * head.BlockSize;
@@ -919,22 +915,18 @@ CAFCreateCAFFile(char *cfpath, ARTNUM artnum, ARTNUM tocsize, size_t estcfsize,
         || (uintmax_t) offset != table_end) {
         errno = EOVERFLOW;
         CAFError(CAF_ERR_IO);
-        close(fd);
-        unlink(path);
-        return -1;
+        goto fail;
     }
 
     head.spare[0] = head.spare[1] = head.spare[2] = 0;
 
     if (OurWrite(fd, &head, sizeof(head)) < 0) {
-        close(fd);
-        return -1;
+        goto fail;
     }
 
     if (lseek(fd, offset, SEEK_SET) < 0) {
         CAFError(CAF_ERR_IO);
-        close(fd);
-        return -1;
+        goto fail;
     }
     /*
     ** put a null after the TOC as a 'placeholder', so that we'll have a sparse
@@ -942,15 +934,13 @@ CAFCreateCAFFile(char *cfpath, ARTNUM artnum, ARTNUM tocsize, size_t estcfsize,
     */
     nulls[0] = 0;
     if (OurWrite(fd, nulls, 1) < 0) {
-        close(fd);
-        return -1;
+        goto fail;
     }
     /* shouldn't be anyone else locking our file, since temp file has unique
        PID-based name ... */
     if (!inn_lock_file(fd, INN_LOCK_WRITE, false)) {
         CAFError(CAF_ERR_IO);
-        close(fd);
-        return -1;
+        goto fail;
     }
 
     if (nolink) {
@@ -966,11 +956,7 @@ CAFCreateCAFFile(char *cfpath, ARTNUM artnum, ARTNUM tocsize, size_t estcfsize,
     */
     if (link(path, finalpath) < 0) {
         CAFError(CAF_ERR_IO);
-        /* bounced on the link attempt, go ahead and unlink the temp file and
-         * return. */
-        unlink(path);
-        close(fd);
-        return -1;
+        goto fail;
     }
     /*
     ** Unlink the temp. link. Do we really care if this fails? XXX
@@ -978,6 +964,13 @@ CAFCreateCAFFile(char *cfpath, ARTNUM artnum, ARTNUM tocsize, size_t estcfsize,
     */
     unlink(path);
     return fd;
+
+fail:
+    oerrno = errno;
+    close(fd);
+    unlink(path);
+    errno = oerrno;
+    return -1;
 }
 
 /*
