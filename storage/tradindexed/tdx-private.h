@@ -1,6 +1,12 @@
 /*
 **  Private APIs for the tradindexed overview method.
+**
+**  Initial implementation in 2002 by Russ Allbery.
+**
+**  Various bug fixes, code and documentation improvements since then
+**  in 2002, 2005, 2006, 2009, 2021, 2026.
 */
+
 
 #ifndef INN_TDX_PRIVATE_H
 #define INN_TDX_PRIVATE_H
@@ -75,6 +81,9 @@ void tdx_cache_free(struct cache *);
 
 
 /* tdx-group.c */
+
+/* Validate a group index size and return its entry count. */
+bool tdx_index_entry_count(off_t, int *);
 
 /* Open the group index and return an opaque data structure to use for further
    queries. */

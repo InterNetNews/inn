@@ -1039,6 +1039,7 @@ tests/overview/ovsqlite-integ.t       Integration test for ovsqlite direct reade
 tests/overview/ovsqlite-read-t.c      Direct reader verification for integration test
 tests/overview/ovsqlite-t.c           Unit tests for ovsqlite direct reader
 tests/overview/ovsqlite-write-t.c     Writer helper for ovsqlite integration test
+tests/overview/tdx-group-t.c          Tests for tradindexed group index sizes
 tests/overview/xref-t.c               Test storing overview data by Xref
 tests/perl                            Test suite for Perl scripts (Directory)
 tests/perl/minimum-version.t.in       Tests for not too-new features of Perl
