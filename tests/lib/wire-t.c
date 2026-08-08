@@ -8,6 +8,7 @@
 
 #include "portable/system.h"
 
+#include <errno.h>
 #include <fcntl.h>
 #include <sys/stat.h>
 
@@ -47,10 +48,11 @@ main(void)
 {
     const char *p, *end;
     char *article, *wire, *native;
+    int oerrno;
     struct stat st;
     size_t wire_size, native_size, size;
 
-    test_init(64);
+    test_init(67);
 
     end = ta + sizeof(ta) - 1;
     p = end - 4;
@@ -219,6 +221,15 @@ main(void)
     ok(63, wire_nextline(p, p + 2) == p + 2);
     p = "x\r\nx";
     ok(64, wire_nextline(p, p + 3) == p + 3);
+
+    /* Reject conversions whose minimum output size cannot be represented. */
+    size = 1;
+    errno = 0;
+    article = wire_from_native("", SIZE_MAX, &size);
+    oerrno = errno;
+    ok(65, article == NULL);
+    ok_int(66, EOVERFLOW, oerrno);
+    ok_int(67, 0, size);
 
     return 0;
 }

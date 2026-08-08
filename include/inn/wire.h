@@ -46,7 +46,8 @@ char *wire_endheader(const char *header, const char *end);
 
 /* Given an article and length in non-wire format, return a malloced region
    containing the article in wire format and set newlen to the length of the
-   new article. */
+   new article.  Returns NULL with errno set to EOVERFLOW if the converted
+   article would be too large to represent. */
 char *wire_from_native(const char *article, size_t len, size_t *newlen);
 
 /* Given an article and length in wire format, return a malloced region

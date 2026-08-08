@@ -148,6 +148,8 @@ store_article(int fd)
         sysdie("cannot read article");
     }
     text = wire_from_native(article->data, article->left, &size);
+    if (text == NULL)
+        sysdie("cannot convert article to wire format");
     buffer_free(article);
     result = store_article_common(text, size);
     free(text);

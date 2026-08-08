@@ -1,4 +1,10 @@
-/* Test suite for storing overview data based on the Xref header field. */
+/*  Test suite for storing overview data based on the Xref header field.
+**
+**  Written by Russ Allbery in 2005.
+**
+**  Various bug fixes, code and documentation improvements since then
+**  in 2005-2010, 2014, 2015, 2018, 2021, 2026.
+*/
 
 #include "portable/system.h"
 
@@ -232,6 +238,8 @@ main(void)
     if (article == NULL)
         sysdie("Cannot read articles/xref");
     wire = wire_from_native(article, strlen(article), &size);
+    if (wire == NULL)
+        sysdie("Cannot convert articles/xref to wire format");
     free(article);
     handle.type = TOKEN_EMPTY;
     handle.data = wire;
