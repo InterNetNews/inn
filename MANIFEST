@@ -1013,6 +1013,7 @@ tests/lib/network/server-t.c          Tests for lib/network.c (server-oriented)
 tests/lib/pread-t.c                   Tests for lib/pread.c
 tests/lib/pwrite-t.c                  Tests for lib/pwrite.c
 tests/lib/qio-t.c                     Tests for lib/qio.c
+tests/lib/readin-t.c                  Tests for lib/readin.c
 tests/lib/reallocarray-t.c            Tests for lib/reallocarray.c
 tests/lib/reservedfd-t.c              Tests for reserved file descriptors
 tests/lib/setenv-t.c                  Tests for lib/setenv.c

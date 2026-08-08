@@ -327,6 +327,7 @@ tests/lib/network/server.t
 tests/lib/pread.t
 tests/lib/pwrite.t
 tests/lib/qio.t
+tests/lib/readin.t
 tests/lib/reallocarray.t
 tests/lib/reservedfd.t
 tests/lib/setenv.t
