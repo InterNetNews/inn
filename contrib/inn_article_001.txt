@@ -1,0 +1,6 @@
+From: GitHub Actions <actions@github.com>
+Newsgroups: local.test
+Subject: inews test
+Message-ID: <test.inews.1@inn2.packages.debian.org>
+
+This is a test message posted to the local.test group.
