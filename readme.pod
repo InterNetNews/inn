@@ -209,13 +209,18 @@ documentation)
 =head1 Reporting Bugs
 
 We're interested in all bug reports.  Not just on the programs, but on the
-documentation too.  Please use the GitHub issue tracker to send such bug
-reports, or alternatively send them to
+documentation too.  Please use the GitHub issue tracker to send such
+non-security bug reports, or alternatively send them to
 
     inn-workers@lists.isc.org
 
 (patches are certainly welcome, see below).  Even if you post to Usenet,
 please CC the above address.
+
+Security issues must be reported through a
+dedicated private form on the L<GitHub Security
+Advisories|https://github.com/InterNetNews/inn/security/advisories/> of the
+project as they should not be made public until a fix is deployed.
 
 If you have general "how do I do this" questions or problems configuring
 your server that you don't believe are due to a bug in INN, you should
@@ -244,8 +249,8 @@ been tested by a human.
 
 =head2 Contributing Code
 
-If you have a patch or a utility that you'd like to be considered for
-inclusion into INN, please make a GitHub pull request, or alternatively
+If you have a non-security patch or a utility that you'd like to be considered
+for inclusion into INN, please make a GitHub pull request, or alternatively
 mail it to
 
     inn-workers@lists.isc.org
@@ -253,6 +258,11 @@ mail it to
 in the body of the message (not as an attachment because the mailing-list
 might strip it), or put it on a webpage and send a link.  Patches included
 with a bug report as described above should follow the same procedure.
+
+Patches related to security issues must not be made
+public.  A dedicated private form on the L<GitHub Security
+Advisories|https://github.com/InterNetNews/inn/security/advisories/> of the
+project must be used instead.
 
 Please submit all patches against the current main branch, not against a
 stable release.  The development version of INN is often much different

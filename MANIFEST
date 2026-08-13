@@ -16,6 +16,7 @@ Makefile                              Top-level makefile
 Makefile.global.in                    Make variables for all Makefiles
 NEWS                                  Changes since last version
 README                                Introduction to the INN package
+SECURITY.md                           The security policy of the INN package
 TODO                                  The list of pending INN projects
 authprogs                             The authentication programs (Directory)
 authprogs/Makefile                    Makefile for auth programs
