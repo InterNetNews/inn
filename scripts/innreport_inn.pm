@@ -296,6 +296,12 @@ our $nocem_lastid;
 our %nocem_newids;
 our %nocem_skipids;
 our %nocem_totalids;
+our %postfilter_ng_results;
+our %postfilter_ng_rules;
+our %postfilter_ng_time_count;
+our %postfilter_ng_time_max;
+our %postfilter_ng_time_min;
+our %postfilter_ng_time_total;
 our %rnews_bogus_date;
 our %rnews_bogus_dist;
 our %rnews_bogus_ng;
@@ -337,6 +343,32 @@ foreach (values %nnrpd_timer_names) {
     $nnrpd_time_num{$_} = 0;     # ...
 }
 $nnrpd_time_times = 0;           # ...
+
+# _postfilter_ng_fields: Extract key="value" fields from a structured
+# Postfilter-NG log entry.  Its Logger.pm escapes backslashes and double
+# quotes; reverse those escapes here before using the values as report keys.
+sub _postfilter_ng_fields($) {
+    my ($text) = @_;
+    my %fields;
+
+    while ($text =~ /(?:^|\s)([A-Za-z][A-Za-z0-9_]*)="((?:\\.|[^"\\])*)"/g) {
+        my ($key, $value) = ($1, $2);
+        $value =~ s/\\(["\\])/$1/g;
+        $fields{$key} = $value;
+    }
+
+    return \%fields;
+}
+
+# _postfilter_ng_field: Return a usable display value even if a malformed or
+# older structured entry omits one of the expected fields.
+sub _postfilter_ng_field($$) {
+    my ($fields, $name) = @_;
+
+    return '(missing)'
+      if !defined $fields->{$name} || $fields->{$name} eq '';
+    return $fields->{$name};
+}
 
 # collect: Used to collect the data.
 sub collect($$$$$$) {
@@ -957,6 +989,9 @@ sub collect($$$$$$) {
         return 1 if $left =~ /^filter: metrics articles=/o;
         return 1 if $left =~ /^filter: cleanfeed-ng runtime version=/o;
         return 1 if $left =~ /^filter: Meow unto the greatness of Fluffy/o;
+        # About phn_aggressive=1 or dontrejectfiltered=true but the news admin
+        # may actually want such a configuration.
+        return 1 if $left =~ /^filter: WARNING /o;
         # PyClean status reports
         return 1 if $left =~ /^python: pyclean successfully hooked into INN/o;
         # Using the stathist parameter
@@ -1661,6 +1696,81 @@ sub collect($$$$$$) {
         return 1 if $left =~ /\S+ cant opendir \S+ I\/O error$/o;
         # perl filtering enabled
         return 1 if $left =~ /perl filtering enabled$/o;
+        # Postfilter-NG emits structured key="value" entries through nnrpd.
+        # article_result is a level-1 event and therefore provides one final
+        # outcome per logged article.  Detailed rule matches are available at
+        # higher verbosity and are summarized separately when present.
+        if (
+            $left =~ /^filter:\ postfilter-ng\s+(
+                        article_result|
+                        rule_matched|
+                        badword_rule_matched
+                      )(?:\s|$)/ox
+        ) {
+            my $event = $1;
+            my $fields = &_postfilter_ng_fields($left);
+
+            if ($event eq 'article_result') {
+                my $result = &_postfilter_ng_field($fields, 'result');
+                my $action = &_postfilter_ng_field($fields, 'action');
+                my $audit
+                  = &_postfilter_ng_field($fields, 'audit') == 1
+                  ? "yes"
+                  : "no";
+                my $reason = &_postfilter_ng_field($fields, 'reason_text');
+
+                $postfilter_ng_results{"$result\t$action\t$audit\t$reason"}++;
+
+                if (defined $fields->{elapsed_ms}
+                    && $fields->{elapsed_ms} =~ /^\d+(?:\.\d+)?$/o)
+                {
+                    my $elapsed = 0 + $fields->{elapsed_ms};
+                    $postfilter_ng_time_count{$result}++;
+                    $postfilter_ng_time_total{$result} += $elapsed;
+                    $postfilter_ng_time_min{$result} = $elapsed
+                      if !defined $postfilter_ng_time_min{$result}
+                      || $elapsed < $postfilter_ng_time_min{$result};
+                    $postfilter_ng_time_max{$result} = $elapsed
+                      if !defined $postfilter_ng_time_max{$result}
+                      || $elapsed > $postfilter_ng_time_max{$result};
+                }
+            } else {
+                my $action;
+                if ($event eq 'badword_rule_matched') {
+                    my $score = &_postfilter_ng_field($fields, 'score');
+                    $action = "score=$score";
+                } else {
+                    $action = &_postfilter_ng_field($fields, 'action');
+                }
+
+                my $rule = &_postfilter_ng_field($fields, 'rule_id');
+                my $target = &_postfilter_ng_field($fields, 'target');
+                $postfilter_ng_rules{"$event\t$action\t$rule\t$target"}++;
+            }
+
+            return 1;
+        }
+        # Routine Postfilter-NG lifecycle and high-verbosity diagnostic
+        # messages.  Warnings and errors are deliberately not swallowed so
+        # that innreport continues to surface operational failures.
+        return 1
+          if $left =~ /^filter:\ postfilter-ng\s+(?:
+                         article_identity|
+                         check_completed|
+                         check_skipped|
+                         configuration_generations_pruned|
+                         configuration_loaded|
+                         configuration_reloaded|
+                         custom_filter_loaded|
+                         dns_reputation_query|
+                         header_added|
+                         header_deleted|
+                         header_mime_encoded|
+                         header_pseudonymized|
+                         header_replaced|
+                         phase_completed|
+                         trusted_profile_applied
+                       )(?:\s|$)/ox;
         # Python filtering enabled
         return 1 if $left =~ /Python filtering enabled$/o;
         return 1 if $left =~ /^python interpreter initialized OK$/o;

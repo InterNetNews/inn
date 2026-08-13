@@ -142,11 +142,12 @@ see ovsqlite(5).  Thanks to Kevin Bowling for this enhancement.
 
 =item *
 
-B<innreport> now recognizes the logs of cleanfeed-ng, the maintained and
-lightweight continuation of the historical Cleanfeed filter.  A dedicated
-section is also generated in daily Usenet reports to summarize audit and
-rejection events.  Thanks to Ivo Gandolfo for the feature and maintaning
-cleanfeed-ng.
+B<innreport> now recognizes the logs of cleanfeed-ng and Postfilter-NG, the
+maintained continuation of the historical Cleanfeed and Postfilter filters,
+respectively for B<innd> and B<nnrpd>.  Dedicated sections are also generated
+in daily Usenet reports to summarize audit and rejection events.  Thanks to
+Ivo Gandolfo for the feature and naturally also for going on maintaining these
+great Perl filters.
 
 =item *
 
