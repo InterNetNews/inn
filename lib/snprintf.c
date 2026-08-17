@@ -788,7 +788,7 @@ fmtfp(char *buffer, size_t *currlen, size_t maxlen, LDOUBLE fvalue, int min,
     while (leadingfrac0s-- > 0 && fplace < sizeof(fconvert))
         fconvert[fplace++] = '0';
 #if __GNUC__ > 7
-#    pragma GCC diagnostic ignored "-Wstringop-overflow"
+#    pragma GCC diagnostic warning "-Wstringop-overflow"
 #endif
     if (fplace == sizeof(fconvert))
         fplace--;
