@@ -2,6 +2,7 @@ File Name                             Description
 -------------------------------------------------------------------------------
 .clang-format                         Configuration for clang-format
 .github                               GitHub configuration (Directory)
+.github/CODE_OF_CONDUCT.md            Code of Conduct of the project
 .github/dependabot.yml                Configuration for GitHub dependabot
 .github/workflows                     GitHub Actions workflows (Directory)
 .github/workflows/build.yaml          Default GitHub Actions testing workflow
