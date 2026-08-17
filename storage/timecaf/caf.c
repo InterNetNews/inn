@@ -879,6 +879,7 @@ CAFCreateCAFFile(char *cfpath, ARTNUM artnum, ARTNUM tocsize, size_t estcfsize,
         head.FreeZoneIndexSize
         + head.BlockSize * head.FreeZoneIndexSize * BYTEWIDTH;
     toc_bytes = (uintmax_t) tocsize * sizeof(CAFTOCENT);
+#pragma GCC diagnostic ignored "-Wtype-limits"
     if ((uintmax_t) head.FreeZoneTabSize > UINTMAX_MAX - sizeof(CAFHEADER)
         || toc_bytes
                > UINTMAX_MAX - sizeof(CAFHEADER) - head.FreeZoneTabSize) {
@@ -886,6 +887,7 @@ CAFCreateCAFFile(char *cfpath, ARTNUM artnum, ARTNUM tocsize, size_t estcfsize,
         CAFError(CAF_ERR_IO);
         goto fail;
     }
+#pragma GCC diagnostic warning "-Wtype-limits"
     table_end = sizeof(CAFHEADER) + head.FreeZoneTabSize + toc_bytes;
     if (table_end > UINTMAX_MAX - (head.BlockSize - 1)) {
         errno = EOVERFLOW;
