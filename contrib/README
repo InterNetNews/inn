@@ -28,6 +28,11 @@ analyze-traffic
     Analyzes which newsgroups are receiving the most traffic and which
     peer is most responsible for each high-traffic group.
 
+apt-get_install_inn2.yaml
+
+    Sample configuration file to demonstrate how to properly install INN
+    as a GitHub Action.  May be useful for Docker too.
+
 archivegz
 
     A compressing version of archive, writing out .gz files instead of

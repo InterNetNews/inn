@@ -65,6 +65,7 @@ contrib                               External contributions (Directory)
 contrib/Makefile                      Makefile for contrib programs
 contrib/README                        Contents of the contrib directory
 contrib/analyze-traffic.in            Track which groups are getting traffic
+contrib/apt-get_install_inn2.yaml     Installing INN in a GitHub Action
 contrib/archivegz.in                  Compressing version of archive
 contrib/auth_pass.README              README corresponding to auth_pass.c
 contrib/auth_pass.c                   Sample for use with AUTHINFO GENERIC
