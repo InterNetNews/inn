@@ -9,8 +9,8 @@ and so long as the first minor version of the stable branch has been released.
 
 Security fixes are therefore provided for:
 
-| Branch | Status | First release | Latest release | Security support |
-| ------ | -------| ------------- | -------------- | ---------------- |
+| Branch | Status | First release | Last release (EOL) | Security support |
+| ------ | -------| ------------- | ------------------ | ---------------- |
 | main   | Next major version | [Snapshots](https://downloads.isc.org/isc/inn/snapshots/) (2.8.0) | not announced | :white_check_mark: |
 | 2.7 | Stable version     | 2022-07-10 (2.7.0) | not announced      | :white_check_mark: (until the 2.8.1 release) |
 | 2.6 | Old stable version | 2015-09-12 (2.6.0) | 2022-02-18 (2.6.5) | :x: |

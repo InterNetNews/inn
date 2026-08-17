@@ -787,6 +787,10 @@ should also be bumped in F<doc/FAQ> at the end of subject 1.2.
 
 =item *
 
+Update F<SECURITY.md> if needed.
+
+=item *
+
 Double-check for the final release that the library version information
 in F<history/Makefile>, F<lib/Makefile>, and F<storage/Makefile>
 has been updated since the previous release.  Follow the rules given at
