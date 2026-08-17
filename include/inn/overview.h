@@ -5,6 +5,11 @@
 **  that dispatch to the appropriate overview backend based on the inn.conf
 **  configuration, along with some additional utility functions for
 **  manipulating overview information.
+**
+**  Written by Russ Allbery in 2004.
+**
+**  Various bug fixes, code and documentation improvements since then
+**  in 2004-2006, 2009, 2015, 2021, 2022, 2026.
 */
 
 #ifndef INN_OVERVIEW_H
@@ -59,7 +64,7 @@ struct overview_config {
     bool sorted;     /* Set if the overview method will be faster
                         when given data sorted by newsgroup, used
                         by overview rebuilds. */
-    bool persistant; /* Set if overview search results are usable
+    bool persistent; /* Set if overview search results are usable
                         beyond the next call to overview_search, as
                         long as overview_search_close hasn't been
                         called. */
@@ -146,7 +151,7 @@ bool overview_cancel_xref(struct overview *, TOKEN token);
 /* Used to retrieve overview data.  Even when just retrieving a single record,
    a caller must call overview_search_open and then overview_search.  The data
    returned by overview_search may be invalidated by the next call to that
-   function unless overview_config returns persistant as true.  When done with
+   function unless overview_config returns persistent as true.  When done with
    the search, overview_search_close will discard the search handle. */
 void *overview_search_open(struct overview *, const char *group, ARTNUM low,
                            ARTNUM high);

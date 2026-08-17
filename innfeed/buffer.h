@@ -28,7 +28,7 @@ Buffer newBuffer(size_t size);
 /* Create a new Buffer object around the preallocted PTR, which is SIZE
    bytes long. The data size of the Buffer is set to DATASIZE. When then
    buffer is released it will not delete the ptr (this is useful to have
-   Buffers around contant strings, or Buffers around other Buffers) */
+   Buffers around constant strings, or Buffers around other Buffers) */
 Buffer newBufferByCharP(const char *ptr, size_t size, size_t dataSize);
 
 /*

@@ -380,7 +380,7 @@ necessarily come from Keywords header fields.
 Written by Rich $alz <rsalz@uunet.uu.net> for InterNetNews.  Overview
 support added by Rob Robertston <rob@violet.berkeley.edu> and Rich in
 January, 1993.  Exponential backoff (for posting) added by Dave Hayes in
-Febuary 1998.
+February 1998.
 
 =head1 SEE ALSO
 

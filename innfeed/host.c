@@ -155,7 +155,7 @@ struct host_s {
     /* these numbers get reset periodically (after a 'final' logging). */
     unsigned int artsOffered; /* # of articles we offered to remote. */
     unsigned int artsOffered_checkpoint;
-    unsigned int artsAccepted; /* # of articles succesfully transferred */
+    unsigned int artsAccepted; /* # of articles successfully transferred */
     unsigned int artsAccepted_checkpoint;
     unsigned int artsNotWanted; /* # of articles remote already had */
     unsigned int artsNotWanted_checkpoint;
@@ -177,7 +177,7 @@ struct host_s {
     unsigned int artsHostClose_checkpoint;
     unsigned int artsFromTape; /* # of articles we pulled off tape */
     unsigned int artsFromTape_checkpoint;
-    double artsSizeAccepted; /* size of articles succesfully transferred */
+    double artsSizeAccepted; /* size of articles successfully transferred */
     double artsSizeAccepted_checkpoint;
     double artsSizeRejected; /* size of articles remote rejected */
     double artsSizeRejected_checkpoint;
@@ -1445,7 +1445,7 @@ printHostInfo(Host host, FILE *fp, unsigned int indentAmt)
 
 /* close down all the connections of the Host. All articles that are in
  * processes are still pushed out and then a QUIT is issued. The Host will
- * also spool all inprocess articles to tape incase the process is about to
+ * also spool all inprocess articles to tape in case the process is about to
  * be killed (they'll be refused next time around). When all Connections
  * report that they're gone, then the Host will delete itself.
  */
@@ -1659,7 +1659,7 @@ hostSendArticle(Host host, Article article)
         Article extraRef;
         Connection cxn = NULL;
 
-        extraRef = artTakeRef(article); /* the referrence we give away */
+        extraRef = artTakeRef(article); /* the reference we give away */
 
         /* stick on the queue of articles we've handed off--we're hopeful. */
         queueArticle(article, &host->processed, &host->processedTail, 0);
@@ -1771,7 +1771,7 @@ hostSendArticle(Host host, Article article)
 
 /*
  * called by the Host's connection when the remote is refusing postings
- * from us becasue we're not allowed (banner code 400).
+ * from us because we're not allowed (banner code 400).
  */
 void
 hostCxnBlocked(Host host, Connection cxn, char *reason)
@@ -2047,7 +2047,7 @@ hostArticleOffered(Host host, Connection cxn UNUSED)
 
 
 /*
- * Article was succesfully transferred.
+ * Article was successfully transferred.
  */
 void
 hostArticleAccepted(Host host, Connection cxn, Article article)

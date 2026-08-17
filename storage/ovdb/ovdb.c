@@ -1052,10 +1052,10 @@ rm_temp_groupinfo(group_id_t gno)
     return 0;
 }
 
-/* This function deletes overview records for deleted or forgotton groups */
-/* argument: 0 = process deleted groups   1 = process forgotton groups */
+/* This function deletes overview records for deleted or forgotten groups. */
+/* argument: 0 = process deleted groups   1 = process forgotten groups */
 static bool
-delete_old_stuff(int forgotton)
+delete_old_stuff(int forgotten)
 {
     DBT key, val;
     DBC *cursor;
@@ -1104,8 +1104,8 @@ delete_old_stuff(int forgotton)
             warn("OVDB: delete_old_stuff: wrong size for groupinfo record");
             continue;
         }
-        if ((!forgotton && (gi.status & GROUPINFO_DELETED))
-            || (forgotton && (gi.expired < eo_start))) {
+        if ((!forgotten && (gi.status & GROUPINFO_DELETED))
+            || (forgotten && (gi.expired < eo_start))) {
             dellist[listcount] = xmalloc(key.size);
             memcpy(dellist[listcount], key.data, key.size);
             dellistsz[listcount] = key.size;
@@ -1303,7 +1303,7 @@ count_records(struct groupinfo *gi)
 
 /*
  * Locking: OVopen() calls ovdb_getlock(OVDB_LOCK_NORMAL).  This
- * aquires a read (shared) lock on the lockfile.  Multiple processes
+ * acquires a read (shared) lock on the lockfile.  Multiple processes
  * can have this file locked at the same time.  That way, if there
  * are any processes that are using the database, the lock file will
  * have one or more shared locks on it.
@@ -2676,7 +2676,7 @@ ovdb_expiregroup(const char *group, int *lo, struct history *h)
     }
 
     /* Special case: when called with NULL group, we're to clean out
-     * records for forgotton groups (groups removed from the active file
+     * records for forgotten groups (groups removed from the active file
      * but not from overview).
      * This happens at the end of the expireover run, and only if all
      * of the groups in the active file have been processed.

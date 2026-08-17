@@ -262,7 +262,7 @@ Running the test suite is done with:
 
     make check
 
-A single test can be run with verbose ouput via:
+A single test can be run with verbose output via:
 
     tests/runtests -o <name-of-test>
 

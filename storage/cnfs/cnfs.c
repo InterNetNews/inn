@@ -577,7 +577,7 @@ CNFSparse_metapart_line(char *l)
                          (metacycbuff->count + 1) * sizeof(CYCBUFF *));
         metacycbuff->members[metacycbuff->count++] = rp;
     }
-    /* Gotta deal with the last cycbuff on the list */
+    /* Now deal with the last cycbuff on the list. */
     cycbuff = l;
     if ((rp = CNFSgetcycbuffbyname(cycbuff)) == NULL) {
         warn("CNFS: bogus cycbuff '%s' (metacycbuff '%s')", cycbuff,

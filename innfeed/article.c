@@ -154,7 +154,7 @@ static unsigned int byteTotal; /* number of bytes for article contents
                            allocated totally since last log. */
 
 static unsigned int
-    articleTotal; /* number of articles alloced since last log. */
+    articleTotal; /* number of articles allocated since last log. */
 
 static TimeoutId articleStatsId; /* The timer callback id. */
 
@@ -653,7 +653,7 @@ fillContents(Article article)
             mMapping = mmap(NULL, articlesize, PROT_READ, MAP_SHARED, fd, 0);
 
         if (mMapping == MAP_FAILED) {
-            /* dunno, but revert to plain reading */
+            /* don't know why, but revert to plain reading */
             mMapping = NULL;
             syswarn("ME mmap failure %s (%s)", article->fname,
                     strerror(errno));

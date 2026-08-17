@@ -321,7 +321,7 @@ AddTOCCache(time_t timestamp, CAFTOCENT *toc, CAFHEADER head,
 }
 
 /*
-** Do stating of an article, going thru the TOC cache if possible.
+**  Do stating of an article, going through the TOC cache if possible.
 */
 
 static ARTHANDLE *
@@ -812,8 +812,10 @@ FindDir(DIR *dir, FINDTYPE type)
     return NULL;
 }
 
-/* Grovel thru a CAF table-of-contents finding the next still-existing article
- */
+/*
+**  Grovel through a CAF table-of-contents finding the next still-existing
+**  article.
+*/
 static int
 FindNextArt(const CAFHEADER *head, CAFTOCENT *toc, ARTNUM *artp)
 {

@@ -200,8 +200,8 @@ wire_from_native(const char *article, size_t len, size_t *newlen)
     char *dest;
     bool at_start = true;
 
-    /* First go thru article and count number of bytes we need.  Add a CR for
-       every LF and an extra character for any period at the beginning of a
+    /* First go through article and count number of bytes we need.  Add a CR
+       for every LF and an extra character for any period at the beginning of a
        line for dot-stuffing.  Add 3 characters at the end for .\r\n. */
     for (bytes = 0, p = article; p < article + len; p++) {
         if (at_start && *p == '.')
@@ -259,9 +259,9 @@ wire_to_native(const char *article, size_t len, size_t *newlen)
     }
     end = article + len - 3;
 
-    /* First go thru article and count number of bytes we need.  Once we reach
-       .\r\n, we're done.  We'll remove one . from .. at the start of a line
-       and change CRLF to just LF. */
+    /* First go through article and count number of bytes we need.  Once we
+       reach .\r\n, we're done.  We'll remove one . from .. at the start of a
+       line and change CRLF to just LF. */
     for (bytes = 0, p = article; p < article + len;) {
         if (p == end && p[0] == '.' && p[1] == '\r' && p[2] == '\n')
             break;

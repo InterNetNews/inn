@@ -1,6 +1,7 @@
 File Name                             Description
 -------------------------------------------------------------------------------
 .clang-format                         Configuration for clang-format
+.codespellrc                          Configuration for codespell
 .github                               GitHub configuration (Directory)
 .github/CODE_OF_CONDUCT.md            Code of Conduct of the project
 .github/dependabot.yml                Configuration for GitHub dependabot

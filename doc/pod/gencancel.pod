@@ -19,7 +19,7 @@ B<gencancel> expects the Message-ID of the article to cancel; this
 I<message-id> argument should properly be quoted for the shell and surrounded
 by angle brackets.  B<gencancel> will then try to read the original article
 in the news spool to determine the original newsgroups it was posted to, and
-re-use that information for the cancel control message.  If you want to modify
+reuse that information for the cancel control message.  If you want to modify
 that, or if the information was not found, you'll have to set it with the
 B<-n> flag.
 
@@ -32,7 +32,7 @@ computed with the I<canlockadmin> parameter set in F<inn-secrets.conf>.
 
 In case you only need the admin Cancel-Key hashes, you can use the B<-k> flag.
 Only the body of the Cancel-Key header field will then be written to standard
-output.  You can then re-use it for instance in a supersede request or from
+output.  You can then reuse it for instance in a supersede request or from
 another script.
 
 =head1 OPTIONS

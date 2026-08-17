@@ -164,7 +164,7 @@ Describe your organization.
 
 How do you plan on testing InterNetNews?  Be specific, describing the
 machine hardware, any test servers, etc.  [The answers to this one
-won't be obvious to me -- you gotta write something.]
+won't be obvious to me -- you ought to write something.]
 
 What are the rough counts of the upstream and downstream feeds, and how do
 they break down by category (UUCP, NNTP, etc.)?
