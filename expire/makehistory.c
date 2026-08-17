@@ -130,7 +130,7 @@ GetMessageID(char *p)
     if (p[0] != '<' || p[strlen(p) - 1] != '>')
         return "";
 
-    /* Copy into re-used memory space, including NUL. */
+    /* Copy into reused memory space, including NUL. */
     buffer_set(&buffer, p, strlen(p) + 1);
     return buffer.data;
 }

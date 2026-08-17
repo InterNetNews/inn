@@ -737,7 +737,7 @@ cxnTerminate(Connection cxn)
  *
  * Pre-state                Reason cxnClose called
  * ---------                ------------------------
- * ALL (except cxnDeadS     - Connecton owner called directly.
+ * ALL (except cxnDeadS     - Connection owner called directly.
  *   and cxnStartingS).
  */
 void
@@ -2602,8 +2602,8 @@ processResponse238(Connection cxn, char *response)
                       == NULL)
         noSuchMessageId(cxn, 238, msgid, response);
     else {
-        /* now remove the article from the check queue and move it onto the
-           transmit queue. Another function wil take care of transmitting */
+        /* Now remove the article from the check queue and move it onto the
+           transmit queue.  Another function will take care of transmitting. */
         remArtHolder(artHolder, &cxn->checkRespHead, &cxn->articleQTotal);
         if (cxn->state != cxnClosingS)
             appendArtHolder(artHolder, &cxn->takeHead, &cxn->articleQTotal);
@@ -4070,7 +4070,7 @@ delConnection(Connection cxn)
 
     delBuffer(cxn->respBuffer);
 
-    /* tell the Host we're outta here. */
+    /* Tell the Host we're out of here. */
     shutDown = hostCxnGone(cxn->myHost, cxn);
 
     cxn->ident = 0;

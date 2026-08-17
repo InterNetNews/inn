@@ -4,7 +4,7 @@
 **  On platforms that have a stdio limitation, such as 64-bit Solaris versions
 **  prior to 11.0, all 32-bit Solaris versions and 32-bit applications running
 **  on 64-bit Solaris, these functions allow reserving low-numbered file
-**  descriptors so that they could be re-used.
+**  descriptors so that they could be reused.
 **  Without this mechanism, some essential files like the history database
 **  may not have any file descriptor left when being reopened after a closure
 **  for some operations, and stdio would fail.
@@ -105,7 +105,7 @@ fdreserve(int fdnum)
  *
  * If fdindex is lower than the number of reserved file descriptors, Fopen()
  * uses the corresponding one.  Otherwise, it just calls fopen() without
- * re-using a reserved file descriptor.
+ * reusing a reserved file descriptor.
  *
  * Return a pointer to a FILE struct, or NULL on failure.
  */

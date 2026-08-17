@@ -218,7 +218,7 @@ typedef struct article_queue_s {
     time_t arrived;
     time_t nextsend; /* time we should next try to send article */
 
-    int trys;
+    int tries;
 
     int counts_toward_size;
 
@@ -565,7 +565,7 @@ lmtp_stateToString(int state)
  *            For example a cancel message canceling a message in multiple
  *            newsgroups will create >1 queue item but we only want it to count
  *            once towards the queue
- *  must    - wheather we must take it even though it may put us over our max
+ *  must    - whether we must take it even though it may put us over our max
  * size
  */
 
@@ -593,7 +593,7 @@ AddToQueue(Q_t *q, void *item, control_type_t type, int addsmsg, bool must)
     /* send as soon as possible */
     newentry->nextsend = newentry->arrived = time(NULL);
 
-    newentry->trys = 0;
+    newentry->tries = 0;
 
     newentry->data.generic = item;
     newentry->next = NULL;
@@ -659,12 +659,12 @@ ReQueue(connection_t *cxn, Q_t *q, article_queue_t *entry)
 
     /* look at the time it's been here */
     entry->nextsend =
-        time(NULL) + (entry->trys * 30); /* xxx better formula? */
+        time(NULL) + (entry->tries * 30); /* xxx better formula? */
 
-    entry->trys++;
+    entry->tries++;
 
     /* give up after 5 tries xxx configurable??? */
-    if (entry->trys >= 5) {
+    if (entry->tries >= 5) {
         QueueForgetAbout(cxn, entry, MSG_FAIL_DELIVER);
         return;
     }
@@ -3606,7 +3606,7 @@ reset:
                      str);
 
             /* if got a 5xx don't try to send anymore */
-            cxn->current_article->trys = 100;
+            cxn->current_article->tries = 100;
 
             cxn->current_rcpts_issued--;
         } else {
@@ -3627,7 +3627,7 @@ reset:
             goto reset;
         }
         if (cxn->current_rcpts_issued == 0) {
-            if (cxn->current_article->trys < 100) {
+            if (cxn->current_article->tries < 100) {
                 d_printf(1,
                          "%s:%u:LMTP None of the rcpts "
                          "were accepted for this message. Re-queueing\n",
@@ -3981,7 +3981,7 @@ retry:
 
 /*
  *
- * Pulls a message off the queue and trys to start sending it. If the
+ * Pulls a message off the queue and tries to start sending it. If the
  * message is a control message put it in the control queue and grab
  * another message. If the message doesn't exist on disk or something
  * is wrong with it tell the host and try again. If we run out of
@@ -4241,7 +4241,7 @@ DeferAllArticles(connection_t *cxn, Q_t *q)
             QueueForgetAbout(cxn, cur, MSG_GIVE_BACK);
         } else {
             d_printf(0,
-                     "%s:%u Error emptying queue (deffering all articles)\n",
+                     "%s:%u Error emptying queue (deferring all articles)\n",
                      hostPeerName(cxn->myHost), cxn->ident);
             return;
         }
@@ -4288,7 +4288,7 @@ delConnection(Connection cxn)
     delBuffer(cxn->imap_rBuffer);
     delBuffer(cxn->lmtp_rBuffer);
 
-    /* tell the Host we're outta here. */
+    /* tell the Host we're out of here. */
     shutDown = hostCxnGone(cxn->myHost, cxn);
 
     cxn->ident = 0;

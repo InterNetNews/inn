@@ -630,7 +630,7 @@ ARTreadschema(void)
 
 /*
 **  Return a field from the overview line or NULL on error.  Return a copy
-**  since we might be re-using the line later.
+**  since we might be reusing the line later.
 */
 static char *
 OVERGetHeader(const char *p, int field)

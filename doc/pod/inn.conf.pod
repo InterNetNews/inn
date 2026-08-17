@@ -928,7 +928,7 @@ Whether to act as the slave of another server.  If set, INN duplicates exactly
 the article numbering of the server feeding it by looking at the Xref header
 field body of incoming articles and assigning the same article numbers
 to articles as was noted in the Xref header field body from the upstream
-server.  If there is no Xref header field or it is unparseable, the article is
+server.  If there is no Xref header field or it is unparsable, the article is
 rejected.  The result is that clients should be able to point at either server
 interchangeably (using some load balancing scheme, for example) and see the
 same internal article numbering.

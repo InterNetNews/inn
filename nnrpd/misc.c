@@ -404,7 +404,7 @@ RateLimit(long *sleeptime, char *path)
                strerror(errno));
         return 0;
     }
-    /* Just because yer paranoid doesn't mean they ain't out ta get ya.
+    /* Just because you're paranoid doesn't mean they won't intend to harm you.
      * This is called paranoid clipping. */
     if (prevn < 0)
         prevn = 0;

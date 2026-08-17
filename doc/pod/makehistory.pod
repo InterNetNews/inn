@@ -279,7 +279,7 @@ overview data at the same time, you may directly use the following command:
 You then do not need running B<makedbz> as the F<history> file has already
 been generated and optimized for the expected number of articles.
 
-To just rebuild overview (whathever history method you use):
+To just rebuild overview (whatever history method you use):
 
     makehistory -O -x -F
 

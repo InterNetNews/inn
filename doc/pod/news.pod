@@ -165,7 +165,7 @@ lifecycle problems in B<imapfeed>.
 Hardened several older code paths against memory-safety failures.  This
 includes bounded parsing of overview records during expiration, validation
 of corrupt OVDB records and search handles, robustness of the configuration
-parser, properly reseting timecaf resources after failed operations, detecting
+parser, properly resetting timecaf resources after failed operations, detecting
 malformed stored Xref records with tradspool and corrupt history records.
 The overview and storage backends also validate more structures before using
 them.  Many thanks to Kevin Bowling for the patches.
@@ -1418,7 +1418,7 @@ from that parameter.  Thanks to Steve Crook for the bug report.
 =item *
 
 When a data integrity layer was negotiated during a successful SASL
-authentication, B<nnrpd> was wrongly reseting any knowledge obtained
+authentication, B<nnrpd> was wrongly resetting any knowledge obtained
 from the client, such as the current newsgroup and article number.
 This behaviour now applies only when an encryption layer is negotiated.
 

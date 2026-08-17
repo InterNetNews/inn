@@ -382,7 +382,7 @@ overview_config_get(struct overview *overview, struct overview_config *config)
     overview->method->ctl(OVSORT, &sort);
     config->sorted = (sort == OVNEWSGROUP);
     overview->method->ctl(OVSTATICSEARCH, &i);
-    config->persistant = i;
+    config->persistent = i;
     config->cutoff = overview->cutoff;
 }
 

@@ -5,6 +5,11 @@
 **  passwords.  It can authenticate against a regular flat file (the type
 **  managed by htpasswd), a DBM file, the system password file or shadow file,
 **  or PAM.
+**
+**  Originally written by Aidan Cully <aidan@panix.com> in 1998.
+**
+**  Various bug fixes, code and documentation improvements since then
+**  in 1998-2003, 2005, 2006, 2013, 2017, 2021, 2022, 2024, 2026.
 */
 
 #include "portable/system.h"
@@ -150,9 +155,9 @@ auth_pam(const char *username, char *password)
 
 /*
 **  Try to get a password out of a dbm file.  The dbm file should have the
-**  username for the key and the crypted password as the value.  The crypted
-**  password, if found, is returned as a newly allocated string; otherwise,
-**  NULL is returned.
+**  username for the key and the encrypted password as the value.  The
+**  encrypted password, if found, is returned as a newly allocated string;
+**  otherwise, NULL is returned.
 */
 #if !(defined(HAVE_DBM) || defined(HAVE_BDB_NDBM))
 static char *
@@ -186,7 +191,7 @@ password_dbm(char *name, const char *file)
 
 
 /*
-**  Try to get a password out of the system /etc/shadow file.  The crypted
+**  Try to get a password out of the system /etc/shadow file.  The encrypted
 **  password, if found, is returned as a newly allocated string; otherwise,
 **  NULL is returned.
 */
@@ -211,7 +216,7 @@ password_shadow(const char *user)
 
 
 /*
-**  Try to get a password out of a file.  The crypted password, if found, is
+**  Try to get a password out of a file.  The encrypted password, if found, is
 **  returned as a newly allocated string; otherwise, NULL is returned.
 */
 static char *
@@ -246,7 +251,7 @@ password_file(const char *username, const char *file)
 
 
 /*
-**  Try to get a password out of the system password file.  The crypted
+**  Try to get a password out of the system password file.  The encrypted
 **  password, if found, is returned as a newly allocated string; otherwise,
 **  NULL is returned.
 */

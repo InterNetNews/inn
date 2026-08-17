@@ -381,7 +381,7 @@ ReadRemainder(int fd, char first, char second)
     left = size - used;
     skipnl = 0;
 
-    /* Read the input, coverting line ends as we go if necessary. */
+    /* Read the input, converting line ends as we go if necessary. */
     while ((n = read(fd, buf, sizeof(buf))) > 0) {
         p = article + used;
         for (i = 0; i < n; i++) {

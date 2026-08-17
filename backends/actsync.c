@@ -15,7 +15,7 @@
  *                        12  from host1 and host2
  *                        21  from host1 and host2
  *      -d hostid       ignore groups with all numeric components (def: -d 0)
- *      -g max          ignore group >max levels (0=dont ignore) (def: -g 0)
+ *      -g max          ignore group >max levels (0=don't ignore) (def: -g 0)
  *      -i ignore_file  file with list/types of groups to ignore (def: no file)
  *      -I hostid       ignore_file applies only to hostid       (def: -I 12)
  *      -k              keep host1 groups with errors            (def: remove)
@@ -287,7 +287,7 @@ static int num_host2_flag = 0;  /* 1 => -d 2 or -d 12 or -d 21 given */
 static char *ign_file = NULL;   /* default ignore file */
 static int ign_host1_flag = 1;  /* 1 => -i ign_file applies to host1 */
 static int ign_host2_flag = 1;  /* 1 => -i ign_file applies to host2 */
-static int g_flag = 0;          /* ignore grps deeper than > g_flag, 0=>dont */
+static int g_flag = 0;          /* ignore grps deeper than g_flag, 0=>don't */
 static int k_flag = 0;          /* 1 => -k given */
 static int l_host1_flag =
     HOSTID1; /* HOSTID1 => host1 =group error detection */
@@ -1635,7 +1635,7 @@ merge_grps(struct grp *grp, int grplen, char *host1, char *host2)
     h2_probs = mark_eq_probs(grp, grplen, l_host2_flag, host1, host2);
 
     /*
-     * We will walk thru the sorted group array, looking for pairs
+     * We will walk through the sorted group array, looking for pairs
      * among the groups that we have not already ignored.
      *
      * If a host has duplicate groups, then the duplicates will
@@ -1747,7 +1747,7 @@ merge_grps(struct grp *grp, int grplen, char *host1, char *host2)
 
     /* all done */
     if (D_BUG) {
-        warn("STATUS: sort-merge passed thru %d groups", outcnt);
+        warn("STATUS: sort-merge passed through %d groups", outcnt);
         warn("STATUS: sort-merge marked %d groups for removal", rmcnt);
         warn("STATUS: marked %d =type error groups from host1", h1_probs);
         warn("STATUS: marked %d =type error groups from host2", h2_probs);
@@ -2211,7 +2211,7 @@ error_mark(struct grp *grp, int grplen, int hostid)
     if (grp == NULL)
         die("internal error #11: grp is NULL");
 
-    /* loop thru groups, looking for error groups from a given host */
+    /* loop through groups, looking for error groups from a given host */
     errcnt = 0;
     for (i = 0; i < grplen; ++i) {
 

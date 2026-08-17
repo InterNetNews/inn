@@ -364,7 +364,7 @@ lockFile(const char *fileName)
     /* now link the real name to the temp file. */
     while (link(tmpName, realName) < 0) {
         switch (errno) {
-        default: /* opps. bailing out. */
+        default: /* Oops.  Bailing out! */
             syswarn("ME lock file link: %s", realName);
             unlink(tmpName);
             return false;

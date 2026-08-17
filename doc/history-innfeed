@@ -171,7 +171,7 @@ Changes for 0.9.3
 	   more easily.)
 
 	10. procbatch.pl can now 'require' innshellvars.pl that comes with
-	    1.5. The default is not to. You nead to do a one line tweak if
+	    1.5. The default is not to. You need to do a one line tweak if
 	    you want it to. The defaults in procbatch.pl match the new
 	    defaults of innfeed.
 

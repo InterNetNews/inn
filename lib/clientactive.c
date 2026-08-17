@@ -106,7 +106,7 @@ CAlistopen(FILE *FromServer, FILE *ToServer, const char *request)
 {
     int fd, oerrno;
 
-    /* Gotta talk to the server -- see if we can. */
+    /* Will have to talk to the server -- see if we can. */
     if (FromServer == NULL || ToServer == NULL) {
         errno = EBADF;
         return NULL;
