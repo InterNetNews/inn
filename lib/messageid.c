@@ -122,18 +122,17 @@ InitializeMessageIDcclass(void)
 **  Based on code by Paul Eggert posted to news.software.b on 22-Nov-90
 **  in <#*tyo2'~n@twinsun.com>, with additional e-mail discussion.
 **  Thanks, Paul, for the original implementation based upon RFC 1036.
-**  Updated to RFC 5536 by Julien Elie.
+**  Updated to RFC 5536 by Julien Élie.
 **
 **  When stripspaces is true, whitespace at the beginning and at the end
 **  of MessageID are discarded.
 **
-**  When laxsyntax is true, '@' can occur twice in MessageID, or never occur,
-**  and '..' is also accepted in the left part of MessageID.
+**  When laxsyntax is true, any allowed octet per RFC 5536 is accepted,
+**  no matter the syntax (order of appearance).
 */
 bool
 IsValidMessageID(const char *MessageID, bool stripspaces, bool laxsyntax)
 {
-    bool atfound = false;
     const unsigned char *p;
     char *q;
 
@@ -161,39 +160,42 @@ IsValidMessageID(const char *MessageID, bool stripspaces, bool laxsyntax)
     if (*p++ != '<')
         return false;
 
-    /* In case there's no '@' in the Message-ID and laxsyntax is set, just
-     * check the syntax of the Message-ID as though it had no left part. */
-    if (laxsyntax && strchr((const char *) p, '@') == NULL)
-        return IsValidRightPartMessageID((const char *) p, stripspaces, true);
+    /* Ensure there is at least one character between the brackets. */
+    if (*p == '>')
+        return false;
 
     for (;; p++) {
         if (midatomchar(*p)) {
             while (midatomchar(*++p))
                 continue;
+        } else if (laxsyntax && (midnormchar(*p) || *p == '[' || *p == ']')) {
+            continue;
         } else {
+            if (laxsyntax && *p == '>')
+                break;
             /* Invalid character.
              * Also ensure we have at least one character. */
             return false;
         }
+        if (laxsyntax && (midnormchar(*p) || *p == '[' || *p == ']')) {
+            continue;
+        }
+        /* Beginning of another component? */
         if (*p != '.') {
-            if (laxsyntax && *p == '@') {
-                /* The domain part begins at the second '@', if it exists. */
-                if (atfound || (p[1] == '[')
-                    || (strchr((const char *) p + 1, '@') == NULL)) {
-                    break;
-                }
-                atfound = true;
-                continue;
-            } else {
-                break;
-            }
+            break;
         }
-        /* Dot found. */
-        if (laxsyntax) {
-            if (*p != '\0' && p[1] == '.') {
-                p++;
-            }
+    }
+
+    /* If laxsyntax, the only remaining non-whitespace character is '>'. */
+    if (laxsyntax) {
+        if (*p++ != '>')
+            return false;
+        if (stripspaces) {
+            for (; ISWHITE(*p); p++)
+                ;
         }
+
+        return (*p == '\0');
     }
 
     /* Scan domain: "@ dot-atom-text|no-fold-literal > \0" */

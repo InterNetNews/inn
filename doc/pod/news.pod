@@ -151,6 +151,14 @@ great Perl filters.
 
 =item *
 
+When I<laxmid> is set in the I<syntaxchecks> parameter in F<inn.conf>,
+Message-IDs without any C<@> character are now accepted by B<innd>.  It was
+not always the case in the previous version, though mentioned in the release
+notes.  It is now actually fixed, and I<laxmid> even accepts any allowed
+printable characters, no matter the order they appear in Message-IDs.
+
+=item *
+
 Fixed about twenty correctness and resource-lifetime defects in several
 programs thanks to Kevin Bowling.  They notably address stale pointers after
 buffer growth in B<innxmit>, descriptors and heap ownership in B<innxbatch>
