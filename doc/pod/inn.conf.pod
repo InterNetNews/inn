@@ -190,16 +190,25 @@ Only one check can currently be enabled/disabled:
 
 =item I<laxmid> / I<no-laxmid>
 
-When I<laxmid> is set, Message-IDs containing C<..> in the left part are
-accepted, as well as Message-IDs with two C<@> or no C<@> at all.  Some
-non-compliant news posters generate such syntactically invalid Message-IDs,
-especially in binary newsgroups.  Even with I<laxmid> set, B<nnrpd> will still
-ensure that Message-IDs contain an C<@> though.
+The default is I<no-laxmid>, that is to say INN only accepts syntactically
+valid Message-IDs.  It strictly follows the standard regarding syntax checks
+and will neither accept articles with a syntactically invalid Message-ID nor
+propagate them to remote peers.  This setting has the best interoperability.
 
-The default is I<no-laxmid>, that is to say INN strictly follows the standard
-regarding syntax checks (it will neither accept these articles nor propagate
-them to remote peers).  Note that if I<laxmid> is set, remote peers may reject
-articles with a syntactically invalid Message-ID.
+When I<laxmid> is set, the only requirements on Message-IDs are their length
+(between 3 and 250 octets), the presence of surrounding angle brackets, and
+the use of allowed printable characters (no matter the order they appear
+in the Message-ID).  Notably, Message-IDs containing several consecutive
+dots, several C<@> or even no C<@> at all will be accepted.  You shouldn't
+set I<laxmid> unless you really need it for special use cases like dealing
+with very old articles dating back to B News or having to cope with some
+non-compliant news posters which generate such syntactically invalid
+Message-IDs, especially in binary newsgroups.  With I<laxmid> set, some of
+your remote peers may reject articles you feed them because they enforce more
+rules on the syntax of Message-IDs.
+
+Note that even with I<laxmid> set, B<nnrpd> will still ensure that Message-IDs
+contain at least an C<@> though.
 
 =back
 

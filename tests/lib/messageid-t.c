@@ -1,5 +1,10 @@
 /*
-**  Test suite for message identifiers.
+**  Test suite for message identifiersi.
+**
+**  Written by Julien Élie in 2017.
+**
+**  Various bug fixes, code and documentation improvements since then
+**  in 2017, 2021, 2023, 2026.
 */
 
 #define LIBTEST_NEW_FORMAT 1
@@ -7,78 +12,114 @@
 #include "inn/libinn.h"
 #include "tap/basic.h"
 
-void testMessageIDs(bool stripspaces, bool laxsyntax);
 void testDomains(void);
+void testMessageIDs(bool stripspaces, bool laxsyntax);
+void testStrippingSpaces(bool stripspaces);
+
 
 /*
-**  Test a bunch of message-IDs that are always either bad or good, no matter
-**  how lax we are.
+**  Test a bunch of message-IDs that are either bad or good depending on
+**  how lax the syntax is.
 */
 void
 testMessageIDs(bool strip, bool lax)
 {
-    is_bool(false, IsValidMessageID(NULL, strip, lax), "bad ID 1");
-    is_bool(false, IsValidMessageID("", strip, lax), "bad ID 2");
-    is_bool(false, IsValidMessageID("<invalid@test", strip, lax), "bad ID 3");
-    is_bool(false, IsValidMessageID("invalid@test>", strip, lax), "bad ID 4");
+    /* Always invalid, no matter how lax the syntax is. */
+    is_bool(false, IsValidMessageID(NULL, strip, lax), "always bad ID 1");
+    is_bool(false, IsValidMessageID("", strip, lax), "always bad ID 2");
+    is_bool(false, IsValidMessageID("<invalid@test", strip, lax),
+            "always bad ID 3");
+    is_bool(false, IsValidMessageID("invalid@test>", strip, lax),
+            "always bad ID 4");
     is_bool(false, IsValidMessageID("<inva\177lid@test>", strip, lax),
-            "bad ID 5");
+            "always bad ID 5");
     is_bool(false, IsValidMessageID("<inva lid@test>", strip, lax),
-            "bad ID 6");
+            "always bad ID 6");
     is_bool(false, IsValidMessageID("<invalid@te\tst>", strip, lax),
-            "bad ID 7");
-    is_bool(false, IsValidMessageID("<invalid@te...st>", strip, lax),
-            "bad ID 8");
+            "always bad ID 7");
     is_bool(false, IsValidMessageID("<inva\r\nlid@test>", strip, lax),
-            "bad ID 9");
-    is_bool(false, IsValidMessageID("<inva(lid@test>", strip, lax),
-            "bad ID 10");
-    is_bool(false, IsValidMessageID("<inva;lid@test>", strip, lax),
-            "bad ID 11");
-    is_bool(false, IsValidMessageID("<inva\"lid@test>", strip, lax),
-            "bad ID 12");
+            "always bad ID 8");
     is_bool(false, IsValidMessageID("<inva>lid@test>", strip, lax),
-            "bad ID 13");
-    is_bool(false, IsValidMessageID("<inva<lid@test>", strip, lax),
-            "bad ID 14");
-    is_bool(false, IsValidMessageID("<>", strip, lax), "bad ID 15");
-    is_bool(false, IsValidMessageID("<a@>", strip, lax), "bad ID 16");
+            "always bad ID 9");
+    is_bool(false, IsValidMessageID("<>", strip, lax), "always bad ID 10");
+    /* 251 characters. */
     is_bool(
         false,
         IsValidMessageID(
             "<1234567890123456789012345678901234567890123456789012345678901234"
             "56789012345678901234567890123456789012345678901234567890123456789"
             "01234567890123456789012345678901234567890123456789012345678901234"
-            "5678901234567890123456789012345678901234567890@1234567890>",
+            "5678901234567890123456789012345678901234567890@12345678>",
             strip, lax),
-        "bad ID 17");
-    is_bool(false, IsValidMessageID("<inva...lid@test>", strip, lax),
-            "bad ID 18");
-    is_bool(false, IsValidMessageID("<invalid@yEnc@twice@test>", strip, lax),
-            "bad ID 19");
-    is_bool(false, IsValidMessageID("<invalid.@test>", strip, lax),
-            "bad ID 20");
-    is_bool(false, IsValidMessageID("<invalid@>", strip, lax), "bad ID 21");
-    is_bool(false, IsValidMessageID("<@invalid>", strip, lax), "bad ID 22");
-    is_bool(false, IsValidMessageID("<invalid@test.>", strip, lax),
-            "bad ID 23");
-    is_bool(false, IsValidMessageID("<inva[lid@test>", strip, lax),
-            "bad ID 24");
-    is_bool(false, IsValidMessageID("<invalid@t[es]t>", strip, lax),
-            "bad ID 25");
-    is_bool(false, IsValidMessageID("<valid@[t@].[e<s].t>", strip, lax),
-            "bad ID 26");
+        "always bad ID 11");
 
-    is_bool(true, IsValidMessageID("<valid@test>", strip, lax), "good ID 1");
+    /* Always valid, no matter how lax the syntax is. */
+    is_bool(true, IsValidMessageID("<valid@test>", strip, lax),
+            "always good ID 1");
     is_bool(true, IsValidMessageID("<v4l.#%-{T`?*!.id@te|st>", strip, lax),
-            "good ID 2");
-    is_bool(true, IsValidMessageID("<a@b>", strip, lax), "good ID 3");
+            "always good ID 2");
+    is_bool(true, IsValidMessageID("<a@b>", strip, lax), "always good ID 3");
     is_bool(true, IsValidMessageID("<a.valid.id@testing.fr>", strip, lax),
-            "good ID 4");
+            "always good ID 4");
     is_bool(true, IsValidMessageID("<valid@[te.st]>", strip, lax),
-            "good ID 5");
+            "always good ID 5");
     is_bool(true, IsValidMessageID("<valid@[te;s@<t]>", strip, lax),
-            "good ID 6");
+            "always good ID 6");
+    /* 250 characters. */
+    is_bool(
+        true,
+        IsValidMessageID(
+            "<1234567890123456789012345678901234567890123456789012345678901234"
+            "56789012345678901234567890123456789012345678901234567890123456789"
+            "01234567890123456789012345678901234567890123456789012345678901234"
+            "5678901234567890123456789012345678901234567890@1234567>",
+            strip, lax),
+        "always good ID 7");
+
+    /* Only valid with lax syntax. */
+    is_bool(lax, IsValidMessageID("<inva..lid@test>", strip, lax),
+            "good lax ID 1");
+    is_bool(lax, IsValidMessageID("<inva...lid@test>", strip, lax),
+            "good lax ID 2");
+    is_bool(lax, IsValidMessageID("<invalid.@test>", strip, lax),
+            "good lax ID 3");
+    is_bool(lax, IsValidMessageID("<invalid@>", strip, lax), "good lax ID 4");
+    is_bool(lax, IsValidMessageID("<@invalid>", strip, lax), "good lax ID 5");
+    is_bool(lax, IsValidMessageID("<invalid@test.>", strip, lax),
+            "good lax ID 6");
+    is_bool(lax, IsValidMessageID("<inva[lid@test>", strip, lax),
+            "good lax ID 7");
+    is_bool(lax, IsValidMessageID("<invalid@t[es]t>", strip, lax),
+            "good lax ID 8");
+    is_bool(lax, IsValidMessageID("<invalid@[t@].[e<s].t>", strip, lax),
+            "good lax ID 9");
+    is_bool(lax, IsValidMessageID("<invalid@yEnc@test>", strip, lax),
+            "good lax ID 10");
+    is_bool(lax, IsValidMessageID("<invalid@yEnc@twice@test>", strip, lax),
+            "good lax ID 11");
+    is_bool(lax, IsValidMessageID("<invalid@te..st>", strip, lax),
+            "good lax ID 12");
+    is_bool(lax, IsValidMessageID("<invalid@te...st>", strip, lax),
+            "good lax ID 13");
+    is_bool(lax, IsValidMessageID("<invalid>", strip, lax), "good lax ID 14");
+    is_bool(lax, IsValidMessageID("<[INVALID-3]M-ID>", strip, lax),
+            "good lax ID 15");
+    is_bool(lax, IsValidMessageID("<invalidbnews..42>", strip, lax),
+            "good lax ID 16");
+    is_bool(lax, IsValidMessageID("<invalid12@.UUCP>", strip, lax),
+            "good lax ID 17");
+    is_bool(lax, IsValidMessageID("<invalid50)@@m(id.UUCP>", strip, lax),
+            "good lax ID 18");
+    is_bool(lax, IsValidMessageID("<inva(lid@test>", strip, lax),
+            "good lax ID 19");
+    is_bool(lax, IsValidMessageID("<inva;lid@test>", strip, lax),
+            "good lax ID 20");
+    is_bool(lax, IsValidMessageID("<inva\"lid@test>", strip, lax),
+            "good lax ID 21");
+    is_bool(lax, IsValidMessageID("<inva<lid@test>", strip, lax),
+            "good lax ID 22");
+    is_bool(lax, IsValidMessageID("<invalid@test<>", strip, lax),
+            "good lax ID 23");
 }
 
 
@@ -105,10 +146,41 @@ testDomains(void)
 }
 
 
+/*
+**  Test stripping spaces.
+*/
+void
+testStrippingSpaces(bool strip)
+{
+    is_bool(strip, IsValidMessageID(" \t\t <valid@test>\t  ", strip, false),
+            strip ? "good ID stripspaces 1" : "bad ID stripspaces 1");
+    /* 250 characters. */
+    is_bool(
+        strip,
+        IsValidMessageID(
+            " \t <123456789012345678901234567890123456789012345678901234567890"
+            "12345678901234567890123456789012345678901234567890123456789012345"
+            "67890123456789012345678901234567890123456789012345678901234567890"
+            "12345678901234567890123456789012345678901234567890@1234567>\t  ",
+            strip, false),
+        strip ? "good ID stripspaces 2" : "bad ID stripspaces 2");
+    /* 251 characters. */
+    is_bool(
+        false,
+        IsValidMessageID(
+            " \t <123456789012345678901234567890123456789012345678901234567890"
+            "12345678901234567890123456789012345678901234567890123456789012345"
+            "67890123456789012345678901234567890123456789012345678901234567890"
+            "12345678901234567890123456789012345678901234567890@12345678>\t  ",
+            strip, false),
+        strip ? "good ID stripspaces 3" : "bad ID stripspaces 3");
+}
+
+
 int
 main(void)
 {
-    plan(4 * (26 + 6) + (7 + 4) + 2 + 7);
+    plan(4 * (11 + 7 + 23) + (7 + 4) + 2 * 3);
 
     /* Test several message-IDs with and without stripping spaces and lax
      * syntax. */
@@ -120,27 +192,9 @@ main(void)
     /* Also test the right-hand side. */
     testDomains();
 
-    /* Test whether stripping spaces works. */
-    is_bool(true, IsValidMessageID(" \t\t <valid@test>\t  ", true, false),
-            "good ID stripspaces 1");
-    is_bool(false, IsValidMessageID(" \t\t <invalid@test>\t  ", false, false),
-            "bad ID stripspaces 1");
-
-    /* Test whether lax syntax works. */
-    is_bool(true, IsValidMessageID("<valid@yEnc@test>", false, true),
-            "good ID laxsyntax 1");
-    is_bool(false, IsValidMessageID("<invalid@yEnc@test>", false, false),
-            "bad ID laxsyntax 1");
-    is_bool(true, IsValidMessageID("<va..lid@test>", false, true),
-            "good ID laxsyntax 2");
-    is_bool(false, IsValidMessageID("<inva..lid@test>", false, false),
-            "bad ID laxsyntax 2");
-    is_bool(false, IsValidMessageID("<invalid@te..st>", false, true),
-            "bad ID laxsyntax 3");
-    is_bool(true, IsValidMessageID("<valid>", false, true),
-            "good ID laxsyntax 4");
-    is_bool(false, IsValidMessageID("<invalid>", false, false),
-            "bad ID laxsyntax 4");
+    /* Additional tests for stripping spaces. */
+    testStrippingSpaces(true);
+    testStrippingSpaces(false);
 
     return 0;
 }
