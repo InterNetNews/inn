@@ -135,14 +135,14 @@ IsValidMessageID(const char *MessageID, bool stripspaces, bool laxsyntax)
 {
     bool atfound = false;
     const unsigned char *p;
+    char *q;
 
     if (!initialized) {
         InitializeMessageIDcclass();
         initialized = true;
     }
 
-    /* Check the length of the message identifier. */
-    if (MessageID == NULL || strlen(MessageID) > NNTP_MAXLEN_MSGID)
+    if (MessageID == NULL)
         return false;
 
     p = (const unsigned char *) MessageID;
@@ -151,6 +151,11 @@ IsValidMessageID(const char *MessageID, bool stripspaces, bool laxsyntax)
         for (; ISWHITE(*p); p++)
             ;
     }
+
+    /* Check the length of the message identifier. */
+    q = strchr((const char *) p, '>');
+    if (q == NULL || (const unsigned char *) q - p + 1 > NNTP_MAXLEN_MSGID)
+        return false;
 
     /* Scan local-part: "< dot-atom-text". */
     if (*p++ != '<')
