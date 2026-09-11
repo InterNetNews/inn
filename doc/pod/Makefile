@@ -37,7 +37,8 @@ MAN8	= ../man/actmerge.8 ../man/actsync.8 ../man/archive.8 \
 	../man/auth_krb5.8 \
 	../man/batcher.8 ../man/buffchan.8 \
 	../man/ckpasswd.8 ../man/cnfsheadconf.8 ../man/cnfsstat.8 \
-	../man/controlchan.8 ../man/ctlinnd.8 ../man/cvtbatch.8 \
+	../man/controlbatch.8 ../man/controlchan.8 ../man/ctlinnd.8 \
+	../man/cvtbatch.8 \
 	../man/docheckgroups.8 \
 	../man/domain.8 ../man/expire.8 ../man/expireover.8 \
 	../man/expirerm.8 \
@@ -143,6 +144,7 @@ maintclean: distclean
 ../man/ckpasswd.8:	ckpasswd.pod		; $(POD2MAN) -s 8 $? > $@
 ../man/cnfsheadconf.8:	cnfsheadconf.pod	; $(POD2MAN) -s 8 $? > $@
 ../man/cnfsstat.8:	cnfsstat.pod		; $(POD2MAN) -s 8 $? > $@
+../man/controlbatch.8:	controlbatch.pod	; $(POD2MAN) -s 8 $? > $@
 ../man/controlchan.8:	controlchan.pod		; $(POD2MAN) -s 8 $? > $@
 ../man/ctlinnd.8:	ctlinnd.pod		; $(POD2MAN) -s 8 $? > $@
 ../man/cvtbatch.8:	cvtbatch.pod		; $(POD2MAN) -s 8 $? > $@
