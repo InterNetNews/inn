@@ -62,29 +62,37 @@ fi
 
 # Check if any other copies of controlbatch are running.  If we are not
 # alone, give up here and now.
-${PATHBIN}/shlock -p $mypid -f ${batchlock} || exit 0
+"${PATHBIN}/shlock" -p "$mypid" -f "${batchlock}" || exit 0
 
-cd ${BATCH}
+cd "${BATCH}" || {
+    echo "${0}: cannot cd to ${BATCH}" >&2
+    rm -f "${batchlock}"
+    exit 1
+}
 
-if [ -s ${batchfile}.work ]; then
-    cat ${batchfile}.work >>${batchfile}.doit
-    rm -f ${batchfile}.work
+if [ -s "${batchfile}.work" ]; then
+    cat "${batchfile}.work" >>"${batchfile}.doit"
+    rm -f "${batchfile}.work"
 fi
 
-if [ -s ${batchfile} ]; then
-    mv ${batchfile} ${batchfile}.work
-    if ${PATHBIN}/ctlinnd -s -t30 flush ${feedsite}; then
-        cat ${batchfile}.work >>${batchfile}.doit
-        rm -f ${batchfile}.work
+if [ -s "${batchfile}" ]; then
+    mv "${batchfile}" "${batchfile}.work"
+    if "${PATHBIN}/ctlinnd" -s -t30 flush "${feedsite}"; then
+        cat "${batchfile}.work" >>"${batchfile}.doit"
+        rm -f "${batchfile}.work"
     fi
 fi
 
-if [ -s ${batchfile}.doit ]; then
-    ${PATHBIN}/controlchan \
-        <${batchfile}.doit >>${MOST_LOGS}/controlbatch.log 2>&1
-    # if you want extra assurance that nothing gets lost...
-    # cat ${batchfile}.doit >> ${batchfile}.done
-    rm -f ${batchfile}.doit
+if [ -s "${batchfile}.doit" ]; then
+    # Only remove the batch file on success.  If controlchan exits with
+    # a non-zero status (for instance because it died while processing
+    # one of the control articles), leave it in place so that it is
+    # retried on the next run instead of silently losing the control
+    # articles it did not get to process.
+    if "${PATHBIN}/controlchan" \
+        <"${batchfile}.doit" >>"${MOST_LOGS}/controlbatch.log" 2>&1; then
+        rm -f "${batchfile}.doit"
+    fi
 fi
 
-rm -f ${batchlock}
+rm -f "${batchlock}"
