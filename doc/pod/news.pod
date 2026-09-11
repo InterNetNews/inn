@@ -157,6 +157,12 @@ method.  Thanks to Benoit Izac for the bug report.
 
 =item *
 
+Fixed the computation of accepted, duplicate and rejected sizes by B<innd> on
+long-running connections because of a float-precision issue.  Thanks to Jesse
+Rehmer for the bug report.
+
+=item *
+
 When I<laxmid> is set in the I<syntaxchecks> parameter in F<inn.conf>,
 Message-IDs without any C<@> character are now accepted by B<innd>.  It was
 not always the case in the previous version, though mentioned in the release

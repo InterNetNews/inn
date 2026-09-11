@@ -33,9 +33,9 @@ typedef struct _STATUS {
     unsigned long Unwanted_g;
     unsigned long Unwanted_s;
     unsigned long Unwanted_f;
-    float Size;
-    float DuplicateSize;
-    float RejectSize;
+    unsigned long long Size;
+    unsigned long long DuplicateSize;
+    unsigned long long RejectSize;
     unsigned long Check;
     unsigned long Check_send;
     unsigned long Check_deferred;
@@ -80,7 +80,7 @@ STATUSinit(void)
 }
 
 static char *
-PrettySize(float size, char *str)
+PrettySize(unsigned long long size, char *str)
 {
     if (size > 1073741824) /* 1024*1024*1024 */
         sprintf(str, "%.1fGb", (double) size / 1073741824.);
@@ -105,9 +105,9 @@ STATUSsummary(void)
     unsigned long accepted = 0;
     unsigned long refused = 0;
     unsigned long rejected = 0;
-    float size = 0;
-    float DuplicateSize = 0;
-    float RejectSize = 0;
+    unsigned long long size = 0;
+    unsigned long long DuplicateSize = 0;
+    unsigned long long RejectSize = 0;
     int peers = 0;
     char TempString[SMBUF];
     char *path;
@@ -300,7 +300,7 @@ STATUSsummary(void)
     if (offered == 0)
         offered = 1; /* to avoid division by zero */
     if (!(size > 0))
-        size = 1.; /* avoid divide by zero here too */
+        size = 1; /* avoid divide by zero here too */
     fprintf(F, "        accepted: %-9lu       %%accepted: %.1f%%\n", accepted,
             (double) accepted / (double) offered * 100);
     fprintf(F, "         refused: %-9lu        %%refused: %.1f%%\n", refused,
@@ -313,18 +313,18 @@ STATUSsummary(void)
             PrettySize(size + DuplicateSize + RejectSize, str));
     fprintf(F, " duplicated size: %-7s  %%duplicated size: %.1f%%\n",
             PrettySize(DuplicateSize, str),
-            (double) (DuplicateSize / size * 100));
+            (double) DuplicateSize / (double) size * 100);
     fprintf(F, "   rejected size: %-7s    %%rejected size: %.1f%%\n",
-            PrettySize(RejectSize, str), (double) (RejectSize / size * 100));
+            PrettySize(RejectSize, str),
+            (double) RejectSize / (double) size * 100);
     fputc('\n', F);
 
     if (innconf->logstatus) {
         notice("%s status seconds %lu accepted %lu "
                "refused %lu rejected %lu duplicate %lu "
-               "accepted size %.0f duplicate size %.0f rejected size %.0f\n",
+               "accepted size %llu duplicate size %llu rejected size %llu\n",
                "ME", (unsigned long) seconds, accepted, refused, rejected,
-               duplicate, (double) size, (double) DuplicateSize,
-               (double) RejectSize);
+               duplicate, size, DuplicateSize, RejectSize);
     }
 
     /* Incoming Feeds */
@@ -375,11 +375,11 @@ STATUSsummary(void)
             notice(
                 "%s status seconds %lu accepted %lu "
                 "refused %lu rejected %lu duplicate %lu "
-                "accepted size %.0f duplicate size %.0f rejected size %.0f\n",
+                "accepted size %llu duplicate size %llu rejected size %llu\n",
                 status->name, (unsigned long) status->seconds,
                 status->accepted, status->refused, status->rejected,
-                status->Duplicate, (double) status->Size,
-                (double) status->DuplicateSize, (double) status->RejectSize);
+                status->Duplicate, status->Size, status->DuplicateSize,
+                status->RejectSize);
         }
 
         tmp = status->next;
