@@ -163,14 +163,15 @@ the server by supplying the I<debug-level> argument:
 
 The I<debug-level> causes B<actsyncd> to run B<actsync> with a B<-v>
 I<debug-level> flag (overriding any B<-v> flag on the C<flags=> line),
-not make any changes to the F<active> file, write a new F<active> file to
-standard output, and write debug messages to standard error.  Note that using
-I<debug-level> is only supported when synchronizing with another news server,
-not with FTP or HTTP(S).
+not make any changes to the F<active> file, and write debug messages to
+standard error.  Note that using I<debug-level> is only supported when
+synchronizing with another news server, not with FTP or HTTP(S).
 
-If the I<debug-format> argument is also given to B<actsyncd>, the data
-written to standard output will be in C<-o I<debug-format>> instead of in
-C<-o a1> format.
+Unless the I<debug-format> argument is also given to B<actsyncd>, the data
+written to standard output will be in the format determined by the C<flags=>
+line, that is to say C<-o c> (B<ctlinnd> commands) since you should not
+specify an B<-o> flag on that line.  If I<debug-format> is given, the data
+written to standard output will be in C<-o I<debug-format>> format instead.
 
 INN comes with default values of C<downloads.isc.org> for <host>
 and C</pub/usenet/CONFIG/active.gz> for <path-to-active>:

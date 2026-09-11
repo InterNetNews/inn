@@ -146,7 +146,7 @@ for instance L<https://downloads.isc.org/pub/usenet/CONFIG/newsgroups>).
 Note that it is not necessary to do that now.  INN is shipped with minimal
 F<active> and F<newsgroups> files and you can add newsgroups later with
 C<ctlinnd newgroup> or B<actsync> (have a look at the examples at the end of
-the actsync(8) man page for how to use it concretely).
+the actsync(8) manual page for how to use it concretely).
 
 =item *
 
@@ -160,7 +160,8 @@ news server.
 Create secrets in F<inn-secrets.conf> to enable the generation of Cancel-Lock
 header fields in articles posted via your news server.  Other news servers
 will then be able to verify the authenticity of possible further cancels for
-these articles.  See the inn-secrets(5) man page for how to generate secrets.
+these articles.  See the inn-secrets.conf(5) man page for how to generate
+secrets.
 
 =item *
 

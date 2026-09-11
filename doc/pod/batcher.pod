@@ -63,10 +63,12 @@ limit.
 
 A batch starts with an identifying line to specify the unpacking method to
 be used on the receiving end.  When this flag is used, I<string>, followed
-by a newline, will be output at the start of each batch.  The default is
-to have no initial string (under the assumption that either the processor
-specified with the B<-p> flag or some other later process will add the
-appropriate line).
+by a newline, will be output at the start of the first batch written by
+this invocation of B<batcher>, but not at the start of any further batch
+even if options such as B<-a>, B<-b>, or B<-N> cause more than one batch
+to be created.  The default is to have no initial string (under the
+assumption that either the processor specified with the B<-p> flag or
+some other later process will add the appropriate line).
 
 =item B<-N> I<batches>
 
