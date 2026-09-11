@@ -59,23 +59,29 @@ in libinn(3).
 
 B<dbzinit> opens a database, an index into the base file I<name>, consisting
 of files I<name>F<.dir>, I<name>F<.index>, and I<name>F<.hash> which must
-already exist.  (If the database is new, they should be zero-length files.)
-Subsequent accesses go to that database until B<dbzclose> is called to close
-the database.  When tagged hash format is used (if B<--enable-tagged-hash> was
-given at configure time), a I<name>F<.pag> file is used instead of F<.index>
-and F<.hash>.
+already exist.  (For a new database, the F<.index> and F<.hash> files may be
+zero-length, but the F<.dir> file must already contain a valid configuration,
+as written by B<dbzfresh> or B<dbzagain>.)  Subsequent accesses go to that
+database until B<dbzclose> is called to close the database.  When tagged hash
+format is used (if B<--enable-tagged-hash> was given at configure time), a
+I<name>F<.pag> file is used instead of F<.index> and F<.hash>.
 
 B<dbzfetch> searches the database for the specified I<key>, assigning the
 offset of the base file for the corresponding I<key> to I<value>, if any.
 
-B<dbzstore> stores the I<key>-I<data> pair in the database.  It will
-return C<DBZSTORE_EXISTS> for duplicates (already existing entries), and
-C<DBZSTORE_OK> for success.  It will fail with C<DBZSTORE_ERROR> if the
-database files are not writable or not opened, or if any other error occurs.
+B<dbzstore> stores the I<key>-I<data> pair in the database.  Unless the
+tagged hash format is used, it will return C<DBZSTORE_EXISTS> for duplicates
+(already existing entries), and C<DBZSTORE_OK> for success.  When the tagged
+hash format is used, duplicates are not detected; B<dbzstore> then adds
+another entry for the same key and also returns C<DBZSTORE_OK>.  It will fail
+with C<DBZSTORE_ERROR> if the database files are not writable or not opened,
+or if any other error occurs.
 
-B<dbzexists> will verify whether or not the given hash exists.  I<dbz>
-is optimized for this operation and it may be significantly faster than
-B<dbzfetch>.
+B<dbzexists> will verify whether or not the given hash exists.  Unless
+the tagged hash format is used, I<dbz> is optimized for this operation and it
+may be significantly faster than B<dbzfetch>.  When the tagged hash format is
+used, B<dbzexists> is implemented as a call to B<dbzfetch> and offers no
+speed advantage over it.
 
 B<dbzfresh> is a variant of B<dbzinit> for creating a new database with
 more control over details.  The I<size> parameter specifies the size of
@@ -161,10 +167,9 @@ included.  This will do performance tests and integrity tests.
 =head1 BUGS
 
 Unlike I<dbm>, I<dbz> will refuse to B<dbzstore> with a key already in the
-database.  The user is responsible for avoiding this.
-
-The RFC5322 case mapper implements only a first approximation to the
-hideously-complex RFC5322 case rules.
+database, unless the tagged hash format is used, in which case duplicates are
+not detected and are silently added as separate entries.  The user is
+responsible for avoiding this.
 
 I<dbz> no longer tries to be call-compatible with I<dbm> in any way.
 

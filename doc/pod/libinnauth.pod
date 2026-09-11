@@ -7,9 +7,11 @@ libinnauth - Routines for writing nnrpd resolvers and authenticators
     #include "libinnauth.h"
 
     struct res_info {
-        struct sockaddr *client;
-        struct sockaddr *local;
         char *clienthostname;
+        char *clientip;
+        char *clientport;
+        char *localip;
+        char *localport;
     };
 
     struct auth_info {
@@ -22,6 +24,8 @@ libinnauth - Routines for writing nnrpd resolvers and authenticators
 
     void free_auth_info(struct auth_info*);
     void free_res_info (struct res_info*);
+
+    void print_user(const char *);
 
 =head1 DESCRIPTION
 
@@ -38,13 +42,18 @@ from information supplied by nnrpd (the B<FILE*> parameter generally
 should be C<stdin>).  Both functions return NULL on error.  The caller
 is responsible for deallocating the memory by using the functions below.
 
-The string fields of both structs are straightforward.  The B<client>
-and B<local> fields of B<struct res_info> actually point to instances of
-B<struct sockaddr_in> (or B<struct sockaddr_in6> if IPv6 support is
-compiled in).
+The string fields of both structs are straightforward.  The B<clientip>,
+B<clientport>, B<localip>, and B<localport> fields of B<struct res_info>
+hold the client and local addresses and ports as text strings, rather
+than as B<struct sockaddr> pointers.
 
 The free_auth_info() and free_res_info() functions free the struct
 passed in as argument and all necessary fields.
+
+The print_user() function writes the given username to standard output
+in the C<User:> format expected by nnrpd, terminated with a CRLF pair.
+The string passed in should be exactly the username, with no extraneous
+leading or trailing whitespace.
 
 =head1 BUGS
 

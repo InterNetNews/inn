@@ -65,7 +65,7 @@ libinnhist - Routines for managing INN history
                    time_t threshold,
                    bool (*exists)(void *cookie, time_t arrived,
                                   time_t posted, time_t expires,
-                                  const TOKEN *token));
+                                  TOKEN *token));
 
     bool HISwalk(struct history *history, const char *reason,
                  void *cookie,
@@ -79,6 +79,10 @@ libinnhist - Routines for managing INN history
     const char *HISerror(struct history *history);
 
     bool HISctl(struct history *history, int request, void *val);
+
+    void HISlogto(const char *s);
+
+    void HISlogclose(void);
 
 =head1 DESCRIPTION
 
@@ -325,9 +329,9 @@ Indicate whether the history backend expires in place (mutating the live
 database via a writer rather than rebuilding a new file and swapping it).
 Backends that do not implement this selector leave the value untouched,
 so the caller must initialise it to false.  I<val> should be a pointer to a
-value of type B<bool> and will not be modified by the call.  expire(8) uses
-this to decide whether to open the history read/write (in place) or read-only
-(rebuild-and-swap, the hisv6 model).
+value of type B<bool>; backends that do implement it will set it to reflect
+their behaviour.  expire(8) uses this to decide whether to open the history
+read/write (in place) or read-only (rebuild-and-swap, the hisv6 model).
 
 =item C<HISCTLG_ENTRYESTIMATE> (size_t *)
 
@@ -342,6 +346,14 @@ I<val> should be a pointer to a value of type B<size_t>.  expireover(8)
 uses this to size its Bloom filter before walking the history database.
 
 =back
+
+B<HISlogto> enables logging of history performance statistics (as used by
+B<innd>'s C<stathist> configuration and ctlinnd(8) directive) to the file
+named I<s>, opening it for appending and resetting the internal timing
+counters; any previously open log is closed first.  B<HISlogclose> closes
+that log, if one is open, and disables further logging.  These two
+functions are unrelated to a specific history handle and control a
+process-wide logging state used by the history API's internal timers.
 
 =head1 HISTORY
 

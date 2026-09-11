@@ -77,6 +77,9 @@ to the caller.
 B<list_insert> inserts I<node> onto I<list> after the node I<pred>.  If
 I<pred> is B<NULL> then I<node> is added to the head of I<list>.
 
+B<list_isempty> returns B<true> if I<list> is empty, or B<false>
+otherwise.
+
 =head1 HISTORY
 
 Written by Alex Kiernan <alex.kiernan@thus.net> for S<InterNetNews 2.4.0>.

@@ -72,10 +72,10 @@ set.  The presence of a character between the brackets adds that character
 to the set; for example, C<[amv]> specifies the set containing the
 characters C<a>, C<m>, and C<v>.  A range of characters may be specified
 using C<->; for example, C<[0-5abc]> is equivalent to C<[012345abc]>.  The
-order of characters is as defined in the UTF-8 character set, and if the
+order of characters is as defined in the UTF-8 character set.  If the
 start character of such a range falls after the ending character of the
-range in that ranking the results of attempting a match with that pattern
-are undefined.
+range in that ranking, the range is malformed and matches nothing beyond
+its start character; for example, C<[m-a]> matches only C<m>.
 
 In order to include a literal C<]> character in the set, it must be the
 first character of the set (possibly following C<^>); for example, C<[]a]>

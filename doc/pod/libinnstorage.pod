@@ -76,7 +76,7 @@ libinnstorage - Routines for managing INN storage
 
     ARTHANDLE *SMretrieve(const TOKEN token, const RETRTYPE amount);
 
-    ARTHANDLE *SMnext(const ARTHANDLE *article, const RETRTYPE amount);
+    ARTHANDLE *SMnext(ARTHANDLE *article, const RETRTYPE amount);
 
     void SMfreearticle(ARTHANDLE *article);
 
@@ -227,7 +227,8 @@ The B<SMinit> function calls the setup function for all of the configured
 methods based on B<SMsetup>.  This function should be called prior to all
 other storage API functions which begin with C<SM> except B<SMsetup>.  It
 returns true if initialization is successful or returns false if not.
-B<SMinit> returns true, unless all storage methods fail initialization.
+B<SMinit> returns false if any configured storage method fails
+initialization.
 
 The B<SMstore> function stores an article specified with I<article>.
 The headers and body of the article are supplied to B<SMstore> using the
@@ -289,11 +290,12 @@ The B<SMcanceltombstone> function appends the I<token> to the out-of-band
 cancel tombstone log so a later expire run can drop the matching history
 entry without calling B<SMretrieve>.  It is intended for callers that
 cancel articles outside the B<expireover>/B<expirerm> pipeline (B<innd>'s
-B<ARTcancel> and B<sm -r>).  It is a no-op when I<expiretombstone> is false
-in F<inn.conf> or I<token> has type B<TOKEN_EMPTY>.  The function returns true
-on success (token appended, flushed, file closed), false on any failure path.
-Callers can ignore the return value (the cancel itself has already succeeded
-by the time this is called).
+B<ARTcancel> and B<sm -r>).  It is a no-op when I<expiretombstone> or
+I<groupbaseexpiry> is false in F<inn.conf>, or when I<token> has type
+B<TOKEN_EMPTY>.  The function returns true on success (token appended,
+flushed, file closed), false on any failure path.  Callers can ignore
+the return value (the cancel itself has already succeeded by the time
+this is called).
 
 The B<SMprobe> function checks the token on B<PROBETYPE>.  I<type> is
 one of following:
@@ -432,9 +434,10 @@ multiple simultaneous searches may require data to be copied in between
 B<OVsearch> calls even if B<OVSTATICSEARCH> is false.)
 
 The B<OVsearch> function retrieves information, article number, overview
-data, or arrival time.  It should be called with NULL handle when it
-is the first time; subsequent B<OVsearch> calls should use the handle
-returned by the previous call to B<OVsearch>.  B<OVsearch> returns
+data, or arrival time for the next article in the range opened by
+B<OVopensearch>.  It should be called with the I<handle> returned by
+B<OVopensearch>, and that same I<handle> should be passed to every
+subsequent call to B<OVsearch> until it returns false.  B<OVsearch> returns
 true, unless it reaches I<high>, which is specified by B<OVopensearch>.
 Retrieved overview data are sorted by article number, and I<len> is C<0>
 if there is no overview data for the article.  Note that the retrieved
