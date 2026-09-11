@@ -1,0 +1,139 @@
+=encoding utf8
+
+=head1 NAME
+
+actmerge - Merge two active files
+
+=head1 SYNOPSIS
+
+B<actmerge> [B<-s>] I<ign1> I<ign2> I<host1> I<host2>
+
+=head1 DESCRIPTION
+
+B<actmerge> is a shell script that uses actsync(8) to fetch the F<active>
+files of I<host1> and I<host2>, merge them, and write the result to
+standard output.  Unlike a straight synchronization, a merge keeps every
+newsgroup found on either side: nothing is scheduled for removal just
+because it is missing from the other host.
+
+As with B<actsync>, each of I<host1> and I<host2> may be a hostname (in
+which case its F<active> file is fetched over NNTP) or, if it begins with
+C<.> or C</>, the path to a file already in active(5) format.
+
+I<ign1> and I<ign2> are ignore files in the format described in the actsync(8)
+manual page (see its B<-i> flag).  I<ign1> is applied while fetching
+I<host1>'s F<active> file, and I<ign2> while fetching I<host2>'s F<active>
+file.  Unlike B<actsync>, both files are mandatory and must exist and be
+non-empty.
+
+B<actmerge> takes out an exclusive lock (using shlock(8)) for the
+duration of the run, so that only one instance can be active at a time.
+If a host cannot be reached on the first attempt, B<actmerge> retries:
+it waits 5 minutes and then knocks 3 times in a row, and repeats this
+wait-and-knock cycle up to 3 times (that is, up to 9 further attempts
+spread over as much as 15 minutes of waiting) before giving up on that
+host.
+
+Diagnostic and progress messages accumulate on standard error only if
+something goes wrong, or if the B<-s> flag is given.  The merged
+F<active> file itself is only ever written to standard output, and only
+once both F<active> files have been successfully fetched and merged.
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<-s>
+
+Write a status report to standard error even when B<actmerge> completes
+successfully.  By default, nothing is written to standard error unless
+B<actmerge> fails.
+
+=back
+
+=head1 EXAMPLES
+
+Merge the F<active> files of two upstream servers, ignoring newsgroups
+according to a couple of separate F<*.ign> files, and save the merged
+result:
+
+    actmerge news1.ign news2.ign \
+        news1.example.com news2.example.com >merged.active
+
+Do the same, but always report on standard error what B<actmerge> did,
+which is convenient when the command is run from cron(8) and its output
+mailed to an administrator:
+
+    actmerge -s news1.ign news2.ign \
+        news1.example.com news2.example.com \
+        >merged.active 2>>actmerge.log
+
+The resulting F<merged.active> file, once checked, can then be turned
+into B<ctlinnd> commands and applied with mod-active(8), or fed back
+through B<actsync> (using, for instance, C<actsync -o x - merged.active>)
+to bring the local server's F<active> file in line with it.
+
+=head1 FILES
+
+=over 4
+
+=item I<pathrun>/LOCK.actmerge
+
+The lock file used to prevent more than one instance of B<actmerge> from
+running at the same time.
+
+=back
+
+=head1 EXIT STATUS
+
+=over 4
+
+=item 0Z<>
+
+The merge was successful, and the merged F<active> file was written to
+standard output.
+
+=item 1Z<>
+
+Incorrect usage (wrong number of arguments after option processing).
+
+=item 2Z<>
+
+I<ign1> does not exist or is empty.
+
+=item 3Z<>
+
+I<ign2> does not exist or is empty.
+
+=item 4Z<>
+
+Another instance of B<actmerge> already holds the lock.
+
+=item 5Z<>
+
+I<host1>'s F<active> file could not be obtained (it was still missing or
+empty after B<actsync> reported success).
+
+=item 6Z<>
+
+I<host2>'s F<active> file could not be obtained (it was still missing or
+empty after B<actsync> reported success).
+
+=item other
+
+Any other non-zero status is the exit status returned by B<actsync>
+itself, forwarded unchanged, after fetching either F<active> file failed
+even with retries, or after the final merge step failed.
+
+=back
+
+=head1 HISTORY
+
+Originally written by Landon Curt Noll for InterNetNews.  POD documentation
+written by Julien Élie.
+
+=head1 SEE ALSO
+
+active(5), actsync(8), ctlinnd(8), inn.conf(5), mod-active(8), shlock(8).
+
+=cut

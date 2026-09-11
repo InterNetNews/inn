@@ -33,7 +33,8 @@ MAN5	= ../man/active.5 ../man/active.times.5 ../man/buffindexed.conf.5 \
 	../man/passwd.nntp.5 ../man/inn-radius.conf.5 ../man/readers.conf.5 \
 	../man/storage.conf.5 ../man/subscriptions.5
 
-MAN8	= ../man/actsync.8 ../man/archive.8 ../man/auth_krb5.8 \
+MAN8	= ../man/actmerge.8 ../man/actsync.8 ../man/archive.8 \
+	../man/auth_krb5.8 \
 	../man/batcher.8 ../man/buffchan.8 \
 	../man/ckpasswd.8 ../man/cnfsheadconf.8 ../man/cnfsstat.8 \
 	../man/controlchan.8 ../man/ctlinnd.8 ../man/cvtbatch.8 \
@@ -133,6 +134,7 @@ maintclean: distclean
 ../man/storage.conf.5:	storage.conf.pod	; $(POD2MAN) -s 5 $? > $@
 ../man/subscriptions.5:	subscriptions.pod	; $(POD2MAN) -s 5 $? > $@
 
+../man/actmerge.8:	actmerge.pod		; $(POD2MAN) -s 8 $? > $@
 ../man/actsync.8:	actsync.pod		; $(POD2MAN) -s 8 $? > $@
 ../man/archive.8:	archive.pod		; $(POD2MAN) -s 8 $? > $@
 ../man/auth_krb5.8:	auth_krb5.pod		; $(POD2MAN) -s 8 $? > $@
