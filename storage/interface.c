@@ -203,7 +203,7 @@ GetGroups(char *Xref)
     if ((p = strchr(Xref, ':')) == NULL)
         return 0;
     *p++ = '\0';
-    return ((ARTNUM) atoi(p));
+    return strtoul(p, NULL, 10);
 }
 
 STORAGE_SUB *

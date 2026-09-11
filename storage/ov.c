@@ -184,8 +184,10 @@ OVadd(TOKEN token, char *data, int len, time_t arrived, time_t expires)
         overdatalen = BIG_BUFFER;
         overdata = xmalloc(overdatalen);
     }
-    if (len + 16 > overdatalen) {
-        overdatalen = len + 16;
+    /* 20 digits is enough for the largest possible ARTNUM (unsigned long)
+     * printed by "%lu", plus one byte for the following tab. */
+    if (len + 21 > overdatalen) {
+        overdatalen = len + 21;
         overdata = xrealloc(overdata, overdatalen);
     }
 
@@ -227,8 +229,10 @@ OVadd(TOKEN token, char *data, int len, time_t arrived, time_t expires)
         if ((next = memchr(group, ':', xreflen - (group - xrefdata))) == NULL)
             return OVADDFAILED;
         *next++ = '\0';
-        artnum = atoi(next);
-        if (artnum <= 0)
+        if (!isdigit((unsigned char) *next))
+            continue;
+        artnum = strtoul(next, NULL, 10);
+        if (artnum == 0)
             continue;
 
         /* Skip overview generation according to ovgrouppat. */

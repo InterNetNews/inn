@@ -625,7 +625,7 @@ CMDpost(int ac, char *av[])
     static int size;
     char *p, *q;
     char *end;
-    int longline, missingdotstuffing;
+    long longline, missingdotstuffing;
     READTYPE r;
     int i;
     long l;
@@ -818,7 +818,7 @@ CMDpost(int ac, char *av[])
 
     if (longline > 0) {
         warn("%s too long in post", Client.host);
-        Reply("%d Line %d too long\r\n",
+        Reply("%d Line %ld too long\r\n",
               ihave ? NNTP_FAIL_IHAVE_REJECT : NNTP_FAIL_POST_REJECT,
               longline);
         POSTrejected++;
@@ -826,7 +826,7 @@ CMDpost(int ac, char *av[])
     }
 
     if (missingdotstuffing > 0) {
-        Reply("%d Line %d without its initial dot doubled (dot-stuffing)\r\n",
+        Reply("%d Line %ld without its initial dot doubled (dot-stuffing)\r\n",
               ihave ? NNTP_FAIL_IHAVE_REJECT : NNTP_FAIL_POST_REJECT,
               missingdotstuffing);
         POSTrejected++;
