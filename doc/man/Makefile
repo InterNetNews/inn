@@ -24,7 +24,8 @@ SEC5	= active.5 active.times.5 buffindexed.conf.5 control.ctl.5 \
 	storage.conf.5 subscriptions.5
 
 SEC8	= actmerge.8 actsync.8 archive.8 batcher.8 buffchan.8 ckpasswd.8 \
-	cnfsheadconf.8 cnfsstat.8 controlchan.8 ctlinnd.8 cvtbatch.8 \
+	cnfsheadconf.8 cnfsstat.8 controlbatch.8 controlchan.8 ctlinnd.8 \
+	cvtbatch.8 \
 	delayer.8 docheckgroups.8 domain.8 expire.8 expireover.8 expirerm.8 \
 	ident.8 \
 	innbind.8 inncheck.8 innd.8 inndf.8 innfeed.8 innreport.8 innstat.8 \

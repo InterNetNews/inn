@@ -1,0 +1,63 @@
+=encoding utf8
+
+=head1 NAME
+
+controlbatch - Run controlchan against a batch file
+
+=head1 SYNOPSIS
+
+B<controlbatch> [I<feedsite> I<batchfile>]
+
+=head1 DESCRIPTION
+
+B<controlbatch> runs B<controlchan> against a batch file instead of a
+channel feed.  It can be used to clear occasional backlogs building up
+on a channel feed running B<controlchan>, or even to bypass the channel
+feed altogether and process control messages as a file feed instead.
+
+With no arguments, B<controlbatch> defaults to a I<feedsite> of
+C<controlchan!> and a I<batchfile> of C<controlchan!> underneath
+I<pathoutgoing> (as set in F<inn.conf>).  If you want to use different
+values (for instance because you feed control messages to B<controlchan>
+under another site name), both I<feedsite> and I<batchfile> must be
+given together.
+
+B<controlbatch> first makes sure that no other copy of itself is already
+running, using a lock file named F<LOCK.controlbatch> in I<pathrun> (as
+set in F<inn.conf>); if one is found, it silently exits.  It then merges
+any leftover I<batchfile>C<.work> file (left behind by an interrupted
+previous run) into I<batchfile>C<.doit>.  If I<batchfile> itself is not
+empty, it is renamed to I<batchfile>C<.work>, and B<ctlinnd> is used to
+flush the site named I<feedsite> so that B<innd> stops writing to it
+while it is being processed; the flushed batch is then appended to
+I<batchfile>C<.doit> as well.  Finally, if I<batchfile>C<.doit> is not
+empty, it is fed to B<controlchan>, whose output is appended to
+F<controlbatch.log> in I<pathlog> (as set in F<inn.conf>).
+
+If you are running B<controlchan> as a channel feed, you may want to
+call B<controlbatch> from B<cron> during a quiet period to clean up any
+backlog:
+
+    00 04 * * *     <pathbin>/controlbatch
+
+Alternatively, if you would rather not run B<controlchan> as a channel
+feed at all and instead process control messages in batches, use a
+F<newsfeeds> entry like this one:
+
+    controlchan!\
+        :!*,control,control.*,!control.cancel\
+        :Tf,Wnsm:
+
+together with a B<cron> entry such as:
+
+    30 * * * *     <pathbin>/controlbatch
+
+=head1 HISTORY
+
+POD documentation written by Julien Élie.
+
+=head1 SEE ALSO
+
+controlchan(8), ctlinnd(8), inn.conf(5), newsfeeds(5).
+
+=cut

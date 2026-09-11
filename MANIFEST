@@ -144,6 +144,7 @@ doc/man/ckpasswd.8                    Manpage for ckpasswd authenticator
 doc/man/cnfsheadconf.8                Manpage for cnfsheadconf
 doc/man/cnfsstat.8                    Manpage for cnfsstat
 doc/man/control.ctl.5                 Manpage for control.ctl config file
+doc/man/controlbatch.8                Manpage for controlbatch
 doc/man/controlchan.8                 Manpage for controlchan backend
 doc/man/convdate.1                    Manpage for convdate utility
 doc/man/ctlinnd.8                     Manpage for ctlinnd frontend
@@ -263,6 +264,7 @@ doc/pod/ckpasswd.pod                  Master file for ckpasswd.8
 doc/pod/cnfsheadconf.pod              Master file for cnfsheadconf.8
 doc/pod/cnfsstat.pod                  Master file for cnfsstat.8
 doc/pod/control.ctl.pod               Master file for control.ctl.5
+doc/pod/controlbatch.pod              Master file for controlbatch.8
 doc/pod/controlchan.pod               Master file for controlchan.8
 doc/pod/convdate.pod                  Master file for convdate.1
 doc/pod/ctlinnd.pod                   Master file for ctlinnd.8
