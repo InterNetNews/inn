@@ -50,11 +50,12 @@ it has been passed to this function.
 
 B<QIOread> reads the next newline-terminated line in the file and returns
 a pointer to it, with the trailing newline replaced by nul.  The returned
-pointer is a pointer into a buffer in the QIOSTATE object and therefore
-will remain valid until B<QIOclose> is called on that object.  If EOF is
-reached, an error occurs, or if the line is longer than the buffer size
-(32KiB), NULL is returned instead.  To distinguish between the error
-cases, use B<QIOerror> and B<QIOtoolong>.
+pointer is a pointer into an internal buffer in the QIOSTATE object and
+is therefore only guaranteed to remain valid until the next call to
+B<QIOread> on that object, since the buffer may be overwritten or moved
+around at that point.  If EOF is reached, an error occurs, or if the line
+is longer than the buffer size (32KiB), NULL is returned instead.  To
+distinguish between the error cases, use B<QIOerror> and B<QIOtoolong>.
 
 B<QIOfileno> returns the descriptor of the open file.
 
@@ -74,9 +75,12 @@ B<QIOread>, false otherwise.  B<QIOtoolong> returns true if there was an
 error and the error was that the line was too long.  If B<QIOread> returns
 NULL, these functions should be called to determine what happened.  If
 B<QIOread> returned NULL and B<QIOerror> is false, EOF was reached.  Note
-that if B<QIOtoolong> returns true, the next call to B<QIOread> will try
-to read the remainder of the line and will likely return a partial line;
-users of this library should in general treat long lines as fatal errors.
+that when B<QIOtoolong> returns true, B<QIOread> has already consumed and
+discarded the remainder of the too-long line, up to and including its
+terminating newline; the next call to B<QIOread> will therefore return
+the following line in the file rather than a partial remainder of the
+too-long one.  Users of this library should in general treat long lines
+as fatal errors.
 
 =head1 EXAMPLES
 
@@ -92,8 +96,9 @@ printing out each line preceded by its offset in the file.
         perror("Open error");
         exit(1);
     }
-    for (p = QIOread(qp); p != NULL; p = QIOread(qp))
-        printf("%ld: %s\n", (unsigned long) QIOtell(qp), p);
+    for (offset = QIOtell(qp), p = QIOread(qp); p != NULL;
+         offset = QIOtell(qp), p = QIOread(qp))
+        printf("%ld: %s\n", (unsigned long) offset, p);
     if (QIOerror(qp)) {
         perror("Read error");
         exit(1);

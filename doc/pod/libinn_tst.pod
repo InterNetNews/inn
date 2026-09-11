@@ -30,9 +30,10 @@ tst - Ternary search trie functions
 =head1 DESCRIPTION
 
 B<tst_init> allocates memory for members of I<struct tst>, and
-allocates the first I<node_line_width> nodes.  A NULL pointer is
-returned by B<tst_init> if any part of the memory allocation fails.  On
-success, a pointer to a I<struct tst> is returned.
+allocates the first I<node_line_width> nodes.  It uses INN's internal
+memory allocation functions, which abort the program if memory cannot
+be allocated, so B<tst_init> always returns a valid pointer to a
+I<struct tst>.
 
 The value for I<node_line_width> must be chosen very carefully.  One
 node is required for every character in the tree.  If you choose a
@@ -54,15 +55,12 @@ pointer will still be placed in I<exist_ptr>.
 If a duplicate key is encountered and I<option> is not set to
 C<TST_REPLACE>, then C<TST_DUPLICATE_KEY> is returned.  If I<key> is
 zero length, then C<TST_NULL_KEY> is returned.  A successful insert or
-replace returns C<TST_OK>.  A return value of C<TST_ERROR> indicates
-that a memory allocation error occurred while trying to grow the node
-free list.
+replace returns C<TST_OK>.
 
-Note that the I<data> argument must never be C<NULL>.  If it is, then
-calls to B<tst_search> will fail for a key that exists because the
-data value was set to C<NULL>, which is what B<tst_search> returns.  If
-you just want a simple existence tree, use the B<tst> pointer as the
-data pointer.
+Note that the I<data> argument may not be C<NULL>.  If it is,
+C<TST_NULL_DATA> is returned and the key is not inserted.  If you just
+want a simple existence tree, use the B<tst> pointer as the data
+pointer.
 
 B<tst_search> finds the string I<key> in the tree if it exists and
 returns the data pointer associated with that key.

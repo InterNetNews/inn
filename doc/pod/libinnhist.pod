@@ -63,7 +63,7 @@ his - routines for managing INN history
                    time_t threshold,
                    bool (*exists)(void *cookie, time_t arrived,
                                   time_t posted, time_t expires,
-                                  const TOKEN *token));
+                                  TOKEN *token));
 
     bool HISwalk(struct history *history, const char *reason,
                  void *cookie,
@@ -77,6 +77,10 @@ his - routines for managing INN history
     const char *HISerror(struct history *history);
 
     bool HISctl(struct history *history, int request, void *val);
+
+    void HISlogto(const char *s);
+
+    void HISlogclose(void);
 
 =head1 DESCRIPTION
 
@@ -317,6 +321,14 @@ nnrpd(8) like applications.  I<val> should be a pointer to a value of
 type B<time_t> and will not be modified by the call.
 
 =back
+
+B<HISlogto> enables logging of history performance statistics (as used by
+B<innd>'s C<stathist> configuration and ctlinnd(8) directive) to the file
+named I<s>, opening it for appending and resetting the internal timing
+counters; any previously open log is closed first.  B<HISlogclose> closes
+that log, if one is open, and disables further logging.  These two
+functions are unrelated to a specific history handle and control a
+process-wide logging state used by the history API's internal timers.
 
 =head1 HISTORY
 

@@ -28,6 +28,8 @@ libinn - InterNetNews library routines
     extern FILE *CAopen(FILE *FromServer, FILE *ToServer);
     extern FILE *CAlistopen(FILE *FromServer, FILE *ToServer,
                             const char *request);
+    extern FILE *CA_listopen(char *pathname, FILE *FromServer,
+                             FILE *ToServer, const char *request);
     extern void CAclose(void);
 
     /* File locking. */
@@ -40,6 +42,8 @@ libinn - InterNetNews library routines
 
     extern bool inn_lock_file(int fd, enum inn_locktype type,
                               bool block);
+    extern bool inn_lock_range(int fd, enum inn_locktype type,
+                               bool block, off_t offset, off_t size);
 
     /* NNTP functions. */
     extern int NNTPlocalopen(FILE **FromServerp, FILE **ToServerp,
@@ -61,6 +65,9 @@ libinn - InterNetNews library routines
     } HASH;
 
     extern HASH HashMessageID(const char *MessageID);
+
+    /* UTF-8 validation. */
+    extern bool is_valid_utf8(const char *text);
 
     /* Other useful functions. */
     extern char *inn_getfqdn(const char *domain);
@@ -112,7 +119,8 @@ header field that is highly likely to be unique.  The returned value points
 to static space that is reused on subsequent calls.  If the argument is NULL,
 B<inn_getfqdn> is called to find a suitable FQDN (using I<domain> as set in
 F<inn.conf> to qualify the local host name if local host cannot be resolved
-in DNS).
+in DNS).  If no valid domain name can be found for the right-hand side,
+NULL is returned.
 
 B<HeaderCleanFrom> removes the extraneous information from the value of a From
 or Reply-To header field and leaves just the official mailing address.  In
@@ -184,7 +192,7 @@ it will be for each admin secret in the I<canlockadmin> vector if I<username>
 is NULL or for each user secret in the I<canlockuser> vector if I<username>
 is not NULL.
 
-B<verify_cancel_lock> expects pointers to Cancel-Key and Cancel-Lock header
+B<verify_cancel_key> expects pointers to Cancel-Key and Cancel-Lock header
 field bodies.  This function verifies that I<c_key_header> contains an element
 matching one of those present in I<c_lock_header>.  It returns true if at
 least one element matches.  Otherwise, false is returned, that is to say the
@@ -208,6 +216,15 @@ file containing the results.  The I<request> parameter, if not NULL, will be
 sent as an argument to the command.  Unlike B<CAopen>, this routine will never
 use a locally-available copy of the F<active> file.
 
+B<CA_listopen> is the lower-level routine used by B<CAlistopen> to implement
+the LIST command exchange.  It sends the same LIST command (using I<request>
+the same way as B<CAlistopen>), but writes the results to I<pathname>, which
+it creates, rather than to a temporary file of its own choosing, and returns
+a C<FILE> opened for reading on that path, or NULL on error.  Calling it
+directly, rather than through B<CAlistopen>, is only useful for a caller
+that wants to control the destination path itself; it is otherwise
+considered an internal routine.
+
 B<CAclose> closes the F<active> file and removes any temporary file that might
 have been created by B<CAopen> or B<CAlistopen>.
 
@@ -218,6 +235,14 @@ true, it will block until the lock can be made, otherwise it will return
 false if the file cannot be locked.  I<type> is one of C<INN_LOCK_READ>,
 C<INN_LOCK_WRITE> or C<INN_LOCK_UNLOCK>.  It returns false on failure or true
 on success.
+
+B<inn_lock_range> does the same, but locks (or unlocks) only the I<size>
+bytes starting at I<offset> bytes into the file, instead of the whole
+file.  As with fcntl(2) record locking, on which it is implemented, a
+I<size> of C<0> means to lock through the end of the file, growing with
+it if it is later extended; B<inn_lock_file> is implemented as a call to
+B<inn_lock_range> with I<offset> and I<size> both set to C<0>, thus
+locking the whole file.
 
 =head2 NNTP FUNCTIONS
 
@@ -230,9 +255,9 @@ NULL or a pointer to a buffer at least 512 bytes long.  If not NULL, and the
 server refuses the connection, then it will be filled in with the text of
 the server's reply.  I<len> should be the length of the I<errbuff> buffer.
 This routine is not for general use.  If C<HAVE_UNIX_DOMAIN_SOCKETS> in
-F<include/config.h> is not defined, this is a stub routine, for compatibility
-with systems that have Unix-domain stream sockets, and it then always returns
-C<-1>.
+F<include/config.h> is not defined, it falls back to B<NNTPconnect> with
+C<127.0.0.1> as the host and the I<port> parameter set in F<inn.conf>, for
+compatibility with systems that lack Unix-domain stream sockets.
 
 B<NNTPremoteopen> does the same, except that it uses the I<server> parameter
 set in F<inn.conf> as the local server, and opens a connection to the I<port>.
@@ -257,7 +282,22 @@ listed in the password file.
 
 =head2 HASHES
 
-B<HashMessageID> returns a hashed Message-ID using MD5.
+B<HashMessageID> returns a hashed Message-ID using MD5.  Before hashing, the
+part of the Message-ID after the arobase (that is to say, its domain part)
+is folded to lowercase, so that two Message-IDs differing only by the case
+of their domain part hash to the same value.  As a special case, if the
+local part is C<postmaster> (case-insensitively), the whole Message-ID is
+folded to lowercase.
+
+=head2 UTF-8 VALIDATION
+
+B<is_valid_utf8> checks whether the nul-terminated string I<text> is valid
+UTF-8.  Each byte sequence must either be a single-byte, printable ASCII
+character (or one of carriage return, newline or a horizontal tab), or a
+well-formed multi-byte UTF-8 encoding of two to six bytes, with each
+continuation byte matching the C<10xxxxxx> pattern.  Any other byte
+sequence, including other ASCII control characters, causes B<is_valid_utf8>
+to return false; otherwise, it returns true.
 
 =head2 OTHER USEFUL FUNCTIONS
 
@@ -284,10 +324,12 @@ an attempt to get the list from a local copy is made.
 =head2 MISCELLANEOUS
 
 B<GetResourceUsage> fills in the I<usertime> and I<systime> parameters with
-the total user and system time used by the current process and any children
-it may have spawned.  If C<HAVE_GETRUSAGE> in F<include/config.h> is defined,
-it gets the values by doing a getrusage(2) system call; otherwise it calls
-times(2).  It returns C<-1> on failure, or C<0> on success.
+the total user and system time used by the current process.  If
+C<HAVE_GETRUSAGE> in F<include/config.h> is defined, it gets the values by
+doing a getrusage(2) system call for the current process only; otherwise it
+calls times(2), which also adds in the time used by any children of the
+current process that have already been waited for.  It returns C<-1> on
+failure, or C<0> on success.
 
 B<Radix32> converts the number in I<value> into a radix-32 string into the
 buffer pointed to by I<buff>.  The number is split into five-bit pieces and
@@ -345,7 +387,7 @@ POSIX-guaranteed minimum of 20.
 
 B<setfdlimit> sets the limit on open file descriptors to the given parameter
 I<limit>.  It uses the setrlimit(2) function when available.  It returns
-C<1> on success, and C<-1> on failure (when setrlimit(2) is not available or
+C<0> on success, and C<-1> on failure (when setrlimit(2) is not available or
 I<limit> is higher than select(2) can handle, checking against C<FD_SETSIZE>).
 
 B<isvalidfd> returns true if I<fd> is not higher than the system supports, and
@@ -378,6 +420,10 @@ on Windows).  It returns false on failure or true on success.
     strlcpy(frombuff, HDR(HDR__FROM), sizeof(frombuff));
     HeaderCleanFrom(frombuff);
 
+    if (NNTPremoteopen(port, &FromServer, &ToServer, errbuff,
+                       sizeof(errbuff)) < 0)
+        Fatal("Can't connect to server");
+
     if ((F = CAopen(FromServer, ToServer)) == NULL)
         Fatal("Can't open active file");
 
@@ -389,10 +435,6 @@ on Windows).  It returns false on failure or true on success.
 
     /* Close the file. */
     CAclose();
-
-    if (NNTPremoteopen(port, &FromServer, &ToServer, errbuff,
-                       sizeof(errbuff)) < 0)
-        Fatal("Can't connect to server");
 
     if ((p = GetModeratorAddress(NULL, NULL, "comp.sources.unix",
                                  "%s@example.com")) == NULL)

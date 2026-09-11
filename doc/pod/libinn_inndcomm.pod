@@ -64,22 +64,28 @@ library, libinn(3).  They are used to send commands to a running B<innd>
 daemon on the local host.  The letters C<ICC> stand for B<I>nnd B<C>ontrol
 B<C>ommand.
 
-The B<ICCopen> function creates a Unix-domain datagram socket and binds it
-to the server's control socket, if such sockets are supported.  Otherwise,
-it creates a named pipe for communicating with the server.  It returns
-C<-1> on failure or C<0> on success.  This routine must be called before
-any other routine.
+The B<ICCopen> function creates a Unix-domain datagram socket, binds it to
+a newly-created temporary socket path so that it can later receive the
+server's reply, and records the path of the server's own control socket
+so that commands can be sent to it, if such sockets are supported.
+Otherwise, it creates a named pipe for communicating with the server.  It
+returns C<-1> on failure or C<0> on success.  This routine must be called
+before any other routine.
 
 The B<ICCclose> function closes any descriptors that have been created
 by B<ICCopen>.  It returns C<-1> on failure or C<0> on success.
 
 The B<ICCsettimeout> function can be called before any of the following
 routines to determine how long the library should wait before giving up
-on getting the server's reply.  This is done by setting and catching a
-SIGALRM signal(2).  If the timeout is less than zero, then no reply will
-be waited for.  The B<SC_SHUTDOWN>, B<SC_XABORT>, and B<SC_XEXEC> commands
-do not get a reply either.  The default, which can be obtained by setting
-the timeout to <0>, is to wait for 2 minutes.
+on getting the server's reply.  This is done with a select(2) call using
+the given timeout, not by catching a signal.  If the timeout is less than
+zero, then no reply will be waited for.  The B<SC_SHUTDOWN>, B<SC_XABORT>,
+and B<SC_XEXEC> commands do not get a reply either.  If the timeout is a
+positive number of seconds, B<ICCcommand> gives up and returns an error
+once that many seconds have elapsed without a reply.  The default, which
+is also obtained by setting the timeout to C<0>, is to wait indefinitely
+for a reply, checking every 2 minutes that the server process is still
+running and giving up as soon as it is not.
 
 The B<ICCcommand> function sends the command I<cmd> with parameters I<argv>
 to the server.  It returns C<-1> on error.  If the server replies, and
@@ -87,10 +93,13 @@ I<replyp> is not NULL, it will be filled in with an allocated buffer that
 contains the full text of the server's reply.  This buffer is a string in
 the form of "I<digits> I<text>" where I<digits> is the text value of the
 recommended exit code (usually C<1>, followed with I<text>, giving the
-reason of the failure); a C<0> value indicates success.  Replies longer
-than 64KB will be truncated.  The possible values of I<cmd> are defined
-in the F<inn/inndcomm.h> header file, and also in the SYNOPSIS of this
-man page.  The parameters for each command are described in ctlinnd(8).
+reason of the failure); a C<0> value indicates success.  Replies are
+limited to 64KB; if the server's reply cannot be read back correctly (for
+instance because it does not fit in that limit), B<ICCcommand> fails and
+returns C<-1> instead of returning a truncated buffer.  The possible
+values of I<cmd> are defined in the F<inn/inndcomm.h> header file, and
+also in the SYNOPSIS of this man page.  The parameters for each command
+are described in ctlinnd(8).
 This routine returns C<-1> on communication failure, or the exit status
 sent by the server which will never be negative.
 
