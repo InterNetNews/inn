@@ -126,8 +126,8 @@ the absence of the I<key> parameter) to put all of the auth groups first,
 and all of the access groups below.
 
 A user identity, as established by an auth group, looks like an e-mail address
-if a domain is specified (like "<username>@<domain>") or otherwise just
-"<username>".
+if a domain is specified (like C<< <username>@<domain> >>) or otherwise just
+C<< <username> >>.
 
 If I<nnrpdauthsender> is set in F<inn.conf>, the user identity is also put
 into the Sender header field of posts made by that user.  See the documentation
@@ -266,6 +266,34 @@ the syntax:
 
 The file named <filename> is then included.  This syntax is allowed
 only at top-level.
+
+Auth and access blocks can also be wrapped in a C<group> block so that
+common parameter settings do not have to be repeated in every one of
+them:
+
+    group <name> {
+        <parameter>: <value>
+        # ...possibly other settings shared by the blocks below
+
+        auth <name> {
+            # ...
+        }
+
+        auth <name> {
+            # ...
+        }
+    }
+
+As with auth and access blocks, the <name> of a group is only for
+documentation purposes.  Any parameter set directly in a group block is
+used as the starting value for every auth or access block (and any
+nested group) declared inside it; each of those blocks may still
+override that value with a setting of its own.  Groups may themselves be
+nested inside other groups, in which case they inherit the enclosing
+group's settings the same way.  This is purely a convenience to avoid
+repeating identical parameter values across several auth or access
+blocks; it has no other effect on how auth and access blocks are
+matched.
 
 Below is the full list of allowable parameters for auth groups and access
 groups, and after that are some examples that may make this somewhat
