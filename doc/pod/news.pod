@@ -115,7 +115,7 @@ to Roman Donchenko for the code simplification and cleaning.
 
 Hardened several older code paths against memory-safety failures.  This
 includes buffer growth and concatenation in B<innfeed>, IMAP and LMTP response
-parsing, reserved file descriptor management, and hexadecimal and uuencoded 
+parsing, reserved file descriptor management, and hexadecimal and uuencoded
 data handling.  Reader tracking and virtualhost permission state, batch
 error cleanup, and file-list growth in expiration tools were also corrected.
 Many thanks to Kevin Bowling for the patches.

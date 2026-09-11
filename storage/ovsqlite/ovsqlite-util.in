@@ -44,7 +44,7 @@ Options:
                  with -n.
   -h             Print this help message.
   -i             Dump newsgroup-related overview information for all newsgroups
-                 or the newsgroup specified with -n. 
+                 or the newsgroup specified with -n.
   -n newsgroup   Specify the newsgroup on which to act.
   -o             Dump overview information for articles in the newsgroup
                  specified with -n, in the format returned to clients.
