@@ -184,8 +184,8 @@ message-ID already is a unique identifier for the article; however, since
 the storage method generates the token, it can encode all the information
 it needs to locate the article in the token.
 
-B<OV> is a common utility routines for accessing newsgroups and overview
-data independent of particular overview method.
+B<OV> is a common set of utility routines for accessing newsgroups and
+overview data independent of particular overview method.
 
 The B<OV> function is to isolate the applications from the individual
 methods.  All articles passed through the storage API are assumed to
@@ -418,7 +418,7 @@ newsgroup is being added.
 The B<OVgroupdel> function informs the overview method that the specified
 newsgroup is being removed.
 
-The B<OVadd> function stores an overview data.
+The B<OVadd> function stores overview data.
 
 The B<OVcancel> function requests the overview method delete overview data
 specified with token.

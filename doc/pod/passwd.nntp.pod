@@ -38,7 +38,7 @@ For example:
 This file should not be world-readable.
 
 B<actsync>, B<getlist>, B<inews>, B<innxbatch>, B<innxmit>, B<nnrpd>,
-B<nntpget> and B<rnews> make use of F<passd.nntp> when needing to connect
+B<nntpget> and B<rnews> make use of F<passwd.nntp> when needing to connect
 to a remote server.
 
 =head1 HISTORY

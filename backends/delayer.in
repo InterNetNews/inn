@@ -276,6 +276,6 @@ Improved and documented by Christoph Biedl in January 2024.
 
 =head1 SEE ALSO
 
-delay(1), innfeed.conf(5), newsfeeds(5).
+delayer(8), innfeed.conf(5), newsfeeds(5).
 
 =cut

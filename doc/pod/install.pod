@@ -159,7 +159,7 @@ the C<gnupg1> package.
 
 =item *
 
-If you want to use either the Python embedded hooks, you'll need to have a
+If you want to use the Python embedded hooks, you'll need to have a
 suitable version of B<Python> installed.  See F<doc/hook-python> for more
 information.
 
@@ -716,7 +716,7 @@ same file.
 
 A given CAF file contains all the articles received during a time frame of
 4 minutes or so (256 seconds), and is limited to 262,144 articles and about
-3,5 GB.  It is enough for normal operations.  The only caveat is when you're
+3.5 GB.  It is enough for normal operations.  The only caveat is when you're
 feeding at high speed bunches of articles between two servers; you'll then
 want to limit it to that amount of articles during the time frame when a CAF
 file stores newly arrived articles.
@@ -1593,7 +1593,7 @@ Next, you need to create an empty F<history> database.  To do this, type:
     touch history
     makedbz -i -o
 
-B<makedbz> will then create a database optimized for handling about 6,000,000
+B<makedbz> will then create a database optimized for handling about 6,666,666
 articles (or 500,000 if the slower tagged hash format is used).  If you
 expect to inject more articles than that, use the B<-s> flag to specify the
 number of entries to size the initial F<history> file for.  To pre-size it for

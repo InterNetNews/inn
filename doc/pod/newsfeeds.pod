@@ -211,7 +211,7 @@ the article is sent.
 =back
 
 If an article has more than one distribution specified, then each one is
-handled according according to the above rules.  If any of the specified
+handled according to the above rules.  If any of the specified
 distributions indicate that the article should be sent, it is; if none do,
 it is not sent.  In other words, the rules are used as a logical or.
 
@@ -589,11 +589,11 @@ was posted even if it is a control message.)
 
 =item h
 
-The history hash key of the article (derived from the message ID).
+The history hash key of the article (derived from the Message-ID).
 
 =item m
 
-The message ID of the article.
+The Message-ID of the article.
 
 =item n
 
@@ -796,7 +796,7 @@ The former look like this:
 
 which generates a file named I<pathoutgoing>/feed.example.com containing
 one line per article consisting of the storage API token, a space, and the
-message ID.
+Message-ID.
 
 The latter look like this:
 
@@ -822,7 +822,7 @@ Note that the I<pattern> for this feed is just C<!*> so that it won't
 receive any articles directly.  The feed should only receive those
 articles that would go to one of the funnel feeds that are feeding into
 it.  innfeed(8) will receive one line per article on its standard input
-containing the storage API token, the message ID, and a space-separated
+containing the storage API token, the Message-ID, and a space-separated
 list of sites that should receive that article.
 
 Here's a more esoteric example of a channel feed:
@@ -858,7 +858,7 @@ target of funnel feeds such as:
 Suppose that the server receives an article crossposted between
 news.admin.misc and news.software.nntp.  The server will notice that the
 article should be sent to the site C<peter@example.com> and the site
-C<bob@example.com>, both of which funnel into C<mailer!>, so it will look
+C<sue@example.com>, both of which funnel into C<mailer!>, so it will look
 at the C<mailer!> site and end up executing the command line:
 
     sm @...@ | innmail -s "News article" \
@@ -878,7 +878,7 @@ newsgroup other than control.cancel, which due to the sorting of control
 messages described in innd(8) will send it all control messages except for
 cancel messages.  B<controlchan> gets the storage API token, the name of the
 sending site (for processing old-style ihave and sendme control messages,
-be sure to read about I<logipaddr> in controlchan(8)), and the message ID for
+be sure to read about I<logipaddr> in controlchan(8)), and the Message-ID for
 each article.
 
 For many other examples, including examples of the special C<ME> site

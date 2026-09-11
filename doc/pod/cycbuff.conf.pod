@@ -124,7 +124,7 @@ Adding a new cycbuff just requires creating it (see below), adding a
 cycbuff line, adding it to a metacycbuff, and then restarting B<innd>.
 Similarly, changing the allocation of an existing cycbuff from a
 metacycbuff to another one just requires modifying the two metacycbuffs
-accordingly, and then restarting B<innd>.  (Only the cycbuff is noted
+accordingly, and then restarting B<innd>.  (Only the cycbuff is
 noted in the storage API tokens.)
 
 =head1 CREATING CYCBUFFS

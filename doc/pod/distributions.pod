@@ -23,7 +23,7 @@ instance:
 
 Blank lines and lines beginning with a number sign (C<#>) are ignored.
 
-Any client that issues the LIST DISTRIBUTIONS command obtain these
+Any client that issues the LIST DISTRIBUTIONS command obtains these
 recommended values, if available.  However, be aware that use of the LIST
 DISTRIBUTIONS command is not widespread (though documented in S<RFC 6048>)
 and most news clients will never ask for this file.

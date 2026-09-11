@@ -79,7 +79,7 @@ on getting the server's reply.  This is done by setting and catching a
 SIGALRM signal(2).  If the timeout is less than zero, then no reply will
 be waited for.  The B<SC_SHUTDOWN>, B<SC_XABORT>, and B<SC_XEXEC> commands
 do not get a reply either.  The default, which can be obtained by setting
-the timeout to <0>, is to wait during 2 minutes.
+the timeout to <0>, is to wait for 2 minutes.
 
 The B<ICCcommand> function sends the command I<cmd> with parameters I<argv>
 to the server.  It returns C<-1> on error.  If the server replies, and
@@ -100,9 +100,10 @@ cancelled.  The return value is the same as for B<ICCcommand>.
 
 The B<ICCpause>, B<ICCreserve>, and B<ICCgo> functions send a C<pause>,
 C<reserve>, or C<go> command to the server, respectively.  If B<ICCreserve>
-is used, then the I<why> value used in the B<ICCpause> invocation must match;
-the value used in the B<ICCgo> invocation must always match the one used
-in the B<ICCpause> invocation.  The return value for all three routines is
+is used, then the I<why> value used in the B<ICCpause> invocation must match
+the one used in the B<ICCreserve> invocation; the value used in the
+B<ICCgo> invocation must always match the one used in the B<ICCpause>
+invocation.  The return value for all three routines is
 the same as for B<ICCcommand>.
 
 If any routine described above fails, the I<ICCfailure> variable will

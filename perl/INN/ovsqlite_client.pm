@@ -1521,7 +1521,7 @@ Z<>
         errmsg     => $errmsg,        # optional output
     );
 
-This convenience methods calls C<search_group> repeatedly to fetch information
+This convenience method calls C<search_group> repeatedly to fetch information
 for all specified articles.  The callback function is called with the
 I<articles> array reference as the only argument.  It should return a true
 value to keep iterating or a false value to terminate.

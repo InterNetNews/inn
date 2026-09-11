@@ -22,11 +22,12 @@ along with their short descriptions.
 For more information on the formats of these files, see active(5),
 active.times(5), distrib.pats(5) and newsgroups(5).
 
-The listing files other than the F<active> file are common extensions to the
-NNTP protocol and may not be available on all servers.  For instance, C<counts>
-C<distributions>, C<headers>, C<moderators>, C<motd>, C<overview.fmt> and
-C<subscriptions>, amongst others, may be available.  Moreover, a I<uwildmat>
-pattern I<pattern> may also be usable for some of these listing files.
+The listing files other than the F<active> file are common extensions to
+the NNTP protocol and may not be available on all servers.  For instance,
+C<counts>, C<distributions>, C<headers>, C<moderators>, C<motd>,
+C<overview.fmt> and C<subscriptions>, amongst others, may be available.
+Moreover, a I<uwildmat> pattern I<pattern> may also be usable for some of
+these listing files.
 
 For more information on the formats of these files, see distributions(5),
 moderators(5), motd.news(5) and subscriptions(5).  The overview fields
@@ -89,8 +90,8 @@ comp.* groups on the default server:
 
     getlist active 'comp.*' m
 
-The following command lists all groups where local postings are permitted,
-are moderated or aliased:
+The following command lists all groups that allow local postings, are
+moderated or aliased:
 
     getlist active '*' ym=
 

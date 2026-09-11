@@ -115,7 +115,7 @@ the config file instead.  This is useful if you're running B<pullnews>
 as a system user on an automated basis out of cron or as an individual
 user, rather than the news user.
 
-See L<CONFIG FILE> below for the format of this file.
+See L<"CONFIG FILE"> below for the format of this file.
 
 =item B<-C> I<width>
 

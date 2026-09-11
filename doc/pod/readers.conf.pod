@@ -406,7 +406,7 @@ F<doc/hook-python>.
 A Python script for applying access control dynamically on a per newsgroup
 basis.  If an auth group matches successfully and contains a I<python_dynamic>
 parameter, then the argument script (without its C<.py> extension) located
-in the I<pathfilter> directory will be used to determine the clients rights
+in the I<pathfilter> directory will be used to determine the client's rights
 each time the user attempts to view a newsgroup, or read or post an article.
 Access rights as determined by I<python_dynamic> override the values of access
 group parameters such as I<newsgroups>, I<read> and I<post>.
@@ -570,12 +570,12 @@ already set or I<newsmaster> does not already contain an C<@>.
 
 =item I<groupexactcount>
 
-This parameter controls the threshold below with B<nnrpd> should give the
+This parameter controls the threshold below which B<nnrpd> should give the
 exact number of still existing articles present in newsgroups instead of
 an estimate.  The exact number is usually updated once a day during the
-expiry process by B<expirover> (run by B<news.daily>), and is updated when new
-articles arrive but not necessarily when articles are cancelled or overwritten
-in self-expiring storage methods like CNFS.
+expiry process by B<expireover> (run by B<news.daily>), and is updated
+when new articles arrive but not necessarily when articles are cancelled or
+overwritten in self-expiring storage methods like CNFS.
 
 When the estimated count of articles is strictly smaller than
 I<groupexactcount>, B<nnrpd> will recount the number of still existing

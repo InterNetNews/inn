@@ -148,7 +148,7 @@ and B<procbatch> can be invoked to process it afterwards.
 Upon receipt of a SIGALRM, B<innfeed> will close the funnel file specified
 on the command line, and will reopen it (see funnel file description above).
 
-B<innfeed> with catch SIGINT and will write a large debugging snapshot of
+B<innfeed> will catch SIGINT and will write a large debugging snapshot of
 the state of the running system into a file named F<innfeed.snapshot> in
 I<pathlog>.
 
@@ -461,7 +461,7 @@ prints its statistics.
 
 When using the B<-x> option, the config file entry's I<initial-connections>
 field will be the total number of connections created and used, no matter
-how many big the batch file, and no matter how big the I<max-connections>
+how big the batch file, and no matter how big the I<max-connections>
 field specifies.  Thus a value of C<0> for I<initial-connections> means
 nothing will happen in B<-x> mode.
 

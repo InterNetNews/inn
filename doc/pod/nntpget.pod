@@ -13,7 +13,7 @@ B<nntpget> connects to the NNTP server at the specified I<host> and retrieves
 articles from it.  The Message-IDs of the desired articles are read from
 standard input.  The articles are sent to standard output.
 
-Instead of reading Message-IDs from standard output, the B<-f>, B<-n>,
+Instead of reading Message-IDs from standard input, the B<-f>, B<-n>,
 B<-t> and B<-u> options make use of the C<NEWNEWS> command, which may not
 be available on the remote server.  Only one of the B<-f>, B<-t> or B<-u>
 option may be given at the same time; B<-n> can be specified only if one

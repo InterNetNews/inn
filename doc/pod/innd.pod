@@ -269,7 +269,7 @@ given remote site (normally a bad idea), add C<control.cancel> to its
 subscription list.  Normally it's best to exclude the control newsgroups
 from feeds to keep from sending your peers more control messages than they
 care about.  That's why the F<newsfeeds> pattern C<!control,!control.*>
-is as often as not specified (adding this pattern do not prevent control
+is as often as not specified (adding this pattern does not prevent control
 messages which affect the newsgroups fed to a site from being sent to it).
 
 checkgroups, newgroup and rmgroup control messages receive additional special

@@ -59,7 +59,7 @@ behavior.
 
 =head1 EXAMPLES
 
-Most of these examples are taken, with modifications from the original manual
+Most of these examples are taken, with modifications, from the original manual
 page dating from 1991 and were run in the EST/EDT time zone.
 
     % convdate '10 Feb 1991 10:00:00 -0500'

@@ -261,7 +261,7 @@ exists, this is equivalent to the C<changegroup> command.
 I<creator>, encoded in UTF-8 if given, may be omitted; if so, it will
 default to the newsmaster (as specified at configure time, normally
 C<usenet>).  I<status> may also be omitted; if so, it will default to C<y>
-(a normal, unmoderated group).  The combination of defaults make it possible
+(a normal, unmoderated group).  The combination of defaults makes it possible
 to use the text of the Control header field directly (although don't do this
 without checking the syntactic validity of the header field first).
 
@@ -477,7 +477,7 @@ or an empty string, both of which are equivalent.  Any other value is an
 error.
 
 This is the easiest way to start a new copy of B<innd> after upgrading or
-reload configuration files that can't be reloaded via the C<reload>
+to reload configuration files that can't be reloaded via the C<reload>
 command.
 
 =back

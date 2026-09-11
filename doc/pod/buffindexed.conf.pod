@@ -55,7 +55,7 @@ be longer than 63 characters.
 <filename> does not specify a special device, the file size of the buffer
 must be S<< <size> * 1024 bytes >>.  If it does specify a special device, that
 device must have at least <size> space available.  For more
-information on setting up the buffers, see L<CREATING BUFFERS>.
+information on setting up the buffers, see L<"CREATING BUFFERS">.
 
 An example of F<buffindexed.conf> file can be:
 
@@ -74,7 +74,7 @@ care (other than restarting B<innd> after modifying F<buffindexed.conf>).
 If you need to rebuild overview, you should zero all of the buffers first.
 
 We recommend not to reserve too much spare space in existing buffers, so
-that to minimize the duration of the B<expireover> process, and to just
+as to minimize the duration of the B<expireover> process, and to just
 add new buffers when space left is low (see the result of C<inndf -no>).
 Plan on needing at least S<0.65 KB> for every article in your spool
 (not counting crossposts).  So, if you have 5 million articles, you'll

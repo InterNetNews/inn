@@ -24,7 +24,7 @@ accept line endings consisting only of LF, and to treat EOF as
 indicating the end of the input even if C<.\r\n> has not been received.)
 
 Code which reads information in the format discussed below and parses it
-into convenient structures is available authenticators and resolvers
+into convenient structures is available to authenticators and resolvers
 written in C; see libinnauth(3) for details.  Use of the libinnauth library
 will make these programs substantially easier to write and more robust.
 

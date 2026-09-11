@@ -180,7 +180,7 @@ and it must not call die to report failure.  The default syslog handlers
 report memory allocation failure to stderr and exit.
 
 Finally, die and sysdie support an additional handler (the external
-variable message_fatal_cleanup) that's called immediate before exiting,
+variable message_fatal_cleanup) that's called immediately before exiting,
 takes no arguments, and returns an int which is used as the argument for
 exit.  It can do any necessary global cleanup, call abort instead to
 generate a core dump or the like.

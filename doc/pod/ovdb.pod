@@ -45,7 +45,7 @@ ovdb_init(8) man page for upgrade instructions, as well as the
 L<"COMPRESSION"> section below.
 
 Note that when the S<Berkeley DB> library is updated to a newer version,
-the ovdb database also needs being upgraded.
+the ovdb database also needs to be upgraded.
 
 =head1 INSTALLATION
 
