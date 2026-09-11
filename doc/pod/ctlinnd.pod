@@ -73,8 +73,9 @@ Date header field), respectively.  I<expires> should be C<0> if the
 article doesn't have an Expires header field.  I<token> is the storage
 API token for the article, and may be empty.
 
-This command can only be used while the server is running, and will be
-rejected if the server is paused or throttled.
+If the server is throttled manually, this command causes it to briefly
+open the history database.  If the server is paused or throttled for any
+other reason, this command is rejected.
 
 =item allow I<reason>
 
@@ -238,10 +239,12 @@ is the status for NNTP channels.
 The <type> field is one of the following values:
 
     control     Control channel for ctlinnd
+    exploder    The process for an exploder feed
     file        An outgoing file feed
     localconn   Local channel used by nnrpd and rnews for posting
     nntp        NNTP channel for remote connections
     proc        The process for a process feed
+    reject      A connection being rejected
     remconn     The channel that accepts new remote connections
 
 Channel status indicates whether the channel is paused or not.  Nothing is
@@ -265,10 +268,13 @@ C<usenet>).  I<status> may also be omitted; if so, it will default to C<y>
 to use the text of the Control header field directly (although don't do this
 without checking the syntactic validity of the header field first).
 
-This command can only be done while the server is running or throttled
-manually.  It will update its internal state when a C<go> command is
-sent.  This command updates the F<active.times> file as well.  This
-command is forwarded; see L<"NOTES"> below.
+When creating a new group, this command works while the server is
+running, paused, or manually throttled; it is rejected only if the
+server is throttled because of an I/O error.  (When the newsgroup
+already exists, the C<changegroup>-equivalent restrictions apply
+instead: the server must be running.)  It will update its internal
+state when a C<go> command is sent.  This command updates the
+F<active.times> file as well.
 
 =item param I<letter> I<value>
 
@@ -399,8 +405,9 @@ file and its overview information is purged, making it immediately
 unavailable to readers.  Unlike the C<newgroup> command, this command does
 not update the F<active.times> file.
 
-This command can only be done while the server is running or throttled
-manually.  This command is forwarded; see L<"NOTES"> below.
+This command works while the server is running, paused, or manually
+throttled; it is rejected only if the server is throttled because of an
+I/O error.
 
 =item send I<feed> I<text>
 
@@ -408,9 +415,10 @@ The specified I<text> is sent as a control line to the exploder I<feed>.
 
 =item shutdown I<reason>
 
-The server is shut down, with the specified reason recorded in the log and
-sent to all open connections.  It is a good idea to send a C<throttle>
-command first so that feeds can be shut down more gracefully.
+The server is shut down, with the specified reason recorded in the log.
+All open connections are closed without any message being sent to them.
+It is a good idea to send a C<throttle> command first so that feeds can
+be shut down more gracefully.
 
 If Perl or Python filtering is compiled in and enabled, certain functions
 are called at C<throttle> or C<shutdown> (to save filter state to disk,
@@ -433,8 +441,10 @@ See I<status> in inn.conf(5) for information on how to set the default.
 
 =item throttle I<reason>
 
-Close all existing incoming connections and outgoing feeds, and reject new
-connections.  Close the history database.  This should be used for
+Reject new incoming connections immediately.  Existing incoming
+connections are not closed right away; each one is only shut down the
+next time it tries to post or transfer an article.  Outgoing feeds are
+not affected.  Close the history database.  This should be used for
 long-term locks or for running a large number of C<newgroup> and
 C<rmgroup> commands without restarting all outgoing feeds between each
 one.  (Note that changing the status of existing newsgroups when the
@@ -457,12 +467,13 @@ set the default.
 Turn tracing on or off for the specified I<item>.  I<flag> should start
 with the letter C<y> or C<n> to turn tracing on or off, respectively.  If
 I<item> starts with a number, tracing is set up for the specified B<innd>
-channel, which must be an incoming NNTP feed.  If it starts with the
-letter C<i>, general B<innd> tracing is turned on or off.  If it starts
-with the letter C<n>, future B<nnrpd> processes spawned by C<innd> will or
-will not be passed the B<-t> flag, as appropriate.  This will not affect
-any B<nnrpd> processes already running, or B<nnrpd> processes started by
-some means other than B<innd>.
+channel, whatever its type (as shown by the C<name> command).  If it
+starts with the letter C<i>, general B<innd> tracing is turned on or
+off.  If it starts with the letter C<n>, future B<nnrpd> processes
+spawned by B<innd> will or will not be passed the B<-t> flag, as
+appropriate.  This will not affect any B<nnrpd> processes already
+running, or B<nnrpd> processes started by some means other than
+B<innd>.
 
 =item xabort I<reason>
 

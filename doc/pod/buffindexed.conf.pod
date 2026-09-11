@@ -46,7 +46,8 @@ number sign (C<#>) are ignored.  All other lines must be of the format:
 The order of lines is not significant.
 
 <index> is the index of this overview buffer and must be unique.  Other
-than that constraint, it can be any number between 0 and 65535.
+than that constraint, it can be any number between 0 and 32767 (it is
+internally stored as a signed 16-bit integer).
 
 <filename> is the path to the buffer.  The length of the path should not
 be longer than 63 characters.

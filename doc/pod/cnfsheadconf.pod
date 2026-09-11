@@ -4,7 +4,7 @@ cnfsheadconf - Read and write CNFS headers
 
 =head1 SYNOPSIS
 
-B<cnfsheadconf> [B<-hw>] [B<-c> I<class>]
+B<cnfsheadconf> [B<-hw>] [B<-c> I<cycbuff>]
 
 =head1 DESCRIPTION
 
@@ -17,10 +17,10 @@ as directed by the interactive user if B<-w> is used.
 
 =over 4
 
-=item B<-c> I<class>
+=item B<-c> I<cycbuff>
 
-Print the status of the specified class.  It also modifies it in case B<-w>
-is used.
+Print the status of the specified cyclic buffer.  It also modifies it in
+case B<-w> is used.
 
 =item B<-h>
 
