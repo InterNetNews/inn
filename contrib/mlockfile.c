@@ -128,7 +128,7 @@ main(int argc, char *argv[])
 
     /* construct list of pathnames which we're to operate on, zero out
      * the "cookies" so we lock it in core first time through */
-    ml = malloc((1 + argc) * sizeof ml);
+    ml = malloc((1 + argc) * sizeof(*ml));
     for (i = 0; argc--; ++i, ++argv) {
         char *at;
         off_t offset = 0;
