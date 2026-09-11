@@ -1227,7 +1227,7 @@ INN::ovsqlite_client - Talk to ovsqlite-server from Perl
     use INN::ovsqlite_client qw(:all);
 
     my $client = INN::ovsqlite_client::->new(
-        port => "/usr/local/news/run/ovsqlite.sock",
+        path => "/usr/local/news/run/ovsqlite.sock",
     );
 
     $client->search_group_all(
@@ -1451,7 +1451,7 @@ iterating or a false value to terminate.
 
 =item add_article
 
-    $code = $client->add_artice(
+    $code = $client->add_article(
         groupname  => $groupname,
         artnum     => $artnum,
         token      => $token,
