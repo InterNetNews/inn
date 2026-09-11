@@ -21,7 +21,7 @@
 # All rights reserved.
 #
 # Various bug fixes, code and documentation improvements since then
-# in 1997-1999, 2008, 2021-2024.
+# in 1997-1999, 2008, 2021-2024, 2026.
 #
 # Permission to use and modify is hereby granted so long as this
 # notice remains.  Use at your own risk.  No warranty is implied.
@@ -69,9 +69,9 @@ host2="$4"
 
 # Lock out others
 #
-trap 'rm -f ${LOCK}; exit 1' 0 1 2 3 15
-shlock -p $$ -f ${LOCK} || {
-    echo "$0: Locked by $(cat ${LOCK})" 1>&2
+trap 'rm -f "${LOCK}"; exit 1' 0 1 2 3 15
+shlock -p $$ -f "${LOCK}" || {
+    echo "$0: Locked by $(cat "${LOCK}")" 1>&2
     exit 4
 }
 
@@ -80,7 +80,7 @@ shlock -p $$ -f ${LOCK} || {
 tmp="$TMPDIR/.merge$$"
 act1="$TMPDIR/.act1$$"
 act2="$TMPDIR/.act2$$"
-trap "rm -f $tmp ${LOCK} $act1 $act2; exit" 0 1 2 3 15
+trap "rm -f '$tmp' '${LOCK}' '$act1' '$act2'; exit" 0 1 2 3 15
 rm -f "$tmp"
 touch "$tmp"
 chmod 0600 "$tmp"
@@ -93,8 +93,8 @@ chmod 0600 "$act2"
 
 # try to fetch the first active file
 #
-echo "=-= fetching $host1" >>$tmp
-eval "$ACTSYNC -i $ign1 $FETCH /dev/null $host1 >$act1 2>>$tmp"
+echo "=-= fetching $host1" >>"$tmp"
+$ACTSYNC -i "$ign1" $FETCH /dev/null "$host1" >"$act1" 2>>"$tmp"
 status=$?
 if [ "$status" -ne 0 ]; then
 
@@ -107,23 +107,23 @@ if [ "$status" -ne 0 ]; then
         sleep 300
 
         # try #1
-        eval "$ACTSYNC -i $ign1 $FETCH /dev/null $host1 >$act1 2>>$tmp"
+        $ACTSYNC -i "$ign1" $FETCH /dev/null "$host1" >"$act1" 2>>"$tmp"
         status=$?
-        if [ "$status" -eq "$NOSYNC" ]; then
+        if [ "$status" -eq 0 ] || [ "$status" -eq "$NOSYNC" ]; then
             break
         fi
 
         # try #2
-        eval "$ACTSYNC -i $ign1 $FETCH /dev/null $host1 >$act1 2>>$tmp"
+        $ACTSYNC -i "$ign1" $FETCH /dev/null "$host1" >"$act1" 2>>"$tmp"
         status=$?
-        if [ "$status" -eq "$NOSYNC" ]; then
+        if [ "$status" -eq 0 ] || [ "$status" -eq "$NOSYNC" ]; then
             break
         fi
 
         # try #3
-        eval "$ACTSYNC -i $ign1 $FETCH /dev/null $host1 >$act1 2>>$tmp"
+        $ACTSYNC -i "$ign1" $FETCH /dev/null "$host1" >"$act1" 2>>"$tmp"
         status=$?
-        if [ "$status" -eq "$NOSYNC" ]; then
+        if [ "$status" -eq 0 ] || [ "$status" -eq "$NOSYNC" ]; then
             break
         fi
     done
@@ -143,8 +143,8 @@ fi
 
 # try to fetch the second active file
 #
-echo "=-= fetching $host2" >>$tmp
-eval "$ACTSYNC -i $ign2 $FETCH /dev/null $host2 >$act2 2>>$tmp"
+echo "=-= fetching $host2" >>"$tmp"
+$ACTSYNC -i "$ign2" $FETCH /dev/null "$host2" >"$act2" 2>>"$tmp"
 status=$?
 if [ "$status" -ne 0 ]; then
 
@@ -157,23 +157,23 @@ if [ "$status" -ne 0 ]; then
         sleep 300
 
         # try #1
-        eval "$ACTSYNC -i $ign2 $FETCH /dev/null $host2 >$act2 2>>$tmp"
+        $ACTSYNC -i "$ign2" $FETCH /dev/null "$host2" >"$act2" 2>>"$tmp"
         status=$?
-        if [ "$status" -eq "$NOSYNC" ]; then
+        if [ "$status" -eq 0 ] || [ "$status" -eq "$NOSYNC" ]; then
             break
         fi
 
         # try #2
-        eval "$ACTSYNC -i $ign2 $FETCH /dev/null $host2 >$act2 2>>$tmp"
+        $ACTSYNC -i "$ign2" $FETCH /dev/null "$host2" >"$act2" 2>>"$tmp"
         status=$?
-        if [ "$status" -eq "$NOSYNC" ]; then
+        if [ "$status" -eq 0 ] || [ "$status" -eq "$NOSYNC" ]; then
             break
         fi
 
         # try #3
-        eval "$ACTSYNC -i $ign2 $FETCH /dev/null $host2 >$act2 2>>$tmp"
+        $ACTSYNC -i "$ign2" $FETCH /dev/null "$host2" >"$act2" 2>>"$tmp"
         status=$?
-        if [ "$status" -eq "$NOSYNC" ]; then
+        if [ "$status" -eq 0 ] || [ "$status" -eq "$NOSYNC" ]; then
             break
         fi
     done
@@ -193,8 +193,8 @@ fi
 
 # merge the 2 active files to stdout
 #
-echo "=-= merging $host1 and $host2" >>$tmp
-eval "$ACTSYNC $MERGE $act1 $act2" 2>>$tmp
+echo "=-= merging $host1 and $host2" >>"$tmp"
+$ACTSYNC $MERGE "$act1" "$act2" 2>>"$tmp"
 status=$?
 if [ "$status" -ne 0 ]; then
     echo "=-= $(date) merge $host1 $host2 exit $status" 1>&2
