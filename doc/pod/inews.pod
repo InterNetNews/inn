@@ -17,7 +17,7 @@ the news server specified in the I<server> parameter in F<inn.conf>
 or overridden by the C<NNTPSERVER> environment variable when running B<inews>.
 
 B<inews> submits articles via POST and is suitable for posting articles that
-have not already been injecting into Usenet.  Submitting articles received
+have not already been injected into Usenet.  Submitting articles received
 from other sources should generally use rnews(1) instead.
 
 By default, if a file named F<.signature> exists in the home directory of

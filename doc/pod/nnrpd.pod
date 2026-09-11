@@ -378,7 +378,7 @@ necessarily come from Keywords header fields.
 =head1 HISTORY
 
 Written by Rich $alz <rsalz@uunet.uu.net> for InterNetNews.  Overview
-support added by Rob Robertston <rob@violet.berkeley.edu> and Rich in
+support added by Rob Robertson <rob@violet.berkeley.edu> and Rich in
 January, 1993.  Exponential backoff (for posting) added by Dave Hayes in
 February 1998.
 

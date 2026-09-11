@@ -602,7 +602,7 @@ the storage API token by using sm(8).
 
 =item p
 
-The time the article was posted a seconds since epoch.
+The time the article was posted as seconds since epoch.
 
 =item s
 

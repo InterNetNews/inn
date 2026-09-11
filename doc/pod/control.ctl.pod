@@ -60,7 +60,7 @@ will be used.
 
 =item B</localencoding/>
 
-When this type is used, the line consist of only two fields.  The default
+When this type is used, the line consists of only two fields.  The default
 value when this type does not appear in F<control.ctl> (or when the
 specified charset is unknown) is equivalent to:
 
@@ -278,7 +278,7 @@ with the following F<control.ctl> entries:
     checkgroups:foo@bar.com:foo.bar4|foo.bar4.*:doit
     checkgroups:foo@bar.com:foo.bar5|foo.bar5.*:drop
 
-Then, as F<control.ctl> is processed from bottom, here is what happens:
+Then, as F<control.ctl> is processed from the bottom, here is what happens:
 
 =over 4
 

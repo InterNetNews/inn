@@ -187,15 +187,14 @@ it needs to locate the article in the token.
 B<OV> is a common set of utility routines for accessing newsgroups and
 overview data independent of particular overview method.
 
-The B<OV> function is to isolate the applications from the individual
-methods.  All articles passed through the storage API are assumed to
-be in wire format.  Wire format means C<\r\n> at the end of lines,
-dot-stuffed lines (that is to say C<.> at the beginning of lines which
-already start with C<.>), and C<.\r\n> at the end of article on NNTP stream
-are not stripped.  This has a performance win when transferring articles.
-Note that for the tradspool method, wire format can be disabled.  This is
-just for compatibility which is needed by some old tools written for
-traditional spool.
+The B<OV> function is to isolate the applications from the individual methods.
+All articles passed through the storage API are assumed to be in wire format.
+Wire format means C<\r\n> at the end of lines, dot-stuffed lines (that is
+to say C<.> at the beginning of lines which already start with C<.>), and
+C<.\r\n> at the end of an article on an NNTP stream are not stripped.  This
+has a performance win when transferring articles.  Note that for the tradspool
+method, wire format can be disabled.  This is just for compatibility which is
+needed by some old tools written for traditional spool.
 
 The B<IsToken> function checks to see if the text is formatted as a text
 token string.  It returns true if formatted correctly or returns false
@@ -206,7 +205,7 @@ The B<TokenToText> function converts a token into a text string for output.
 The B<TextToToken> function converts a text string into a token.
 
 The B<SMsetup> function configures some parameters for use by the storage
-manager.  I<type> is one of following:
+manager.  I<type> is one of the following:
 
 =over 4
 
@@ -241,7 +240,7 @@ match any I<uwildmat> expression in F<storage.conf>.  B<SMstore> fails if
 B<SM_RDWR> has not been set to true with B<SMsetup>.
 
 The B<SMretrieve> function retrieves an article specified with I<token>.
-I<amount> is the one of following which specifies retrieving type:
+I<amount> is one of the following, which specifies the retrieval type:
 
 =over 4
 
@@ -322,7 +321,7 @@ checking the existence of an article is expensive or not.
 The B<SMprintfiles> function shows file name or token usable by fastrm(1).
 
 The B<SMflushcacheddata> function flushes cached data on each storage
-method.  I<type> is one of following:
+method.  I<type> is one of the following:
 
 =over 4
 
@@ -350,7 +349,7 @@ B<SMerrno> and B<SMerrorstr> indicate the reason of the last error concerning
 storage manager.
 
 B<OVopen> calls the setup function for configured method which is specified
-as I<ovmethod> in F<inn.conf>.  I<mode> is constructed from following:
+as I<ovmethod> in F<inn.conf>.  I<mode> is constructed from the following:
 
 =over 4
 
@@ -368,7 +367,7 @@ This function should be called prior to all other OV functions which begin
 with C<OV>.
 
 The B<OVctl> function probes or sets some parameters for the overview method.
-I<type> is one of following:
+I<type> is one of the following:
 
 =over 4
 

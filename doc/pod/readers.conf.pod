@@ -4,7 +4,7 @@ readers.conf - Access control and configuration for nnrpd
 
 =head1 IN A NUTSHELL
 
-The F<readers.conf> file parameters who is allowed to connect as a news
+The F<readers.conf> file determines who is allowed to connect as a news
 reader and what they're allowed to do after they connect.  Bear in mind
 that in F<readers.conf>, authentication and authorization are configured in
 different blocks.  First, a user is authenticated, and assigned an identity
@@ -744,7 +744,10 @@ At least one of the I<domain> or I<pathhost> parameters must be set in the
 access group to something different than in F<inn.conf>, otherwise B<nnrpd>
 will fail to start.
 
-Note that setting this parameter requires the server modify all posts before
+You may also want to set the I<complaints>, I<domain>, I<fromhost>, and
+I<newsmaster> parameters to specific values if you use this parameter.
+
+Note that setting this parameter requires the server to modify all posts before
 presenting them to the client and therefore may decrease performance slightly.
 
 =back
@@ -842,7 +845,7 @@ Note that the above access realm could also be written without the
 I<users> key, in which case it applies to any user identity (though in
 this example, the user identity that will be assigned to all matching
 connections is C<< <EXAMPLE> >>).  It is however recommended to keep
-an explicit I<users> key so as to better view to whom the access block
+an explicit I<users> key so as to better see to whom the access block
 applies.
 
 As the only available auth realm only matches hosts in the "example.com"
@@ -864,7 +867,7 @@ auth and access group:
 
 If those are put in the file after the above example, they'll take
 precedence (because they're later in the file) for any user coming from a
-machine in the lab.example.com domain, everyone will only have read
+machine in the lab.example.com domain: everyone will only have read
 access, not posting access.
 
 Here's a similar example for a news server that accepts connections from
@@ -904,7 +907,7 @@ connections before username/password is sent, and the C<auth: ckpasswd>
 one only matches after; order would matter if either group applied to
 both cases.  The order of the access groups in this case does matter,
 provided the I<newsgroups> lines differ; the access group with no I<users>
-line needs to be first, with the C<< users: <LOCAL> >> group after.
+line needs to be first, with the C<< users: <EXAMPLE> >> group after.
 
 Here's an example of another common case: a server that only allows
 connections from a local domain and has an additional hierarchy that's

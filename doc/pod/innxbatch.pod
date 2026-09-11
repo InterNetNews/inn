@@ -29,7 +29,7 @@ If authentication credentials are present for the remote server in the
 F<passwd.nntp> file in I<pathetc>, then B<innxbatch> will use them to
 authenticate.
 
-B<innxbatch> does not use itself any file locking.  At worst, a batch could be
+B<innxbatch> itself does not use any file locking.  At worst, a batch could be
 transmitted twice in parallel by two independent invocations of B<innxbatch>.
 To prevent this, it should be invoked by a script run out of cron(8) that uses
 shlock(8) to lock the host name, followed by a C<ctlinnd flush> command to

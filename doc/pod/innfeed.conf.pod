@@ -141,7 +141,7 @@ For a fuller example configuration file, see the supplied F<innfeed.conf>.
 
 =head1 GLOBAL VALUES
 
-The following listing show all the keys that apply to the process as
+The following listing shows all the keys that apply to the process as a
 whole.  These are not required (compiled-in defaults are used where needed).
 
 =over 4
@@ -326,7 +326,7 @@ or I<max-reconnect-time> is reached.
 =item I<max-reconnect-time>
 
 This key requires an integer value and defaults to C<3600>.  It defines
-the maximum number of seconds to wait between attempt to reconnect
+the maximum number of seconds to wait between attempts to reconnect
 to a peer.  The initial value for reconnection attempts is defined by
 I<initial-reconnect-time>, and it is doubled after each failure, up to
 this value.
@@ -376,13 +376,13 @@ is valid.  Currently this is only needed by the DIGEST-MD5 SASL mechanism.
 
 A printf(3)-style format string for creating the envelope recipient address.
 The pattern MUST include a single string specifier which will be replaced
-with the newgroup (e.g. C<bb+%s>).  The default is C<+%s>.
+with the newsgroup (e.g. C<bb+%s>).  The default is C<+%s>.
 
 =item I<deliver-to-header>
 
 An optional printf(3)-style format string for creating a To header field
 to be prepended to the article.  The pattern MUST include a single string
-specifier which will be replaced with the newgroup (e.g. C<post+%s@domain>).
+specifier which will be replaced with the newsgroup (e.g. C<post+%s@domain>).
 If not specified, the To header field will not be prepended.
 
 =back
@@ -559,7 +559,7 @@ This key requires a floating-point number which must be in the range
 When running in no-CHECK mode, as described above, if the percentage
 of articles the remote server accepts drops below this number, then the
 no-CHECK optimization is turned off until the percentage gets above the
-I<no-check-high> value again.  If there is small difference between this
+I<no-check-high> value again.  If there is a small difference between this
 and the I<no-check-high> value (less than about 5.0), then B<innfeed> may
 frequently go in and out of no-CHECK mode.  If the difference is too big,
 then it will make it harder to get out of no-CHECK mode when necessary

@@ -57,10 +57,10 @@ leading or trailing whitespace.
 
 =head1 BUGS
 
-In many cases, nnrpd provides more information than is normally useful
+In many cases, B<nnrpd> provides more information than is normally useful
 (for example, even when calling an authenticator, the resolver
-information is often provided.)  On the other hand, in certain cases it
-provides less information than might be expected (for example, if nnrpd
+information is often provided).  On the other hand, in certain cases it
+provides less information than might be expected (for example, if B<nnrpd>
 is reading from stdin rather than a socket).  The implementation is
 capable of handling at least the first of these issues, but that
 functionality is not exposed in the interface.

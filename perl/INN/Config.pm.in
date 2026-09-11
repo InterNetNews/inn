@@ -256,7 +256,7 @@ A local Perl script named F<innshellvars.pl.local> in I<pathetc> will be
 loaded, if present and executable, at the end of the run of this module.
 A typical use is to add or override variables.
 
-You only have to declare the module at the beginning of them:
+You only have to declare the module at the beginning of your script:
 
     use lib '<pathnews>/lib/perl';
     use INN::Config;

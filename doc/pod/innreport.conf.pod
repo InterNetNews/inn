@@ -202,8 +202,8 @@ configuration file.
 Defines the file extension of generated HTML reports, if enabled.  A dot
 (C<.>) should begin the extension.  The default is C<.html>.
 
-You may want to use C<.xhtml> instead to let the web server serve correct
-MIME type, as B<innreport> generates S<XHTML 1.1> pages.
+You may want to use C<.xhtml> instead to let the web server serve the
+correct MIME type, as B<innreport> generates S<XHTML 1.1> pages.
 
 =item I<html_footer_file>
 
@@ -255,7 +255,7 @@ Sets the name of the index web page if HTML reports are enabled.  The default
 is C<index.html>.
 
 You may want to use C<index.xhtml> instead to let the web server serve
-correct MIME type, as B<innreport> generates S<XHTML 1.1> pages.
+the correct MIME type, as B<innreport> generates S<XHTML 1.1> pages.
 
 Use of the B<-index> flag with innreport(8) takes precedence over the
 configuration file.
