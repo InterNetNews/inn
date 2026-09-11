@@ -308,6 +308,16 @@ dopr(char *buffer, size_t maxlen, const char *format, va_list args)
                 cflags = DP_C_LDOUBLE;
                 ch = *format++;
                 break;
+            case 'z': /* size_t */
+            case 'j': /* intmax_t */
+            case 't': /* ptrdiff_t */
+                /* None of these types have a dedicated cflags value.  On
+                 * every ABI we support, they're the same width as either
+                 * long or long long, so pick whichever one matches. */
+                cflags =
+                    (sizeof(size_t) > sizeof(long)) ? DP_C_LLONG : DP_C_LONG;
+                ch = *format++;
+                break;
             default:
                 break;
             }

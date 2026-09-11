@@ -4,7 +4,7 @@
 ** Written 10-09-99 by rmtodd@servalan.servalan.com
 **
 ** Various bug fixes, code and documentation improvements since then
-** in 2002-2004, 2006, 2011, 2014, 2015, 2021, 2024.
+** in 2002-2004, 2006, 2011, 2014, 2015, 2021, 2024, 2026.
 **
 ** Note that history and overview will have to be rebuilt for the moved
 ** articles to be visible after they're moved.
@@ -28,6 +28,7 @@ ProcessLine(char *line)
 {
     char *tokenptr;
     int len;
+    size_t artlen;
     ARTHANDLE *art;
     ARTHANDLE newart = ARTHANDLE_INITIALIZER;
     TOKEN token, newtoken;
@@ -49,9 +50,9 @@ ProcessLine(char *line)
     if ((art = SMretrieve(token, RETR_ALL)) == NULL)
         return;
 
-    len = art->len;
-    arttmp = xmalloc(len);
-    memcpy(arttmp, art->data, len);
+    artlen = art->len;
+    arttmp = xmalloc(artlen);
+    memcpy(arttmp, art->data, artlen);
     SMfreearticle(art);
     if (!SMcancel(token)) {
         fprintf(stderr, "%s: cant cancel %s:%s\n", ME, tokenptr, SMerrorstr);
@@ -59,7 +60,7 @@ ProcessLine(char *line)
     }
 
     newart.data = arttmp;
-    newart.len = len;
+    newart.len = artlen;
     newart.arrived = (time_t) 0; /* set current time */
     newart.token = (TOKEN *) NULL;
 

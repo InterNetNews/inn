@@ -625,7 +625,7 @@ GetHeader(const char *header, bool stripspaces)
     const char *limit;
     const char *cmplimit;
     static char *retval = NULL;
-    static int retlen = 0;
+    static size_t retlen = 0;
     int headerlen;
     bool pathheader = false;
     bool xrefheader = false;
@@ -684,11 +684,11 @@ GetHeader(const char *header, bool stripspaces)
                 if (retval == NULL) {
                     /* Possibly add '!' (a second one) at the end of the
                      * virtual path. So it is +2 because of '\0'. */
-                    retlen = q - p + VirtualPathlen + 2;
+                    retlen = (size_t) (q - p) + VirtualPathlen + 2;
                     retval = xmalloc(retlen);
                 } else {
-                    if ((q - p + VirtualPathlen + 2) > retlen) {
-                        retlen = q - p + VirtualPathlen + 2;
+                    if ((size_t) (q - p) + VirtualPathlen + 2 > retlen) {
+                        retlen = (size_t) (q - p) + VirtualPathlen + 2;
                         retval = xrealloc(retval, retlen);
                     }
                 }

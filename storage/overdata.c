@@ -339,7 +339,7 @@ overview_split(const char *line, size_t length, ARTNUM *number,
         /* The first field is the article number. */
         if (p == NULL) {
             if (number != NULL) {
-                *number = atoi(line);
+                *number = strtoul(line, NULL, 10);
             }
         } else {
             cvector_add(vector, line);

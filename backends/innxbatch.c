@@ -494,7 +494,12 @@ main(int ac, char *av[])
             continue;
         }
 
-        XBATCHsize = statbuf.st_size;
+        if (statbuf.st_size < 0 || (uintmax_t) statbuf.st_size > INT_MAX) {
+            warn("batch file %s is too large, skipping", XBATCHname);
+            close(fd);
+            continue;
+        }
+        XBATCHsize = (int) statbuf.st_size;
         if (XBATCHsize == 0) {
             warn("batch file %s is zero length, skipping", XBATCHname);
             close(fd);

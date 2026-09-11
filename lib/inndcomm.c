@@ -343,7 +343,7 @@ ICCcommand(char cmd, const char *argv[], char **replyp)
 
     /* Read the reply. */
     i = RECVorREAD(ICCfd, buff, bufsiz);
-    if ((unsigned int) i < HEADER_SIZE) {
+    if (i < 0 || (size_t) i < HEADER_SIZE) {
         free(buff);
         ICCfailure = "read";
         return -1;

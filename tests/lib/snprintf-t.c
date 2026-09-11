@@ -12,6 +12,9 @@
  * Copyright 1995 Patrick Powell
  * Copyright 2001 Hrvoje Niksic
  *
+ * Various bug fixes, code and documentation improvements since then
+ * in 2021-2026.
+ *
  * This code is based on code written by Patrick Powell (papowell@astart.com)
  * It may be used for any purpose as long as this notice remains intact
  * on all source code distributions
@@ -47,8 +50,8 @@ static const char *const fp_formats[] = {
     "%01.3f", "%3.1f", "%3.2f",  "%.0f",   "%.1f",    "%f",      NULL};
 
 static const char *const int_formats[] = {
-    "%-1.5d",   "%1.5d",  "%31.9d", "%5.5d", "%10.5d", "% 10.5d",
-    "%+22.30d", "%01.3d", "%4d",    "%d",    "%ld",    NULL};
+    "%-1.5ld",   "%1.5ld",  "%31.9ld", "%5.5ld", "%10.5ld", "% 10.5ld",
+    "%+22.30ld", "%01.3ld", "%4ld",    "%ld",    "%ld",     NULL};
 
 static const char *const uint_formats[] = {
     "%-1.5lu",  "%1.5lu",   "%31.9lu", "%5.5lu", "%10.5lu",

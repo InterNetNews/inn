@@ -5,6 +5,9 @@
 **  by Bob Heiney and Christophe Wolfhugel and a whole bunch of other people
 **  mentioned in the docs and sources for the other filters.
 **
+**  Various bug fixes, code and documentation improvements since then
+**  in 1999-2006, 2008, 2010, 2011, 2013, 2017, 2018, 2020, 2021, 2024, 2026.
+**
 **  The astute reader may notice the commission of blatant atrocities against
 **  Python's OO model here.  Don't tell Guido.
 **
@@ -495,6 +498,11 @@ PY_hashstring(PyObject *self UNUSED, PyObject *args)
 
     if (!PyArg_ParseTuple(args, (char *) "s#|i", &instring, &insize, &lines))
         return NULL;
+
+    if (insize < 0 || (uintmax_t) insize > INT_MAX) {
+        PyErr_SetString(PyExc_ValueError, "string too large to hash");
+        return NULL;
+    }
 
     /* If a linecount is provided, munge before hashing. */
     if (lines > 0) {
