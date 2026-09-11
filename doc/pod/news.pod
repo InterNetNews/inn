@@ -39,6 +39,10 @@ Rehmer for the bug report.
 
 =item *
 
+Fixed the output of C<ctlinnd name> for exploder channels.
+
+=item *
+
 When I<laxmid> is set in the I<syntaxchecks> parameter in F<inn.conf>,
 Message-IDs without any C<@> character are now accepted by B<innd>.  It was
 not always the case in the previous version, though mentioned in the release

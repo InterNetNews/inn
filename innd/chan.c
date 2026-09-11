@@ -492,6 +492,7 @@ CHANname(CHANNEL *cp)
     int i;
     SITE *sp;
     const char *site;
+    const char *type;
     pid_t pid;
 
     switch (cp->Type) {
@@ -536,14 +537,18 @@ CHANname(CHANNEL *cp)
                     pid = sp->pid;
                 break;
             }
+        if (cp->Type == CTfile)
+            type = "file";
+        else if (cp->Type == CTexploder)
+            type = "exploder";
+        else
+            type = "proc";
         if (pid == 0)
             snprintf(cp->Name, sizeof(cp->Name), "%s:%d:%s",
-                     MaxLength(site, site), cp->fd,
-                     cp->Type == CTfile ? "file" : "proc");
+                     MaxLength(site, site), cp->fd, type);
         else
             snprintf(cp->Name, sizeof(cp->Name), "%s:%d:%s:%ld",
-                     MaxLength(site, site), cp->fd,
-                     cp->Type == CTfile ? "file" : "proc", (long) pid);
+                     MaxLength(site, site), cp->fd, type, (long) pid);
         break;
     }
     return cp->Name;

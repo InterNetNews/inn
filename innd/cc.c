@@ -1044,8 +1044,6 @@ CCnameWriteInfo(struct buffer *buffer, CHANNEL *cp)
         buffer_append_sprintf(buffer, "::");
         break;
     case CTexploder:
-        buffer_append_sprintf(buffer, ":exploder::");
-        break;
     case CTprocess:
         buffer_append_sprintf(buffer, ":");
         break;
