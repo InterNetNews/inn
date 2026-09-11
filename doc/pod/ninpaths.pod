@@ -124,7 +124,7 @@ The format of the generated dump files is:
    <site_0> <count_0> <site_1> <count_1> <site_2> <count_2> ...
    !!NLREC
    :<site_a>!<site_b>,<count_ab>:<site_c>!<site_d>,<count_cd> ...
-   !!NEND <nb-relations>
+   !!NLEND <nb-relations>
 
 where times are UNIX timestamps.  Then, I<nb-sites> records follow.
 Each record is separated by a space or a new line, and consists of a host
