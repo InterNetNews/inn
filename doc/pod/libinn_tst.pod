@@ -56,7 +56,7 @@ C<TST_REPLACE>, then C<TST_DUPLICATE_KEY> is returned.  If I<key> is
 zero length, then C<TST_NULL_KEY> is returned.  A successful insert or
 replace returns C<TST_OK>.  A return value of C<TST_ERROR> indicates
 that a memory allocation error occurred while trying to grow the node
-free.
+free list.
 
 Note that the I<data> argument must never be C<NULL>.  If it is, then
 calls to B<tst_search> will fail for a key that exists because the

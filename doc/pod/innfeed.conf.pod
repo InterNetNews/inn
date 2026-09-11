@@ -555,7 +555,7 @@ The default value of C<95.0> usually works pretty well.
 =item I<no-check-low>
 
 This key requires a floating-point number which must be in the range
-[0.0, 100.0], and it must be smaller that the value for I<no-check-high>.
+[0.0, 100.0], and it must be smaller than the value for I<no-check-high>.
 When running in no-CHECK mode, as described above, if the percentage
 of articles the remote server accepts drops below this number, then the
 no-CHECK optimization is turned off until the percentage gets above the

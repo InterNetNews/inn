@@ -1049,7 +1049,7 @@ to several variables: the Message-ID C<$msgid> of the NoCeM message, the
 Message-ID C<$artid> of the article to cancel, the comma-separated list
 of newsgroups C<$groups> to which the article to cancel was posted, the
 hash reference C<$hdrs> to the pseudo header fields of the NoCeM notice,
-in lowercase value.  The article is kept if the function returns C<0>, and
+with lowercase keys.  The article is kept if the function returns C<0>, and
 cancelled otherwise.
 
 Here is an illustration of what this function can do, when defined in

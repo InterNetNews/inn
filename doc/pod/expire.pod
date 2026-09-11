@@ -36,7 +36,7 @@ articles when I<groupbaseexpiry> is set to true, F<expire.ctl> is ignored
 except the C</remember/> line; B<expire> then only probes to see if the
 article still exists, and purges the relevant history entries if appropriate.
 
-Regardless the setting of I<groupbaseexpiry>, B<expireover> should be run
+Regardless of the setting of I<groupbaseexpiry>, B<expireover> should be run
 along with B<expire>, usually via B<news.daily> out of cron.
 
 Note that B<expire> never purges articles which do not match any entry

@@ -234,7 +234,7 @@ components:
     99.bottles.of.treacle.on.the.wall
     linfield.class.envio_bio.101.d
 
-The newsgroups directory of a newsgroup with a all numeric component
+The newsgroups directory of a newsgroup with an all numeric component
 could conflict with an article from another group if stored using the
 tradspool storage method; see storage.conf(5).  For example, the directory
 for the first newsgroup listed above is the same path as article number

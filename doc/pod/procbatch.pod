@@ -23,7 +23,7 @@ Every running B<innfeed> opens a file named F<< innfeed-dropped.<id>
 >>, which should normally always be zero length and deleted on exit.
 If there are non-zero length files, B<innfeed> has dropped some articles,
 and those dropped article files have to be processed or those articles will
-never be sent to peers.  Though B<news.daily> automatically process these
+never be sent to peers.  Though B<news.daily> automatically processes these
 files (invoking B<procbatch>), it is also possible to do that manually.
 First make sure that the file doesn't correspond to a currently running
 B<innfeed>, for example by calling C<ctlinnd flush innfeed!>.

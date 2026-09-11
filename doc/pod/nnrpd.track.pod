@@ -24,7 +24,7 @@ entry associated with I<identity> in the log message recorded to the
 I<pathlog>/tracklogs directory, and every posted article will be saved
 in the I<pathlog>/trackposts directory.
 
-An example of F<nnrpd.track> file is:
+An example of a F<nnrpd.track> file is:
 
     nasty.foo.com:nasty@foo.com
     *.bar.com:VeryNastyClient

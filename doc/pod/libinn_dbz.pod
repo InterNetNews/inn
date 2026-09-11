@@ -73,7 +73,7 @@ return C<DBZSTORE_EXISTS> for duplicates (already existing entries), and
 C<DBZSTORE_OK> for success.  It will fail with C<DBZSTORE_ERROR> if the
 database files are not writable or not opened, or if any other error occurs.
 
-B<dbzexists> will verify whether or not the given hash exists or not.  I<dbz>
+B<dbzexists> will verify whether or not the given hash exists.  I<dbz>
 is optimized for this operation and it may be significantly faster than
 B<dbzfetch>.
 
@@ -98,7 +98,7 @@ F<.hash> file to confirm a hit.  This eliminates the need to read the base
 file to handle collisions.
 
 A I<size> of C<0> given to B<dbzfresh> is synonymous with the local default;
-the normal default is suitable for tables of about 6,000,000 key-value
+the normal default is suitable for tables of about 6,666,666 key-value
 pairs (or 500,000 key-value pairs when the tagged hash format is used).
 That default value is used by B<dbzinit>.
 
@@ -144,7 +144,7 @@ Concurrent reading of databases is fairly safe, but there is no
 (inter)locking, so concurrent updating is not.
 
 An open database occupies three I<stdio> streams and two file descriptors;
-Memory consumption is negligible except for in-memory databases (and I<stdio>
+memory consumption is negligible except for in-memory databases (and I<stdio>
 buffers).
 
 =head1 DIAGNOSTICS
@@ -156,7 +156,7 @@ this is not guaranteed.  An I<errno> of C<EDOM> from B<dbzinit> indicates that
 the database did not appear to be in I<dbz> format.
 
 If C<DBZTEST> is defined at compile-time, then a B<main()> function will be
-included.  This will do performance tests and integrity test.
+included.  This will do performance tests and integrity tests.
 
 =head1 BUGS
 

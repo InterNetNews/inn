@@ -218,7 +218,7 @@ the fields of a history(5) database entry, the I<arrival> is normally
 the time at which the server accepts the article, the I<articledate>
 is from the Date header field of the article, the I<expire> is from
 the Expires header field of the article, and the I<paths> field is
-the storage API token.  All three times as measured as a time_t since
+the storage API token.  All three times are measured as a time_t since
 the epoch.)  Returns true on success, false otherwise.
 
 =item INN::article(I<messageid>)

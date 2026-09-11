@@ -17,7 +17,7 @@ B<sendxbatches> I<sitename> I<host> I<file> [I<file> ...]
 B<innxbatch> connects to port 119 of the NNTP server at the specified I<host>,
 and sends it the specified xbatch files, using the XBATCH extension to the
 NNTP protocol.  These files are specified either from the command line or
-from standard input if B<i> is used.
+from standard input if B<-i> is used.
 
 Each file is removed after it has been successfully transferred.
 

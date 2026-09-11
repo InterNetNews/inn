@@ -103,7 +103,7 @@ to how it should handle its data files; B<HIS_ONDISK> indicates that
 the caller would like as much of the data to be kept on disk (and out
 of memory), B<HIS_INCORE> indicates that the data files should be kept
 in main memory where possible and B<HIS_MMAP> that the files should be
-mmap()ed into the processes address space.  B<HIS_INCORE> is typically
+mmap()ed into the process's address space.  B<HIS_INCORE> is typically
 used where a mass rebuild of the history database is being performed;
 the underlying history manager may assume that the caller will call
 B<HISsync>() to sync the data files to disk.
@@ -177,7 +177,7 @@ new database (and so merely see the callbacks), I<writing> may be set
 B<false>.
 
 If the underlying history mechanism needs to pause the server, the
-I<reason> string is used as the argument to the `ctlinnd pause'
+I<reason> string is used as the argument to the C<ctlinnd pause>
 command, and as such the server should be reserved by the caller prior
 to calling B<HISexpire>; if the caller wishes to inhibit pausing of
 the server, passing B<NULL> will achieve this.  If I<reason> is not
@@ -187,8 +187,8 @@ be left paused and the caller should unpause it.
 The history database is scanned and entries with an associated storage
 token are passed to the discrimination function I<exists>.
 
-If I<exists>() returns B<false> it indicates that stored entity
-associated with token is no longer available (or no longer required),
+If I<exists>() returns B<false>, it indicates that the stored entity
+associated with the token is no longer available (or no longer required),
 and therefore the associated history entry may be expired once it
 meets the I<threshold> constraint.  If I<exists>() returns B<true> the
 entry is kept as-is in the newly expired history database.
@@ -223,7 +223,7 @@ the caller.  Malformed history lines are silently skipped.
 
 To process the entire database in the presence of a running server,
 I<reason> may be passed; if this argument is not B<NULL>, it is used
-as an an argument to the `ctlinnd (reserve|pause|go)' commands.  If
+as an argument to the C<ctlinnd (reserve|pause|go)> commands.  If
 I<reason> is B<NULL> and the server is running, the behaviour of
 B<HISwalk> is undefined.
 
@@ -297,7 +297,7 @@ will not be modified by the call.
 
 =item C<HISCTLS_NPAIRS> (size_t *)
 
-Set a hint to the to the underlying history manager as to how many
+Set a hint to the underlying history manager as to how many
 entries there are expected to be in the history database; B<0>
 indicates that an automatic or default sizing should be made.  I<val>
 should be a pointer to a value of type B<size_t> and will not be

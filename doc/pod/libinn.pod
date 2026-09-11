@@ -257,7 +257,7 @@ listed in the password file.
 
 =head2 HASHES
 
-B<HashMessageID> returns hashed Message-ID using MD5.
+B<HashMessageID> returns a hashed Message-ID using MD5.
 
 =head2 OTHER USEFUL FUNCTIONS
 

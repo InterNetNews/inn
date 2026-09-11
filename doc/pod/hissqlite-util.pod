@@ -34,7 +34,7 @@ They can also be directly installed from CPAN (C<DBI> and C<DBD-SQLite>
 distributions available at L<https://metacpan.org/dist/DBI> and
 L<https://metacpan.org/dist/DBD-SQLite>).
 
-Naturally, a hissqlite history database also needs being in use, as detailed
+Naturally, a hissqlite history database also needs to be in use, as detailed
 in the hissqlite(5) manual page.
 
 =head1 OPTIONS
@@ -120,7 +120,7 @@ file, for example after a large permanent reduction in retention (so the
 spool will not grow back to the old size), after a bulk delete, or when
 changing the page size (which requires a vacuum; see hissqlite(5)).
 
-See also L</VACUUMING> in hissqlite(5).
+See also L<hissqlite(5)/"VACUUMING">.
 
 =item B<-V>
 

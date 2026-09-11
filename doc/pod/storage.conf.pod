@@ -41,7 +41,7 @@ entries, the first one will be used.  Each entry is formatted as follows:
 
 If spaces or tabs are included in a value, that value must be enclosed in
 double quotes ("").  If either a number sign (C<#>) or a double quote
-are meant to be included verbatim in a value, they should be escaped
+is meant to be included verbatim in a value, they should be escaped
 with C<\>.
 
 <methodname> is the name of a storage method to use for articles which
@@ -54,7 +54,7 @@ are:
     tradspool
     trash
 
-See the L<STORAGE METHODS> section below for more details.
+See the L<"STORAGE METHODS"> section below for more details.
 
 The meanings of the keys in each storage method entry are as follows:
 
@@ -136,7 +136,7 @@ match any article without an Expires header field.
 =item I<options>: <options>
 
 This key is for passing special options to storage methods that require them
-(currently only C<cnfs>).  See the L<STORAGE METHODS> section below for
+(currently only C<cnfs>).  See the L<"STORAGE METHODS"> section below for
 a description of its use.
 
 =item I<exactmatch>: <bool>
@@ -161,7 +161,7 @@ The default is false.
 
 If all the storage classes have this key set to false, filtered articles are
 stored in the same storage class as accepted articles.  It is only when at
-least one storage class has this key set to true than filtered articles and
+least one storage class has this key set to true that filtered articles and
 accepted articles are no longer stored mixed together in any storage class.
 
 =item I<path>: <wildmat>
@@ -262,7 +262,7 @@ is not set to true in F<inn.conf>).  EXPENSIVESTAT is false for this method.
 
 A given CAF file contains all the articles received during a time frame of
 4 minutes or so (256 seconds), and is limited to 262,144 articles and about
-3,5 GB.  It is enough for normal operations.  The only caveat is when you're
+3.5 GB.  It is enough for normal operations.  The only caveat is when you're
 feeding at high speed bunches of articles between two servers; you'll then
 want to limit it to that amount of articles during the time frame when a CAF
 file stores newly arrived articles.

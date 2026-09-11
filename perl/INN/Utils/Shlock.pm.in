@@ -6,7 +6,7 @@
 ##  and used by several INN programs.
 ##
 ##  Various bug fixes, code and documentation improvements since then
-##  in 2012, 2021-2024.
+##  in 2012, 2021-2026.
 ##
 package INN::Utils::Shlock;
 
@@ -156,7 +156,7 @@ This function returns C<1> on success, C<0> on failure.
 
 =item lock(I<lockfile>, I<tries>, I<delay>)
 
-Tries to create a lock file named F<lockfile>.  If it fails, locking
+Tries to create a lock file named I<lockfile>.  If it fails, locking
 attempts are repeated once every I<delay> seconds for at most I<tries>
 times (including the first unsuccessful attempt).
 

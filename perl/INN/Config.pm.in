@@ -228,7 +228,7 @@ INN::Config - Export all the variables an INN Perl script might need
 This Perl module sets up any and all the variables that an INN Perl script
 might need.  More particularly, it allows using F<inn.conf> variables:
 they are all provided by B<innconfval>, as well as the version of INN
-(in the variable C<$INN::Config::VERSION> for its short number form, on in
+(in the variable C<$INN::Config::VERSION> for its short number form, or in
 C<$INN::Config::version> for its complete form).  Other useful variables
 are also provided (directories, files, programs, masks, parameters).
 The complete list can be obtained with the following script that prints
@@ -273,8 +273,8 @@ you write:
 
     use INN::Config 2.5.0;
 
-only versions of INN superior to 2.5.0 will be able to run the Perl
-script.
+only versions of INN equal to or later than 2.5.0 will be able to run the
+Perl script.
 
 It is also possible to import the variables directly in your namespace
 if you specify what you want to import:

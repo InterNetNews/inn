@@ -25,7 +25,7 @@ B<-n> flag.
 
 If INN was built with Cancel-Lock support, B<gencancel> will generate the
 right admin Cancel-Key header field to use in order to authenticate cancels.
-If, for whatever reason, you need cancelling an article posted from your news
+If, for whatever reason, you need to cancel an article posted from your news
 server with a Cancel-Lock header field, the corresponding admin Cancel-Key
 hashes are needed to authenticate the withdrawal request.  That information is
 computed with the I<canlockadmin> parameter set in F<inn-secrets.conf>.

@@ -112,16 +112,16 @@ which does not expect any parameters):
     $5$YourSalt$V5hqwFg1nhKb5as6md9KTe5b2NyavsMS6dBYVKfp5W7
 
 As Perl makes use of crypt(3), you have access to all available hashing
-schemes on your systems.  For instance, if yescript is supported, you can
+schemes on your systems.  For instance, if yescrypt is supported, you can
 generate an encrypted password with an argument like C<$y$j9T$YourSalt$>
-to Perl crypt function, where C<y> is the prefix for yescript, C<j9T> the
+to Perl crypt function, where C<y> is the prefix for yescrypt, C<j9T> the
 parameters passed to crypt_gensalt(3) to generate the hashed password (these
-parameters control the yescript configuration, and correspond in this example
+parameters control the yescrypt configuration, and correspond in this example
 to the C<YESCRYPT_DEFAULTS> flag, the recommended flavor which has C<j> value
 in 2023, with cost factor of 4096 as block count and 32 as block size) and
 C<YourSalt> a string which should be chosen at random and different for each
 user.  The syntax and optimal length of the salt depend on the hashing scheme
-(e.g. a length multiple of 4 for yescript) and cryptographic recommendations
+(e.g. a length multiple of 4 for yescrypt) and cryptographic recommendations
 (e.g. at least 32 random bits in length, following NIST S<SP 800-63B>
 recommendations in 2023).
 
@@ -158,7 +158,7 @@ be given.
 =item B<-s>
 
 Check passwords against the result of getspnam(3) instead of getpwnam(3).
-This function, on those systems that supports it, reads from F</etc/shadow>
+This function, on those systems that support it, reads from F</etc/shadow>
 or similar more restricted files.  If you want to check passwords supplied
 to nnrpd(8) against system account passwords, you will probably have to
 use this option on most systems.

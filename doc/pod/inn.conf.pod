@@ -355,7 +355,7 @@ in F<newsfeeds>.  This is a boolean value and the default is false.
 
 When using the timecaf storage method, article cancels are normally just
 cached to be cancelled, not cancelled immediately.  If this is set to
-true, they will instead by cancelled as soon as the cancel is processed.
+true, they will instead be cancelled as soon as the cancel is processed.
 This is a boolean value and the default is false.
 
 This setting is ignored unless the timecaf storage method is used.
@@ -909,7 +909,7 @@ be true.
 
 =item I<useoverchan>
 
-Whether to innd(8) should create overview data internally through
+Whether innd(8) should create overview data internally through
 libinnstorage(3).  If set to false, innd creates overview data by itself.  If
 set to true, innd does not create; instead overview data must be created
 by overchan(8) from an appropriate entry in F<newsfeeds>.  Setting to true
@@ -998,7 +998,7 @@ increase this value to C<3600> (an hour).  The default value is C<1800>
 How long (in seconds) B<nnrpd> will wait for the first command from a
 reader connection before dropping the connection.  This is a defensive
 timeout intended to protect the news server from badly behaved reader
-clients that open and abandon a multitude of connections without every
+clients that open and abandon a multitude of connections without ever
 closing them.  The default value is C<10> (ten seconds), which may need to
 be increased if many clients connect via slow network links.
 
@@ -1296,7 +1296,7 @@ default value is unset.
 
 =item I<nnrpdpostport>
 
-The port on the remote server to connect to to post when I<nnrpdposthost>
+The port on the remote server to connect to for posting when I<nnrpdposthost>
 is used.  The default value is C<119>.
 
 =item I<organization>
@@ -1764,7 +1764,7 @@ C<300>.
 The threshold for deciding whether to move already-read data to the top of
 buffer or extend the buffer.  The buffer described here is used for reading
 NNTP data.  Increasing this value may improve performance, but it should
-not be increased on Systems with insufficient memory.  Permitted values
+not be increased on systems with insufficient memory.  Permitted values
 are between C<0> and C<1048576> (out of range values are treated as
 C<1048576>) and the default value is C<16384>.
 
@@ -1781,7 +1781,7 @@ crash as they wouldn't have been recorded in the F<history> file.  Besides,
 the missing updates to the F<active> file would cause other problems later,
 such as duplicate article numbers and corresponding errors when storing new
 articles.  (If B<innd> has crashed, you can fix these errors by rebuilding the
-F<history> file and overview with makehistory(8).  The F<active> file will be
+F<history> file and overview with makehistory(8).  The F<active> file will
 automatically be renumbered after that operation.)
 
 This setting is not used for the C<hissqlite> history method whose writes are
@@ -1791,7 +1791,7 @@ in autocommit mode.
 
 When using buffindexed, retrieving overview data (that is, responding to
 OVER or running expireover) causes mmapping of all overview data blocks
-which include requested overview data for newsgroup.  But for high volume
+which include requested overview data for a newsgroup.  But for high volume
 newsgroups like control.cancel, this may cause too much mmapping at once
 leading to system resource problems.  To avoid this, if the amount to be
 mmapped exceeds I<keepmmappedthreshold> (in KB), buffindexed mmap's just
@@ -1848,7 +1848,6 @@ set to a value lower than I<nicekids>.
 
 =item I<pauseretrytime>
 
-Wait for this many seconds before noticing inactive channels.
 Wait for this many seconds before innd processes articles when it's paused
 or the number of channel write failures exceeds I<badiocount>.  The
 default value is C<300>.
@@ -1888,7 +1887,7 @@ to the compiler.
 
 =back
 
-=head2 Paths Names
+=head2 Path Names
 
 =over 4
 
@@ -1946,7 +1945,7 @@ I<pathdb>.
 Where any HTML files (such as periodic status reports) are placed.  If the
 news reports should be available in real-time on the web, the files in
 this directory should be served by a web server.  The default value is
-the value of I<pathnews>/http.
+I<pathnews>/http.
 
 =item I<pathincoming>
 

@@ -56,7 +56,7 @@ B<hissqlite-convert> program permits migrating an existing C<hisv6> history
 database.  See hissqlite(5) for more details.  New I<hissqlitecachesize>,
 I<hissqlitemmapsize>, I<hissqlitepagesize> and I<hissqlitereadercachesize>
 parameters have also been added to F<inn.conf> to parameterize this new
-history storage method.  Many thanks to Keving Bowling for this great
+history storage method.  Many thanks to Kevin Bowling for this great
 contribution!
 
 =item *
@@ -517,7 +517,7 @@ method, in a very rare case.  When an article had more than 100,000 bytes
 of overview data (for instance with a Subject header field of that length),
 overview expiration was no longer done for newsgroups carrying this article.
 Such articles, which most certainly are spams anyway, are no longer added to
-the ovsqlite database.  Thanks for Jesse Rehmer for the bug report.
+the ovsqlite database.  Thanks to Jesse Rehmer for the bug report.
 
 =item *
 
@@ -740,7 +740,7 @@ changes to that local display configuration file.
 As a matter of fact, the default display configuration file would otherwise
 be overwritten each time INN is updated.  Bug fixes or enhancements are
 made from time to time to the display configuration of B<innreport>, and
-previously couldn't be automatically be merged in F<innreport.conf> on update.
+previously couldn't be automatically merged in F<innreport.conf> on update.
 This new separate configuration file to parameterize the display will now
 permit an automatic update (if of course you use the default display
 configuration file).
@@ -1079,7 +1079,7 @@ about why it failed.
 =item *
 
 Fixed parallel builds using C<make -j>.  Thanks to Richard Kettlewell
-for the path.
+for the patch.
 
 =item *
 
@@ -2405,7 +2405,7 @@ header field.
 
 =item *
 
-A new "unsigned long" type bas been added to the configuration parser.  It
+A new "unsigned long" type has been added to the configuration parser.  It
 will properly warn the news administrator when a variable supposed to be
 positive contains a negative integer.  It will prevent INN from crashing
 due to misconfiguration at several places where it did not expect negative
@@ -3291,7 +3291,7 @@ S<D. Stussy>, for having seen that.  Miquel van Smoorenburg provided the patch.
 
 A new I<heavily> improved version of B<pullnews> is shipped with this INN
 release.  This new version is provided by Geraint Edwards.  He added no
-more than S<16 flags>, fixed some bugs and integrated the B<backupfeed>
+fewer than S<16 flags>, fixed some bugs and integrated the B<backupfeed>
 contrib script by Kai Henningsen, adding again S<6 other> flags.  A
 long-standing but very minor bug in the B<-g> option was especially fixed
 and items from the to-do list implemented.  Many thanks again to Geraint
@@ -3481,7 +3481,7 @@ newsgroups.
 
 B<inews> now tries to authenticate if it does not receive a C<200> return
 code after MODE READER.  Indeed, it might be able to post even with
-a C<201> return code and also with another codes like C<440> or C<480>.
+a C<201> return code and also with other codes like C<440> or C<480>.
 
 =item *
 
@@ -3923,7 +3923,7 @@ Unicode).  See uwildmat(3) for the details.
 The interface between external authenticators and B<nnrpd> is now properly
 documented, in F<doc/external-auth>.  A library implementing this
 interface in C is provided, which should make it easier to write
-additional authenticators resolvers.  See libauth(3) for details, and any
+additional authenticators and resolvers.  See libauth(3) for details, and any
 of the existing programs in F<authprogs/> for examples.
 
 =item *
@@ -4393,7 +4393,7 @@ issues a NEWNEWS command for a date prior to the year 2000.
 
 =item *
 
-Various bug fixes, mostly notably fixes for potential buffer overflow
+Various bug fixes, most notably fixes for potential buffer overflow
 security vulnerabilities.
 
 =back

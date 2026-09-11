@@ -10,7 +10,7 @@ reasonable defaults.
 
 The first part of this documentation can be skipped if INN is already
 installed on your system.  Some distributions provide a package, which should
-be used in preference of building from scratch.
+be used in preference to building from scratch.
 
 =head1 Compile (when installing from scratch)
 
@@ -126,7 +126,7 @@ method.
 =item *
 
 Configure in F<expire.ctl> how long articles should be kept in your news
-spool.  The default of 90 days maybe does not fit your needs.  You can use
+spool.  The default of 90 days may not fit your needs.  You can use
 different values for specific newsgroups or hierarchies depending on your
 interest in them.
 
@@ -262,7 +262,7 @@ recommended and can of course be set up later.
 
 You may want to configure the process of newsgroup control messages to keep
 your list of newsgroups up to date (search for F<PGPKEYS> in F<INSTALL> to
-find the Section explaining that).  Also see controlchan(8) for how to set up
+find the section explaining that).  Also see controlchan(8) for how to set up
 the F<newsfeeds> entry.
 
 =item *

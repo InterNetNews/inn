@@ -169,7 +169,7 @@ from the last up.
     / load / + / loadavg / gt / 6 / pause / loadav
 
 The final line causes the server to be paused if B<innwatch> is in the
-C<run> state and the load average rises to, or above, six.  The state is
+C<run> state and the load average rises above six.  The state is
 set to C<load> when this happens.  The previous line causes the server
 to be throttled when B<innwatch> is in the C<run> or C<load> state,
 and the load average rises above eight.  The state is set to C<hiload>

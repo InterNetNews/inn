@@ -8,8 +8,8 @@ This method uses SQLite to store overview data.  It requires version
 3.24.0 or later of the SQLite library.
 
 SQLite source, documentation, etc. are available at
-L<https://www.sqlite.org/>.  Ones of the stated goals of the SQLite
-file format are long-term stability and compatibility, which make that
+L<https://www.sqlite.org/>.  One of the stated goals of the SQLite
+file format is long-term stability and compatibility, which makes that
 storage method a perfect choice to store overview data.
 
 Only one protocol version of the ovsqlite storage method currently

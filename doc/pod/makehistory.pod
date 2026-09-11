@@ -209,7 +209,7 @@ B-tree grows itself when needed; there is no fixed-size table to presize and
 no rebuild-to-grow.
 
 By default when C<hisv6> is used, B<makehistory> will create a database
-optimized for handling about 6,000,000 articles (or 500,000 if the slower
+optimized for handling about 6,666,666 articles (or 500,000 if the slower
 tagged hash format is used).  This size does not limit the number of articles
 the news server can store in its F<history> file.  It will just get slower
 when that optimal size is exceeded, until the next run of B<news.daily> which

@@ -37,7 +37,7 @@ Invert the related boolean values (since S<INN 2.7>).
 
 =item *
 
-Comment removed I<comment> and I<email> parameters (since S<INN 2.7>).
+Comment out the removed I<comment> and I<email> parameters (since S<INN 2.7>).
 
 =back
 

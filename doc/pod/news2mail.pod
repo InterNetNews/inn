@@ -59,7 +59,7 @@ like:
 
 Please note the use of C<Ap> and the exclusion of the list owner domain
 to protect the list from feeding back new arrivals from the list.
-The site name used in the F<newfeeds> entry for a mailing-list (above
+The site name used in the F<newsfeeds> entry for a mailing-list (above
 C<list-big-red-ants>) must be the same as the first field in an entry in
 F<news2mail.cf>.  For instance:
 

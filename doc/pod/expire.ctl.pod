@@ -91,7 +91,7 @@ Normally, articles are not completely deleted until they expire out of every
 group to which they were posted, but if an article is expired following a rule
 where <flag> contains C<X>, it is deleted out of all newsgroups to which it
 was posted immediately.  (If that behaviour is wanted for all rules, you may
-want to give the B<-e> flag to B<expireoverview>.)
+want to give the B<-e> flag to B<expireover>.)
 
 If I<groupbaseexpiry> is instead set to false, there is no <pattern> and
 <flag> field and the above does not apply.  Instead, there is a single
@@ -120,7 +120,7 @@ they will be retained at least <min> days and no longer than <max> days.
 If <min> is set to C<never>, no article matching that line will ever be
 expired.  If <default> is set to C<never>, no article matching that line
 without an explicit Expires header field will ever be expired.  If <max> is
-set to C<never>, Expires header fields will be honored no matter how far into
+set to C<never>, Expires header fields will be honoured no matter how far into
 the future they are.
 
 One should think of the fields as a lower bound, the default, and an upper
@@ -136,7 +136,7 @@ configuration.  The default line should generally be the first line of the
 file (except for C</remember/>) so that other expiration rules can
 override it.
 
-It is often useful to honor the Expires header field in articles, especially
+It is often useful to honour the Expires header field in articles, especially
 those in moderated groups.  To do this, set <min> to zero, <default> to
 whatever normal expiration you wish, and <max> to C<never> or some large
 number, like C<365> days for a maximum article life of a year.
@@ -173,7 +173,7 @@ When I<groupbaseexpiry> is false, for class-based expiration:
     # fields within reasonable limits.
     *:1:7:35
 
-    # Class 0 is retained for two weeks and honor Expires header fields
+    # Class 0 is retained for two weeks and honour Expires header fields
     # within reasonable limits.
     0:1:14:65
 

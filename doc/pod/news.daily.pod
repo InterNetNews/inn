@@ -29,8 +29,9 @@ specified);
 
 =item *
 
-purging the overview database with B<expireover> (if the corresponding eponym
-keyword is specified or if I<enableoverview> is true in F<inn.conf>);
+purging the overview database with B<expireover> (if the corresponding
+eponymous keyword is specified or if I<enableoverview> is true in
+F<inn.conf>);
 
 =item *
 
@@ -142,7 +143,7 @@ keyword is used.
 =item B<lowmark>
 
 If the B<lowmark> keyword is used, C<ctlinnd lowmark> is used for renumbering
-F<active>.  Normal C<ctlinnd renumber> operation will take long time.  With
+F<active>.  Normal C<ctlinnd renumber> operation will take a long time.  With
 the B<lowmark> keyword, this will take less time.  If the B<lowmark> keyword
 is used, the B<norenumber> keyword is not needed since B<news.daily> specifies
 it implicitly.
