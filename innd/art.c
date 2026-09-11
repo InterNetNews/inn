@@ -1124,7 +1124,7 @@ ARTreject(Reject_type code, CHANNEL *cp)
     /* Remember why the article was rejected (for the status file) */
 
     cp->Rejected++;
-    cp->RejectSize += (float) (cp->Next - cp->Start);
+    cp->RejectSize += (unsigned long long) (cp->Next - cp->Start);
 
     /* Streaming is used.  Increase the reject counter for TAKETHIS. */
     if (cp->Sendid.size > 3) {
@@ -1134,7 +1134,7 @@ ARTreject(Reject_type code, CHANNEL *cp)
     switch (code) {
     case REJECT_DUPLICATE:
         cp->Duplicate++;
-        cp->DuplicateSize += (float) (cp->Next - cp->Start);
+        cp->DuplicateSize += (unsigned long long) (cp->Next - cp->Start);
         break;
     case REJECT_SITE:
         cp->Unwanted_s++;
@@ -2684,7 +2684,7 @@ ARTpost(CHANNEL *cp)
         cp->ArtMax = i;
     cp->ArtBeg = 0;
 
-    cp->Size += (float) data->BytesValue;
+    cp->Size += (unsigned long long) data->BytesValue;
     if (innconf->logartsize) {
         if (fprintf(Log, " %ld", data->BytesValue) == EOF || ferror(Log)) {
             oerrno = errno;

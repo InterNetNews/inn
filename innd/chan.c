@@ -319,22 +319,22 @@ CHANclose_nntp(CHANNEL *cp, const char *name)
     else {
         notice(
             "%s checkpoint seconds %lu accepted %lu refused %lu rejected %lu"
-            " duplicate %lu accepted size %.0f duplicate size %.0f"
-            " rejected size %.0f",
+            " duplicate %lu accepted size %llu duplicate size %llu"
+            " rejected size %llu",
             name, (unsigned long) (Now.tv_sec - cp->Started_checkpoint),
             cp->Received - cp->Received_checkpoint,
             cp->Refused - cp->Refused_checkpoint,
             cp->Rejected - cp->Rejected_checkpoint,
             cp->Duplicate - cp->Duplicate_checkpoint,
-            (double) (cp->Size - cp->Size_checkpoint),
-            (double) (cp->DuplicateSize - cp->DuplicateSize_checkpoint),
-            (double) (cp->RejectSize - cp->RejectSize_checkpoint));
+            cp->Size - cp->Size_checkpoint,
+            cp->DuplicateSize - cp->DuplicateSize_checkpoint,
+            cp->RejectSize - cp->RejectSize_checkpoint);
         notice("%s closed seconds %lu accepted %lu refused %lu rejected %lu"
-               " duplicate %lu accepted size %.0f duplicate size %.0f"
-               " rejected size %.0f",
+               " duplicate %lu accepted size %llu duplicate size %llu"
+               " rejected size %llu",
                name, (unsigned long) (Now.tv_sec - cp->Started), cp->Received,
-               cp->Refused, cp->Rejected, cp->Duplicate, (double) cp->Size,
-               (double) cp->DuplicateSize, (double) cp->RejectSize);
+               cp->Refused, cp->Rejected, cp->Duplicate, cp->Size,
+               cp->DuplicateSize, cp->RejectSize);
     }
     if (cp->Data.Newsgroups.Data != NULL) {
         free(cp->Data.Newsgroups.Data);

@@ -274,16 +274,16 @@ NCpostit(CHANNEL *cp)
         syslog(L_NOTICE,
                "%s checkpoint seconds %lu accepted %lu refused %lu rejected "
                "%lu duplicate %lu"
-               " accepted size %.0f duplicate size %.0f rejected size %.0f",
+               " accepted size %llu duplicate size %llu rejected size %llu",
                CHANname(cp),
                (unsigned long) (Now.tv_sec - cp->Started_checkpoint),
                cp->Received - cp->Received_checkpoint,
                cp->Refused - cp->Refused_checkpoint,
                cp->Rejected - cp->Rejected_checkpoint,
                cp->Duplicate - cp->Duplicate_checkpoint,
-               (double) (cp->Size - cp->Size_checkpoint),
-               (double) (cp->DuplicateSize - cp->DuplicateSize_checkpoint),
-               (double) (cp->RejectSize - cp->RejectSize_checkpoint));
+               cp->Size - cp->Size_checkpoint,
+               cp->DuplicateSize - cp->DuplicateSize_checkpoint,
+               cp->RejectSize - cp->RejectSize_checkpoint);
         cp->Reported = 0;
         cp->Started_checkpoint = Now.tv_sec;
         cp->Received_checkpoint = cp->Received;
@@ -1420,7 +1420,8 @@ NCproc(CHANNEL *cp)
                 || cp->State == CSeatarticle) {
                 if (cp->Next - cp->Start > innconf->datamovethreshold
                     || (innconf->maxartsize != 0
-                        && cp->Size > (float) innconf->maxartsize)) {
+                        && cp->Size
+                               > (unsigned long long) innconf->maxartsize)) {
                     /* avoid buffer extension for ever */
                     movedata = true;
                 } else {
