@@ -161,7 +161,7 @@ B<innfeed> will catch SIGTERM and will do an orderly shutdown.
 
 Upon receipt of a SIGUSR1, B<innfeed> will increment the debugging level
 by one; receipt of a SIGUSR2 will decrement it by one.  The debugging
-level starts at zero (unless the B<-d> option it used), in which case no
+level starts at zero (unless the B<-d> option is used), in which case no
 debugging information is emitted.  A larger value for the level means more
 debugging information.  Numbers up to 5 are currently useful.
 
@@ -256,7 +256,7 @@ to retry later by sending a 431 or 436 response.  B<innfeed> immediately
 puts these articles back on the tail of the queue.
 
 The second number is the average (mean) size of deferred articles during
-the previous logging interval
+the previous logging interval.
 
 =item requeued
 

@@ -266,7 +266,7 @@ contract of delaying them, unless the B<--store> option is used.
 
 If the number of articles in that feed is rather low (just a few articles per
 delay time or less), some effects of buffering will delay the transmission
-even further.  See the B<--no-buffering> option to alleviate this.
+even further.  See the B<--no-buffered> option to alleviate this.
 
 =head1 HISTORY
 

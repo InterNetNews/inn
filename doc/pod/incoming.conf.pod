@@ -167,7 +167,7 @@ as synonyms).  The default is C<0>.
 
 This key requires a string value.  It is used if you wish to require
 a peer to supply a password via AUTHINFO USER/PASS.  The default is
-an empty string, that it to say no password is expected.
+an empty string, that is to say no password is expected.
 
 Note that B<innd> will accept any username provided by the remote peer as
 long as the password corresponds.  (As the username is mandatory in the

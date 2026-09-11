@@ -63,7 +63,7 @@ contribution!
 
 The new hissqlite history storage method is accompanied with a history
 manipulation utility, B<hissqlite-util>, also contributed by Kevin Bowling,
-that performs some basic consistency checks and dump operations on an history
+that performs some basic consistency checks and dump operations on a history
 database using the hissqlite method.  It can also report SQLite storage
 utilization, history entry counts and file sizes, and vacuum the database
 with B<-v> to reclaim freelist space when needed (not required in normal
@@ -1014,7 +1014,7 @@ L<https://ftp.isc.org/pub/pgpcontrol/>.
 
 Support in B<controlchan> for obsolete I<sendsys>, I<senduuname> and
 I<version> control messages has been removed.  These control messages,
-long been deprecated, should no longer be sent nor honoured nowadays.
+long having been deprecated, should no longer be sent nor honoured nowadays.
 Besides, the C<doifarg> keyword in F<control.ctl> is no longer recognized
 (it was only used for these three kinds of control messages).
 
@@ -2685,7 +2685,7 @@ on systems where short ints were not 16-bit integers.
 When there is not enough space to write an entire CAF header, the timecaf
 storage manager now uses a larger blocksize.  On 32-bit systems, the CAF header
 is about 300 bytes, leaving about 200 bytes for the free bitmap index
-(the remaining of a 512-byte blocksize).  On 64-bit systems, the size
+(the remainder of a 512-byte blocksize).  On 64-bit systems, the size
 of the CAF header could exceed 512 bytes, thus leaving no room for the
 free bitmap index.  A S<1 KB> blocksize is then used, or a larger
 size if need be.

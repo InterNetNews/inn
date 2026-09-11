@@ -182,7 +182,7 @@ report memory allocation failure to stderr and exit.
 Finally, die and sysdie support an additional handler (the external
 variable message_fatal_cleanup) that's called immediately before exiting,
 takes no arguments, and returns an int which is used as the argument for
-exit.  It can do any necessary global cleanup, call abort instead to
+exit.  It can do any necessary global cleanup, or call abort instead to
 generate a core dump or the like.
 
 The advantage of using this system everywhere in INN is that library code
@@ -798,7 +798,7 @@ L<https://www.gnu.org/software/libtool/manual/html_node/Updating-version-info.ht
 The commit message usually contains a brief description of API changes, if
 any, just for the record.  Avoid bumping SONAME in minor releases (ideally,
 changes in any interfaces should be delayed until the next major release, and
-the bump clearly mentioned in the releases notes).  Note that increasing the
+the bump clearly mentioned in the release notes).  Note that increasing the
 first number in LTVERSION does not necessarily mean that SONAME has bumped;
 check the name of the generated libraries to be sure.
 
@@ -808,8 +808,8 @@ check the name of the generated libraries to be sure.
 
 If making a major release, create a new branch in Git named after the
 major release.  This branch will be used for minor releases based on
-that major release and can be done a little while before the C<.0>
-release of that major release.
+that major release; creating it can be done a little while before the
+C<.0> release of that major release.
 
     git checkout -b Y.Y
     git push --set-upstream origin Y.Y

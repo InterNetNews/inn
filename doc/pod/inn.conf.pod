@@ -779,7 +779,7 @@ in the standard overview fields as metadata items, cannot be added.
 =item I<groupbaseexpiry>
 
 Whether to enable newsgroup-based expiry.  If set to false, article expiry
-is done based on storage class of storing method.  If set to true (and
+is done based on storage class of storage method.  If set to true (and
 overview information is available), expiry is done by newsgroup name.
 This affects the format of F<expire.ctl>.  This is a boolean value and the
 default is true.
@@ -834,7 +834,7 @@ The default is unset.
 
 =item I<ovflushcount>
 
-How many articles received between flushing their overview data to disk.
+How many articles are received between flushing their overview data to disk.
 This parameter is only used for the buffindexed overview storage method, and
 defaults to C<50>.  (Flushing to disk is parameterized differently for other
 methods: I<txn_nosync> in F<ovdb.conf>, I<transrowlimit> and I<transtimelimit>
@@ -910,11 +910,11 @@ be true.
 =item I<useoverchan>
 
 Whether innd(8) should create overview data internally through
-libinnstorage(3).  If set to false, innd creates overview data by itself.  If
-set to true, innd does not create; instead overview data must be created
-by overchan(8) from an appropriate entry in F<newsfeeds>.  Setting to true
-may be useful, if innd cannot keep up with incoming feed and the
-bottleneck is creation of overview data within innd.  This is a boolean
+libinnstorage(3).  If set to false, B<innd> creates overview data by itself.
+If set to true, B<innd> does not create it; instead overview data must be
+created by overchan(8) from an appropriate entry in F<newsfeeds>.  Setting to
+true may be useful, if B<innd> cannot keep up with the incoming feed and the
+bottleneck is creation of overview data within B<innd>.  This is a boolean
 value and the default is false.
 
 =item I<wireformat>
@@ -1140,7 +1140,7 @@ from article body text and putting that information in overview for the use of
 clients that know to look for it (HDR, OVER and XPAT commands).  The following
 parameters control that feature, which should be considered I<experimental>.
 Its very simple text tokenization works only on plain-text ASCII articles,
-and totally lacks of understanding of anything other than English.  Articles
+and totally lacks understanding of anything other than English.  Articles
 encoded in Base64 or Quoted-Printable, having a MIME structure, or farther
 afield from English will have garbage in the generated Keywords header field.
 
@@ -1770,8 +1770,8 @@ C<1048576>) and the default value is C<16384>.
 
 =item I<icdsynccount>
 
-How many article writes between updating the F<active> and C<hisv6> F<history>
-files.  The default value is C<10>.
+How many article writes occur between updating the F<active> and C<hisv6>
+F<history> files.  The default value is C<10>.
 
 This is a trade-off between faster speed and more data loss if B<innd> crashes
 (or the system crashes, or loses power, etc.).  The higher this parameter
@@ -1879,7 +1879,7 @@ versions prior to 11.0.  See the L<Solaris documentation about file
 descriptors|https://support.oracle.com/knowledge/Sun%20Microsystems/1005979_1.html>
 for more details.
 
-Note for expert users building INN from sources: if you need using more than
+Note for expert users building INN from sources: if you need to use more than
 C<FD_SETSIZE> file descriptors (as defined in the F<sys/select.h> system
 header, usually defaulting to 1024), you can increase this value for instance
 to C<4096> by rebuilding INN with the C<-DLARGE_FD_SETSIZE=4096> option given

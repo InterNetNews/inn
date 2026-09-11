@@ -340,7 +340,7 @@ file specified with B<-i>.
 =item B<-k>
 
 By default, any newsgroup on the local host that has an invalid name will
-be considered for removal.  This causes B<actsync> simply ignore such
+be considered for removal.  This causes B<actsync> to simply ignore such
 newsgroups.  This flag, used in combination with B<-m>, will prevent any
 newsgroup from being scheduled for removal.
 

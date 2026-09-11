@@ -368,7 +368,7 @@ Contains the process ID of B<ovdb_monitor>.
 
 Implement a way to limit how many databases can be open at once (to reduce
 file descriptor usage); maybe using something similar to the cache code in
-legacy F<ov3.c> file.
+the legacy F<ov3.c> file.
 
 =head1 HISTORY
 
