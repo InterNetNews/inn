@@ -133,6 +133,7 @@ doc/man/INN__ovsqlite_client.3pm      Manpage for INN::ovsqlite_client module
 doc/man/Makefile                      Makefile for nroff documentation
 doc/man/active.5                      Manpage for active database
 doc/man/active.times.5                Manpage for active.times file
+doc/man/actmerge.8                    Manpage for active file merge program
 doc/man/actsync.8                     Manpage for active file synch program
 doc/man/archive.8                     Manpage for archive backend
 doc/man/auth_krb5.8                   Manpage for auth_krb5 authenticator
@@ -250,6 +251,7 @@ doc/pod                               POD documentation (Directory)
 doc/pod/Makefile                      Maintainer rules for derived files
 doc/pod/active.pod                    Master file for active.5
 doc/pod/active.times.pod              Master file for active.times.5
+doc/pod/actmerge.pod                  Master file for actmerge.8
 doc/pod/actsync.pod                   Master file for actsync.8
 doc/pod/archive.pod                   Master file for archive.8
 doc/pod/auth_krb5.pod                 Master file for auth_krb5.8
