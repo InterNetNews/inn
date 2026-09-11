@@ -320,7 +320,7 @@ group will not match the connection and is ignored.
 Note that if you have a large number of patterns that can't be merged into
 broader patterns (such as a large number of individual systems scattered
 around the net that should have access), the I<hosts> parameter may exceed
-the maximum line length of 8,192 characters.  In that case, you'll need to
+the maximum line length of 8,191 characters.  In that case, you'll need to
 break that auth group into multiple auth groups, each with a portion of
 the hosts listed in its I<hosts> parameter, and each assigning the same user
 identity.
