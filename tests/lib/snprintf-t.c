@@ -13,7 +13,7 @@
  * Copyright 2001 Hrvoje Niksic
  *
  * Various bug fixes, code and documentation improvements since then
- * in 2021-2026.
+ * in 2021, 2022, 2026.
  *
  * This code is based on code written by Patrick Powell (papowell@astart.com)
  * It may be used for any purpose as long as this notice remains intact

@@ -17,6 +17,9 @@ dnl Written by Russ Allbery <eagle@eyrie.org>
 dnl Copyright 2006, 2008-2009
 dnl     The Board of Trustees of the Leland Stanford Junior University
 dnl
+dnl Various bug fixes, code and documentation improvements since then
+dnl in 2021, 2022, 2026.
+dnl
 dnl This file is free software; the authors give unlimited permission to copy
 dnl and/or distribute it, with or without modifications, as long as this
 dnl notice is preserved.
