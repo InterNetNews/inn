@@ -5,7 +5,7 @@
 **  <2bfjdsla52kztwejndzdstsxl9athp@gmail.com>
 **
 **  Various bug fixes, code and documentation improvements since then
-**  in 2021-2024, 2026.
+**  in 2021, 2023, 2024, 2026.
 **
 **  Direct reader mode added in 2026 by Kevin Bowling to allow nnrpd
 **  processes to read the overview database directly via SQLite, bypassing

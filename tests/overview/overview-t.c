@@ -1,6 +1,6 @@
 /* Overview test suite, usable for any of the overview methods.
 **
-**  Written by Russ Allbery in 2003.
+**  Written by Russ Allbery in 2002.
 **
 **  Various bug fixes, code and documentation improvements since then
 **  in 2003-2007, 2009, 2010, 2014-2016, 2018, 2020-2023, 2026.

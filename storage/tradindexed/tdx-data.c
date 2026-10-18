@@ -16,7 +16,7 @@
 **  Initial implementation in 2002 by Russ Allbery.
 **
 **  Various bug fixes, code and documentation improvements since then
-**  in 2002, 2003, 2005-2007, 2009, 2011, 2014, 2017, 2019, 2021, 2026.
+**  in 2002, 2003, 2005-2007, 2009-2011, 2014, 2017, 2021, 2026.
 */
 
 #include "portable/system.h"

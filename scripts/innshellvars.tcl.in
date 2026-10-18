@@ -8,7 +8,7 @@
 #               might need.  Also sets umask.
 #
 # Various bug fixes, code and documentation improvements since then
-# in 1998-2003, 2005, 2007-2010, 2018, 2021, 2022, 2024.
+# in 1998-2003, 2005, 2007-2010, 2018, 2021, 2022, 2024, 2026.
 
 set env(LC_CTYPE) "C"
 

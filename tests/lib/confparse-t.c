@@ -3,7 +3,7 @@
 **  Written by Russ Allbery in 2001.
 **
 **  Various bug fixes, code and documentation improvements since then
-**  in 2001, 2002, 2004-2006, 2014, 2016, 2018, 2021, 2024, 2026.
+**  in 2001, 2002, 2004-2006, 2009, 2014, 2016, 2018, 2021, 2024, 2026.
 */
 
 #include "portable/system.h"

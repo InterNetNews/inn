@@ -4,7 +4,7 @@
 **  Broken out from innd.c in 2000 by Russ Allbery.
 **
 **  Various bug fixes, code and documentation improvements since then
-**  in 2001-2004, 2006, 2008, 2009, 2015, 2021, 2024, 2026.
+**  in 2001-2004, 2006, 2008, 2009, 2014, 2015, 2021, 2024, 2026.
 */
 
 #include "portable/system.h"
