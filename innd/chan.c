@@ -1219,6 +1219,21 @@ CHANreadloop(void)
         xsignal_mask();
         TMRstop(TMR_IDLE);
 
+        /* Check for a termination signal before looking at count: a signal
+           that arrives while innd is idle interrupts select with EINTR, and
+           going back to select would leave it unnoticed until the next
+           connection or timeout. */
+        if (GotTerminate) {
+#ifdef DO_PERL
+            PLmode(Mode, OMshutdown, (char *) "exiting due to signal");
+#endif
+#ifdef DO_PYTHON
+            PYmode(Mode, OMshutdown, (char *) "exiting due to signal");
+#endif
+            notice("%s exiting due to signal", LogName);
+            CleanupAndExit(0, NULL);
+        }
+
         if (count < 0) {
             if (errno != EINTR) {
                 syswarn("%s cant select", LogName);
@@ -1230,16 +1245,6 @@ CHANreadloop(void)
         }
 
         STATUSmainloophook();
-        if (GotTerminate) {
-#ifdef DO_PERL
-            PLmode(Mode, OMshutdown, (char *) "exiting due to signal");
-#endif
-#ifdef DO_PYTHON
-            PYmode(Mode, OMshutdown, (char *) "exiting due to signal");
-#endif
-            notice("%s exiting due to signal", LogName);
-            CleanupAndExit(0, NULL);
-        }
 
         /* Update the "reasonably accurate" time. */
         gettimeofday(&Now, NULL);

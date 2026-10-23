@@ -183,6 +183,15 @@ printable characters, no matter the order they appear in Message-IDs.
 
 =item *
 
+Fixed B<innd> not shutting down when it received a signal to do so while
+waiting for activity.  The signal was only acted on when the next connection
+or data arrived, or when the I<timer> interval elapsed (ten minutes by
+default), so stopping B<innd> with a signal instead of C<ctlinnd shutdown>
+often ended with it being killed without the F<active> file and history
+database being flushed.
+
+=item *
+
 Fixed about twenty correctness and resource-lifetime defects in several
 programs thanks to Kevin Bowling.  They notably address stale pointers after
 buffer growth in B<innxmit>, descriptors and heap ownership in B<innxbatch>
