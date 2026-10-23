@@ -1215,6 +1215,13 @@ CHANreadloop(void)
            from accessing data that the main code is mutating. */
         TMRstart(TMR_IDLE);
         xsignal_unmask();
+        /* A signal that arrived while innd was busy was blocked, and the
+           unmask has just run its handler: select would not be interrupted
+           by it, so do not wait. */
+        if (GotTerminate) {
+            tv.tv_sec = 0;
+            tv.tv_usec = 0;
+        }
         count = select(channels.max_fd + 1, &rdfds, &wrfds, NULL, &tv);
         xsignal_mask();
         TMRstop(TMR_IDLE);

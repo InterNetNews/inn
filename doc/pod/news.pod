@@ -188,7 +188,8 @@ waiting for activity.  The signal was only acted on when the next connection
 or data arrived, or when the I<timer> interval elapsed (ten minutes by
 default), so stopping B<innd> with a signal instead of C<ctlinnd shutdown>
 often ended with it being killed without the F<active> file and history
-database being flushed.
+database being flushed.  A signal arriving while B<innd> was busy, for
+instance in a slow filter, was not acted on promptly either.
 
 =item *
 
