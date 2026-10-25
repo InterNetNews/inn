@@ -312,7 +312,8 @@ void
 CMDhelp(int ac UNUSED, char *av[] UNUSED)
 {
     CMDENT *cp;
-    char *p, *q;
+    const char *p;
+    char *q;
     static const char *newsmaster = NEWSMASTER;
 
     Reply("%d Legal commands\r\n", NNTP_INFO_HELP);
@@ -366,7 +367,8 @@ void
 CMDcapabilities(int ac, char *av[])
 {
 #ifdef HAVE_SASL
-    const char *mechlist = NULL;
+    const char *saslmechs = NULL;
+    char *mechlist = NULL;
 #endif
 
     if (ac == 2 && !IsValidKeyword(av[1])) {
@@ -385,8 +387,12 @@ CMDcapabilities(int ac, char *av[])
 
 #ifdef HAVE_SASL
     /* Check for available SASL mechanisms.
-     * Start the string with a space for the strstr() calls afterwards. */
-    sasl_listmech(sasl_conn, NULL, " ", " ", "", &mechlist, NULL, NULL);
+     * Start the string with a space for the strstr() calls afterwards.
+     * The list belongs to the SASL library; work on a copy, from which
+     * insecure mechanisms may be removed. */
+    sasl_listmech(sasl_conn, NULL, " ", " ", "", &saslmechs, NULL, NULL);
+    if (saslmechs != NULL)
+        mechlist = xstrdup(saslmechs);
 #endif
 
     /* The client is not already authenticated. */
@@ -503,6 +509,10 @@ CMDcapabilities(int ac, char *av[])
     }
 
     Printf(".\r\n");
+
+#ifdef HAVE_SASL
+    free(mechlist);
+#endif
 }
 
 

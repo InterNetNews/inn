@@ -109,7 +109,7 @@ dump_overview(const char *group, ARTNUM low, ARTNUM high, bool overchan)
     struct group_entry *entry;
     struct article article;
     struct search *search;
-    char *p;
+    const char *p;
     char datestring[256];
 
     index = tdx_index_open(OV_READ);

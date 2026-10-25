@@ -3717,7 +3717,7 @@ validateInteger(FILE *fp, const char *name, long low, long high, int required,
     int rval = VALUE_OK;
     value *v;
     scope *s;
-    char *p = strrchr(name, ':');
+    const char *p = strrchr(name, ':');
 
     v = findValue(sc, name, inh);
     if (v == NULL && required != NOTREQNOADD) {
@@ -3762,7 +3762,7 @@ validateReal(FILE *fp, const char *name, double low, double high, int required,
     int rval = VALUE_OK;
     value *v;
     scope *s;
-    char *p = strrchr(name, ':');
+    const char *p = strrchr(name, ':');
 
     v = findValue(sc, name, inh);
     if (v == NULL && required != NOTREQNOADD) {
@@ -3804,7 +3804,7 @@ validateBool(FILE *fp, const char *name, int required, bool setval, scope *sc,
     int rval = VALUE_OK;
     value *v;
     scope *s;
-    char *p = strrchr(name, ':');
+    const char *p = strrchr(name, ':');
 
     v = findValue(sc, name, inh);
     if (v == NULL && required != NOTREQNOADD) {
