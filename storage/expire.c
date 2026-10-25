@@ -639,7 +639,7 @@ OVERGetHeader(const char *p, int field)
     static int buffsize;
     int i;
     ARTOVERFIELD *fp;
-    char *next;
+    const char *next;
 
     fp = &ARTfields[field];
 

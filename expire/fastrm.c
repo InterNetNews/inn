@@ -633,8 +633,8 @@ bad_path(const char *p)
 int
 main(int argc, char *argv[])
 {
-    const char *name;
-    char *p, **arg;
+    const char *name, *p;
+    char **arg;
     QIOSTATE *qp;
     filelist *list;
     int filecount, deleted;
