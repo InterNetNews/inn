@@ -31,7 +31,7 @@ static HASH empty = {
 static const char *
 cipoint(const char *s, size_t size)
 {
-    char *p;
+    const char *p;
     static const char post[] = "postmaster";
     static int plen = sizeof(post) - 1;
 

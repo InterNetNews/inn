@@ -841,23 +841,24 @@ CMDpost(int ac, char *av[])
               ihave ? NNTP_OK_IHAVE : NNTP_OK_POST, idbuff);
         POSTreceived++;
     } else {
-        if ((p = strchr(response, '\r')) != NULL)
-            *p = '\0';
-        if ((p = strchr(response, '\n')) != NULL)
-            *p = '\0';
+        /* Keep only the first line of the response, without writing in it:
+         * it may be a string literal. */
+        char *reply = xstrndup(response, strcspn(response, "\r\n"));
+
         notice("%s %s failed %s", Client.host, ihave ? "ihave" : "post",
-               response);
+               reply);
         if (!ihave || permanent) {
             /* For permanent errors, reject the message. */
             Reply("%d %s\r\n",
                   ihave ? NNTP_FAIL_IHAVE_REJECT : NNTP_FAIL_POST_REJECT,
-                  response);
+                  reply);
         } else {
             /* Non-permanent errors only have relevance to IHAVE, for
              * these we have the error status from the upstream
              * server to report.  It includes the answer code. */
-            Reply("%s\r\n", response);
+            Reply("%s\r\n", reply);
         }
+        free(reply);
         POSTrejected++;
     }
 }

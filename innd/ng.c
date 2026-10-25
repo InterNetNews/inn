@@ -66,7 +66,7 @@ NGcompare(const void *p1, const void *p2)
 **  or we want to just blat it out to disk later.
 */
 static bool
-NGparseentry(NEWSGROUP *ngp, const char *p, char *end)
+NGparseentry(NEWSGROUP *ngp, char *p, char *end)
 {
     char *q;
     unsigned int j;

@@ -37,7 +37,7 @@ void
 dispatch(struct cvector *command, const struct dispatch *table, size_t count,
          dispatch_func unknown, dispatch_func syntax, void *cookie)
 {
-    struct dispatch *rule;
+    const struct dispatch *rule;
     int argc = command->count - 1;
 
     if (argc < 0) {

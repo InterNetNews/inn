@@ -134,7 +134,7 @@ bool
 IsValidMessageID(const char *MessageID, bool stripspaces, bool laxsyntax)
 {
     const unsigned char *p;
-    char *q;
+    const char *q;
 
     if (!initialized) {
         InitializeMessageIDcclass();
