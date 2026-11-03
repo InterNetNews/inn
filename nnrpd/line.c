@@ -38,20 +38,17 @@ line_free(struct line *line)
 }
 
 #ifdef HAVE_OPENSSL
+static volatile sig_atomic_t tls_timedout = 0;
+
 /*
-**  Alarm signal handler for client timeout.
+**  Alarm signal handler for client timeout.  It only records the timeout;
+**  line_doread() then shuts down the TLS connection, as SSL_shutdown()
+**  cannot be called here on the connection SSL_read() is using.
 */
 static void
 alarmHandler(int s UNUSED)
 {
-    /* Send the close_notify shutdown alert to the news reader.
-     * No need to call again SSL_shutdown() to complete the bidirectional
-     * shutdown handshake as we do not expect more data to process.  Just
-     * close the underlying connection without waiting for the response.
-     * Such a unidirectional shutdown is allowed per OpenSSL documentation. */
-    SSL_shutdown(tls_conn);
-    tls_conn = NULL;
-    errno = ECONNRESET;
+    tls_timedout = 1;
 }
 #endif
 
@@ -140,12 +137,26 @@ line_doread(void *p, size_t len, int timeout)
 #ifdef HAVE_OPENSSL
         if (tls_conn) {
             int err;
-            xsignal(SIGALRM, alarmHandler);
+            /* The read() interrupted by the alarm must not be restarted,
+             * otherwise SSL_read() would go on waiting for the news reader
+             * after the timeout. */
+            xsignal_norestart(SIGALRM, alarmHandler);
             do {
+                tls_timedout = 0;
                 alarm(timeout);
                 n = SSL_read(tls_conn, p, len);
                 alarm(0);
-                if (tls_conn == NULL) {
+                if (tls_timedout && n <= 0) {
+                    /* Send the close_notify shutdown alert to the news
+                     * reader.  No need to call again SSL_shutdown() to
+                     * complete the bidirectional shutdown handshake as we do
+                     * not expect more data to process.  Just close the
+                     * underlying connection without waiting for the
+                     * response.  Such a unidirectional shutdown is allowed
+                     * per OpenSSL documentation. */
+                    SSL_shutdown(tls_conn);
+                    tls_conn = NULL;
+                    errno = ECONNRESET;
                     n = -2; /* timeout */
                     break;
                 }
