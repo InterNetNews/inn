@@ -101,6 +101,8 @@ sigfunc(int sig UNUSED)
     signalled = 1;
 }
 
+/* SIGUSR1, and SIGCHLD in the parent, only record that the state of the
+   children may have changed; the main loops act on it. */
 static volatile sig_atomic_t updated = 0;
 static void
 childsig(int sig UNUSED)
@@ -108,8 +110,9 @@ childsig(int sig UNUSED)
     updated = 1;
 }
 
+/* Choose the child that will listen for new connections, if none does. */
 static void
-parentsig(int sig UNUSED)
+choose_listener(void)
 {
     int i, which, smallest;
     if (wholistens < 0) {
@@ -131,7 +134,6 @@ parentsig(int sig UNUSED)
         } else {
             wholistens = -2;
         }
-        updated = 1;
     }
 }
 
@@ -484,6 +486,7 @@ serverproc(int me)
 
     /* main loop */
     while (!signalled) {
+        updated = 0;
         FD_ZERO(&rdset);
         FD_ZERO(&wrset);
         lastfd = 0;
@@ -515,6 +518,11 @@ serverproc(int me)
         }
         tv.tv_usec = 0;
         tv.tv_sec = SELECT_TIMEOUT;
+        /* Do not wait if a signal has arrived since the beginning of the
+           loop, for instance SIGUSR1 sent by the parent to make this child
+           the listener just after the above check. */
+        if (signalled || updated)
+            tv.tv_sec = 0;
         count = select(lastfd + 1, &rdset, &wrset, NULL, &tv);
 
         if (signalled)
@@ -598,8 +606,6 @@ reap(void)
             }
         }
     }
-    if (wholistens == -1)
-        parentsig(SIGUSR1);
     return 0;
 }
 
@@ -635,6 +641,7 @@ main(int argc, char *argv[])
 #    endif
     struct timeval tv;
     fd_set rdset;
+    sigset_t waitset, oldset;
 
     setproctitle_init(argc, argv);
 
@@ -700,7 +707,7 @@ main(int argc, char *argv[])
     xsignal_norestart(SIGTERM, sigfunc);
     xsignal_norestart(SIGHUP, sigfunc);
 
-    xsignal_norestart(SIGUSR1, parentsig);
+    xsignal_norestart(SIGUSR1, childsig);
     xsignal_norestart(SIGCHLD, childsig);
     parent = getpid();
 
@@ -721,13 +728,28 @@ main(int argc, char *argv[])
         }
         children[i].started = time(NULL);
         sleep(1);
+        choose_listener();
     }
 
+    sigemptyset(&waitset);
+    sigaddset(&waitset, SIGINT);
+    sigaddset(&waitset, SIGTERM);
+    sigaddset(&waitset, SIGHUP);
+    sigaddset(&waitset, SIGUSR1);
+    sigaddset(&waitset, SIGCHLD);
+
     while (!signalled) {
+        updated = 0;
         if (reap())
             break;
+        choose_listener();
 
         if (wholistens == -2) {
+            /* Do not wait if a signal has arrived since the beginning of
+               the loop.  One arriving just before select() is only acted on
+               at the timeout. */
+            if (signalled || updated)
+                continue;
             FD_ZERO(&rdset);
             FD_SET(listensock, &rdset);
             tv.tv_usec = 0;
@@ -741,7 +763,13 @@ main(int argc, char *argv[])
                     close(ret);
             }
         } else {
-            pause();
+            /* Block the signals while checking whether one has arrived since
+               the beginning of the loop, and unblock them atomically while
+               waiting for the next one, so that none is missed. */
+            sigprocmask(SIG_BLOCK, &waitset, &oldset);
+            if (!signalled && !updated)
+                sigsuspend(&oldset);
+            sigprocmask(SIG_SETMASK, &oldset, NULL);
         }
     }
 
