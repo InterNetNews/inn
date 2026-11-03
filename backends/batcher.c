@@ -39,7 +39,7 @@ static size_t BytesInBatch = 60 * 1024;
 static size_t BytesWritten;
 static size_t MaxArts;
 static size_t MaxBytes;
-static sig_atomic_t GotInterrupt;
+static volatile sig_atomic_t GotInterrupt;
 static const char *Separator = "#! rnews %ld";
 static char *ERRLOG;
 

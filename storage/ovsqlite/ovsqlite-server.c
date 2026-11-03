@@ -113,7 +113,7 @@ static int maxsock = -1;
 static client_t *clients = NULL;
 static size_t client_capacity, client_count;
 static fd_set read_fds, write_fds;
-static bool volatile terminating;
+static volatile sig_atomic_t terminating;
 
 static sqlite3 *connection;
 static sql_main_t sql_main;

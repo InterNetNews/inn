@@ -4,6 +4,10 @@
  *   + Transaction checkpoints
  *   + Deadlock detection
  *   + Transaction log removal
+ *
+ * Created by Heath Kehoe in 2000.
+ * Various bug fixes, code and documentation improvements since then
+ * in 2000-2003, 2006, 2008, 2013-2015, 2021, 2026.
  */
 
 #include "portable/system.h"
@@ -32,7 +36,7 @@ main(int argc UNUSED, char **argv UNUSED)
 
 #else /* HAVE_BDB */
 
-static int signalled = 0;
+static volatile sig_atomic_t signalled = 0;
 static void
 sigfunc(int sig UNUSED)
 {
