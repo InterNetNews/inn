@@ -1,6 +1,11 @@
 /*
  * ovdb_server.c
  * ovdb read server
+ *
+ * Created by Heath Kehoe in 2000.
+ * Various bug fixes, code and documentation improvements since then
+ * in 2000-2004, 2006, 2008, 2009, 2011, 2013-2015, 2018, 2021, 2022, 2024,
+ * 2026.
  */
 
 #include "portable/system.h"
@@ -89,14 +94,14 @@ struct child {
 static struct child *children;
 #    define wholistens      (children[ovdb_conf.numrsprocs].num)
 
-static int signalled = 0;
+static volatile sig_atomic_t signalled = 0;
 static void
 sigfunc(int sig UNUSED)
 {
     signalled = 1;
 }
 
-static int updated = 0;
+static volatile sig_atomic_t updated = 0;
 static void
 childsig(int sig UNUSED)
 {

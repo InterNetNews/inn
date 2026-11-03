@@ -4,7 +4,7 @@
  *
  * Created by Heath Kehoe in 2000.
  * Various bug fixes, code and documentation improvements since then
- * in 2000-2004, 2006, 2008, 2013-2015, 2018, 2021-2025.
+ * in 2000-2004, 2006, 2008, 2013-2015, 2018, 2021-2026.
  */
 
 #include "portable/system.h"
@@ -35,7 +35,7 @@ main(int argc UNUSED, char **argv UNUSED)
 
 #else /* HAVE_BDB */
 
-static int signalled = 0;
+static volatile sig_atomic_t signalled = 0;
 static void
 sigfunc(int signum UNUSED)
 {

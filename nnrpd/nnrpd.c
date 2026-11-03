@@ -112,7 +112,7 @@ static char *LocalLogDirName;
 static double STATstart;
 static double STATfinish;
 static char *PushedBack;
-static sig_atomic_t ChangeTrace;
+static volatile sig_atomic_t ChangeTrace;
 static bool DaemonMode = false;
 static bool ForeGroundMode = false;
 static const char *HostErrorStr;

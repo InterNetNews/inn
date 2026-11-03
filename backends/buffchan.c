@@ -74,7 +74,7 @@ static int CloseEvery;
 static int FlushEvery;
 static int CloseSeconds;
 static int FlushSeconds;
-static sig_atomic_t GotInterrupt;
+static volatile sig_atomic_t GotInterrupt;
 static SITEHASH SITEtable[SITE_SIZE];
 static time_t Now;
 
