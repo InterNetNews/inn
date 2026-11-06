@@ -808,6 +808,7 @@ dnl   -Wnrvo                          Fine in C.
 dnl   -Wpacked                        Not an actual problem.
 dnl   -Wpadded                        Not an actual problem.
 dnl   -Wpoison-system-directories     Not an actual problem (e.g. Xcode).
+dnl   -Wpre-c11-compat                glibc 2.43 string.h macros use _Generic.
 dnl   -Wreserved-id-macro             Autoconf sets several of these normally.
 dnl   -Wreserved-identifier           False positives with FD_ZERO.
 dnl   -Wsign-conversion               Too many fiddly changes for the benefit.
@@ -854,7 +855,7 @@ m4_foreach_w(
      -Wno-disabled-macro-expansion -Wno-excess-padding -Wno-extra-semi-stmt
      -Wno-implicit-int-conversion -Wno-implicit-void-ptr-cast
      -Wno-packed -Wno-padded
-     -Wno-poison-system-directories
+     -Wno-poison-system-directories -Wno-pre-c11-compat
      -Wno-reserved-id-macro -Wno-reserved-identifier -Wno-shorten-64-to-32
      -Wno-sign-conversion -Wno-stack-protector-purecap-ignored
      -Wno-switch-default -Wno-switch-enum
