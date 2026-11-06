@@ -1039,7 +1039,7 @@ tests/lib/xmalloc.t                   Tests for lib/xmalloc.c
 tests/lib/xwrite-t.c                  Tests for lib/xwrite.c
 tests/nnrpd                           Test suite for nnrpd (Directory)
 tests/nnrpd/auth-ext-t.c              Tests for auth_external in nnrpd
-tests/nnrpd/auth-test                 Helper program for external auth tests
+tests/nnrpd/auth-test.in              Helper program for external auth tests
 tests/overview                        Test suite for overview (Directory)
 tests/overview/api-t.c                Basic tests for overview API
 tests/overview/overchan.t             Tests for backends/overchan

@@ -41,7 +41,7 @@ TESTS	= authprogs/ident.t expire/tombstone.t expire/tombstone-hisexpire.t \
 
 ##  Extra stuff that needs to be built before tests can be run.
 
-EXTRA	= runtests clients/server-list docs/pod.t lib/xmalloc \
+EXTRA	= runtests clients/server-list docs/pod.t lib/xmalloc nnrpd/auth-test \
 	  overview/ovsqlite-read.t overview/ovsqlite-write.t \
 	  perl/minimum-version.t
 
@@ -336,9 +336,12 @@ lib/xwrite.t: lib/xwrite-t.o lib/xwrite.o lib/fakewrite.o tap/basic.o $(LIBINN)
 	$(LINK) lib/xwrite-t.o lib/xwrite.o lib/fakewrite.o tap/basic.o \
 	    $(LIBINN)
 
-nnrpd/auth-ext.t: nnrpd/auth-ext-t.o ../nnrpd/auth-ext.o tap/basic.o tap/messages.o tap/string.o $(LIBINN)
+nnrpd/auth-ext.t: nnrpd/auth-ext-t.o ../nnrpd/auth-ext.o tap/basic.o tap/messages.o tap/string.o $(LIBINN) nnrpd/auth-test
 	$(LINK) nnrpd/auth-ext-t.o ../nnrpd/auth-ext.o tap/basic.o \
 	    tap/messages.o tap/string.o $(LIBINN)
+
+nnrpd/auth-test: nnrpd/auth-test.in $(FIXSCRIPT)
+	$(FIX) -i nnrpd/auth-test.in
 
 overview/api.t: overview/api-t.o tap/basic.o $(STORAGEDEPS)
 	$(LINKDEPS) overview/api-t.o tap/basic.o $(STORAGELIBS) $(LIBS)

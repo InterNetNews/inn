@@ -283,8 +283,7 @@ code-check:
 	        \! -wholename ./samples/nnrpd_auth.pl \
 	        \! -wholename ./scripts/innshellvars.pl \
 	        ; echo ./support/mkmanifest \
-	        ; echo ./tests/data/overview/munge-data \
-	        ; echo ./tests/nnrpd/auth-test) \
+	        ; echo ./tests/data/overview/munge-data) \
 	        | grep -v pgpverify | grep -v '^./site/' | sort -u` ; \
 	if command -v "perlcritic" >/dev/null 2>&1; then \
 	    echo "Running perlcritic to check Perl code..." ; \
@@ -349,8 +348,7 @@ reformat:
 	        \! -wholename ./samples/nnrpd_auth.pl \
 	        \! -wholename ./scripts/innshellvars.pl \
 	        ; echo ./support/mkmanifest \
-	        ; echo ./tests/data/overview/munge-data \
-	        ; echo ./tests/nnrpd/auth-test) \
+	        ; echo ./tests/data/overview/munge-data) \
 	        | grep -v pgpverify | grep -v '^./site/' | sort -u \
 	        | xargs perltidy ; \
 	else \
