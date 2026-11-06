@@ -280,7 +280,7 @@ scope *
 findScope(scope *s, const char *name, int mustExist)
 {
     scope *p = NULL;
-    char *q;
+    const char *q;
     int i;
 
 

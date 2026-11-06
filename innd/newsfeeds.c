@@ -484,7 +484,7 @@ SITEparseone(char *Entry, SITE *sp, char *subbed, char *poison)
         return "missing field 2";
     *f2++ = '\0';
     sp->Name = Entry;
-    if ((p = strchr(sp->Name, NF_SUBFIELD_SEP)) != NULL) {
+    if ((p = strchr(Entry, NF_SUBFIELD_SEP)) != NULL) {
         /* Exclusions within the site field. */
         *p++ = '\0';
         if (*p)
