@@ -43,12 +43,16 @@ main(void)
 
     if (system(cat) != 0)
         die("Unable to create stripped configuration file");
-    ok(1, innconf_read("config/tmp2"));
+    if (!innconf_read("config/tmp2"))
+        bail("cannot read generated config/tmp2");
+    ok(1, true);
     standard = innconf;
     innconf = NULL;
     if (system(grep) != 0)
         die("Unable to create stripped configuration file");
-    ok(2, innconf_read("config/tmp"));
+    if (!innconf_read("config/tmp"))
+        bail("cannot read generated config/tmp");
+    ok(2, true);
     unlink("config/tmp");
     unlink("config/tmp2");
     ok(3, innconf_compare(standard, innconf));
