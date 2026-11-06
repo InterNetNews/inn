@@ -271,7 +271,7 @@ code-check:
 	        \! -wholename ./scripts/innshellvars.pl \
 	        ; echo ./support/mkmanifest \
 	        ; echo ./tests/data/overview/munge-data \
-	        ; echo ./tests/nnrpd/auth-test) \
+	        ; echo ./tests/nnrpd/auth-test.in) \
 	        | grep -v pgpverify | grep -v '^./site/' | sort -u` ; \
 	if command -v "perlcritic" >/dev/null 2>&1; then \
 	    echo "Running perlcritic to check Perl code..." ; \
@@ -337,7 +337,7 @@ reformat:
 	        \! -wholename ./scripts/innshellvars.pl \
 	        ; echo ./support/mkmanifest \
 	        ; echo ./tests/data/overview/munge-data \
-	        ; echo ./tests/nnrpd/auth-test) \
+	        ; echo ./tests/nnrpd/auth-test.in) \
 	        | grep -v pgpverify | grep -v '^./site/' | sort -u \
 	        | xargs perltidy ; \
 	else \

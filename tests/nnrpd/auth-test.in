@@ -3,6 +3,7 @@
 # Test resolver and authenticator, used for testing nnrpd external auth.
 # Saves all of its input into a file named input in the current directory, as
 # seen, and then produces output based on its command-line parameter.
+# The interpreter path is replaced with the configured Perl at build time.
 #
 # Originally written by Russ Allbery in shell in 2005.
 # Rewritten in Perl by Julien Élie in 2026 because on OpenBSD, when the script

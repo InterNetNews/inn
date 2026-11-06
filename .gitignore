@@ -257,6 +257,7 @@
 /tests/lib/network/client.t
 /tests/lib/network/server.t
 /tests/nnrpd/auth-ext.t
+/tests/nnrpd/auth-test
 /tests/overview/api.t
 /tests/overview/buffindexed.t
 /tests/overview/ovsqlite.t
