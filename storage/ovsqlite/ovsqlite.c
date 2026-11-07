@@ -277,7 +277,6 @@ direct_open(void)
     path = concatpath(innconf->pathoverview, OVSQLITE_DB_FILE);
     status =
         sqlite3_open_v2(path, &read_connection, SQLITE_OPEN_READONLY, NULL);
-    free(path);
     if (status != SQLITE_OK) {
         if (status != SQLITE_CANTOPEN)
             warn("ovsqlite: cannot open database for reading: %s",
@@ -285,6 +284,7 @@ direct_open(void)
                                  : sqlite3_errstr(status));
         sqlite3_close_v2(read_connection);
         read_connection = NULL;
+        free(path);
         return false;
     }
     sqlite3_extended_result_codes(read_connection, 1);
@@ -294,6 +294,38 @@ direct_open(void)
      * created without WAL, fall back to the server path. */
     status = sqlite3_exec(read_connection, "pragma journal_mode;",
                           pragma_callback, &journal_mode, NULL);
+
+    /* Some SQLite builds, like the one shipped with macOS, cannot read a
+     * WAL-mode database through a read-only connection when its -wal file
+     * does not exist, which is the case once the last connection to the
+     * database has been closed (for instance after ovsqlite-server or
+     * ovsqlite-util has exited).  The first access then fails with
+     * SQLITE_CANTOPEN.  Other builds create the -wal file in that case; do
+     * the same by briefly opening a read-write connection, and retry with a
+     * new read-only connection.  The read-write connection is closed only
+     * after the read-only one has accessed the database, as closing the
+     * last connection to the database would remove the -wal file again. */
+    if ((status & 0xff) == SQLITE_CANTOPEN) {
+        sqlite3 *wal_connection = NULL;
+
+        sqlite3_close_v2(read_connection);
+        read_connection = NULL;
+        status = sqlite3_open_v2(path, &wal_connection, SQLITE_OPEN_READWRITE,
+                                 NULL);
+        if (status == SQLITE_OK)
+            status = sqlite3_exec(wal_connection, "pragma journal_mode;", 0,
+                                  NULL, NULL);
+        if (status == SQLITE_OK)
+            status = sqlite3_open_v2(path, &read_connection,
+                                     SQLITE_OPEN_READONLY, NULL);
+        if (status == SQLITE_OK) {
+            sqlite3_extended_result_codes(read_connection, 1);
+            status = sqlite3_exec(read_connection, "pragma journal_mode;",
+                                  pragma_callback, &journal_mode, NULL);
+        }
+        sqlite3_close_v2(wal_connection);
+    }
+    free(path);
     if (status != SQLITE_OK || !journal_mode
         || strcmp(journal_mode, "wal") != 0) {
         free(journal_mode);
