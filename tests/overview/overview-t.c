@@ -332,6 +332,7 @@ overview_verify_data(const char *data)
                       &arrived)) {
             warn("No overview data found for %s:%lu", buffer, artnum);
             status = false;
+            OVclosesearch(search);
             continue;
         }
         if (overnum != artnum) {
