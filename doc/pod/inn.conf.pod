@@ -1133,6 +1133,16 @@ systems have problems with mmap().  If this is set to false, overviews
 will be read into memory before being sent to readers.  This is a
 boolean value and the default is true.
 
+This parameter only has an effect on programs reading tradindexed overview
+data, like B<nnrpd>.  Writing tradindexed overview data always requires
+mmap(), so when this parameter is set to false, programs opening the overview
+database for writing fail with a "cannot open for writing without mmap" error.
+It notably concerns B<innd>, B<overchan>, B<expireover>, B<makehistory> when
+generating overview data, and the B<-A>, B<-c>, B<-F> and B<-R> options of
+B<tdx-util>.  Therefore, only set it to false on a server which does not write
+overview data itself, like a reader within a cluster sharing its overview data
+over NFS (see the I<nfsreader> parameter).
+
 =back
 
 INN has optional support for generating keyword information automatically
