@@ -80,14 +80,14 @@ STATUSinit(void)
 }
 
 static char *
-PrettySize(unsigned long long size, char *str)
+PrettySize(unsigned long long size, char *str, size_t len)
 {
     if (size > 1073741824) /* 1024*1024*1024 */
-        sprintf(str, "%.1fGb", (double) size / 1073741824.);
+        snprintf(str, len, "%.1fGb", (double) size / 1073741824.);
     else if (size > 1048576) /* 1024*1024 */
-        sprintf(str, "%.1fMb", (double) size / 1048576.);
+        snprintf(str, len, "%.1fMb", (double) size / 1048576.);
     else
-        sprintf(str, "%.1fkb", (double) size / 1024.);
+        snprintf(str, len, "%.1fkb", (double) size / 1024.);
     return (str);
 }
 
@@ -310,12 +310,12 @@ STATUSsummary(void)
     fprintf(F, "      duplicated: %-9lu     %%duplicated: %.1f%%\n", duplicate,
             (double) duplicate / (double) offered * 100);
     fprintf(F, "           bytes: %-7s\n",
-            PrettySize(size + DuplicateSize + RejectSize, str));
+            PrettySize(size + DuplicateSize + RejectSize, str, sizeof(str)));
     fprintf(F, " duplicated size: %-7s  %%duplicated size: %.1f%%\n",
-            PrettySize(DuplicateSize, str),
+            PrettySize(DuplicateSize, str, sizeof(str)),
             (double) DuplicateSize / (double) size * 100);
     fprintf(F, "   rejected size: %-7s    %%rejected size: %.1f%%\n",
-            PrettySize(RejectSize, str),
+            PrettySize(RejectSize, str, sizeof(str)),
             (double) RejectSize / (double) size * 100);
     fputc('\n', F);
 
@@ -348,11 +348,13 @@ STATUSsummary(void)
         fprintf(F, "        filtered: %-7lu ", status->Unwanted_f);
         fprintf(F, "  is streaming: %s\n",
                 (status->Check || status->Takethis) ? "Yes" : "No");
-        fprintf(F, "       size: %-8s ", PrettySize(status->Size, str));
+        fprintf(F, "       size: %-8s ",
+                PrettySize(status->Size, str, sizeof(str)));
         fprintf(F, "       bad sites: %-7lu ", status->Unwanted_s);
         fprintf(F, "duplicate size: %s\n",
-                PrettySize(status->DuplicateSize, str));
-        fprintf(F, "reject size: %-8s\n", PrettySize(status->RejectSize, str));
+                PrettySize(status->DuplicateSize, str, sizeof(str)));
+        fprintf(F, "reject size: %-8s\n",
+                PrettySize(status->RejectSize, str, sizeof(str)));
         fprintf(F, "  Protocol:\n");
         fprintf(F,
                 "      Ihave: %-6lu SendIt[%d]: %-6lu    Got[%d]: %-6lu "

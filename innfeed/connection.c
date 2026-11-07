@@ -1370,7 +1370,7 @@ issueAuthUser(EndPoint e, Connection cxn)
     authUserBuffer = newBuffer(lenBuff);
     t = bufferBase(authUserBuffer);
 
-    sprintf(t, "AUTHINFO USER %s\r\n", hostUsername(cxn->myHost));
+    snprintf(t, lenBuff, "AUTHINFO USER %s\r\n", hostUsername(cxn->myHost));
     bufferSetDataSize(authUserBuffer, strlen(t));
 
     authUserCmdBuffers = makeBufferArray(authUserBuffer, NULL);
@@ -1406,7 +1406,7 @@ issueAuthPass(EndPoint e, Connection cxn)
     authPassBuffer = newBuffer(lenBuff);
     t = bufferBase(authPassBuffer);
 
-    sprintf(t, "AUTHINFO PASS %s\r\n", hostPassword(cxn->myHost));
+    snprintf(t, lenBuff, "AUTHINFO PASS %s\r\n", hostPassword(cxn->myHost));
     bufferSetDataSize(authPassBuffer, strlen(t));
 
     authPassCmdBuffers = makeBufferArray(authPassBuffer, NULL);
@@ -3609,7 +3609,7 @@ issueIHAVE(Connection cxn)
     ASSERT(ihaveBuff != NULL);
 
     p = bufferBase(ihaveBuff);
-    sprintf(p, "IHAVE %s\r\n", msgid);
+    snprintf(p, bufferSize(ihaveBuff), "IHAVE %s\r\n", msgid);
     bufferSetDataSize(ihaveBuff, strlen(p));
 
     d_printf(5, "%s:%u Command IHAVE %s\n", hostPeerName(cxn->myHost),
@@ -3806,7 +3806,7 @@ buildCheckBuffer(Connection cxn)
         while (p != NULL) {
             const char *msgid = artMsgId(p->article);
 
-            sprintf(t, "CHECK %s\r\n", msgid);
+            snprintf(t, lenBuff - tlen, "CHECK %s\r\n", msgid);
             d_printf(5, "%s:%u Command %s\n", peerName, cxn->ident, t);
 
             tlen += strlen(t);
@@ -3900,7 +3900,7 @@ buildTakethisBuffers(Connection cxn, Buffer checkBuffer)
                 takeBuffer = newBuffer(takeBuffLen);
                 t = bufferBase(takeBuffer);
 
-                sprintf(t, "TAKETHIS %s\r\n", msgid);
+                snprintf(t, takeBuffLen, "TAKETHIS %s\r\n", msgid);
                 bufferSetDataSize(takeBuffer, strlen(t));
 
                 d_printf(5, "%s:%u Command %s\n", peerName, cxn->ident, t);
@@ -4436,19 +4436,5 @@ artHolderByMsgId(const char *msgid, ArtHolder head)
 static int
 fudgeFactor(int initVal)
 {
-    int newValue;
-    static bool seeded;
-
-    if (!seeded) {
-        time_t t = theTime();
-
-        /* this may have been done already in endpoint.c. Is that a problem???
-         */
-        srand(t);
-        seeded = true;
-    }
-
-    newValue = initVal + (initVal / 10 - (rand() % (initVal / 5)));
-
-    return newValue;
+    return initVal + (initVal / 10 - randomBelow(initVal / 5));
 }

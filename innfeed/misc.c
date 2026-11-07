@@ -538,6 +538,26 @@ timeToString(time_t t, char *buffer, size_t size)
     return buffer;
 }
 
+
+/*
+ * Return a pseudo-random number between 0 and upper - 1, or 0 if upper is not
+ * positive.  It is only used to spread timers, so a simple xorshift generator
+ * seeded with the time and the process ID is enough.  It also avoids rand(),
+ * which some systems like OpenBSD flag at link time as deterministic.
+ */
+int
+randomBelow(int upper)
+{
+    static uint32_t state = 0;
+
+    if (state == 0)
+        state = ((uint32_t) time(NULL) ^ ((uint32_t) getpid() << 16)) | 1;
+    state ^= state << 13;
+    state ^= state >> 17;
+    state ^= state << 5;
+    return upper > 0 ? (int) (state % (uint32_t) upper) : 0;
+}
+
 void
 addPointerFreedOnExit(char *pointerToFree)
 {

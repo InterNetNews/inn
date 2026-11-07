@@ -104,6 +104,19 @@ initialize(void)
     ARTsetup();
 }
 
+/* Return a pseudo-random offset below 50.  random() is not used since some
+   systems like OpenBSD flag it at link time as deterministic; a linear
+   congruential generator is enough, and keeps the offsets the same from one
+   run to another, like the unseeded random() did. */
+static size_t
+random_offset(void)
+{
+    static uint32_t state = 1;
+
+    state = state * 1103515245U + 12345U;
+    return (state >> 16) % 50;
+}
+
 /* Given the test number, a path to an article and an expected error message
    (which may be ""), create a channel, run the article through ARTparse
    either all at once or, if slow is true, one character at a time, and check
@@ -127,7 +140,7 @@ ok_article(int n, const char *path, const char *error, bool slow, bool shift)
     if (wire == NULL)
         sysbail("cannot convert %s to wire format", path);
     cp = fake_channel();
-    offset = shift ? random() % 50 : 0;
+    offset = shift ? random_offset() : 0;
     cp->Start = offset;
     cp->Next = offset;
     buffer_resize(&cp->In, wirelen + offset);

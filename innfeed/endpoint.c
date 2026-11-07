@@ -1294,27 +1294,21 @@ printDate(TimeoutId tid, void *data)
              (unsigned long) t, dateString);
 
     if (timeoutQueue == NULL) {
-        int ti = (rand() % 10) + 1;
+        int ti = randomBelow(10) + 1;
 
         prepareSleep(printDate, ti, data);
     }
 }
 
-TimeoutId rm;
+static TimeoutId rm;
 
 static void
 Timeout(TimeoutId tid, void *data)
 {
-    static int seeded;
     static int howMany;
     static int i;
     char dateString[30];
     const time_t t = theTime();
-
-    if (!seeded) {
-        srand(t);
-        seeded = 1;
-    }
 
     timeToString(t, dateString, sizeof(dateString));
     d_printf(1, "Timeout (%d) time now is %lu %s\n", (int) tid,
@@ -1325,11 +1319,11 @@ Timeout(TimeoutId tid, void *data)
                  (removeTimeout(rm) ? "REMOVED" : "FAILED TO REMOVE"), rm);
     rm = 0;
 
-    howMany = (rand() % 10) + (timeoutQueue == NULL ? 1 : 0);
+    howMany = randomBelow(10) + (timeoutQueue == NULL ? 1 : 0);
 
     for (i = 0; i < howMany; i++) {
         TimeoutId id;
-        int count = (rand() % 30) + 1;
+        int count = randomBelow(30) + 1;
 
         id = (i % 2 == 0 ? prepareSleep(Timeout, count, data)
                          : prepareWake(Timeout, t + count, data));

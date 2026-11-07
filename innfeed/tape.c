@@ -273,8 +273,6 @@ Tape
 newTape(const char *peerName, bool dontRotate)
 {
     Tape nt = xmalloc(sizeof(struct tape_s));
-    size_t pLen = strlen(peerName);
-    size_t dLen = strlen(tapeDirectory);
 
     if (!inited) {
         inited = true;
@@ -294,18 +292,16 @@ newTape(const char *peerName, bool dontRotate)
 
     nt->peerName = xstrdup(peerName);
 
-    nt->handFilename = xmalloc(pLen + dLen + 2);
-    sprintf(nt->handFilename, "%s/%s", tapeDirectory, peerName);
+    xasprintf(&nt->handFilename, "%s/%s", tapeDirectory, peerName);
 
-    nt->lockFilename = xmalloc(pLen + dLen + strlen(LOCK_TAIL) + 2);
-    sprintf(nt->lockFilename, "%s/%s%s", tapeDirectory, peerName, LOCK_TAIL);
+    xasprintf(&nt->lockFilename, "%s/%s%s", tapeDirectory, peerName,
+              LOCK_TAIL);
 
-    nt->inputFilename = xmalloc(pLen + dLen + strlen(INPUT_TAIL) + 2);
-    sprintf(nt->inputFilename, "%s/%s%s", tapeDirectory, peerName, INPUT_TAIL);
+    xasprintf(&nt->inputFilename, "%s/%s%s", tapeDirectory, peerName,
+              INPUT_TAIL);
 
-    nt->outputFilename = xmalloc(pLen + dLen + strlen(OUTPUT_TAIL) + 2);
-    sprintf(nt->outputFilename, "%s/%s%s", tapeDirectory, peerName,
-            OUTPUT_TAIL);
+    xasprintf(&nt->outputFilename, "%s/%s%s", tapeDirectory, peerName,
+              OUTPUT_TAIL);
 
     if (!lockFile(nt->lockFilename)) {
         warn("ME lock failed for host: %s", nt->lockFilename);

@@ -37,6 +37,19 @@
 #endif
 
 /*
+ * Generate the reference output with the system snprintf if it works.  Our
+ * replacement is then not linked in, so the comparison stays independent, and
+ * this avoids linker warnings about sprintf on systems like OpenBSD.  Fall
+ * back on sprintf otherwise.
+ */
+#if HAVE_SNPRINTF
+#    define REFERENCE_PRINTF(buf, fmt, arg) \
+        snprintf((buf), sizeof(buf), (fmt), (arg))
+#else
+#    define REFERENCE_PRINTF(buf, fmt, arg) sprintf((buf), (fmt), (arg))
+#endif
+
+/*
  * Intentionally don't add the printf attribute here since we pass a
  * zero-length printf format during testing and don't want warnings.
  */
@@ -159,27 +172,27 @@ main(void)
 
     for (i = 0; fp_formats[i] != NULL; i++)
         for (j = 0; j < ARRAY_SIZE(fp_nums); j++) {
-            count = sprintf(lgbuf, fp_formats[i], fp_nums[j]);
+            count = REFERENCE_PRINTF(lgbuf, fp_formats[i], fp_nums[j]);
             test_format(false, lgbuf, count, fp_formats[i], fp_nums[j]);
         }
     for (i = 0; int_formats[i] != NULL; i++)
         for (j = 0; j < ARRAY_SIZE(int_nums); j++) {
-            count = sprintf(lgbuf, int_formats[i], int_nums[j]);
+            count = REFERENCE_PRINTF(lgbuf, int_formats[i], int_nums[j]);
             test_format(false, lgbuf, count, int_formats[i], int_nums[j]);
         }
     for (i = 0; uint_formats[i] != NULL; i++)
         for (j = 0; j < ARRAY_SIZE(uint_nums); j++) {
-            count = sprintf(lgbuf, uint_formats[i], uint_nums[j]);
+            count = REFERENCE_PRINTF(lgbuf, uint_formats[i], uint_nums[j]);
             test_format(false, lgbuf, count, uint_formats[i], uint_nums[j]);
         }
     for (i = 0; llong_formats[i] != NULL; i++)
         for (j = 0; j < ARRAY_SIZE(llong_nums); j++) {
-            count = sprintf(lgbuf, llong_formats[i], llong_nums[j]);
+            count = REFERENCE_PRINTF(lgbuf, llong_formats[i], llong_nums[j]);
             test_format(false, lgbuf, count, llong_formats[i], llong_nums[j]);
         }
     for (i = 0; ullong_formats[i] != NULL; i++)
         for (j = 0; j < ARRAY_SIZE(ullong_nums); j++) {
-            count = sprintf(lgbuf, ullong_formats[i], ullong_nums[j]);
+            count = REFERENCE_PRINTF(lgbuf, ullong_formats[i], ullong_nums[j]);
             test_format(false, lgbuf, count, ullong_formats[i],
                         ullong_nums[j]);
         }

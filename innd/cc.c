@@ -1518,7 +1518,7 @@ CCreload(char *av[])
         free(Path.data);
         Path.used = strlen(innconf->pathhost) + 1;
         Path.data = xmalloc(Path.used + 1);
-        sprintf(Path.data, "%s!", innconf->pathhost);
+        snprintf(Path.data, Path.used + 1, "%s!", innconf->pathhost);
         if (Pathalias.used > 0)
             free(Pathalias.data);
         if (innconf->pathalias == NULL) {
@@ -1527,7 +1527,8 @@ CCreload(char *av[])
         } else {
             Pathalias.used = strlen(innconf->pathalias) + 1;
             Pathalias.data = xmalloc(Pathalias.used + 1);
-            sprintf(Pathalias.data, "%s!", innconf->pathalias);
+            snprintf(Pathalias.data, Pathalias.used + 1, "%s!",
+                     innconf->pathalias);
         }
         if (Pathcluster.used > 0)
             free(Pathcluster.data);
@@ -1537,7 +1538,8 @@ CCreload(char *av[])
         } else {
             Pathcluster.used = strlen(innconf->pathcluster) + 1;
             Pathcluster.data = xmalloc(Pathcluster.used + 1);
-            sprintf(Pathcluster.data, "%s!", innconf->pathcluster);
+            snprintf(Pathcluster.data, Pathcluster.used + 1, "%s!",
+                     innconf->pathcluster);
         }
     }
 #endif

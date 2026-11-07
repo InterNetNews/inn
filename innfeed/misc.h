@@ -125,6 +125,10 @@ const char *boolToString(bool val);
 /* strftime with "%a %b %d %H:%M:%S %Y" (like ctime without linefeed) */
 char *timeToString(time_t time, char *buffer, size_t size);
 
+/* pseudo-random number between 0 and UPPER - 1 (0 if UPPER is not positive),
+   good enough to spread timers but not for anything security-related */
+int randomBelow(int upper);
+
 /* memory leak checker helper. */
 void addPointerFreedOnExit(char *pointerToFree);
 

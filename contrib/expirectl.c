@@ -245,11 +245,15 @@ main(int ac, char **av)
                     char *base = sbuf;
                     char *sptr;
                     char *dptr = dbuf;
+                    char *dend = dbuf + sizeof(dbuf);
 
                     while ((sptr = strchr(base, '[')) != NULL) {
                         double d;
                         int m = 0;
 
+                        /* Stop substituting if the result would not fit. */
+                        if (sptr - base >= dend - dptr)
+                            break;
                         bcopy(base, dptr, sptr - base);
                         dptr += sptr - base;
 
@@ -262,13 +266,13 @@ main(int ac, char **av)
                                 v = 1;
                             if (v < m)
                                 v = m;
-                            sprintf(dptr, "%ld", v);
+                            snprintf(dptr, (size_t) (dend - dptr), "%ld", v);
                             dptr += strlen(dptr);
                             ++sptr;
                         }
                         base = sptr;
                     }
-                    strcpy(dptr, base);
+                    snprintf(dptr, (size_t) (dend - dptr), "%s", base);
                     fputs(dbuf, fo);
                 }
                 fclose(fo);

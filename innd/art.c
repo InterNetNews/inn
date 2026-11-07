@@ -981,7 +981,7 @@ ARTparse(CHANNEL *cp)
 **  Return true if the article has no error, or false which means the error.
 */
 static bool
-ARTclean(ARTDATA *data, char *buff, bool ihave)
+ARTclean(ARTDATA *data, char *buff, size_t buffsize, bool ihave)
 {
     HDRCONTENT *hc = data->HdrContent;
     const ARTHEADER *hp = ARTheaders;
@@ -1009,15 +1009,15 @@ ARTclean(ARTDATA *data, char *buff, bool ihave)
             if (HDR_FOUND(i))
                 continue;
             if (HDR_LEN(i) < 0) {
-                sprintf(buff, "%d Duplicate \"%s\" header field",
-                        ihave ? NNTP_FAIL_IHAVE_REJECT
-                              : NNTP_FAIL_TAKETHIS_REJECT,
-                        hp[i].Name);
+                snprintf(buff, buffsize, "%d Duplicate \"%s\" header field",
+                         ihave ? NNTP_FAIL_IHAVE_REJECT
+                               : NNTP_FAIL_TAKETHIS_REJECT,
+                         hp[i].Name);
             } else {
-                sprintf(buff, "%d Missing \"%s\" header field",
-                        ihave ? NNTP_FAIL_IHAVE_REJECT
-                              : NNTP_FAIL_TAKETHIS_REJECT,
-                        hp[i].Name);
+                snprintf(buff, buffsize, "%d Missing \"%s\" header field",
+                         ihave ? NNTP_FAIL_IHAVE_REJECT
+                               : NNTP_FAIL_TAKETHIS_REJECT,
+                         hp[i].Name);
             }
             TMRstop(TMR_ARTCLEAN);
             return false;
@@ -1027,8 +1027,8 @@ ARTclean(ARTDATA *data, char *buff, bool ihave)
     /* Assumes the Message-ID header field is a required header field. */
     if (!IsValidMessageID(HDR(HDR__MESSAGE_ID), true, laxmid)) {
         HDR_LEN(HDR__MESSAGE_ID) = 0;
-        sprintf(buff, "%d Bad \"Message-ID\" header field",
-                ihave ? NNTP_FAIL_IHAVE_REJECT : NNTP_FAIL_TAKETHIS_REJECT);
+        snprintf(buff, buffsize, "%d Bad \"Message-ID\" header field",
+                 ihave ? NNTP_FAIL_IHAVE_REJECT : NNTP_FAIL_TAKETHIS_REJECT);
         TMRstop(TMR_ARTCLEAN);
         return false;
     }
@@ -1038,9 +1038,10 @@ ARTclean(ARTDATA *data, char *buff, bool ihave)
         i = data->Lines;
         if ((delta = i - atoi(p)) != 0
             && (unsigned long) abs(delta) > innconf->linecountfuzz) {
-            sprintf(buff, "%d Linecount %s != %d +- %lu",
-                    ihave ? NNTP_FAIL_IHAVE_REJECT : NNTP_FAIL_TAKETHIS_REJECT,
-                    MaxLength(p, p), i, innconf->linecountfuzz);
+            snprintf(buff, buffsize, "%d Linecount %s != %d +- %lu",
+                     ihave ? NNTP_FAIL_IHAVE_REJECT
+                           : NNTP_FAIL_TAKETHIS_REJECT,
+                     MaxLength(p, p), i, innconf->linecountfuzz);
             TMRstop(TMR_ARTCLEAN);
             return false;
         }
@@ -1054,9 +1055,9 @@ ARTclean(ARTDATA *data, char *buff, bool ihave)
     data->Posted = parsedate_rfc5322_lax(p);
 
     if (data->Posted == (time_t) -1) {
-        sprintf(buff, "%d Bad \"Date\" header field -- \"%s\"",
-                ihave ? NNTP_FAIL_IHAVE_REJECT : NNTP_FAIL_TAKETHIS_REJECT,
-                MaxLength(p, p));
+        snprintf(buff, buffsize, "%d Bad \"Date\" header field -- \"%s\"",
+                 ihave ? NNTP_FAIL_IHAVE_REJECT : NNTP_FAIL_TAKETHIS_REJECT,
+                 MaxLength(p, p));
         TMRstop(TMR_ARTCLEAN);
         return false;
     }
@@ -1066,9 +1067,11 @@ ARTclean(ARTDATA *data, char *buff, bool ihave)
         data->Posted = parsedate_rfc5322_lax(p);
 
         if (data->Posted == (time_t) -1) {
-            sprintf(buff, "%d Bad \"Injection-Date\" header field -- \"%s\"",
-                    ihave ? NNTP_FAIL_IHAVE_REJECT : NNTP_FAIL_TAKETHIS_REJECT,
-                    MaxLength(p, p));
+            snprintf(buff, buffsize,
+                     "%d Bad \"Injection-Date\" header field -- \"%s\"",
+                     ihave ? NNTP_FAIL_IHAVE_REJECT
+                           : NNTP_FAIL_TAKETHIS_REJECT,
+                     MaxLength(p, p));
             TMRstop(TMR_ARTCLEAN);
             return false;
         }
@@ -1078,17 +1081,19 @@ ARTclean(ARTDATA *data, char *buff, bool ihave)
         long cutoff = innconf->artcutoff * 24 * 60 * 60;
 
         if (data->Posted < Now.tv_sec - cutoff) {
-            sprintf(buff, "%d Too old -- \"%s\"",
-                    ihave ? NNTP_FAIL_IHAVE_REJECT : NNTP_FAIL_TAKETHIS_REJECT,
-                    MaxLength(p, p));
+            snprintf(buff, buffsize, "%d Too old -- \"%s\"",
+                     ihave ? NNTP_FAIL_IHAVE_REJECT
+                           : NNTP_FAIL_TAKETHIS_REJECT,
+                     MaxLength(p, p));
             TMRstop(TMR_ARTCLEAN);
             return false;
         }
     }
     if (data->Posted > Now.tv_sec + DATE_FUZZ) {
-        sprintf(buff, "%d Article injected or posted in the future -- \"%s\"",
-                ihave ? NNTP_FAIL_IHAVE_REJECT : NNTP_FAIL_TAKETHIS_REJECT,
-                MaxLength(p, p));
+        snprintf(buff, buffsize,
+                 "%d Article injected or posted in the future -- \"%s\"",
+                 ihave ? NNTP_FAIL_IHAVE_REJECT : NNTP_FAIL_TAKETHIS_REJECT,
+                 MaxLength(p, p));
         TMRstop(TMR_ARTCLEAN);
         return false;
     }
@@ -1106,8 +1111,9 @@ ARTclean(ARTDATA *data, char *buff, bool ihave)
                      &data->Newsgroups))
         == 0) {
         TMRstop(TMR_ARTCLEAN);
-        sprintf(buff, "%d Unwanted character in \"Newsgroups\" header field",
-                ihave ? NNTP_FAIL_IHAVE_REJECT : NNTP_FAIL_TAKETHIS_REJECT);
+        snprintf(buff, buffsize,
+                 "%d Unwanted character in \"Newsgroups\" header field",
+                 ihave ? NNTP_FAIL_IHAVE_REJECT : NNTP_FAIL_TAKETHIS_REJECT);
         return false;
     }
 
@@ -1491,11 +1497,13 @@ ARTassignnumbers(ARTDATA *data)
         if (linelen + 1 + ngp->NameLength + 1 + ARTNUMPRINTSIZE + 2
             > MAXARTLINELENGTH) {
             /* Line exceeded. */
-            sprintf(p, "\r\n %s:%lu", ngp->Name, ngp->Filenum);
+            snprintf(p, data->XrefBufLength - len, "\r\n %s:%lu", ngp->Name,
+                     ngp->Filenum);
             buflen = strlen(p);
             linelen = buflen - 2;
         } else {
-            sprintf(p, " %s:%lu", ngp->Name, ngp->Filenum);
+            snprintf(p, data->XrefBufLength - len, " %s:%lu", ngp->Name,
+                     ngp->Filenum);
             buflen = strlen(p);
             linelen += buflen;
         }
@@ -2018,7 +2026,7 @@ ARTpost(CHANNEL *cp)
 #endif
 
     /* Preliminary clean-ups. */
-    artclean = ARTclean(data, cp->Error, ihave);
+    artclean = ARTclean(data, cp->Error, sizeof(cp->Error), ihave);
 
     /* We have not parsed the Path header field body yet.  We do not check for
      * logipaddr right now (it will be done afterwards and change

@@ -241,7 +241,7 @@ OVadd(TOKEN token, char *data, int len, time_t arrived, time_t expires)
             continue;
         }
 
-        sprintf(overdata, "%lu\t", artnum);
+        snprintf(overdata, overdatalen, "%lu\t", artnum);
         i = strlen(overdata);
         memcpy(overdata + i, data, len);
         i += len;

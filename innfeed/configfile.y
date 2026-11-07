@@ -539,26 +539,22 @@ keyOk(const char *key)
     char *rval;
 
     if (key == NULL) {
-        rval = xmalloc(strlen("line : NULL key") + 15);
-        sprintf(rval, "line %d: NULL key", lineCount);
+        xasprintf(&rval, "line %d: NULL key", lineCount);
         return rval;
     } else if (*key == '\0') {
-        rval = xmalloc(strlen("line : EMPTY KEY") + 15);
-        sprintf(rval, "line %d: EMPTY KEY", lineCount);
+        xasprintf(&rval, "line %d: EMPTY KEY", lineCount);
         return rval;
     }
 
     if (!isalpha((unsigned char) *p)) {
-        rval = xmalloc(strlen(NON_ALPHA) + strlen(key) + 15);
-        sprintf(rval, NON_ALPHA, lineCount, key);
+        xasprintf(&rval, NON_ALPHA, lineCount, key);
         return rval;
     }
 
     p++;
     while (*p) {
         if (!(isalnum((unsigned char) *p) || *p == '_' || *p == '-')) {
-            rval = xmalloc(strlen(BAD_KEY) + strlen(key) + 15);
-            sprintf(rval, BAD_KEY, lineCount, key);
+            xasprintf(&rval, BAD_KEY, lineCount, key);
             return rval;
         }
         p++;
@@ -678,8 +674,7 @@ scope: entries;
 entries:
     | entries entry
     | entries error {
-        errbuff = xmalloc(strlen(SYNTAX_ERROR) + 12);
-        sprintf(errbuff, SYNTAX_ERROR, lineCount);
+        xasprintf(&errbuff, SYNTAX_ERROR, lineCount);
         YYABORT;
     };
 
@@ -696,8 +691,7 @@ entry: PEER WORD LBRACE {
             YYABORT;
     } scope RBRACE { currScope = currScope->parent; }
     | WORD WORD LBRACE {
-        errbuff = xmalloc(strlen(UNKNOWN_SCOPE_TYPE) + 15 + strlen($1));
-        sprintf(errbuff, UNKNOWN_SCOPE_TYPE, lineCount, $1);
+        xasprintf(&errbuff, UNKNOWN_SCOPE_TYPE, lineCount, $1);
         free($1);
         free($2);
         YYABORT;
@@ -757,8 +751,7 @@ yyerror(const char *s)
 #undef FMT
 #define FMT "line %d: %s"
 
-    errbuff = xmalloc(strlen(s) + strlen(FMT) + 20);
-    sprintf(errbuff, FMT, lineCount, s);
+    xasprintf(&errbuff, FMT, lineCount, s);
 
     return 0;
 }

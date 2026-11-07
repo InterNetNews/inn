@@ -205,7 +205,7 @@ massagebuff(int bread, char *buffer)
     char *p;
 
     if (bread > 55)
-        strcpy(buffer + 55, " [...]\n");
+        memcpy(buffer + 55, " [...]\n", sizeof(" [...]\n"));
     else
         buffer[bread] = '\0';
     for (p = buffer; *p != '\0';)
