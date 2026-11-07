@@ -873,7 +873,18 @@ AS_IF([test x"$CLANG" = xyes],
         [CC_WARNINGS="${CC_WARNINGS} -Wno-nrvo"], [])])
 
 dnl On OpenBSD, the system headers contain many redundant declarations.
+dnl
+dnl On macOS, the SDK marks as deprecated some interfaces used by INN which
+dnl still work fine and are not deprecated elsewhere: daemon() (deprecated
+dnl since macOS 10.5 because launchd prefers services which do not detach
+dnl themselves, and because fork() without exec() is unsafe in processes
+dnl using Apple frameworks, which INN does not use), as well as the Cyrus
+dnl SASL and Kerberos libraries shipped with the system (Apple recommends
+dnl its own frameworks instead).  Other deprecations, like the OpenSSL ones,
+dnl are still caught when building on other platforms.
 AS_CASE([$host],
+    [*-darwin*],
+        [CC_WARNINGS="${CC_WARNINGS} -Wno-deprecated-declarations"],
     [*-openbsd*],
         [CC_WARNINGS=`AS_ECHO(["${CC_WARNINGS}"]) | sed 's/-Wredundant-decls //'`])
 
