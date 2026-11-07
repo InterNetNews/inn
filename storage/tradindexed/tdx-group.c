@@ -1577,12 +1577,14 @@ tdx_index_audit(bool fix)
     if (fstat(index->fd, &st) < 0) {
         syswarn("tradindexed: cannot fstat %s", index->path);
         index_lock(index->fd, INN_LOCK_UNLOCK);
+        tdx_index_close(index);
         return;
     }
     if (!tdx_index_entry_count(st.st_size, &count)
         || !index_file_size(count, &expected)) {
         syswarn("tradindexed: invalid size for %s", index->path);
         index_lock(index->fd, INN_LOCK_UNLOCK);
+        tdx_index_close(index);
         return;
     }
     if (expected != st.st_size) {
@@ -1594,6 +1596,7 @@ tdx_index_audit(bool fix)
     }
     if (!index_maybe_remap(index, count)) {
         index_lock(index->fd, INN_LOCK_UNLOCK);
+        tdx_index_close(index);
         return;
     }
 
@@ -1607,6 +1610,7 @@ tdx_index_audit(bool fix)
     hashmap = hashmap_load();
     if (hashmap == NULL) {
         warn("tradindexed: cannot hash active file");
+        tdx_index_close(index);
         return;
     }
     data.index = index;
@@ -1619,4 +1623,5 @@ tdx_index_audit(bool fix)
         index_audit_group(index, entry, hashmap, fix);
     }
     hash_free(hashmap);
+    tdx_index_close(index);
 }
