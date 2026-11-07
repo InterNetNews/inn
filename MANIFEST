@@ -946,7 +946,8 @@ tests/data/etc/buffindexed.conf       buffindexed configuration for testing
 tests/data/etc/inn-bfx.conf           Basic inn.conf for testing buffindexed
 tests/data/etc/inn-tdx.conf           Basic inn.conf for testing tradindexed
 tests/data/etc/inn.conf               Basic inn.conf file for testing
-tests/data/etc/passwd                 Password data for ckpasswd tests
+tests/data/etc/passwd                 DES password data for ckpasswd tests
+tests/data/etc/passwd-bcrypt          bcrypt password data for ckpasswd tests
 tests/data/etc/storage.conf           Storage configuration for testing
 tests/data/overview                   Test overview data (Directory)
 tests/data/overview/1-4               Overview info for test articles 1-4
