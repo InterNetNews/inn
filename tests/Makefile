@@ -65,6 +65,14 @@ clean clobber distclean maintclean:
 	  .pure */.pure */*/.pure $(TESTS) $(EXTRA) $(BENCHMARKS)
 	rm -rf .libs */.libs */*/.libs
 
+##  Targets that do not correspond to files.  Declaring them is needed on
+##  case-insensitive file systems (like the default ones on macOS and
+##  Windows), where for instance the TESTS file would otherwise be considered
+##  as the tests target, which would then be up to date as soon as TESTS is
+##  newer than the test programs.
+.PHONY: all benchmark-history benchmarks build check clean clobber \
+	distclean maintclean test tests warnings
+
 $(FIXSCRIPT):
 	@echo Run configure before running make.  See INSTALL for details.
 	@exit 1

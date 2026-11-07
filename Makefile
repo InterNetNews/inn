@@ -70,6 +70,18 @@ all:
 	cd site        && $(MAKE) all      || exit 1 ; cd ..
 
 
+##  Targets that do not correspond to files.  Declaring them is needed on
+##  case-insensitive file systems (like the default ones on macOS and
+##  Windows), where for instance the BOOTSTRAP file would otherwise be
+##  considered as an up-to-date bootstrap target, and nothing would be done.
+##  This declaration is kept after the all target so that all remains the
+##  default target even with make implementations unaware of .PHONY.
+.PHONY: all bootstrap cert check check-manifest clean clobber code-check \
+        depend directories distclean install install-root maintclean \
+        profiled realclean reformat release snapshot test tests update \
+        warnings
+
+
 ##  If someone tries to run make before running configure, tell them to run
 ##  configure first.
 Makefile.global:
@@ -308,7 +320,7 @@ reformat:
 	fi
 	@if command -v "clang-format" >/dev/null 2>&1; then \
 	    echo "Running clang-format to reformat C code..." ; \
-	    find . \( -name '*.[ch]' -o -name paths.h.in \) \
+	    find . \( -name '*.[ch]' \) \
 	        \! -wholename ./history/hismethods.\* \
 	        \! -wholename ./include/config.h \
 	        \! -wholename ./include/inn/paths.h \
