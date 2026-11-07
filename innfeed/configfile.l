@@ -47,6 +47,14 @@
 # pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
 #endif
 
+/* Some versions of flex (such as 2.5.39 in OpenBSD) do not declare
+   yy_fatal_error as noreturn, and generate documentation comments with
+   empty @param paragraphs. */
+#pragma GCC diagnostic ignored "-Wmissing-noreturn"
+#if defined(__llvm__) || defined(__clang__)
+# pragma GCC diagnostic ignored "-Wdocumentation"
+#endif
+
 #if defined (FLEX_DEBUG)
 # define YY_USER_INIT yy_flex_debug = (getenv("YYDEBUG") == NULL ? 0 : 1)
 #endif
