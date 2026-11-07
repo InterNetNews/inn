@@ -1,0 +1,12 @@
+# This is a comment.
+# Same users and passwords as in passwd, but with bcrypt hashes, for systems
+# whose crypt(3) does not support traditional DES hashes (like OpenBSD).
+foo:$2b$04$xeS1JLFpJHHVY67iX1jqbuduZ5Qkdv3o87oj.B1AwCU/KTFo1M8rO:5:5:Foo Bar:/home/foo:/bin/sh
+
+# This is another comment.
+
+This is just some random text that someone put in this file for no good
+reason.
+
+bar:$2b$04$e0meEg5gDOKhGPDIlp6Zk.BWCLrHqNM6UpZi5wGG1iPMjHjSKyz0y
+baz:$2b$04$6I4HqENReaZLqjazXsZt/e8Idym2qw9Cuu8y12dI.dj/OVG09P/L2::::::::::::::::::::::

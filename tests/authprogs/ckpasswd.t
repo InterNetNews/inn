@@ -58,25 +58,44 @@ runfailure() {
     fi
 }
 
+# Check whether crypt(3) supports the password hashes used in a password file.
+# Takes the path to the file, and checks that the hash of user foo matches its
+# password "foopass".  Perl is used for the check because its crypt function
+# relies on crypt(3).
+crypt_supported() {
+    hash=$(sed -n 's/^foo:\([^:]*\).*/\1/p' "$1")
+    perl -e 'exit(crypt($ARGV[0], $ARGV[1]) eq $ARGV[1] ? 0 : 1)' \
+        foopass "$hash" >/dev/null 2>&1
+}
+
 # Make sure we're in the right directory.
 for dir in ../data data tests/data; do
     test -f "$dir/etc/passwd" && cd $dir
 done
 ckpasswd=../../authprogs/ckpasswd
 
+# Some systems (like OpenBSD) do not support traditional DES hashes in
+# crypt(3), so use bcrypt hashes there.  Otherwise, use the DES hashes, even
+# if they are not supported either, so that the tests fail and show that
+# another hashing method has to be handled.
+passwd=etc/passwd
+if ! crypt_supported etc/passwd && crypt_supported etc/passwd-bcrypt; then
+    passwd=etc/passwd-bcrypt
+fi
+
 # Print the test count.
 echo 7
 
 # First, run the tests that we expect to succeed.
-runsuccess "foo" "foopass" "-f etc/passwd" "User:foo"
-runsuccess "bar" "barpass" "-f etc/passwd" "User:bar"
-runsuccess "baz" "" "-f etc/passwd" "User:baz"
-runpipe "foo" "foopass" "-f etc/passwd" "User:foo"
+runsuccess "foo" "foopass" "-f $passwd" "User:foo"
+runsuccess "bar" "barpass" "-f $passwd" "User:bar"
+runsuccess "baz" "" "-f $passwd" "User:baz"
+runpipe "foo" "foopass" "-f $passwd" "User:foo"
 
 # Now, run the tests that we expect to fail.
-runfailure "foo" "barpass" "-f etc/passwd" \
+runfailure "foo" "barpass" "-f $passwd" \
     "ckpasswd: invalid password for user foo"
-runfailure "who" "foopass" "-f etc/passwd" \
+runfailure "who" "foopass" "-f $passwd" \
     "ckpasswd: user who unknown"
-runfailure "" "foopass" "-f etc/passwd" \
+runfailure "" "foopass" "-f $passwd" \
     "ckpasswd: null username"
