@@ -158,6 +158,14 @@ overview_load(int n, const char *data, struct overview *overview)
                 ok_int(n++, strlen(start) + (result - article.overview) + 2,
                        article.overlen);
             }
+
+            /* Close the search so that the group data it references can be
+               released when the cache is reopened after a cancel.  Otherwise,
+               the stale mapping of the index file is kept and, on systems
+               like OpenBSD where mmap does not see writes, cancelled articles
+               would still be visible. */
+            if (search != NULL)
+                overview_search_close(overview, search);
         }
     }
     fclose(overdata);
