@@ -904,6 +904,14 @@ AS_IF([test x"$inn_enable_hardening_flags" = xyes],
      INN_PROG_LD_FLAG([-Wl,-z,now],
                       [LDFLAGS="${LDFLAGS} -Wl,-z,now"], [])])
 
+dnl The linker shipped with Xcode 15 and later warns about libraries given
+dnl several times on the command line.  This is done on purpose: some INN
+dnl libraries are listed twice in Makefiles to cope with static linking, and
+dnl libtool repeats the dependencies of each library it links with.  Silence
+dnl these warnings when the linker supports it.
+INN_PROG_LD_FLAG([-Wl,-no_warn_duplicate_libraries],
+    [LDFLAGS="${LDFLAGS} -Wl,-no_warn_duplicate_libraries"], [])
+
 dnl Clean up our LIBS, just for grins.
 LIBS=`AS_ECHO(["$LIBS"]) | sed 's/^  *//' | sed 's/   */ /g' | sed 's/  *$//'`
 
