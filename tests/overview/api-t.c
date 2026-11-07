@@ -354,6 +354,7 @@ overview_verify_data(const char *data, struct overview *overview)
         if (!overview_search(overview, search, &article)) {
             warn("No overview data found for %s:%lu", buffer, artnum);
             status = false;
+            overview_search_close(overview, search);
             continue;
         }
         if (!check_data(buffer, artnum, start, &article))

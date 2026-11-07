@@ -1551,6 +1551,9 @@ CMDpat(int ac, char *av[])
                 SendIOb(buff, strlen(buff));
             }
         }
+        /* Close the search before any exit of the loop, so that the overview
+           data it references is not kept open. */
+        OVclosesearch(handle);
         if (HasNotReplied) {
             if (hdr) {
                 if (ac > 2)
@@ -1570,7 +1573,6 @@ CMDpat(int ac, char *av[])
             SendIOb(".\r\n", 3);
         }
         PushIOb();
-        OVclosesearch(handle);
     } while (0);
 
     if (vector)
