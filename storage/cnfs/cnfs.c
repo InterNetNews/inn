@@ -826,21 +826,22 @@ CNFS_setcurrent(METACYCBUFF *metacycbuff)
     CYCBUFF *cycbuff;
     int i, currentcycbuff = 0, order = -1;
     bool foundcurrent = false;
+    size_t len;
+
     for (i = 0; i < metacycbuff->count; i++) {
         cycbuff = metacycbuff->members[i];
         if (strncmp(cycbuff->metaname, metacycbuff->name, CNFSNASIZ) != 0) {
             /* this cycbuff is moved from other metacycbuff , or is new */
             cycbuff->order = i + 1;
             cycbuff->currentbuff = false;
-            /* Don't use sprintf() or strlcat() directly...
-             * The terminating '\0' causes grief. */
-#if __GNUC__ > 7
-#    pragma GCC diagnostic ignored "-Wstringop-truncation"
-#endif
-            strncpy(cycbuff->metaname, metacycbuff->name, CNFSNASIZ);
-#if __GNUC__ > 7
-#    pragma GCC diagnostic warning "-Wstringop-truncation"
-#endif
+            /* Copy the name into the fixed-size field, padded with zeros and
+             * without a terminating nul if it fills the whole field (like
+             * strncpy, but without its truncation warnings). */
+            len = strlen(metacycbuff->name);
+            if (len > CNFSNASIZ)
+                len = CNFSNASIZ;
+            memset(cycbuff->metaname, '\0', CNFSNASIZ);
+            memcpy(cycbuff->metaname, metacycbuff->name, len);
             cycbuff->needflush = true;
             continue;
         }
