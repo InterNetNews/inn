@@ -4,6 +4,7 @@
 
 #include <errno.h>
 #include <fcntl.h>
+#include <pwd.h>
 #include <sys/stat.h>
 
 #include "inn/hashtab.h"
@@ -58,8 +59,8 @@ group_del(void *entry)
 }
 
 /* Build a stripped-down innconf struct that contains only those settings that
-   the overview backend cares about.  (May still be missing additional bits
-   for ovdb.) */
+   the overview backend cares about.  ovdb additionally needs runasuser, which
+   is set in overview_ovdb_tests. */
 static void
 fake_innconf(void)
 {
@@ -69,6 +70,7 @@ fake_innconf(void)
         free(innconf->pathetc);
         free(innconf->pathoverview);
         free(innconf->pathrun);
+        free(innconf->runasuser);
         free(innconf);
     }
     innconf = xmalloc(sizeof(*innconf));
@@ -103,6 +105,30 @@ overview_init_buffindexed(void)
     close(fd);
 }
 
+/* Create the files ovdb checks before opening the database.  ovdb refuses to
+   open it unless ovdb_monitor is running, which it determines from the
+   ovdb.sem lock file and the PID in ovdb_monitor.pid, both in pathrun.  Write
+   the PID of the test program itself:  ovdb_monitor only performs periodic
+   maintenance (checkpointing, deadlock detection and log removal), which
+   these short tests do not need. */
+static void
+overview_init_ovdb(void)
+{
+    FILE *pidfile;
+    int fd;
+
+    fd = open("ov-tmp/ovdb.sem", O_CREAT | O_WRONLY, 0660);
+    if (fd < 0)
+        sysdie("Cannot create ov-tmp/ovdb.sem");
+    close(fd);
+    pidfile = fopen("ov-tmp/ovdb_monitor.pid", "w");
+    if (pidfile == NULL)
+        sysdie("Cannot create ov-tmp/ovdb_monitor.pid");
+    fprintf(pidfile, "%lu\n", (unsigned long) getpid());
+    if (fclose(pidfile) == EOF)
+        sysdie("Cannot write to ov-tmp/ovdb_monitor.pid");
+}
+
 /* Initialize the overview database. */
 static struct overview *
 overview_init(void)
@@ -113,6 +139,8 @@ overview_init(void)
         sysdie("Cannot mkdir ov-tmp");
     if (strcmp(innconf->ovmethod, "buffindexed") == 0)
         overview_init_buffindexed();
+    else if (strcmp(innconf->ovmethod, "ovdb") == 0)
+        overview_init_ovdb();
     return overview_open(OV_READ | OV_WRITE);
 }
 
@@ -559,6 +587,9 @@ overview_tests(int n)
     if (strcmp(innconf->ovmethod, "buffindexed") == 0) {
         skip_block(n, 6, "buffindexed doesn't support cancel");
         n += 6;
+    } else if (strcmp(innconf->ovmethod, "ovdb") == 0) {
+        skip_block(n, 6, "ovdb doesn't support cancel");
+        n += 6;
     } else {
         ok(n++, overview_cancel(overview, "example.test", 7498));
         ok(n++, !overview_token(overview, "example.test", 7498, &token));
@@ -686,6 +717,32 @@ overview_mmap_tests(int n)
     return n;
 }
 
+/* Run the tests on ovdb, provided that INN was built with Berkeley DB.  Takes
+   the current test number and returns the next test number. */
+static int
+overview_ovdb_tests(int n)
+{
+#ifdef HAVE_BDB
+    struct passwd *pwd;
+
+    /* ovdb refuses to open the database unless it runs as runasuser. */
+    pwd = getpwuid(geteuid());
+    if (pwd == NULL) {
+        skip_block(n, 27, "cannot find the name of the current user");
+        return n + 27;
+    }
+    free(innconf->runasuser);
+    innconf->runasuser = xstrdup(pwd->pw_name);
+    free(innconf->ovmethod);
+    innconf->ovmethod = xstrdup("ovdb");
+    diag("ovdb");
+    return overview_tests(n);
+#else
+    skip_block(n, 27, "ovdb not available (INN built without Berkeley DB)");
+    return n + 27;
+#endif
+}
+
 int
 main(void)
 {
@@ -706,7 +763,7 @@ main(void)
     }
 
     /* Cancels can't be tested with mmap, so there are only 21 tests there. */
-    test_init(27 * 2 + 21);
+    test_init(27 * 3 + 21);
 
     fake_innconf();
     innconf->ovmethod = xstrdup("tradindexed");
@@ -720,7 +777,9 @@ main(void)
     free(innconf->ovmethod);
     innconf->ovmethod = xstrdup("buffindexed");
     diag("buffindexed");
-    overview_tests(n);
+    n = overview_tests(n);
+
+    overview_ovdb_tests(n);
 
     return 0;
 }
