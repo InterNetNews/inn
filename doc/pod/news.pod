@@ -194,6 +194,24 @@ instance in a slow filter, was not acted on promptly either.
 
 =item *
 
+Fixed the expiration of overview data of newsgroups no longer present in
+the F<active> file with the buffindexed overview method.  Depending on the
+state of the list of free slots in F<group.index>, some or all of these
+newsgroups were skipped, so that their overview data was never removed.
+Thanks to Kevin Bowling for the fix.
+
+=item *
+
+B<controlbatch> no longer loses the control articles of a batch when
+B<controlchan> fails while processing it: the batch is kept and processed
+again during the next run.  After three consecutive failures, it is set aside
+in a file named after the batch file with a C<.failed.> suffix followed by the
+date, so that subsequent control articles can still be processed, and a
+message is reported.  B<actmerge> also no longer fetches again an active file
+when a retry has succeeded, and correctly quotes its arguments.
+
+=item *
+
 Fixed about twenty correctness and resource-lifetime defects in several
 programs thanks to Kevin Bowling.  They notably address stale pointers after
 buffer growth in B<innxmit>, descriptors and heap ownership in B<innxbatch>
