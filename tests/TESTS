@@ -8,6 +8,7 @@ expire/tombstone-e2e
 expire/tombstone-hisexpire
 innd/artparse
 innd/chan
+innd/xref-realloc
 lib/artnumber
 lib/asprintf
 lib/bloom

@@ -1452,7 +1452,8 @@ ARTpoisongroup(char *name)
 **  Return false if a new article number could not be assigned (i.e. when
 **  it exceeds the maximum article number allowed in NNTP), and true otherwise.
 */
-static bool
+/* Not static: exercised directly by tests/innd/xref-realloc-t.c. */
+bool
 ARTassignnumbers(ARTDATA *data)
 {
     char *p;

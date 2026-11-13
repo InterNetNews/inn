@@ -980,6 +980,7 @@ tests/innd                            Test suite for innd (Directory)
 tests/innd/artparse-t.c               Tests for ARTparse in innd
 tests/innd/chan-t.c                   Tests for CHAN functions in innd
 tests/innd/fakeinnd.c                 Provide symbols defined by innd/innd.c
+tests/innd/xref-realloc-t.c           Tests for ARTassignnumbers Xref realloc
 tests/lib                             Test suite for libinn (Directory)
 tests/lib/artnumber-t.c               Tests for lib/artnumber.c
 tests/lib/asprintf-t.c                Tests for lib/asprintf.c
