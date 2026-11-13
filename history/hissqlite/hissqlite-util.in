@@ -302,6 +302,11 @@ sub vacuum_database {
     # the current file size is required for the temporary copy.
     print "Running VACUUM (this may take a while)...\n";
     $dbh->do("vacuum;");
+    # In WAL mode, VACUUM writes the new content of the database to the WAL
+    # file; the database file only shrinks once that content is checkpointed.
+    # Do it now (without waiting for readers) so that the reported sizes are
+    # meaningful.
+    $dbh->do("pragma wal_checkpoint(PASSIVE);");
 
     (
         $page_size, $page_count, $freelist_count, $logical_size,
