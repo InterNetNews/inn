@@ -5,7 +5,7 @@
 INN is developed on the `main` branch, which tracks the next major version.
 The stable branch receives bug fixes, security fixes and backports of some
 enhancements.  The most recent old stable branch only receives security fixes,
-and so long as the first minor version of the stable branch has been released.
+until the first minor version of the new stable branch has been released.
 
 Security fixes are therefore provided for:
 

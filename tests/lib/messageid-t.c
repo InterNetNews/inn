@@ -1,5 +1,5 @@
 /*
-**  Test suite for message identifiersi.
+**  Test suite for message identifiers.
 **
 **  Written by Julien Élie in 2017.
 **
