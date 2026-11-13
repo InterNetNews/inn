@@ -194,8 +194,16 @@ C<hissqlite-util -s>; freelist share is reported there).
 When changing I<hissqlitepagesize> on an existing database.  The page size is
 applied only when the database is created; changing it later requires setting
 C<PRAGMA page_size> and vacuuming (or rebuilding with B<makehistory> /
-B<hissqlite-convert>).  Prefer matching the page size to the filesystem block
-or ZFS I<recordsize> from the start; see I<hissqlitepagesize> above.
+B<hissqlite-convert>).  As SQLite cannot change the page size of a database
+in WAL mode, the journal mode has to be temporarily changed, which
+B<hissqlite-util -v> does not do.  With INN stopped, run for instance:
+
+    sqlite3 <pathhistory>/history.sqlite \
+        'PRAGMA journal_mode=DELETE; PRAGMA page_size=8192;
+         VACUUM; PRAGMA journal_mode=WAL;'
+
+Prefer matching the page size to the filesystem block or ZFS I<recordsize>
+from the start; see I<hissqlitepagesize> above.
 
 =back
 

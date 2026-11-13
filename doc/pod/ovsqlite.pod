@@ -227,10 +227,17 @@ When changing I<pagesize> on an existing database.  The I<pagesize>
 parameter in F<ovsqlite.conf> is consulted only when creating a new database.
 To change the page size of an existing overview, stop the news system, set
 C<PRAGMA page_size> to the desired value, and vacuum (C<ovsqlite-util -v>
-reclaims freelist space; applying a new page size can be done with the
-B<sqlite3> CLI as C<PRAGMA page_size=N; VACUUM;> on the stopped database),
-or rebuild overview with B<makehistory>.  Prefer choosing an appropriate
-page size when the database is first created.
+reclaims freelist space but does not change the page size, which can be done
+with the B<sqlite3> CLI as C<PRAGMA page_size=N; VACUUM;> on the stopped
+database), or rebuild overview with B<makehistory>.  As SQLite cannot change
+the page size of a database in WAL mode, if I<walmode> is set, the journal
+mode has to be temporarily changed:
+
+    sqlite3 <pathoverview>/ovsqlite.db \
+        'PRAGMA journal_mode=DELETE; PRAGMA page_size=8192;
+         VACUUM; PRAGMA journal_mode=WAL;'
+
+Prefer choosing an appropriate page size when the database is first created.
 
 =back
 
