@@ -34,6 +34,20 @@ I<batchfile>C<.doit> as well.  Finally, if I<batchfile>C<.doit> is not
 empty, it is fed to B<controlchan>, whose output is appended to
 F<controlbatch.log> in I<pathlog> (as set in F<inn.conf>).
 
+I<batchfile>C<.doit> is removed only if B<controlchan> succeeds.  Otherwise,
+it is kept so that it is processed again during the next run, and the number
+of consecutive failures is recorded in I<batchfile>C<.tries>.  After three
+consecutive failures (a value which can be changed by editing the I<maxtries>
+variable at the beginning of the script), I<batchfile>C<.doit> is renamed to
+I<batchfile>C<.failed.>I<date>, where I<date> is the current date in the
+C<YYYYMMDDhhmmss> format, so that subsequent control articles can still be
+processed.  A message is then written to F<controlbatch.log> and to standard
+error (therefore usually mailed by B<cron>).  The control articles in that
+file should be examined, and possibly processed again by hand, once the cause
+of the failure has been fixed.  Note that the control articles processed
+before the failure of B<controlchan> are processed again during the next
+runs, and are also present in the set-aside file.
+
 If you are running B<controlchan> as a channel feed, you may want to
 call B<controlbatch> from B<cron> during a quiet period to clean up any
 backlog:
