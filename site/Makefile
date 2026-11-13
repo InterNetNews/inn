@@ -156,7 +156,12 @@ $D$(PATH_ACTIVE_TIMES):
 ##  honoured, and existence checks on the real files keep reruns no-ops (the
 ##  make target above is only the default location).  With hismethod set to
 ##  hissqlite, the empty database is created by running makehistory once
-##  (instant on an empty spool); no hisv6 history text file is touched.  A
+##  (instant on an empty spool); no hisv6 history text file is touched.  If
+##  a non-empty hisv6 history text file is present in pathhistory (which can
+##  happen when pathhistory differs from the default location), hismethod has
+##  just been changed on an existing server: rebuilding from the spool could
+##  take hours and would lose the remembered entries, so hissqlite-convert is
+##  advised instead.  A
 ##  DESTDIR (packaging) install just creates the placeholder text file at the
 ##  default location, as before, and leaves database initialization to the
 ##  package's post-install.
@@ -176,7 +181,14 @@ $D$(PATH_HISTORY):
 	        exit 1 ; \
 	    fi ; \
 	    if [ x"`$(PATHBIN)/innconfval hismethod`" = xhissqlite ] ; then \
-	        if [ ! -f "$$HISTDIR/history.sqlite" ] ; then \
+	        if [ -s "$$HISTDIR/history" ] && [ ! -f "$$HISTDIR/history.sqlite" ] ; then \
+	            echo "" ; \
+	            echo "hismethod is set to hissqlite but $$HISTDIR/history" ; \
+	            echo "contains a hisv6 history database.  Not rebuilding the" ; \
+	            echo "history database from the spool: convert it with" ; \
+	            echo "hissqlite-convert instead (see hissqlite-convert(8))." ; \
+	            echo "" ; \
+	        elif [ ! -f "$$HISTDIR/history.sqlite" ] ; then \
 	            if [ x"$$ME" = xroot ] || [ x"$$ME" = x"$(RUNASUSER)" ] ; then \
 	                $(PATHBIN)/makehistory ; \
 	            fi ; \
