@@ -95,7 +95,7 @@ PERMgeneric(char *av[], char *accesslist, size_t size)
 {
     char path[BIG_BUFFER], *fields[6], *p;
     size_t j;
-    int i, pan[2], status;
+    int i, pan[2], status, oerrno;
     pid_t pid;
     ssize_t count;
     struct stat stb;
@@ -197,13 +197,18 @@ PERMgeneric(char *av[], char *accesslist, size_t size)
     }
 
     close(pan[PIPE_WRITE]);
-    count = read(pan[PIPE_READ], path, sizeof(path));
+    /* Keep room for a terminating nul, as the response replaces the path
+       in the buffer and is then parsed as a string. */
+    count = read(pan[PIPE_READ], path, sizeof(path) - 1);
+    oerrno = errno;
     close(pan[PIPE_READ]);
     waitpid(pid, &status, 0);
     if (count < 0) {
-        syslog(L_FATAL, "can't read %s %m", path);
+        errno = oerrno;
+        syslog(L_FATAL, "can't read response from %s %m", av[0]);
         return 0;
     }
+    path[count] = '\0';
 
     if (!WIFEXITED(status) || WEXITSTATUS(status) != 0)
         return 0;
