@@ -39,6 +39,11 @@
 batchlock="${LOCKS}/LOCK.controlbatch"
 mypid=$$
 
+# Number of consecutive failed runs of controlchan on the same batch after
+# which the batch is set aside (renamed to batchfile.failed.<date>) so that
+# the following control articles can still be processed.
+maxtries=3
+
 # A concession to INN 1.x
 if [ me${PATHBIN}ow = meow ]; then
     PATHBIN=${NEWSBIN}
@@ -91,7 +96,31 @@ if [ -s "${batchfile}.doit" ]; then
     # articles it did not get to process.
     if "${PATHBIN}/controlchan" \
         <"${batchfile}.doit" >>"${MOST_LOGS}/controlbatch.log" 2>&1; then
-        rm -f "${batchfile}.doit"
+        rm -f "${batchfile}.doit" "${batchfile}.tries"
+    else
+        # Count the consecutive failures.  After maxtries of them, set the
+        # batch file aside so that a control article on which controlchan
+        # always fails does not prevent the next ones from being processed.
+        tries=0
+        if [ -s "${batchfile}.tries" ]; then
+            tries=$(cat "${batchfile}.tries")
+        fi
+        case "${tries}" in
+        '' | *[!0-9]*) tries=0 ;;
+        esac
+        tries=$((tries + 1))
+        if [ "${tries}" -ge "${maxtries}" ]; then
+            failed="${batchfile}.failed.$(date +%Y%m%d%H%M%S)"
+            mv "${batchfile}.doit" "${failed}"
+            rm -f "${batchfile}.tries"
+            message="${0}: controlchan failed ${tries} times in a row on"
+            message="${message} ${BATCH}/${batchfile}.doit, which has been"
+            message="${message} moved to ${BATCH}/${failed}"
+            echo "${message}" >>"${MOST_LOGS}/controlbatch.log"
+            echo "${message}" >&2
+        else
+            echo "${tries}" >"${batchfile}.tries"
+        fi
     fi
 fi
 
