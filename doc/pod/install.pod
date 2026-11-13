@@ -324,6 +324,13 @@ the other database files, see the I<pathhistory> parameter in inn.conf(5).
 You can also set a dedicated path for the history database with the
 B<--with-history-dir> option given to C<configure>.
 
+=item B<--with-history-dir>=PATH
+
+Sets the prefix for INN history database files.  The default is the path
+set with B<--with-db-dir>, that is to say F<PREFIX/db> unless overridden.
+This path is used as the default value of the I<pathhistory> parameter in
+F<inn.conf>.
+
 =item B<--with-spool-dir>=PATH
 
 Sets the prefix for the news spool (when using any storage method other

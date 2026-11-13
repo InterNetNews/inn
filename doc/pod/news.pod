@@ -77,7 +77,8 @@ I<dbz> indices with the C<hisv6> history method, or F<history.sqlite> and
 its WAL files with C<hissqlite>).  The default is the value of I<pathdb>, so
 existing installations are unchanged if the parameter is left unset.  For new
 installations, it can be set at configure time with the B<--with-history-dir>
-passed to C<configure>.  Cancel and expireover tombstone logs stay under
+option passed to C<configure>, whose default is the database directory set
+with B<--with-db-dir>.  Cancel and expireover tombstone logs stay under
 I<pathdb> (they are expiry state, not history files).  Thanks to Kevin Bowling
 for this feature.
 

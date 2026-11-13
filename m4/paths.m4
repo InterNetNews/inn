@@ -28,9 +28,12 @@ AC_DEFUN([INN_ARG_PATHS],
  _INN_ARG_DIR([filter], ['${bindir}/filter'], [FILTERDIR],
     [AS_HELP_STRING([--with-filter-dir=PATH],
         [Path for embedded filters @<:@PREFIX/bin/filter@:>@])])
- _INN_ARG_DIR([history], ['${prefix}/db'], [HISTORYDIR],
+dnl The history directory defaults to the database directory (not to
+dnl PREFIX/db), so that --with-db-dir alone keeps the history database
+dnl together with the other database files, as with previous INN versions.
+ _INN_ARG_DIR([history], [$DBDIR], [HISTORYDIR],
     [AS_HELP_STRING([--with-history-dir=PATH],
-        [Path for news history database files @<:@PREFIX/db@:>@])])
+        [Path for news history database files @<:@DBDIR@:>@])])
  _INN_ARG_DIR([http], ['${prefix}/http'], [HTTPDIR],
     [AS_HELP_STRING([--with-http-dir=PATH],
         [Path for web pages @<:@PREFIX/http@:>@])])
