@@ -473,8 +473,9 @@ hissqlite_sync(void *history)
        the WAL bounded: once it has grown past the threshold, do a non-blocking
        PASSIVE checkpoint.
 
-       Under HISCTLS_WRITEBATCH there IS something buffered: commit the open
-       batch so a bulk loader that calls HISsync gets its writes flushed. */
+       When opened with HIS_INCORE, there IS something buffered: commit the
+       open batch so a bulk loader that calls HISsync gets its writes
+       flushed. */
     if (!h->direct_reader) {
         ok = batch_commit(h);
         if (h->wal_pages >= HISSQLITE_WAL_CKPT_PAGES)
