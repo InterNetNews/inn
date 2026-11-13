@@ -344,7 +344,11 @@ If I<Sbp> is not NULL, it is taken as the address of a place to store the
 results of a stat(2) call.
 
 B<ReadInDescriptor> performs the same function as B<ReadInFile> except that
-I<fd> refers to an already-open file.
+I<fd> refers to an already-open file.  The file descriptor remains owned by
+the caller, who is responsible for closing it, even on error.  On error,
+NULL is returned and I<errno> is set; in particular, it is set to EOVERFLOW
+if the file is too large to be read into memory, and to EIO if the end of
+the file is reached before the size returned by fstat(2) has been read.
 
 =head2 FILE DESCRIPTOR RESERVATION
 
