@@ -1713,8 +1713,10 @@ sub collect($$$$$$) {
             if ($event eq 'article_result') {
                 my $result = &_postfilter_ng_field($fields, 'result');
                 my $action = &_postfilter_ng_field($fields, 'action');
+                # Compare as a string: the field may be missing, in which
+                # case a numeric comparison would emit a Perl warning.
                 my $audit
-                  = &_postfilter_ng_field($fields, 'audit') == 1
+                  = &_postfilter_ng_field($fields, 'audit') eq '1'
                   ? "yes"
                   : "no";
                 my $reason = &_postfilter_ng_field($fields, 'reason_text');
