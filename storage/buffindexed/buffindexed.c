@@ -31,6 +31,7 @@
 #include <time.h>
 
 #include "inn/fdflag.h"
+#include "inn/hashtab.h"
 #include "inn/innconf.h"
 #include "inn/libinn.h"
 #include "inn/messages.h"
@@ -1819,6 +1820,41 @@ INDEXcompare(const void *p1, const void *p2)
     return oi1->artnum - oi2->artnum;
 }
 
+/* Hash table functions for the set of index blocks already visited by
+   ovgroupmmap, keyed by the OV of each GIBLIST element. */
+static unsigned long
+giblist_hash(const void *key)
+{
+    const OV *ov = key;
+
+    return (unsigned long) ov->blocknum * 31 + (unsigned short) ov->index;
+}
+
+static const void *
+giblist_key(const void *entry)
+{
+    const GIBLIST *giblist = entry;
+
+    return &giblist->ov;
+}
+
+static bool
+giblist_equal(const void *key, const void *entry)
+{
+    const OV *ov = key;
+    const GIBLIST *giblist = entry;
+
+    return ov->index == giblist->ov.index
+           && ov->blocknum == giblist->ov.blocknum;
+}
+
+/* The GIBLIST elements are owned by Giblist, and freed by ovgroupunmap(). */
+static void
+giblist_delete(void *entry UNUSED)
+{
+    return;
+}
+
 static bool
 ovgroupmmap(GROUPENTRY *ge, ARTNUM low, ARTNUM high, bool needov)
 {
@@ -1830,6 +1866,8 @@ ovgroupmmap(GROUPENTRY *ge, ARTNUM low, ARTNUM high, bool needov)
     OVBLOCK *ovblock;
     void *addr;
     GIBLIST *giblist;
+    struct hash *visited;
+    size_t buckets;
 
     if (low > high) {
         Gibcount = 0;
@@ -1845,18 +1883,29 @@ ovgroupmmap(GROUPENTRY *ge, ARTNUM low, ARTNUM high, bool needov)
     capacity = Gibcount > OV_FUDGE ? OV_FUDGE : Gibcount;
     Gib = xmalloc(capacity * sizeof(OVINDEX));
     count = 0;
+
+    /* Remember the index blocks already visited in a hash table, so as to
+       detect loops in the chain of index blocks without having to walk the
+       whole list of visited blocks for each new one, which would be
+       quadratic in the size of large newsgroups.  The table grows as
+       needed, so just give it a reasonable initial size. */
+    buckets = (size_t) Gibcount / OVINDEXMAX + 16;
+    if (buckets > 65536)
+        buckets = 65536;
+    visited = hash_create(buckets, giblist_hash, giblist_key, giblist_equal,
+                          giblist_delete);
     while (ov.index != NULLINDEX) {
-        for (giblist = Giblist; giblist != NULL; giblist = giblist->next)
-            if (giblist->ov.index == ov.index
-                && giblist->ov.blocknum == ov.blocknum) {
-                warn("buffindexed: loop in overview index blocks");
-                ovgroupunmap();
-                return false;
-            }
+        if (hash_lookup(visited, &ov) != NULL) {
+            warn("buffindexed: loop in overview index blocks");
+            hash_free(visited);
+            ovgroupunmap();
+            return false;
+        }
         ovbuff = getovbuff(ov);
         if (ovbuff == NULL || !ovblockvalid(ovbuff, ov.blocknum)) {
             warn("buffindexed: invalid index block %d:%u", ov.index,
                  ov.blocknum);
+            hash_free(visited);
             ovgroupunmap();
             return false;
         }
@@ -1868,6 +1917,7 @@ ovgroupmmap(GROUPENTRY *ge, ARTNUM low, ARTNUM high, bool needov)
                          mmapoffset))
             == MAP_FAILED) {
             syswarn("buffindexed: ovgroupmmap could not mmap index block");
+            hash_free(visited);
             ovgroupunmap();
             return false;
         }
@@ -1878,6 +1928,7 @@ ovgroupmmap(GROUPENTRY *ge, ARTNUM low, ARTNUM high, bool needov)
             if (limit < 0 || (size_t) limit > OVINDEXMAX) {
                 warn("buffindexed: invalid index entry count %d", limit);
                 munmap(addr, len);
+                hash_free(visited);
                 ovgroupunmap();
                 return false;
             }
@@ -1889,6 +1940,7 @@ ovgroupmmap(GROUPENTRY *ge, ARTNUM low, ARTNUM high, bool needov)
                 if (capacity > INT_MAX - OV_FUDGE) {
                     warn("buffindexed: too many overview index entries");
                     munmap(addr, len);
+                    hash_free(visited);
                     ovgroupunmap();
                     return false;
                 }
@@ -1901,9 +1953,11 @@ ovgroupmmap(GROUPENTRY *ge, ARTNUM low, ARTNUM high, bool needov)
         giblist->ov = ov;
         giblist->next = Giblist;
         Giblist = giblist;
+        hash_insert(visited, &giblist->ov, giblist);
         ov = ovblock->ovindexhead.next;
         munmap(addr, len);
     }
+    hash_free(visited);
     Gibcount = count;
     qsort(Gib, Gibcount, sizeof(OVINDEX), INDEXcompare);
     /* Remove duplicates. */
@@ -2039,6 +2093,7 @@ ovsearch(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *token,
     int pagefudge;
     bool newblock;
 
+again:
     if (search->cur == Gibcount) {
         return false;
     }
@@ -2063,10 +2118,12 @@ ovsearch(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *token,
             ovbuff = getovbuff(srchov);
             if (ovbuff == NULL || !ovblockvalid(ovbuff, srchov.blocknum)
                 || !ovindexspanvalid(&Gib[search->cur])) {
+                /* Skip the invalid entry, but go on with the next ones as
+                   returning false would end the whole search. */
                 warn("buffindexed: invalid overview entry for article %lu",
                      (unsigned long) Gib[search->cur].artnum);
                 search->cur++;
-                return false;
+                goto again;
             }
             if (artnum)
                 *artnum = Gib[search->cur].artnum;
@@ -2092,6 +2149,7 @@ ovsearch(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *token,
                             || search->gdb.datablk.index != srchov.index) {
                             /* different one, release previous one */
                             munmap(search->gdb.addr, search->gdb.len);
+                            search->gdb.mmapped = false;
                             newblock = true;
                         } else
                             newblock = false;
