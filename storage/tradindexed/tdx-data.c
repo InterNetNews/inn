@@ -685,7 +685,7 @@ tdx_data_cancel(struct group_data *data, ARTNUM artnum)
 **  Start the process of packing a group (rewriting its index file so that it
 **  uses a different article base).  Takes the article number of an article
 **  that needs to be written to the index file and is below the current base.
-**  Returns the true success and false on failure, and sets data->base to the
+**  Returns true on success and false on failure, and sets data->base to the
 **  new article base and data->indexinode to the new inode number.  At the
 **  conclusion of this routine, the new index file has been created, but it
 **  has not yet been moved into place; that is done by tdx_data_pack_finish.

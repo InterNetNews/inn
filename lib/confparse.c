@@ -23,7 +23,7 @@
 **  buffer, a pointer to where in the buffer the next token starts, and the
 **  current token.  Inclusion of additional files is handled by maintaining a
 **  stack of config_file structs, so when one file is finished, the top struct
-**  popped off the stack and parsing continues where it left off.
+**  is popped off the stack and parsing continues where it left off.
 **
 **  Since config_file structs contain the parse state, they're passed as an
 **  argument to most functions.

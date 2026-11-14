@@ -424,7 +424,8 @@ CNFSReadFreeAndCycle(CYCBUFF *cycbuff)
     char buf[64];
 
     memcpy(&rpx, cycbuff->bitfield, sizeof(CYCBUFFEXTERN));
-    /* Sanity checks are not needed since CNFSinit_disks() has already done. */
+    /* Sanity checks are not needed since CNFSinit_disks() has already done so.
+     */
     strncpy(buf, rpx.freea, CNFSLASIZ);
     buf[CNFSLASIZ] = '\0';
     cycbuff->free = CNFShex2offt(buf);
@@ -1931,7 +1932,7 @@ cnfs_next(ARTHANDLE *article, const RETRTYPE amount)
              (middle < cycbuff->free) && (middle < limit);
              middle += cycbuff->blksz) {
             if (CNFSUsedBlock(cycbuff, middle, false, false) != 0)
-                /* Bitmap set.  This article assumes to be broken */
+                /* Bitmap set.  This article is assumed to be broken */
                 break;
         }
         if ((middle > cycbuff->free) || (middle != limit)) {
@@ -1948,7 +1949,7 @@ cnfs_next(ARTHANDLE *article, const RETRTYPE amount)
              (middle < cycbuff->len) && (middle < limit);
              middle += cycbuff->blksz) {
             if (CNFSUsedBlock(cycbuff, middle, false, false) != 0)
-                /* Bitmap set.  This article assumes to be broken */
+                /* Bitmap set.  This article is assumed to be broken */
                 break;
         }
         if ((middle >= cycbuff->len) || (middle != limit)) {

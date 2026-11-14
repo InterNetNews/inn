@@ -583,7 +583,8 @@ CrackXref(char *xref, unsigned int *lenp)
     xrefsize = 5;
     xrefs = xmalloc(xrefsize * sizeof(char *));
 
-    /* no path element should exist, nor heading white spaces exist */
+    /* no path element should exist,
+     * nor should there be any leading white space */
     p = xref;
     while (true) {
         /* check for EOL */

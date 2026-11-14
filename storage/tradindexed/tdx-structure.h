@@ -24,7 +24,7 @@
 **
 **  The overview information for each group is stored in a pair of files named
 **  <group>.IDX and <group>.DAT.  These files are found in a subdirectory
-**  formed by taking the first letter of component of the newsgroup name as
+**  formed by taking the first letter of a component of the newsgroup name as
 **  a directory name; in other words, news.announce.newgroups overview data is
 **  stored in <pathoverview>/n/a/n/news.announce.newgroups.{IDX,DAT}.  The
 **  .DAT file contains the individual overview entries, one per line, stored

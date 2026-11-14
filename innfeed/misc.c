@@ -439,7 +439,7 @@ endsIn(const char *string, const char *tail)
 }
 
 
-/* append the contents of src to dest. src is removed if append if
+/* append the contents of src to dest. src is removed if the append is
    successful */
 bool
 appendFile(const char *dest, const char *src)

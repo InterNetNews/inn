@@ -884,7 +884,7 @@ main(int ac, char *av[])
     }
 
     /* Ignore failure on the HISctl()s, if the underlying history
-     * manager doesn't implement them its not a disaster */
+     * manager doesn't implement them it's not a disaster */
     HISctl(History, HISCTLS_IGNOREOLD, &IgnoreOld);
     if (Size != 0) {
         HISctl(History, HISCTLS_NPAIRS, &Size);

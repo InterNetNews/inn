@@ -52,7 +52,7 @@ const char *artFileName(Article article);
    value can (must) be given to freeBufferArray */
 Buffer *artGetNntpBuffers(Article article);
 
-/* return the message id stoed in the article object */
+/* return the message id stored in the article object */
 const char *artMsgId(Article article);
 
 /* return size of the article */

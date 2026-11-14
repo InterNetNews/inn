@@ -2219,7 +2219,7 @@ CCclose(void)
 #endif
 
 /*
-**  Restablish the control channel.
+**  Reestablish the control channel.
 */
 static void
 CCresetup(int s NO_SIGACTION_UNUSED)

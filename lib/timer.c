@@ -49,7 +49,7 @@
 #include "inn/messages.h"
 #include "inn/timer.h"
 
-/* Timer values are stored in a series of trees.  This allows use to use
+/* Timer values are stored in a series of trees.  This allows us to use
    nested timers.  Each nested timer node is linked to three of its
    neighbours to make lookups easy and fast.  The current position in the
    graph is given by timer_current.

@@ -1062,7 +1062,7 @@ newHost(InnListener listener, HostParams p)
     nh->maxConnections = 0; /* we currently have no connections allocated */
 
     /* Note that the following will override the initialCxns specified as
-       maxCxns if we are on non-dyamic feed
+       maxCxns if we are on non-dynamic feed
      */
     hostAlterMaxConnections(nh, nh->params->absMaxConnections,
                             nh->params->initialConnections, false);
@@ -2990,7 +2990,7 @@ hostLogStats(Host host, bool final)
         host->artsSizeRejected = 0;
         host->artsSizeRejected_checkpoint = 0;
 
-        *startPeriod = theTime(); /* in of case STATS_RESET_PERIOD */
+        *startPeriod = theTime(); /* in case of STATS_RESET_PERIOD */
     }
 
     /* Reset these each log period. */

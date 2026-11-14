@@ -25,7 +25,7 @@
  */
 Buffer newBuffer(size_t size);
 
-/* Create a new Buffer object around the preallocted PTR, which is SIZE
+/* Create a new Buffer object around the preallocated PTR, which is SIZE
    bytes long. The data size of the Buffer is set to DATASIZE. When then
    buffer is released it will not delete the ptr (this is useful to have
    Buffers around constant strings, or Buffers around other Buffers) */
@@ -108,7 +108,7 @@ bool concatBuffer(Buffer dest, Buffer src);
 /* expand the buffer's memory by the given AMT */
 bool expandBuffer(Buffer buff, size_t amt);
 
-/* Expand the buffer (if necessary) and insert carriage returns before very
+/* Expand the buffer (if necessary) and insert carriage returns before every
    line feed. Adjusts the data size. The base address may change
    afterwards. */
 bool nntpPrepareBuffer(Buffer buffer);

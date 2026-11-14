@@ -1,7 +1,7 @@
 /*
 **  Dispatch cvectors of commands to functions.
 **
-**  This is a generic command dispatching system designed primary to handle
+**  This is a generic command dispatching system designed primarily to handle
 **  dispatching NNTP commands to functions that handle them, for NNTP server
 **  software.
 */

@@ -34,7 +34,7 @@
 typedef struct {
     char *artdata;  /* start of the article data -- may be mmaped */
     char *mmapbase; /* actual start of mmaped region (on pagesize bndry, not
-                       necessarily == artdaya */
+                       necessarily == artdata */
     unsigned int artlen;  /* art length. */
     size_t mmaplen;       /* length of mmap region. */
     DIR *top;             /* open handle on top level dir. */

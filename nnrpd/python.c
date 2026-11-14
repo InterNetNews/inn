@@ -9,7 +9,7 @@
 **  in 2000, 2002-2006, 2008-2011, 2013, 2015, 2017, 2018, 2020-2022, 2024,
 **  2026.
 **
-**  This code bases on Python work for innd filtering done by
+**  This code is based on Python work for innd filtering done by
 **  G.J. Andruk <meowing@banet.net>.  Also it borrows some ideas from
 **  TCL/Perl work done by Bob Heiney and Christophe Wolfhugel.
 **
@@ -705,7 +705,7 @@ PY_load_python(void)
         /* Load up the interpreter ;-O */
         Py_Initialize();
 
-        /* It makes Python sad when its stdout or stderr are closed. */
+        /* It makes Python sad when its stdout or stderr is closed. */
         if ((fileno(stdout) == -1) || (fileno(stderr) == -1))
             PyRun_SimpleString(
                 "import sys; sys.stdout=sys.stderr=open('/dev/null', 'a')");

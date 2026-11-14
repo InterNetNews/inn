@@ -319,7 +319,7 @@ main(int ac, char **av)
 # disk.
 #
 # Any field [N] is substituted after being multiplied by the expiration
-# time (in days).  A integer minimum can also be specified with a slash,
+# time (in days).  An integer minimum can also be specified with a slash,
 # as in [N/minimum].
 #
 # expirectl is normally run just after expire is run.  Note that expirectl

@@ -935,7 +935,7 @@ checkpointTape(Tape tape)
  * At this point PEER.input is opened for reading if it exists.
  *
  * The checkpoint file is left as-is unless the PEER.input file
- * happens to be newer that the checkpoint file.
+ * happens to be newer than the checkpoint file.
  */
 static void
 prepareFiles(Tape tape)

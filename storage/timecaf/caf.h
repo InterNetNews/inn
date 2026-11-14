@@ -68,7 +68,7 @@ typedef struct _CAFHEADER {
 ** (Note: the CAFBITMAP structure isn't what's actually stored on disk
 ** in the free bitmap region, this is just a convenient structure to
 ** keep the bitmap size and StartBlockOffset together with the bitmap
-** w/o having keep passing the original CAFHEADER to every routine
+** w/o having to keep passing the original CAFHEADER to every routine
 ** that wants it.  The bitmap structure contains the first (index) bitmap,
 ** as well as pointers to structures for each block of the main bitmap that
 ** has been read into memory.

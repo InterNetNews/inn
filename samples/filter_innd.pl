@@ -16,7 +16,7 @@
 #     sub filter_art { ... }
 #
 #         This routine is called before every article is accepted for
-#         posting.  Is is called with no arguments, but has access to
+#         posting.  It is called with no arguments, but has access to
 #         all the non-empty standard header fields of the article via the
 #         global associative array %hdr.  If it returns the empty
 #         string (""), then the article is accepted.  If it returns any
@@ -198,7 +198,7 @@ sub filter_end {
 
 ###########################################################################
 ###
-### From Chrisophe Wolfhugel again (wolf@pasteur.fr).  This is not
+### From Christophe Wolfhugel again (wolf@pasteur.fr).  This is not
 ### standalone code.
 ### Just for the fun, I've added following code to filter_innd.pl:
 ##
@@ -221,7 +221,7 @@ sub filter_end {
 ### Same sender, same subject, appearing more than 10 times without the last
 ### 1000 articles gets junked.
 ###
-### Already caught a few hundreds:
+### Already caught a few hundred:
 ###
 ### Nov 20 08:27:23.175 - vishnu.jussieu.fr <3292ac9a.4064710@nntp.cts.com>
 ###     437 EMP rejected (btr@trenet.com Be a Beta Tester!)

@@ -140,7 +140,7 @@ HandleHeaders(char *article)
         hv_iterinit(hdr);
         while ((scan = hv_iternext(hdr)) != NULL) {
             /* Get the values.  We replace the known ones with these
-             * new values.  Also, silent a warning caused by the internal Perl
+             * new values.  Also, silence a warning caused by the internal Perl
              * SvFLAGS macro used by HePV(), which takes care of the cast. */
 #    if defined(__llvm__) || defined(__clang__)
 #        pragma GCC diagnostic ignored "-Wcast-align"

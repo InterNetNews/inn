@@ -296,7 +296,7 @@ hisv6_closefiles(struct hisv6 *h)
 **  Reopen (or open from fresh) a history structure; assumes the flags
 **  & path are all set up, ready to roll. If we don't own the dbz, we
 **  suppress the dbz code; this is needed during expiry (since the dbz
-**  code doesn't yet understand multiple open contexts... yes its a
+**  code doesn't yet understand multiple open contexts... yes it's a
 **  hack)
 */
 static bool

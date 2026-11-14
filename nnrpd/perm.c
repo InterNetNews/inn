@@ -1950,7 +1950,7 @@ MatchHost(char *hostlist, char *host, char *ip)
     char **list = NULL;
     bool match = false;
 
-    /* If no hostlist are specified, by default they match. */
+    /* If no hostlist is specified, by default they match. */
     if (hostlist == NULL)
         return true;
 

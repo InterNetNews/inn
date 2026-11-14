@@ -262,7 +262,7 @@ main(int ac, char *av[])
         exit(1);
     }
     for (;;) {
-        /* Get next non-comment ilne. */
+        /* Get next non-comment line. */
         if ((p = *sites++) == NULL)
             break;
         for (F = fopen(TEMPFILE, "w"); p && *p == '#'; p = *sites++)

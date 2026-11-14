@@ -1,5 +1,5 @@
 /*
-**  Check an username and password against Kerberos.
+**  Check a username and password against Kerberos.
 **
 **  Based on nnrpkrb5auth by Christopher P. Lindsey <lindsey@mallorn.com>
 **  See <http://www.mallorn.com/tools/nnrpkrb5auth>

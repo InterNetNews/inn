@@ -346,7 +346,7 @@ CAFReadFreeBM(int fd, CAFHEADER *h)
     bm->StartDataBlock = h->StartDataBlock;
 
     if (fstat(fd, &statbuf) < 0) {
-        /* it'd odd for this to fail, but paranoia is good for the soul. */
+        /* it'd be odd for this to fail, but paranoia is good for the soul. */
         CAFError(CAF_ERR_IO);
         CAFDisposeBitmap(bm);
         return NULL;
@@ -1135,7 +1135,7 @@ CAFStartWriteFd(int fd, ARTNUM *artp, size_t size)
         startoffset = CAFRoundOffsetUp(offset, head.BlockSize);
     }
 
-    /* Seek to starting offset for the new artiicle. */
+    /* Seek to starting offset for the new article. */
     if (lseek(fd, startoffset, SEEK_SET) < 0) {
         CAFError(CAF_ERR_IO);
         close(fd);
@@ -1845,7 +1845,7 @@ CAFClean(char *path, int verbose, double PercentFreeThreshold)
                     active_count * sizeof(CAFTOCENT));
 
             head.Low = newlow;
-            /* note we don't set LastCleaned, this doesn't count a a clean. */
+            /* note we don't set LastCleaned, this doesn't count as a clean. */
             /* (XXX: do we need a LastCompacted as well? might be nice.) */
 
             /*  write new header on top of old */

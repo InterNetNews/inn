@@ -91,7 +91,7 @@ struct overview_expire {
                                 is self-expiring. */
     bool statall;            /* Stat all articles when expiring. */
     struct history *history; /* History interface, used to check to see if
-                                the article is still present in the spoool
+                                the article is still present in the spool
                                 in the non-group-based-expiry case. */
 
     /* Statistics.  The following should be initialized by the caller to zero

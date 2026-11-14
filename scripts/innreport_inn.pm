@@ -2263,8 +2263,8 @@ sub collect($$$$$$) {
         if ($left =~ /^offered \S+ (\S+)/o) {
             my $host = $1;
             $host = lc $host unless $CASE_SENSITIVE;
-            # Small hack used to join article spooled when innd is throttle.
-            # In this situation, the hostname is a 8 hex digits string
+            # Small hack used to join article spooled when innd is throttled.
+            # In this situation, the hostname is an 8 hex digit string
             # To avoid confusions with real feeds, the first character is
             # forced to be a '3' or a '4'
             # (will work between 9/7/1995 and 13/7/2012).

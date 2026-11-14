@@ -193,7 +193,7 @@ GetXref(ARTHANDLE *art)
 
 /*
 **  Split newsgroup and returns artnum
-**  or 0 if there are no newsgroup.
+**  or 0 if there is no newsgroup.
 */
 static ARTNUM
 GetGroups(char *Xref)
@@ -1047,7 +1047,7 @@ SMprintfiles(FILE *file, TOKEN token, char **xref, int ngroups)
 }
 
 /*
-**  Print a clear, decoded information on a token.
+**  Print clear, decoded information on a token.
 */
 char *
 SMexplaintoken(const TOKEN token)

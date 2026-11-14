@@ -48,7 +48,7 @@ typedef struct _OVGE {
     bool quiet;            /* statistics will be suppressed if true */
     bool keep;             /* keep article so long as any of crossposted
                               newsgroups is not expired if true */
-    bool earliest;         /* purge article any of crossposted
+    bool earliest;         /* purge article when any of crossposted
                               newsgroups is expired if true */
     bool ignoreselfexpire; /* purge article even if storing method has
                               self expiry */

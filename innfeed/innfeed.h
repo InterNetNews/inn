@@ -4,7 +4,7 @@
 **  Written by James Brister <brister@vix.com>
 **
 **  The application configuration values.  This file is #include'd before any
-**  system header files, so it can't rely on any CPP symbols other that what
+**  system header files, so it can't rely on any CPP symbols other than what
 **  the compiler defines.
 */
 

@@ -23,8 +23,8 @@ dnl --without-blocklist is not given.
 dnl
 dnl As blocklist was formerly known as blacklist before FreeBSD 15 and
 dnl NetBSD 10, if the blocklist library is not found, the macros also search
-dnl for a working blacklist library for backward compatibility.  In case, it
-dnl is present under its old name, defines HAVE_BLACKLIST.
+dnl for a working blacklist library for backward compatibility.  If it
+dnl is present under its old name, it defines HAVE_BLACKLIST.
 dnl
 dnl Depends on the lib-helper.m4 framework.
 dnl

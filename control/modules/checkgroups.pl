@@ -66,7 +66,7 @@ sub control_checkgroups {
         push(@newbody, $ngname . "\t" . $ngdesc);
     }
 
-    # We do not go on if there is no changes to do.
+    # We do not go on if there are no changes to do.
     return if ($#newbody < 0);
 
     if ($action eq 'mail') {

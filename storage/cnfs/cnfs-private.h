@@ -49,7 +49,7 @@ typedef struct _CYCBUFF {
     void *bitfield;       /* Bitfield for article in use */
     off_t minartoffset;   /* The minimum offset allowed for article
                              storage */
-    bool needflush;       /* true if CYCBUFFEXTERN is needed to be flushed */
+    bool needflush;       /* true if CYCBUFFEXTERN needs to be flushed */
     int blksz;            /* Blocksize */
     struct _CYCBUFF *next;
     bool currentbuff;         /* true if this cycbuff is currently used */

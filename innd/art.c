@@ -378,7 +378,7 @@ ARTlogreject(CHANNEL *cp, const char *text)
     int hopcount;
     char **hops;
 
-    /* We may still haven't received the message-ID of the rejected article. */
+    /* We may not yet have received the message-ID of the rejected article. */
     if (HDR_FOUND(HDR__MESSAGE_ID)) {
         HDR_LASTCHAR_SAVE(HDR__MESSAGE_ID);
         HDR_PARSE_START(HDR__MESSAGE_ID);
@@ -2159,7 +2159,7 @@ ARTpost(CHANNEL *cp)
     }
 #endif /* DO_PYTHON */
 
-    /* I suppose some masochist will run with Python and Perl in together */
+    /* I suppose some masochist will run with Python and Perl together */
 
 #if defined(DO_PERL)
     TMRstart(TMR_PERL);

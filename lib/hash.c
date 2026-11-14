@@ -88,7 +88,7 @@ HashMessageID(const char *MessageID)
 }
 
 /*
-**  Check if the hash is all zeros, and subseqently empty, see HashClear
+**  Check if the hash is all zeros, and subsequently empty, see HashClear
 **  for more info on this.
 */
 bool

@@ -86,7 +86,7 @@ gen_cancel_lock(const char *msgid, const char *username, char **canbuff)
 
     /* Generate admin c-lock elements.
      * Use both sha1 and sha256 schemes for interoperability reasons (not all
-     * news software implement the mandatory sha256 scheme per RFC 8315).
+     * news software implements the mandatory sha256 scheme per RFC 8315).
      *
      * The keys "K" are calculated with the algorithm recommended by Section 4
      * of RFC 8315.  The same hash function as for <scheme> is used for HMAC in

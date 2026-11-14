@@ -34,7 +34,7 @@ struct histstats {
     int hitneg;
     /* number of misses (positive hit, but not in cache) */
     int misses;
-    /* number of does not exists (negative hit, but not in cache) */
+    /* number of does-not-exist hits (negative hit, but not in cache) */
     int dne;
 };
 
@@ -81,7 +81,7 @@ enum {
     HISCTLS_IGNOREOLD,
 
     /* (time_t) interval, in s, between stats of the history database
-     * for * detecting a replacement, or 0 to disable (no checks);
+     * for detecting a replacement, or 0 to disable (no checks);
      * defaults {hisv6, taggedhash} */
     HISCTLS_STATINTERVAL,
 

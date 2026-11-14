@@ -193,8 +193,8 @@ typedef struct {
     GROUPLOC freelist;
 } GROUPHEADER;
 
-/* The group is matched based on the MD5 of the grouname. This may prove to
-   be inadequate in the future, if so, the right thing to do is to is
+/* The group is matched based on the MD5 of the group name. This may prove to
+   be inadequate in the future, if so, the right thing to do is
    probably just to add a SHA1 hash into here also.  We get a really nice
    benefit from this being fixed length, we should try to keep it that way.
 */
@@ -1500,7 +1500,7 @@ GROUPremapifneeded(GROUPLOC loc, bool hash_locked)
     return true;
 }
 
-/* This function does not need to lock because it's callers are expected to do
+/* This function does not need to lock because its callers are expected to do
  * so */
 static bool
 GROUPexpand(int mode)

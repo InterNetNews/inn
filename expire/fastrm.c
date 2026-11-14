@@ -332,7 +332,7 @@ slashcount(char *name)
 
 /*
 **  Unlink a file, reporting errors if the unlink fails for a reason other
-**  than the file not existing doesn't exist.  Be careful to avoid unlinking
+**  than that the file doesn't exist.  Be careful to avoid unlinking
 **  a directory if unlink_dangerous is true.
 */
 static void

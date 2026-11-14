@@ -391,7 +391,7 @@ main(int argc, char *argv[])
  *    argc     arg count
  *    argv     the args
  *    host1    name of first host (may be 2nd if -R)
- *    host2    name of second host2 *may be 1st if -R)
+ *    host2    name of second host (may be 1st if -R)
  */
 static void
 process_args(int argc, char *argv[], char **host1, char **host2)
@@ -1641,7 +1641,7 @@ merge_grps(struct grp *grp, int grplen, char *host1, char *host2)
      * If a host has duplicate groups, then the duplicates will
      * be next to each other.
      *
-     * If both hosts have the name group, they will be next to each other.
+     * If both hosts have the same group, they will be next to each other.
      */
     if (D_BUG)
         warn("STATUS: merging groups");
@@ -1963,7 +1963,7 @@ output_grps(struct grp *grp, int grplen)
     }
 
     /*
-     * Bail out if we too few lines in host1 active file (ignoring
+     * Bail out if we have too few lines in host1 active file (ignoring
      * low/high water mark changes) remaining unchanged.
      *
      * We define change as:
@@ -2713,7 +2713,7 @@ exec_cmd(int mode, const char *cmd, char *grp, char *type, const char *who)
 /*
  * new_top_hier - determine if the newsgroup represents a new hierarchy
  *
- * Determine of the newsgroup name is a new hierarchy.
+ * Determine if the newsgroup name is a new hierarchy.
  *
  * given:
  *    name            name of newsgroup to check

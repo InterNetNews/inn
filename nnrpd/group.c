@@ -285,7 +285,7 @@ GRPreport(void)
 **  newsgroup given as argument.
 **  The caller should check the validity of arguments (otherwise it won't for
 **  instance be able to make the difference between a 0 article count for a
-**  real empty newsgroup, and a 0 article count for an inexisting newsgroup).
+**  real empty newsgroup, and a 0 article count for a nonexistent newsgroup).
 */
 ARTNUM
 GRPexactcount(char *group, ARTNUM low, ARTNUM high)

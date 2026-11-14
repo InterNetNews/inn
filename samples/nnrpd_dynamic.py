@@ -53,7 +53,7 @@ class DYNACCESS:
     def dynamic(self, attributes):
         """Called when python_dynamic: is reached in the processing of
         readers.conf and a reader requests either read or post
-        permission for particular newsgroup."""
+        permission for a particular newsgroup."""
 
         # Just for debugging purposes (in Python 3.x syntax).
         #  syslog(

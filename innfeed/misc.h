@@ -49,7 +49,7 @@ extern unsigned int loggingLevel; /* if loggingLevel is 0,
 /* used by timeToString with strftime(3) */
 extern char *timeToStringFormat;
 
-/* the current count of file desccriptors */
+/* the current count of file descriptors */
 extern unsigned int openfds;
 
 extern char **PointersFreedOnExit;
@@ -61,7 +61,7 @@ void d_printf(unsigned int level, const char *fmt, ...)
 /* for the gethostbyname() error code */
 const char *host_err_str(void);
 
-/* parse a response line into it's code and body. *rest will end up pointing
+/* parse a response line into its code and body. *rest will end up pointing
    into the middle of p */
 bool getNntpResponse(char *p, int *code, char **rest);
 
@@ -85,7 +85,7 @@ void error_log_stderr_date(int len, const char *fmt, va_list args, int err)
 void logAndExit(int exitVal, const char *fmt, ...)
     __attribute__((noreturn, __format__(printf, 2, 3)));
 
-/* return true of the file exists and is a regular file */
+/* return true if the file exists and is a regular file */
 bool fileExistsP(const char *filename);
 
 /* return true if file exists and is a directory */
@@ -105,7 +105,7 @@ bool endsIn(const char *string, const char *tail);
 /* scribble over then free up the null-terminated string */
 void freeCharP(char *charp);
 
-/* append the contents of src to dest. src is removed if append if
+/* append the contents of src to dest. src is removed if the append is
    successful */
 bool appendFile(const char *dest, const char *src);
 

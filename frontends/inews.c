@@ -371,9 +371,9 @@ CheckControl(char *ctrl)
 
 
 /*
-**  Parse the GECOS field to get the user's full name.  This comes Sendmail's
-**  buildfname routine.  Ignore leading stuff like "23-" "stuff]-" or
-**  "stuff -" as well as trailing whitespace, or anything that comes after
+**  Parse the GECOS field to get the user's full name.  This comes from
+**  Sendmail's buildfname routine.  Ignore leading stuff like "23-" "stuff]-"
+**  or "stuff -" as well as trailing whitespace, or anything that comes after
 **  a comma, semicolon, or in parentheses.  This seems to strip off most of
 **  the UCB or ATT stuff people fill out the entries with.  Also, turn &
 **  into the login name, with perhaps an initial capital.  (Everyone seems

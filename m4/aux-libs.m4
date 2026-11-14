@@ -1,4 +1,4 @@
-dnl Search for libraries and store them a variable.
+dnl Search for libraries and store them in a variable.
 dnl
 dnl Search for a particular library, and if found, add that library to the
 dnl specified variable (the third argument) and run the commands given in the

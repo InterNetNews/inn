@@ -12,7 +12,7 @@
 **  list of globals in innd that need to be dealt with in some other way.
 */
 
-/* Silent this warning because of the way we deal with EXTERN. */
+/* Silence this warning because of the way we deal with EXTERN. */
 #if defined(__llvm__) || defined(__clang__)
 #    pragma GCC diagnostic ignored "-Wmissing-variable-declarations"
 #endif
