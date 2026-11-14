@@ -202,9 +202,11 @@ umask @NEWSUMASK@;
 #>>V
 
 ##  This array will contain what it is possible to export.
-our @EXPORT_OK = qw(
-    @INNCONFVAR @DIRVAR @FILESVAR @PROGVAR @LOCKVAR @EXTPROGVAR @EXTCOMPVAR
-    @SYSVAR @PARAMVAR $VERSION
+##  Note that it is the contents of the arrays (that is to say the names of
+##  the variables) which are exported, so do not use qw() here.
+our @EXPORT_OK = (
+    @INNCONFVAR, @DIRVAR, @FILESVAR, @PROGVAR, @LOCKVAR,
+    @EXTPROGVAR, @EXTCOMPVAR, @SYSVAR, @PARAMVAR, qw($VERSION),
 );
 
 ##  Load another script that can override or add variables.
