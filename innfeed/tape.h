@@ -6,7 +6,7 @@
 **  The Tape class simulates a mag tape.  It only reads or writes Articles.  A
 **  tape is either in an Input or Output state.  When an Article is given to a
 **  Tape it will store the Article in memory until it reaches a highwater mark
-**  at which point it dumps all it's articles to disk.
+**  at which point it dumps all its articles to disk.
 **
 **  Input tapes generate article objects on request if the underlying tape
 **  file has info in it.  The Tapes take care of cleaning up used-up files as

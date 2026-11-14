@@ -88,7 +88,7 @@ static char *mailfrom_name = NULL; /* default to no return path */
 
 #ifdef HAVE_SASL
 static int initialized_sasl =
-    0; /* weather sasl_client_init() has been called */
+    0; /* whether sasl_client_init() has been called */
 #endif
 
 /* states the imap connection may be in */
@@ -560,7 +560,7 @@ lmtp_stateToString(int state)
  *  q       - the queue adding to
  *  item    - the data to add to the queue
  *  type    - the type of item it is (i.e. cancel,lmtp,etc..)
- *  addsmsg - weather this should be counted toward the queue size
+ *  addsmsg - whether this should be counted toward the queue size
  *            this is for control msg's that create multiple queue items.
  *            For example a cancel message canceling a message in multiple
  *            newsgroups will create >1 queue item but we only want it to count
@@ -4338,7 +4338,7 @@ delConnection(Connection cxn)
  * HOST is the host object we're owned by.
  * IDENT is an identifier to be added to syslog entries so we can tell
  *    what's happening on different connections to the same peer.
- * IPNAME is the name (or ip address) of the remote)
+ * IPNAME is the name (or ip address) of the remote
  * MAXTOUT is the maximum amount of time to wait for a response before
  *    considering the remote host dead.
  * PORTNUM is the portnum to contact on the remote end.

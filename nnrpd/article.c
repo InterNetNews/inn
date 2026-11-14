@@ -1142,7 +1142,7 @@ CMDover(int ac, char *av[])
     }
 
     /* Parse range.  CMDgetrange() correctly sets the range when
-     * there is no arguments. */
+     * there are no arguments. */
     if (!CMDgetrange(ac, av, &range, &DidReply))
         if (DidReply)
             return;
@@ -1430,7 +1430,7 @@ CMDpat(int ac, char *av[])
         }
 
         /* Parse range.  CMDgetrange() correctly sets the range when
-         * there is no arguments. */
+         * there are no arguments. */
         if (!CMDgetrange(ac - 1, av + 1, &range, &DidReply))
             if (DidReply)
                 break;

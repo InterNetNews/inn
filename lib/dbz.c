@@ -122,7 +122,7 @@ static int dbzversion = 6; /* for validating .dir file format */
 
 /* MAXDROPBITS is the maximum number of bits dropped from the offset value.
    The least significant bits are dropped.  The space is used to
-   store hash additional bits, thereby increasing the possibility of the
+   store additional hash bits, thereby increasing the possibility of the
    hash detection */
 #    define MAXDROPBITS    4 /* max # of bits to drop from the offset */
 
@@ -433,7 +433,7 @@ dbzfresh(const char *name, off_t size)
     c.dropbits = 0;
     c.lenfuzzy = 0;
 
-    /* if big enough basb file exists, update config */
+    /* if big enough base file exists, update config */
     if (stat(name, &sb) != -1)
         config_by_text_size(&c, sb.st_size);
 #else
@@ -1394,7 +1394,7 @@ start(searcher *sp, const HASH hash, searcher *osp)
         sp->hash = hash;
         tocopy = sizeof(hash) < sizeof(sp->shorthash) ? sizeof(hash)
                                                       : sizeof(sp->shorthash);
-        /* Copy the bottom half of thhe hash into sp->shorthash */
+        /* Copy the bottom half of the hash into sp->shorthash */
         memcpy(&sp->shorthash, (const char *) &hash + (sizeof(hash) - tocopy),
                tocopy);
         sp->shorthash >>= 1;

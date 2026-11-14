@@ -7,7 +7,7 @@
 **  for the use of various overview methods.
 **
 **  Written by Katsuhiro Kondou in 1999.
-**  Splitten from ov.c into a separate expire.c file by Russ Allbery in 2002.
+**  Split from ov.c into a separate expire.c file by Russ Allbery in 2002.
 **
 **  Various bug fixes, code and documentation improvements since then
 **  in 2002-2004, 2006, 2007, 2009, 2010, 2013, 2015-2017, 2020-2022, 2026.

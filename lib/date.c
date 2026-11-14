@@ -244,7 +244,7 @@ makedate(time_t date, bool local, char *buff, size_t buflen)
     }
 
     /* tz_min_offset cannot be larger than 60 (by basic mathematics).  If
-       through some insane circumtances, tz_hour_offset would be larger,
+       through some insane circumstances, tz_hour_offset would be larger,
        reject the time as invalid rather than generate an invalid date. */
     if (tz_hour_offset > 24)
         return false;
@@ -445,7 +445,7 @@ parse_number(const char *p, const struct rule *rule, int *value)
 /*
 **  Parse a single string value that has to be done via table lookup.  Takes
 **  the parsing rule that we're applying.  Puts the index number of the string
-**  if found into the value pointerand returns the new position of the string,
+**  if found into the value pointer and returns the new position of the string,
 **  or NULL if the string could not be found in the table.
 */
 static const char *
@@ -468,7 +468,7 @@ parse_lookup(const char *p, const struct rule *rule, int *value)
 **  have three characters available, check against the abbreviation.  Likewise
 **  if we have four characters and the fourth is a period.  Otherwise, check
 **  against the full English month name.  Puts the month number into the value
-**  pointer and and returns the new position of the string, or NULL if the
+**  pointer and returns the new position of the string, or NULL if the
 **  string is not a valid month.
 */
 static const char *

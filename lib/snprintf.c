@@ -61,7 +61,7 @@
  * Original:
  * Patrick Powell Tue Apr 11 09:48:21 PDT 1995
  * A bombproof version of doprnt (dopr) included.
- * Sigh.  This sort of thing is always nasty do deal with.  Note that
+ * Sigh.  This sort of thing is always nasty to deal with.  Note that
  * the version here does not include floating point...
  *
  * snprintf() is used instead of sprintf() as it does limit checks
@@ -592,7 +592,7 @@ fmtint(char *buffer, size_t *currlen, size_t maxlen, LLONG value, int base,
         spadlen = 0;
     }
     if (flags & DP_F_MINUS)
-        spadlen = -spadlen; /* Left Justifty */
+        spadlen = -spadlen; /* Left Justify */
 
 #ifdef DEBUG_SNPRINTF
     debug("zpad: %d, spad: %d, min: %d, max: %d, place: %u\n", zpadlen,
@@ -822,7 +822,7 @@ fmtfp(char *buffer, size_t *currlen, size_t maxlen, LDOUBLE fvalue, int min,
     if (padlen < 0)
         padlen = 0;
     if (flags & DP_F_MINUS)
-        padlen = -padlen; /* Left Justifty */
+        padlen = -padlen; /* Left Justify */
 
     if ((flags & DP_F_ZERO) && (padlen > 0)) {
         if (signvalue) {

@@ -1261,7 +1261,7 @@ connectionIfIpv6DeleteIpv4Addr(Connection cxn)
  * Called when the banner message has been read off the wire and is
  * in the buffer(s). When this function returns the state of the
  * Connection will still be cxnConnectingS unless something broken,
- * in which case it probably went into the cxnSleepiongS state.
+ * in which case it probably went into the cxnSleepingS state.
  */
 static void
 getBanner(EndPoint e, IoStatus i, Buffer *b, void *d)
@@ -2998,8 +2998,8 @@ processResponse400(Connection cxn, char *response)
 
     /* right here there may still be data queued to write and so we'll fail
        trying to issue the quit ('cause a write will be pending). Furthermore,
-       the data pending may be half way through an command, and so just
-       tossing the buffer is nt sufficient. But figuring out where we are and
+       the data pending may be half way through a command, and so just
+       tossing the buffer isn't sufficient. But figuring out where we are and
        doing a tidy job is hard */
     if (writeIsPending(cxn->myEp))
         cxnSleepOrDie(cxn);
@@ -3454,7 +3454,7 @@ resetConnection(Connection cxn)
 
 /*
  * Give back all articles that are queued, but not actually in progress.
- * XXX merge come of this with deferAllArticles
+ * XXX merge some of this with deferAllArticles
  */
 static void
 deferQueuedArticles(Connection cxn)

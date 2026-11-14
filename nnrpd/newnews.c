@@ -63,7 +63,7 @@ GetXref(ARTHANDLE *art)
 
 /*
 **  Split newsgroup list into array of newsgroups.  Return static pointer,
-**  or NULL if there are no newsgroup.
+**  or NULL if there are no newsgroups.
 */
 static char **
 GetGroups(char *p)

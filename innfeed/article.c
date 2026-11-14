@@ -101,16 +101,16 @@ static void artUnmap(Article article); /* munmap an mmap()ed article */
  * Hash table routine declarations.
  */
 
-/* Returns a has value for the given string */
+/* Returns a hash value for the given string */
 static unsigned int hashString(const char *string);
 
-/* Locates the article with the given message ID, in the has table. */
+/* Locates the article with the given message ID, in the hash table. */
 static Article hashFindArticle(const char *msgid);
 
 /* Puts the given article in the hash table. */
 static void hashAddArticle(Article article);
 
-/* Removes the given article from the has table */
+/* Removes the given article from the hash table */
 static bool hashRemoveArticle(Article article);
 
 /* Does some simple-minded hash table validation */
@@ -128,8 +128,8 @@ static unsigned int
 static bool logMissingArticles; /* if true then we log the details on a
                                    missing article. */
 
-static unsigned int preparedBytes; /* The number of areticle bytes read in so
-                               far of disk (will wrap around) */
+static unsigned int preparedBytes; /* The number of article bytes read in so
+                               far off disk (will wrap around) */
 
 static unsigned int preparedNewlines; /* The number of newlines found in all
                                   the preparedBytes */
@@ -141,7 +141,7 @@ static bool rolledOver; /* true if preparedBytes wrapped around */
 
 static unsigned int bytesInUse; /* count of article contents bytes in use--just
                             the amount read from the article files, not
-                            all memory involved in. */
+                            all memory involved. */
 
 static unsigned int maxBytesInUse; /* the limit we want to stay under for total
                                bytes resident in memory dedicated to
@@ -164,7 +164,7 @@ static MapInfo mapInfo;
  * Hash Table data
  */
 
-static HashEntry *hashTable; /* the has table itself */
+static HashEntry *hashTable; /* the hash table itself */
 static HashEntry chronList;  /* chronologically ordered. Points at newest */
 
 #define TABLE_SIZE        2048 /* MUST be a power of 2 */
@@ -698,7 +698,7 @@ fillContents(Article article)
             }
         }
 
-        /* we we couldn't get below, then log it (one time only) */
+        /* if we couldn't get below, then log it (one time only) */
         if ((amtToRead + bytesInUse) > maxBytesInUse
             && maxLimitNotified == false) {
             maxLimitNotified = true;
@@ -930,7 +930,7 @@ hashString(const char *string)
 }
 
 
-/* find the article in the has table and return it. */
+/* find the article in the hash table and return it. */
 static Article
 hashFindArticle(const char *msgid)
 {

@@ -1474,7 +1474,7 @@ NCproc(CHANNEL *cp)
                 break;
             }
             goto fallthroughCSgotarticle;
-        case CSgotarticle: /* in case caming back from pause */
+        case CSgotarticle: /* in case coming back from pause */
         fallthroughCSgotarticle:
             /* never move data so long as "\r\n.\r\n" is found, since
                subsequent data may also include command line */

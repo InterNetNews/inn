@@ -47,7 +47,7 @@ struct hash {
 **  greater than or equal to that size, with a minimum size of four.  The
 **  minimum must be at least four to ensure that there is always at least
 **  one empty slot in the table given hash_find_slot's resizing of the table
-**  if it as least 75% full.  Otherwise, it would be possible for
+**  if it is at least 75% full.  Otherwise, it would be possible for
 **  hash_find_slot to go into an infinite loop.
 */
 static size_t
@@ -396,7 +396,7 @@ hash_expansions(struct hash *hash)
 **      this code any way you wish, private, educational, or commercial.
 **      It's free.
 **
-**  See <http://burlteburtle.net/bob/hash/evahash.html> for discussion of
+**  See <http://burtleburtle.net/bob/hash/evahash.html> for discussion of
 **  this hash function.  Use for hash table lookup, or anything where one
 **  collision in 2^32 is acceptable.  Do NOT use for cryptographic purposes.
 */

@@ -168,7 +168,7 @@ printListenerInfo(InnListener listener, FILE *fp, unsigned int indentAmt)
 }
 
 /* Unlink the pidFile if and only if it is our pidFile.
-   There is still a racecondition here but very small. */
+   There is still a race condition here but very small. */
 static void
 unlinkPidFile(void)
 {

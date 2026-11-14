@@ -67,7 +67,7 @@ struct hisv6 {
 #define HISV6_HAVE_TOKEN   (1 << 4)
 
 /* structure used to hold the callback and cookie so we don't try
- * passing too many parameters into the callers callback */
+ * passing too many parameters into the caller's callback */
 struct hisv6_walkstate {
     union {
         bool (*expire)(void *, time_t, time_t, time_t, TOKEN *);

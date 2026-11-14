@@ -310,7 +310,7 @@ endPointFd(EndPoint endp)
  * should go into. FUNC is the callback function to call when the read
  * is complete. CLIENTDATA is the client data to pass back into the
  * callback function. MINLEN is the minimum amount of data to
- * read. If MINLEN is 0 then then BUFFERS must be filled, otherwise at
+ * read. If MINLEN is 0 then BUFFERS must be filled, otherwise at
  * least MINLEN bytes must be read.
  *
  * BUFFERS can be NULL, in which case no read is actually done, but the

@@ -46,7 +46,7 @@ typedef struct _auth_req {
 typedef struct _rad_config_t {
     char *secret; /* pseudo encryption thingy secret that radius uses */
 
-    char *radhost; /* parameters for talking to the remote radius sever */
+    char *radhost; /* parameters for talking to the remote radius server */
     int radport;
     char *lochost;
     int locport;

@@ -13,7 +13,7 @@
 **    CC    Control channel (used by ctlinnd)
 **    NC    NNTP client channel
 **    NG    Newsgroup
-**    NGH   Newgroup hashtable
+**    NGH   Newsgroup hashtable
 **    PROC  A process (used to feed a site)
 **    PS    Process state
 **    RC    Remote NNTP connection-receiving channel
@@ -247,7 +247,7 @@ typedef struct _ARTDATA {
     /* token of stored article */
     LISTBUFFER Newsgroups;   /* newsgroup list */
     int Groupcount;          /* number of newsgroups */
-    int Followcount;         /* number of folloup to newsgroups */
+    int Followcount;         /* number of follow-up newsgroups */
     char *Xref;              /* generated Xref header field body */
     int XrefLength;          /* generated Xref header field body
                                 length */

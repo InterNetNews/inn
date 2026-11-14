@@ -181,7 +181,7 @@ PERLsetup(char *startupfile, char *filterfile, const char *function)
 }
 
 
-/* Load the perl file FILTERFILE. After it is load check that the given
+/* Load the perl file FILTERFILE. After it is loaded, check that the given
    function is defined. If yes filtering is turned on. If not it is turned
    off. We remember whether the filter function was defined properly so
    that we can catch when the user tries to turn filtering on without the

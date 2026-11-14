@@ -3,7 +3,7 @@
 **
 **  Written by James Brister <brister@vix.com>
 **
-**  The Connection class encapulates an NNTP protocol endpoint (either regular
+**  The Connection class encapsulates an NNTP protocol endpoint (either regular
 **  or extended with the streaming protocol).  Each Connection is owned by a
 **  single Host object.
 **
@@ -36,7 +36,7 @@ extern unsigned int max_reconnect_period;
  * HOST is the host object we're owned by.
  * IDENT is an identifier to be added to syslog entries so we can tell
  *    what's happening on different connections to the same peer.
- * IPNAME is the name (or ip address) of the remote)
+ * IPNAME is the name (or ip address) of the remote
  * MAXTOUT is the maximum amount of time to wait for a response before
  *    considering the remote host dead.
  * PORTNUM is the portnum to contact on the remote end.
@@ -70,7 +70,7 @@ void cxnFlush(Connection cxn);
    deletes itself */
 void cxnClose(Connection cxn);
 
-/* The Connection drops all queueed articles, then issues a QUIT and then
+/* The Connection drops all queued articles, then issues a QUIT and then
    deletes itself */
 void cxnTerminate(Connection cxn);
 

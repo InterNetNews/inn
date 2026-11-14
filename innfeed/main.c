@@ -239,7 +239,7 @@ main(int argc, char **argv)
         exit(0);
     }
 
-    /* make sure we have valid fds 0, 1 & 2 so it is not taken by
+    /* make sure we have valid fds 0, 1 & 2 so they are not taken by
       something else, probably openlog().  fd 0 will be freopen()ed on the
       inputFile, the subProgram, or ourself.  fd 1 and fd 2 will
       be freopen()ed on the log file (or will stay pointed at /dev/null).

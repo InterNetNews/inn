@@ -152,7 +152,7 @@ void stopRun(void);
 int endPointErrno(EndPoint endp);
 
 /* Tell the EndPoint class that the given EndPoint should always be
-   considered first for servicing (i.e. the EndPoint connectied to innd) */
+   considered first for servicing (i.e. the EndPoint connected to innd) */
 void setMainEndPoint(EndPoint endp);
 
 /* returns the fd of the main endpoint */

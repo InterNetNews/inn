@@ -37,7 +37,7 @@ static bool IsValidRightPartMessageID(const char *domain, bool stripspaces,
 **
 **  The right-hand side is the given argument (if not NULL) or otherwise the
 **  FQDN of the server.  The caller is responsible to ensure the given
-**  argument, if any, is a valid domain name (it will otherwise be use as-is).
+**  argument, if any, is a valid domain name (it will otherwise be used as-is).
 **
 **  This function returns the generated Message-ID or NULL if no valid domain
 **  could be picked for the right-hand side.
@@ -125,7 +125,7 @@ InitializeMessageIDcclass(void)
 **  Updated to RFC 5536 by Julien Élie.
 **
 **  When stripspaces is true, whitespace at the beginning and at the end
-**  of MessageID are discarded.
+**  of MessageID is discarded.
 **
 **  When laxsyntax is true, any allowed octet per RFC 5536 is accepted,
 **  no matter the syntax (order of appearance).
@@ -209,7 +209,7 @@ IsValidMessageID(const char *MessageID, bool stripspaces, bool laxsyntax)
 /*
 **  Check the syntax of the right-hand side of a message identifier.
 **
-**  If stripspaces is true, whitespace at the end of domain are discarded.
+**  If stripspaces is true, whitespace at the end of domain is discarded.
 **  If bracket is true, '>' is expected at the end of domain.
 */
 static bool

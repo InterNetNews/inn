@@ -12,7 +12,7 @@
 BEGIN_DECLS
 
 /* The header for the ICC protocol is a one-byte protocol version followed
-   by a 2 byte messages length*/
+   by a 2 byte message length. */
 #define HEADER_SIZE (sizeof(ICC_PROTOCOLTYPE) + sizeof(ICC_MSGLENTYPE))
 
 typedef unsigned short ICC_MSGLENTYPE; /* Length code to prefix commands to
