@@ -135,16 +135,16 @@ TextToHash(const char *text)
     return hash;
 }
 
-/* This is rather gross, we compare like the last 4 bytes of the
-   hash are at the beginning because dbz considers them to be the
-   most significant bytes */
+/* This is rather gross, we compare like the last sizeof(unsigned long)
+   bytes of the hash are at the beginning because dbz considers them to be
+   the most significant bytes. */
 int
 HashCompare(const HASH *h1, const HASH *h2)
 {
     int i;
     int tocomp = sizeof(HASH) - sizeof(unsigned long);
 
-    if ((i = memcmp(&h1->hash[tocomp], &h1->hash[tocomp],
+    if ((i = memcmp(&h1->hash[tocomp], &h2->hash[tocomp],
                     sizeof(unsigned long))))
         return i;
     return memcmp(h1, h2, sizeof(HASH));
