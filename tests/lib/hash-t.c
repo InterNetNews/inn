@@ -11,7 +11,7 @@ main(void)
     HASH h1, h2;
     const char *text;
 
-    test_init(14);
+    test_init(17);
 
     h1 = HashMessageID("<lhs@test.invalid>");
     h2 = HashMessageID("<lhs@TEST.invalid>");
@@ -47,6 +47,14 @@ main(void)
     ok_string(13, "A0D432DC9718979BEFB4ACADA4BAD863", text);
     h2 = TextToHash("A0D432DC9718979BEFB4ACADA4BAD863");
     ok(14, HashCompare(&h1, &h2) == 0);
+
+    /* The last bytes of a hash are compared first, like dbz does. */
+    h1 = TextToHash("FF000000000000000000000000000001");
+    h2 = TextToHash("00000000000000000000000000000002");
+    ok(15, HashCompare(&h1, &h2) < 0);
+    ok(16, HashCompare(&h2, &h1) > 0);
+    h2 = TextToHash("00000000000000000000000000000001");
+    ok(17, HashCompare(&h1, &h2) > 0);
 
     return 0;
 }
