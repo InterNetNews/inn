@@ -1941,7 +1941,7 @@ sub collect($$$$$$) {
         # exit (also called when using STARTTLS)
         if (
             $left =~ /(\S+)
-                      \ (?:exit|exit\ for\ STARTTLS|exit\ for\ AUTHINFO SASL)
+                      \ (?:exit|exit\ for\ STARTTLS|exit\ for\ AUTHINFO\ SASL)
                       \ articles\ (\d+)\ groups\ \d+
                       $/ox
         ) {
