@@ -520,7 +520,7 @@ to Jesse Rehmer for the bug report.
 =item *
 
 Fixed the generation and the handling of storage tokens on wrapped CNFS
-buffers, thanks to bug reports from Kamil Jonca:
+buffers, thanks to bug reports from Kamil Jońca:
 
 =over 2
 
@@ -1084,7 +1084,7 @@ integration into INN.
 
 B<nnrpd> now adapts the length of the DH parameter used during a DHE
 key exchange so as to comply with the security level S<OpenSSL 1.1.0>
-or later expects.  Thanks to Michael Baeuerle for the bug report.
+or later expects.  Thanks to Michael Bäuerle for the bug report.
 
 =item *
 
@@ -1230,7 +1230,7 @@ B<mailpost> now removes empty header fields before attempting
 to post articles, and keeps trace of them in the newly generated
 X-Mailpost-Empty-Hdrs header field body.  Also, B<mailpost> now sanitizes
 header fields with regards to empty continuation header lines.  Thanks to
-Kamil Jonca for these bug reports.
+Kamil Jońca for these bug reports.
 
 =item *
 
@@ -2020,7 +2020,7 @@ C<INN::Utils::Shlock> module has been added for that use.
 Fixed an issue in the Python access hook for B<nnrpd>: it has not been
 working since S<Python 2.5> on 64-bit platforms, owing to a change to
 Python's C API, using a new Py_ssize_t type definition instead of int.
-Thanks to Raphael Barrois for the patch.
+Thanks to Raphaël Barrois for the patch.
 
 =item *
 
@@ -2524,7 +2524,7 @@ Florian Schlichting for the patch.
 
 B<innconfval> no longer maps NULL string or list values to an empty string
 or list and instead maps them to undefined values.  This fixes an issue
-reported by Kamil Jonca: B<nnrpd> was inserting an empty Organization
+reported by Kamil Jońca: B<nnrpd> was inserting an empty Organization
 header field when the I<organization> parameter in F<inn.conf> was unset.
 
 =item *
@@ -2586,7 +2586,7 @@ Crunched Article File contains all the articles that arrive to the news
 server during 256 seconds.)
 
 The storage token now uses 4 bytes to store the article sequence number
-for timecaf, instead of only 2 bytes.  Thanks to Kamil Jonca for the
+for timecaf, instead of only 2 bytes.  Thanks to Kamil Jońca for the
 bug report and also the patch.
 
 =item *
@@ -2626,7 +2626,7 @@ of the requested Message-ID.
 The check on cancel messages when I<verifycancels> is set to true
 in F<inn.conf> has been changed to verify that at least one newsgroup
 in the cancel message can be found in the article to be cancelled.
-This new feature is from Christopher Biedl.
+This new feature is from Christoph Biedl.
 
 The previous behaviour was to check whether the cancel message is
 from the same person as the original post, which is extremely easy
