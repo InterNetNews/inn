@@ -1,3 +1,5 @@
+=encoding utf-8
+
 =head1 NAME
 
 makedbz - Rebuild dbz files
@@ -72,7 +74,7 @@ slower tagged hash format is used, the default is 500,000.)
 =head1 HISTORY
 
 Written by Katsuhiro Kondou <kondou@nec.co.jp> for InterNetNews.  Converted to
-POD by Julien Elie.
+POD by Julien Élie.
 
 =head1 SEE ALSO
 

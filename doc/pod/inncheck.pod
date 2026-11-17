@@ -1,3 +1,5 @@
+=encoding utf-8
+
 =head1 NAME
 
 inncheck - Check INN configuration and database files
@@ -140,7 +142,7 @@ relevant lines yourself, or merge the value into a single line.
 =head1 HISTORY
 
 Written by Brendan Kehoe <brendan@cygnus.com> and Rich Salz
-<rsalz@uunet.uu.net> for InterNetNews.  Converted to POD by Julien Elie.
+<rsalz@uunet.uu.net> for InterNetNews.  Converted to POD by Julien Élie.
 
 =head1 SEE ALSO
 

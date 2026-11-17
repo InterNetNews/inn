@@ -1,3 +1,5 @@
+=encoding utf-8
+
 =head1 NAME
 
 innreport.conf - Configuration file for innreport
@@ -351,7 +353,7 @@ to be generated.
 
 =head1 HISTORY
 
-Written by Julien Elie for InterNetNews.
+Written by Julien Élie for InterNetNews.
 
 =head1 SEE ALSO
 

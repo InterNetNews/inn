@@ -2,7 +2,7 @@
 **  Cancel-Lock functionality.
 **
 **  These functions are used to implement RFC 8315 in InterNetNews.
-**  Initial implementation by Julien ÉLIE in 2022.
+**  Initial implementation by Julien Élie in 2022.
 **
 **  Various bug fixes, code and documentation improvements since then
 **  in 2022, 2023, 2026.

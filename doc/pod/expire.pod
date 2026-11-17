@@ -1,3 +1,5 @@
+=encoding utf-8
+
 =head1 NAME
 
 expire - Usenet article and history expiration program
@@ -219,7 +221,7 @@ model, and recovery story.
 =head1 HISTORY
 
 Written by Rich $alz <rsalz@uunet.uu.net> for InterNetNews.  Converted to
-POD by Julien Elie.
+POD by Julien Élie.
 
 =head1 SEE ALSO
 

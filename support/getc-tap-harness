@@ -2,7 +2,7 @@
 
 ##  Synchronize INN files maintained in c-tap-harness with upstream.
 ##
-##  Initial version written in September 2014 by Julien ÉLIE.
+##  Initial version written in September 2014 by Julien Élie.
 ##
 ##  Various bug fixes, code and documentation improvements since then
 ##  in 2014-2016, 2018, 2021, 2022, 2024-2026.

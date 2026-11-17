@@ -1,3 +1,5 @@
+=encoding utf-8
+
 =head1 NAME
 
 expirerm - Remove articles that have been expired
@@ -22,7 +24,7 @@ I<file> is renamed to I<pathlog>/expire.list where it is kept
 =head1 HISTORY
 
 Written by Landon Curt Noll <chongo@toad.com> and Rich $alz
-<rsalz@uunet.uu.net>.  Converted to POD by Julien Elie.
+<rsalz@uunet.uu.net>.  Converted to POD by Julien Élie.
 
 =head1 SEE ALSO
 

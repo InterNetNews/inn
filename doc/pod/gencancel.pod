@@ -1,4 +1,4 @@
-=encoding utf8
+=encoding utf-8
 
 =head1 NAME
 
@@ -131,12 +131,12 @@ MIME-encode them.  For instance, use the C<Encode> Perl module:
 
     FROM=$(perl -e 'use Encode;
                     print encode("MIME-Q",
-                                 decode("UTF-8", "Julien ÉLIE"));')
+                                 decode("UTF-8", "Julien Élie"));')
     gencancel -f "$FROM <admin@news.server.com>" '<mid@news>'
 
 You'll then see in the output a properly MIME-encoded header field:
 
-    From: =?UTF-8?Q?Julien_=C3=89LIE?= <admin@news.server.com>
+    From: =?UTF-8?Q?Julien_=C3=89lie?= <admin@news.server.com>
 
 An example of call with a custom multi-line body:
 

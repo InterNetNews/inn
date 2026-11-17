@@ -1,3 +1,5 @@
+=encoding utf-8
+
 =head1 NAME
 
 storage.conf - Configuration file for storage manager
@@ -408,7 +410,7 @@ should never expire or through the spool of which you need to go manually.
 =head1 HISTORY
 
 Written by Katsuhiro Kondou <kondou@nec.co.jp> for InterNetNews.  Rewritten
-into POD by Julien Elie.
+into POD by Julien Élie.
 
 =head1 SEE ALSO
 

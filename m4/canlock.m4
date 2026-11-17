@@ -25,8 +25,8 @@ dnl version 3.3.0 of libcanlock.
 dnl
 dnl Depends on the lib-helper.m4 framework.
 dnl
-dnl Written by Julien ÉLIE for the InterNetNews (INN) news server
-dnl Copyright 2021-2022 Julien ÉLIE
+dnl Written by Julien Élie for the InterNetNews (INN) news server
+dnl Copyright 2021-2022 Julien Élie
 dnl
 dnl This file is free software; the authors give unlimited permission to copy
 dnl and/or distribute it, with or without modifications, as long as this

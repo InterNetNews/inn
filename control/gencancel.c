@@ -1,7 +1,7 @@
 /*
 **  Generate cancel control messages, with appropriate admin Cancel-Key.
 **
-**  Initial implementation in 2022 by Julien ÉLIE.
+**  Initial implementation in 2022 by Julien Élie.
 **
 **  Various bug fixes, code and documentation improvements since then
 **  in 2023, 2026.

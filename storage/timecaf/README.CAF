@@ -100,7 +100,7 @@ First there is an 'index' bitmap which tells which blocks of the 'main' bitmap
 have free blocks listed in them, and then a 'main' bitmap which tells whether
 the data blocks are in use or free.  This setup means that we can have
 bitmaps for CAF files as large as 8GB (in fact, it is now about 3.5GB, see
-computation above -- note by Julien Elie), while still being able to find free
+computation above -- note by Julien Élie), while still being able to find free
 space by only reading the 'index' bitmap and one block of the 'main' bitmap.
 (Previous versions of the CAF code had just a 'main' bitmap and scaled the
 blocksize up when CAF files got large; this became rather, um, non-optimal
