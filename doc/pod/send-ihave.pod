@@ -1,3 +1,5 @@
+=encoding utf-8
+
 =head1 NAME
 
 send-ihave - Send ihave control messages to remote sites
@@ -111,7 +113,7 @@ the F<send-ihave.log> log file in I<pathlog>.
 
 =head1 HISTORY
 
-Rewritten into POD by Julien Elie.
+Rewritten into POD by Julien Élie.
 
 =head1 SEE ALSO
 

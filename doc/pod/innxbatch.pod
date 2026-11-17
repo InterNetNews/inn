@@ -1,3 +1,5 @@
+=encoding utf-8
+
 =head1 NAME
 
 innxbatch, sendxbatches - Send xbatched Usenet articles to a remote NNTP
@@ -114,7 +116,7 @@ An example of call is:
 
 Written by Stefan Petri <petri@ibr.cs.tu-bs.de>, modelled after B<innxmit>
 and the XBATCH patch for the NNTP reference implementation.  Examples from
-Karsten Leipold <poldi@dfn.de>.  Rewritten into POD by Julien Elie.
+Karsten Leipold <poldi@dfn.de>.  Rewritten into POD by Julien Élie.
 
 =head1 SEE ALSO
 

@@ -1,3 +1,5 @@
+=encoding utf-8
+
 =head1 NAME
 
 innreport - Summarize INN log files
@@ -161,7 +163,7 @@ appropriately; otherwise it will not be computed right.
 =head1 HISTORY
 
 Written by Fabien Tassin <fta@sofaraway.org> for InterNetNews.  Rewritten into
-POD by Julien Elie.
+POD by Julien Élie.
 
 =head1 SEE ALSO
 

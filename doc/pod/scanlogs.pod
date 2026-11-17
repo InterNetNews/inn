@@ -1,3 +1,5 @@
+=encoding utf-8
+
 =head1 NAME
 
 scanlogs - Summarize and rotate INN log files
@@ -55,7 +57,7 @@ See newslog(5) for the list of log files processed by B<scanlogs>.
 =head1 HISTORY
 
 Written by Landon Curt Noll <chongo@toad.com> and Rich $alz
-<rsalz@uunet.uu.net> for InterNetNews.  Converted to POD by Julien Elie.
+<rsalz@uunet.uu.net> for InterNetNews.  Converted to POD by Julien Élie.
 
 =head1 SEE ALSO
 

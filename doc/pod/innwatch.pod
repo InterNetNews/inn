@@ -1,3 +1,5 @@
+=encoding utf-8
+
 =head1 NAME
 
 innwatch - Monitor the state of INN and the system
@@ -56,7 +58,7 @@ set in F<inn.conf>.
 
 Written by Mike Cooper <mcooper@usc.edu>, with modifications by
 <kre@munnari.oz.au>, Steve Groom <stevo@elroy.jpl.nasa.gov> and
-Christophe Wolfhugel <wolf@pasteur.fr>.  Converted to POD by Julien Elie.
+Christophe Wolfhugel <wolf@pasteur.fr>.  Converted to POD by Julien Élie.
 
 =head1 SEE ALSO
 

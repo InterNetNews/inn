@@ -1,3 +1,5 @@
+=encoding utf-8
+
 =head1 NAME
 
 distributions - Recommended values for the Distribution header field
@@ -38,7 +40,7 @@ if distrib.pats(5) is correctly configured.
 
 =head1 HISTORY
 
-Written by Julien Elie for InterNetNews.
+Written by Julien Élie for InterNetNews.
 
 =head1 SEE ALSO
 

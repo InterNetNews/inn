@@ -1,3 +1,5 @@
+=encoding utf-8
+
 =head1 NAME
 
 nnrpd.track - Specify hosts to be tracked by nnrpd
@@ -32,7 +34,7 @@ An example of a F<nnrpd.track> file is:
 =head1 HISTORY
 
 Written by Steve Carrie <stephenc@uk.uu.net> for InterNetNews.
-Rewritten into POD by Julien Elie.
+Rewritten into POD by Julien Élie.
 
 =head1 SEE ALSO
 

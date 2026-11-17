@@ -1,3 +1,5 @@
+=encoding utf-8
+
 =head1 NAME
 
 innwatch.ctl - List of supervisory actions taken by innwatch
@@ -197,7 +199,7 @@ to locate bugs.
 =head1 HISTORY
 
 Written by <kre@munnari.oz.au> for InterNetNews.  Rewritten into POD
-by Julien Elie.
+by Julien Élie.
 
 =head1 SEE ALSO
 

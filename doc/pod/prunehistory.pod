@@ -1,3 +1,5 @@
+=encoding utf-8
+
 =head1 NAME
 
 prunehistory - Remove tokens from Usenet history file
@@ -42,7 +44,7 @@ a different name, use the B<-f> flag.
 =head1 HISTORY
 
 Written by Rich $alz <rsalz@uunet.uu.net> for InterNetNews.  Converted to
-POD by Julien Elie.
+POD by Julien Élie.
 
 =head1 SEE ALSO
 

@@ -1,3 +1,5 @@
+=encoding utf-8
+
 =head1 NAME
 
 news.daily - Perform daily Usenet maintenance tasks
@@ -255,7 +257,7 @@ files.
 
 B<news.daily> and this manual page were written by Landon Curt Noll
 <chongo@toad.com> and Rich $alz <rsalz@uunet.uu.net> for InterNetNews.  It was
-converted to POD by Julien Elie.
+converted to POD by Julien Élie.
 
 =head1 SEE ALSO
 

@@ -1,3 +1,5 @@
+=encoding utf-8
+
 =head1 Changes in 2.7.5 (not yet released)
 
 =over 2
@@ -782,7 +784,7 @@ method can be found in the ovsqlite(5) and makehistory(8) man pages.
 
 =item *
 
-Julien Elie has implemented Cancel-Lock support in B<innd> and B<nnrpd>,
+Julien Élie has implemented Cancel-Lock support in B<innd> and B<nnrpd>,
 based on S<RFC 8315> and libcanlock.  A new F<inn-secrets.conf> configuration
 file has been added in I<pathetc> wherein you can set the secrets to use for
 Cancel-Lock.  See the inn-secrets.conf(5) man page for more details.
@@ -1294,7 +1296,7 @@ true and UTC is really the local time zone of the server.
 
 =item *
 
-Julien Elie has implemented in B<nnrpd> the new COMPRESS command
+Julien Élie has implemented in B<nnrpd> the new COMPRESS command
 described in the I<draft-murchison-nntp-compress> Internet-Draft that
 extends the NNTP protocol to allow a connection to be effectively and
 efficiently compressed.  News clients that also support that extension
@@ -2187,7 +2189,7 @@ upgrade.
 
 =item *
 
-Julien Elie has implemented in B<innd> the new version of the NNTP
+Julien Élie has implemented in B<innd> the new version of the NNTP
 protocol described in S<RFC 3977>, S<RFC 4643> and S<RFC 4644>, and
 B<innd> now recognizes the CAPABILITIES command.  Despite these standards,
 three commands (IHAVE, CHECK and TAKETHIS) will continue, for
@@ -2814,7 +2816,7 @@ authenticate clients via secure SASL mechanisms.
 
 =item *
 
-Julien Elie has implemented in B<nnrpd> the new version of the NNTP
+Julien Élie has implemented in B<nnrpd> the new version of the NNTP
 protocol described in S<RFC 3977>, S<RFC 4642> and S<RFC 4643>.
 Consequently, B<nnrpd> now recognizes the CAPABILITIES command, the
 HDR and LIST HEADERS commands, the second optional argument to specify
@@ -3049,7 +3051,7 @@ created, which caused regular expressions matching new lines to fail.
 It especially affected filters like Cleanfeed which sometimes
 failed to detect unwanted articles.
 
-To fix that issue, Julien Elie added the use of a shared string,
+To fix that issue, Julien Élie added the use of a shared string,
 available since S<Perl 5.7.2>, with a fall back to a slower but
 reliable copy of such bodies in case the function is not available.
 Using a Perl version superior to 5.7.2 is therefore recommended.
@@ -3066,7 +3068,7 @@ was enabled and the binding done using IPv4.
 =item *
 
 Some annoying assertion failures occurring in B<innfeed> have been fixed
-by Russ Allbery and Julien Elie.
+by Russ Allbery and Julien Élie.
 
 =item *
 
@@ -3168,7 +3170,7 @@ Fixed a few segfaults and bugs which affected both Python B<innd> and
 B<nnrpd> hooks.  They no longer check the existence of methods not used by
 the hooked script.  An issue with Python exception handling was also fixed,
 as well as a segfault fixed by Russ Allbery which happened whenever one
-closes and then reopens Python in the same process.  Julien Elie also fixed
+closes and then reopens Python in the same process.  Julien Élie also fixed
 a bug when reloading Python filters (they were not always correctly reloaded)
 and a segfault when generating access groups with embedded Python filters for
 B<nnrpd>.  Many thanks to David Hlacik for its bug reports.
@@ -3228,7 +3230,7 @@ F<nnrpd_auth.py> script is now only used for authorization control.  See the
 F<readers.conf> man page for more information (especially the I<python_auth>,
 I<python_access> and I<python_dynamic> parameters).  The documentation about
 INN Python Filtering and Authentication Hooks has also been improved by
-Julien Elie.
+Julien Élie.
 
 =back
 

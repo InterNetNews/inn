@@ -1,3 +1,5 @@
+=encoding utf-8
+
 =head1 NAME
 
 newsgroups - List of newsgroups and their short descriptions
@@ -113,7 +115,7 @@ and paste them from above.
 
 =head1 HISTORY
 
-Written by Julien Elie for InterNetNews.  The preferred format for a one-line
+Written by Julien Élie for InterNetNews.  The preferred format for a one-line
 newsgroup description is based on the policies by which the F<newsgroups>
 file in L<https://downloads.isc.org/pub/usenet/CONFIG/> is maintained; they
 were originally written by David Lawrence <tale@isc.org> and updated by Russ

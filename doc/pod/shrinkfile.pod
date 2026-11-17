@@ -1,3 +1,5 @@
+=encoding utf-8
+
 =head1 NAME
 
 shrinkfile - Shrink files on line boundaries
@@ -89,7 +91,7 @@ is bigger than S<100 MB>, without shrinking it.
 =head1 HISTORY
 
 Written by Landon Curt Noll <chongo@toad.com> and Rich $alz
-<rsalz@uunet.uu.net> for InterNetNews.  Rewritten into POD by Julien Elie.
+<rsalz@uunet.uu.net> for InterNetNews.  Rewritten into POD by Julien Élie.
 
 =head1 SEE ALSO
 

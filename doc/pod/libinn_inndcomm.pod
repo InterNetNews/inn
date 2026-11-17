@@ -1,3 +1,5 @@
+=encoding utf-8
+
 =head1 NAME
 
 inndcomm - Routines for managing innd control commands
@@ -121,7 +123,7 @@ identify the system call that failed.
 =head1 HISTORY
 
 Written by Rich $alz <rsalz@uunet.uu.net> for InterNetNews.  Rewritten into
-POD by Julien Elie.
+POD by Julien Élie.
 
 =head1 SEE ALSO
 

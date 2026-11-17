@@ -1,3 +1,5 @@
+=encoding utf-8
+
 =head1 NAME
 
 clientlib - NNTP clientlib part of InterNetNews library
@@ -55,7 +57,7 @@ closes the connection.
 =head1 HISTORY
 
 Written by Rich $alz <rsalz@uunet.uu.net> for InterNetNews.  Rewritten into
-POD by Julien Elie.
+POD by Julien Élie.
 
 =head1 SEE ALSO
 

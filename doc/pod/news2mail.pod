@@ -1,3 +1,5 @@
+=encoding utf-8
+
 =head1 NAME
 
 news2mail - Channel script to gateway news into e-mails
@@ -91,7 +93,7 @@ as for the envelope-from address (which then defaults to the C<news> user).
 =head1 HISTORY
 
 B<news2mail> was written by Brian Kantor in 1998.  This man page was written
-by James Brister and converted to POD by Julien Elie.  The third optional
+by James Brister and converted to POD by Julien Élie.  The third optional
 field in F<news2mail.cf> was added by S<D. Stussy> in 2008.
 
 =head1 SEE ALSO
