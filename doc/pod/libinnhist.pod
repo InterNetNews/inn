@@ -348,7 +348,7 @@ uses this to size its Bloom filter before walking the history database.
 =back
 
 B<HISlogto> enables logging of history performance statistics (as used by
-B<innd>'s C<stathist> configuration and ctlinnd(8) directive) to the file
+B<innd>'s I<stathist> configuration and ctlinnd(8) directive) to the file
 named I<s>, opening it for appending and resetting the internal timing
 counters; any previously open log is closed first.  B<HISlogclose> closes
 that log, if one is open, and disables further logging.  These two

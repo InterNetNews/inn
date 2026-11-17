@@ -376,7 +376,7 @@ differences between the two F<active> files and then trying to generate
 wildcard patterns that cover the similarities without including much (or
 any) unwanted traffic.
 
-I<local> and I<remote> should be standard I<active> files.  You can probably
+I<local> and I<remote> should be standard F<active> files.  You can probably
 get the F<active> file of a site that you feed (provided they're running INN)
 by using the B<getlist> program (C<getlist -h news.server.com> will retrieve
 its F<active> file) or by connecting to their NNTP port and typing C<LIST

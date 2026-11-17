@@ -1443,7 +1443,7 @@ into account articles whose posting date is one day into the future.
 
 CNFS makes no further use of F<expire.ctl>, since articles stored in CNFS
 buffers expire automatically when the buffer runs out of free space (but
-see the C<-N> option in expireover(8) if you really want to expire them
+see the B<-N> option in expireover(8) if you really want to expire them
 earlier).  For other storage methods, there are two different syntaxes of
 this file, depending on I<groupbaseexpiry> in F<inn.conf>.  If it is set
 to false, F<expire.ctl> takes entries of the form:

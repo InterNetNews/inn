@@ -1074,7 +1074,7 @@ readers will be told a deleted article still exists until the next
 B<expireover> reconciles overview.
 
 Note that the fast path is also gated on I<expiretombstone>; both
-must be true to take effect.  The B<nnrpdoverstats> C<artcheck>
+must be true to take effect.  The I<nnrpdoverstats> C<artcheck>
 counter reflects only the slow C<SMretrieve> path, so the syslog
 field will appear smaller when the fast path is doing most of the
 work.
@@ -1543,8 +1543,8 @@ the server will choose following its own preferences.
 =item I<tlsprotocols>
 
 The list of TLS/SSL protocol versions to support.  Valid protocols are
-B<SSLv3>, B<TLSv1>, B<TLSv1.1>, B<TLSv1.2> and B<TLSv1.3>.  For compatibility
-with older versions of INN, B<SSLv2> may also be listed, but this will have
+C<SSLv3>, C<TLSv1>, C<TLSv1.1>, C<TLSv1.2> and C<TLSv1.3>.  For compatibility
+with older versions of INN, C<SSLv2> may also be listed, but this will have
 no effect.
 
 The default value is to only allow secure TLS protocols:

@@ -67,7 +67,7 @@ that the user C<archive> has write access to, and
 I<pathbin>/archive is the path to your B<archive> script.
 
 You can now restrict access to B<tinyleaf> to just your local news server
-with C</etc/hosts.allow> and C</etc/hosts.deny> and set up an ordinary
+with F</etc/hosts.allow> and F</etc/hosts.deny> and set up an ordinary
 feed from the server to the archive host, just like you would to any other
 news server, of only the newsgroup that you want to archive.
 

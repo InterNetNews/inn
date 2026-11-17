@@ -59,7 +59,7 @@ replace returns C<TST_OK>.
 
 Note that the I<data> argument may not be C<NULL>.  If it is,
 C<TST_NULL_DATA> is returned and the key is not inserted.  If you just
-want a simple existence tree, use the B<tst> pointer as the data
+want a simple existence tree, use the I<tst> pointer as the data
 pointer.
 
 B<tst_search> finds the string I<key> in the tree if it exists and

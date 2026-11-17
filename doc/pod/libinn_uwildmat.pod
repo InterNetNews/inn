@@ -36,7 +36,7 @@ first character of one of the patterns in the expression (see below)
 B<UWILDMAT_MATCH> if the expression matches the text, B<UWILDMAT_FAIL> if
 it doesn't, and B<UWILDMAT_POISON> if the expression doesn't match because
 a poisoned pattern matched the text.  These enumeration constants are
-defined in the B<inn/libinn.h> header.
+defined in the F<inn/libinn.h> header.
 
 =head1 WILDMAT EXPRESSIONS
 

@@ -85,7 +85,7 @@ The first command shrinks F<curds> to S<4 MB> if bigger than this size.
 The second command shrinks F<whey> to S<1 GB> and outputs a log line if the
 file is bigger than this size.  The third command shrinks both F<curds> and
 F<whey> to S<500 kB> if bigger than S<4 MB>, and outputs a log line for the
-files it has shrunk.  The fourth command just prints a sentence if C<whey>
+files it has shrunk.  The fourth command just prints a sentence if F<whey>
 is bigger than S<100 MB>, without shrinking it.
 
 =head1 HISTORY

@@ -8,7 +8,7 @@ B<scanspool> [B<-cnrv>] [B<-a> I<active-file>] [B<-s> I<spool-dir>]
 
 =head1 DESCRIPTION
 
-B<scanspool> is a Perl script for use with a I<tradspool> article spool.
+B<scanspool> is a Perl script for use with a C<tradspool> article spool.
 It will scan the F<active> file as well as all articles in the spool and
 report on the errors it encounters.  As this may take a while, using the
 B<-v> switch is recommended to see how far the program has progressed.

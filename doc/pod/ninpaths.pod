@@ -33,7 +33,7 @@ You can get a working setup by doing the following:
 
 Create a directory at I<pathlog>/path (replacing I<pathlog> here and in
 all steps that follow with the full path to your INN log directory).
-Do not change the name of the C<path> subdirectory because it is used
+Do not change the name of the F<path> subdirectory because it is used
 by B<sendinpaths>.
 
 =item 2.
