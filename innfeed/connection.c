@@ -3359,7 +3359,6 @@ abortConnection(Connection cxn)
     /* cxn->myEp could be NULL if we get here during cxnConnect (via
        cxnWait()) */
     if (cxn->myEp != NULL) {
-
         delEndPoint(cxn->myEp);
         cxn->myEp = NULL;
     }

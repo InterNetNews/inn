@@ -95,7 +95,6 @@ KEYgenerate(HDRCONTENT *hc,   /* Header data. */
             const char *body, /* Article body. */
             size_t bodylen)   /* Article body length. */
 {
-
     unsigned long word_count, word_index, word_length, distinct_words;
     int last;
     char *text, *orig_text, *text_end, *this_word, *chase, *punc;
@@ -182,7 +181,6 @@ KEYgenerate(HDRCONTENT *hc,   /* Header data. */
     /* Hunt down words. */
     while ((text < text_end) && /* While there might be words... */
            (*text != '\0') && (word_count < innconf->keymaxwords)) {
-
         /* Find a word. */
         word_length = strcspn(text, whitespace);
         if (word_length == 0)
@@ -254,7 +252,6 @@ KEYgenerate(HDRCONTENT *hc,   /* Header data. */
     /* Write the Keywords header field body. */
     for (chase = hc->Value, word_index = 0; word_index < distinct_words;
          word_index++) {
-
         /* "Noise" words don't count. */
         if (regexec(&preg, word[word_vec[word_index].index], 0, NULL, 0) == 0)
             continue;

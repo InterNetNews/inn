@@ -74,7 +74,6 @@ int caf_errno = 0;
 __attribute__((__noreturn__)) static void
 botch(const char *f, int l, const char *s)
 {
-
     fprintf(stderr, "assertion botched: %s:%d:%s\n", f, l, s);
     fflush(stderr); /* if stderr writing to file--needed? */
     abort();

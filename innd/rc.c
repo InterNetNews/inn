@@ -592,7 +592,6 @@ RCreader(CHANNEL *cp)
     /* If not a server, and not allowing anyone, hand him off unless
        not spawning nnrpd in which case we return an error. */
     if ((i >= 0) && !rp->Skip) {
-
         /* We check now the identd if we have to */
         if (!GoodIdent(fd, rp->Identd)) {
             if (!innconf->noreader) {
@@ -893,7 +892,6 @@ RCreadfile(REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 
     /* Read the file to add all the hosts. */
     while ((word = RCreaddata(&linecount, F, &toolong)) != NULL) {
-
         /* group */
         if (!strncmp(word, GROUP, sizeof GROUP)) {
             free(word);

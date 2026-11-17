@@ -472,7 +472,6 @@ main(int ac, char *av[])
 
     /* main loop over all specified files */
     for (XBATCHname = *argv; argc && (XBATCHname = *argv); argv++, argc--) {
-
         if (Debug)
             fprintf(stderr, "will work on %s\n", XBATCHname);
 

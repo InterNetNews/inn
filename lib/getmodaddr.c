@@ -147,7 +147,6 @@ GetModeratorAddress(FILE *FromServer, FILE *ToServer, char *group,
     address[0] = '\0';
 
     if (FromServer == NULL || ToServer == NULL) {
-
         /*
          *  This should be part of nnrpd or the like running on the server.
          *  Open the server copy of the moderators file.

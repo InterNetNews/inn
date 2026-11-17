@@ -531,7 +531,6 @@ delMapInfo(void *vm)
 static void
 artUnmap(Article article)
 {
-
     delMapInfo(article->mapInfo);
     article->mapInfo = NULL;
 }

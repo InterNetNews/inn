@@ -1169,7 +1169,6 @@ delete_old_stuff(int forgotten)
         /* This if() is true if this ISN'T a key created by mk_temp_groupinfo
          */
         if (*((char *) key.data) != 0 || key.size != 1 + sizeof(group_id_t)) {
-
             switch (mk_temp_groupinfo(gi.current_db, gi.current_gid, tid)) {
             case 0:
                 break;

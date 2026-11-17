@@ -113,7 +113,6 @@ main(int argc, char *argv[])
     NumTailCharFound = 0;
     artno = 0;
     while (0 != fread(buffer, 16, 1, Infile)) {
-
         /*  Found start of article, start writing to obuffer  */
         if (0 == memcmp(buffer + 9, ArtHead, 7)) {
             ReadingArticle = true;
@@ -125,7 +124,6 @@ main(int argc, char *argv[])
         /*  Currently reading article  */
         if (ReadingArticle) {
             for (i = 0; i < 16; i++) {
-
                 /*  Article too big, drop it and move on  */
                 if (opos >= osize) {
                     printf("article number %i bigger than buffer size %i.\n",

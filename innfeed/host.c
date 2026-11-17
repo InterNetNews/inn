@@ -618,7 +618,6 @@ configHosts(bool talkSelf)
             hostReconfigure(h, params);
             h->removeOnReload = false; /* Don't remove at the end */
         } else {
-
             /* It's a host we haven't seen from the config file before */
             nHost = newHost(mainListener, params);
 
@@ -886,7 +885,6 @@ newDefaultHost(InnListener listener, const char *name)
     Host h = NULL;
 
     if (FindBlockedHost(name) == NULL) {
-
         p = newHostParams(defaultParams);
         ASSERT(p != NULL);
 
@@ -1701,7 +1699,6 @@ hostSendArticle(Host host, Article article)
             }
 
         } else {
-
             /* first we try to give it to one of our active connections. We
                simply start at the bottom and work our way up. This way
                connections near the end of the list will get closed sooner from

@@ -359,7 +359,6 @@ main(int argc, char *argv[])
 
     /* ignore groups from both active files, if -i */
     if (ign_file != NULL) {
-
         /* read in the ignore file */
         ignor = get_ignore(ign_file, &iglen);
 
@@ -372,7 +371,6 @@ main(int argc, char *argv[])
 
     /* mark for removal, error groups from host1 if -e */
     if (!k_flag) {
-
         /* mark error groups for removal */
         error_mark(grp, grplen, HOSTID1);
     }
@@ -765,7 +763,6 @@ get_active(char *host, int hostid, int *len, struct grp *grp, int *errs)
 
     /* check for host being a filename */
     if (host[0] == '/' || host[0] == '.') {
-
         /* note that host is actually a file */
         is_file = 1;
 
@@ -775,7 +772,6 @@ get_active(char *host, int hostid, int *len, struct grp *grp, int *errs)
 
         /* case: host is a hostname */
     } else {
-
         /* note that host is actually a hostname */
         is_file = 0;
 
@@ -816,7 +812,6 @@ get_active(char *host, int hostid, int *len, struct grp *grp, int *errs)
     /* scan server's output, processing appropriate lines */
     num_check = NUM_CHECK(hostid);
     for (cnt = 0, ucnt = 0; (line = QIOread(qp)) != NULL; ++(*len), ++cnt) {
-
         /* expand return array if needed */
         if (*len >= max) {
             max += CHUNK;
@@ -908,7 +903,6 @@ get_active(char *host, int hostid, int *len, struct grp *grp, int *errs)
 
         /* look for only a bad top level element if the proper -t was given */
         if (TOP_CHECK(hostid)) {
-
             /* look for a '.' in the name */
             if (strcmp(cur->name, "junk") != 0
                 && strcmp(cur->name, "control") != 0
@@ -1293,7 +1287,6 @@ get_ignore(char *filename, int *len)
     /* scan server's output, displaying appropriate lines */
     *len = 0;
     for (linenum = 1; (line = QIOread(qp)) != NULL; ++linenum) {
-
         /* expand return array if needed */
         if (*len >= max) {
             max += CHUNK;
@@ -1346,7 +1339,6 @@ get_ignore(char *filename, int *len)
         /* process any other type tokens */
         for (p = strtok(NULL, " \t"), i = 3; p != NULL;
              p = strtok(NULL, " \t"), ++i) {
-
             /* ensure that this next token is a valid type */
             switch (p[0]) {
             case NF_FLAG_OK:
@@ -1457,7 +1449,6 @@ ignore_grps(struct grp *grp, int grplen, struct pat *igcl, int iglen)
     icnt = 0;
     ccnt = 0;
     for (g = 0; g < grplen; ++g) {
-
         /* check the group to examine */
         gp = &grp[g];
         if (gp->ignore) {
@@ -1468,10 +1459,8 @@ ignore_grps(struct grp *grp, int grplen, struct pat *igcl, int iglen)
         /* check group against all patterns */
         ign = 0;
         for (p = 0, pp = igcl; p < iglen; ++p, ++pp) {
-
             /* if pattern has a specific type, check it first */
             if (pp->type_match) {
-
                 /* specific type required, check for match */
                 switch (gp->type[0]) {
                 case NF_FLAG_OK:
@@ -1648,7 +1637,6 @@ merge_grps(struct grp *grp, int grplen, char *host1, char *host2)
     outcnt = 0;
     rmcnt = 0;
     for (cur = 0; cur < grplen; cur = nxt) {
-
         /* determine the next group index */
         nxt = cur + 1;
 
@@ -1660,7 +1648,6 @@ merge_grps(struct grp *grp, int grplen, char *host1, char *host2)
 
         /* check for duplicate groups from the same host */
         while (nxt < grplen) {
-
             /* mark the later as a duplicate */
             if (grp[cur].hostid == grp[nxt].hostid
                 && strcmp(grp[cur].name, grp[nxt].name) == 0) {
@@ -1687,7 +1674,6 @@ merge_grps(struct grp *grp, int grplen, char *host1, char *host2)
 
         /* case: cur and nxt are the same group */
         if (nxt < grplen && strcmp(grp[cur].name, grp[nxt].name) == 0) {
-
             /* assert: cur is HOSTID1 */
             if (grp[cur].hostid != HOSTID1)
                 die("internal error #8: grp[%d].hostid: %d != %d", cur,
@@ -1708,7 +1694,6 @@ merge_grps(struct grp *grp, int grplen, char *host1, char *host2)
 
             /* case: cur and nxt are different groups */
         } else {
-
             /*
              * if cur is host2, then host1 doesn't have it, so output it
              */
@@ -2001,7 +1986,6 @@ output_grps(struct grp *grp, int grplen)
     rm_cycle = ((o_flag == OUTPUT_ACTIVE) ? 0 : 1);
     do {
         for (i = 0; i < grplen; ++i) {
-
             /* if -o Ax, output ignored non-error groups too */
 
             /*
@@ -2020,7 +2004,6 @@ output_grps(struct grp *grp, int grplen)
 
             /* case: output active lines */
             if (o_flag == OUTPUT_ACTIVE) {
-
                 /* case: group needs removal */
                 if (grp[i].remove) {
                     ++remove;
@@ -2028,14 +2011,12 @@ output_grps(struct grp *grp, int grplen)
 
                     /* case: group will be kept */
                 } else {
-
                     /* output in active file format */
                     printf("%s %s %s %s\n", grp[i].name, grp[i].outhi,
                            grp[i].outlow, grp[i].outtype);
 
                     /* if -v level is high enough, do group accounting */
                     if (D_IF_SUMM) {
-
                         /* case: group is from host2, so we need a newgroup */
                         if (grp[i].hostid == HOSTID2) {
                             ++add;
@@ -2058,10 +2039,8 @@ output_grps(struct grp *grp, int grplen)
 
                 /* case: output ctlinnd commands */
             } else if (o_flag == OUTPUT_CTLINND) {
-
                 /* case: group needs removal */
                 if (grp[i].remove) {
-
                     /* output rmgroup */
                     if (rm_cycle) {
                         printf("%s rmgroup %s\n", CTLINND_NAME, grp[i].name);
@@ -2071,7 +2050,6 @@ output_grps(struct grp *grp, int grplen)
 
                     /* case: group is from host2, so we need a newgroup */
                 } else if (grp[i].hostid == HOSTID2) {
-
                     /* output newgroup */
                     if (!rm_cycle) {
                         printf("%s newgroup %s %s %s\n", CTLINND_NAME,
@@ -2083,7 +2061,6 @@ output_grps(struct grp *grp, int grplen)
                     /* case: group is from host1, but the type changed */
                 } else if (grp[i].type != grp[i].outtype
                            && strcmp(grp[i].type, grp[i].outtype) != 0) {
-
                     /* output changegroup */
                     if (!rm_cycle) {
                         printf("%s changegroup %s %s\n", CTLINND_NAME,
@@ -2101,7 +2078,6 @@ output_grps(struct grp *grp, int grplen)
 
                 /* case: exec ctlinnd commands */
             } else if (o_flag == OUTPUT_EXEC || o_flag == OUTPUT_IEXEC) {
-
                 /* warn about sleeping if needed and first time */
                 if (o_flag == OUTPUT_EXEC && z_flag > 0 && sleep_msg == 0) {
                     if (D_SUMMARY)
@@ -2112,7 +2088,6 @@ output_grps(struct grp *grp, int grplen)
 
                 /* case: group needs removal */
                 if (grp[i].remove) {
-
                     /* exec rmgroup */
                     if (rm_cycle) {
                         if (D_REPORT && o_flag == OUTPUT_EXEC)
@@ -2128,7 +2103,6 @@ output_grps(struct grp *grp, int grplen)
 
                     /* case: group is from host2, so we need a newgroup */
                 } else if (grp[i].hostid == HOSTID2) {
-
                     /* exec newgroup */
                     if (!rm_cycle) {
                         if (D_REPORT && o_flag == OUTPUT_EXEC)
@@ -2146,7 +2120,6 @@ output_grps(struct grp *grp, int grplen)
                     /* case: group is from host1, but the type changed */
                 } else if (grp[i].type != grp[i].outtype
                            && strcmp(grp[i].type, grp[i].outtype) != 0) {
-
                     /* exec changegroup */
                     if (!rm_cycle) {
                         if (D_REPORT && o_flag == OUTPUT_EXEC)
@@ -2214,7 +2187,6 @@ error_mark(struct grp *grp, int grplen, int hostid)
     /* loop through groups, looking for error groups from a given host */
     errcnt = 0;
     for (i = 0; i < grplen; ++i) {
-
         /* skip if not from hostid */
         if (grp[i].hostid != hostid) {
             continue;
@@ -2222,7 +2194,6 @@ error_mark(struct grp *grp, int grplen, int hostid)
 
         /* mark for removal if an error group not already removed */
         if (IS_ERROR(grp[i].ignore)) {
-
             /* mark for removal */
             if (grp[i].output != 1 || grp[i].remove != 1) {
                 grp[i].output = 1;
@@ -2373,7 +2344,6 @@ mark_eq_probs(struct grp *grp, int grplen, int hostid, char *host1,
     for (i = 0, j = 0; i < grplen && j < eq_cnt; ++i) {
         if (grp[i].hostid == hostid && !IS_ERROR(grp[i].ignore)
             && grp[i].type != NULL && grp[i].type[0] == NF_FLAG_ALIAS) {
-
             /* initialize record */
             eqgrp[j].skip = 0;
             eqgrp[j].g = &grp[i];
@@ -2389,14 +2359,12 @@ mark_eq_probs(struct grp *grp, int grplen, int hostid, char *host1,
     missing = 0;
     cycled = 0;
     for (step = 0; step < EQ_LOOP && new_eq_cnt >= 0; ++step) {
-
         /* sort the =group record array */
         qsort((char *) eqgrp, eq_cnt, sizeof(eqgrp[0]), eq_merge_cmp);
 
         /* look for the groups to which =type group point at */
         eq_cnt = new_eq_cnt;
         for (i = 0, j = 0; i < grplen && j < eq_cnt; ++i) {
-
             /* we will skip any group in error or from the wrong host */
             if (grp[i].hostid != hostid || IS_ERROR(grp[i].ignore)) {
                 continue;
@@ -2415,10 +2383,8 @@ mark_eq_probs(struct grp *grp, int grplen, int hostid, char *host1,
 
             /* case: this group is pointed at by an eqgrp */
             if (cmp == 0) {
-
                 /* see if we have looped around to the original group name */
                 if (strcmp(grp[i].name, eqgrp[j].g->name) == 0) {
-
                     /* note the detected loop */
                     if (!QUIET(hostid))
                         warn("%s from %s line %d =loops around to itself",
@@ -2449,7 +2415,6 @@ mark_eq_probs(struct grp *grp, int grplen, int hostid, char *host1,
 
                 /* case: we missed the =name */
             } else if (cmp > 0) {
-
                 /* mark the eqgrp in error */
                 eqgrp[j].g->ignore |= ERROR_NONEQ;
                 if (!QUIET(hostid))
@@ -2468,7 +2433,6 @@ mark_eq_probs(struct grp *grp, int grplen, int hostid, char *host1,
 
         /* any remaining non-skipped eqgrps are bad */
         while (j < eq_cnt) {
-
             /* mark the eqgrp in error */
             eqgrp[j].g->ignore |= ERROR_NONEQ;
             if (!QUIET(hostid))
@@ -2488,7 +2452,6 @@ mark_eq_probs(struct grp *grp, int grplen, int hostid, char *host1,
     chained = new_eq_cnt;
     qsort((char *) eqgrp, eq_cnt, sizeof(eqgrp[0]), eq_merge_cmp);
     for (j = 0; j < new_eq_cnt; ++j) {
-
         /* skip if already skipped */
         if (eqgrp[j].skip == 1) {
             continue;
@@ -2547,7 +2510,6 @@ exec_cmd(int mode, const char *cmd, char *grp, char *type, const char *who)
 
     /* if interactive, ask the question */
     if (mode == OUTPUT_IEXEC) {
-
         /* ask the question */
         fflush(stdout);
         fflush(stderr);
@@ -2608,7 +2570,6 @@ exec_cmd(int mode, const char *cmd, char *grp, char *type, const char *who)
 
     /* case: child process */
     if (pid == 0) {
-
         /*
          * prep file descriptors
          */
@@ -2635,7 +2596,6 @@ exec_cmd(int mode, const char *cmd, char *grp, char *type, const char *who)
 
         /* case: parent process */
     } else {
-
         /* prep file descriptors */
         if (mode != OUTPUT_IEXEC) {
             close(io[READ_SIDE]);
@@ -2644,7 +2604,6 @@ exec_cmd(int mode, const char *cmd, char *grp, char *type, const char *who)
 
         /* print a line from the child, if interactive */
         if (mode == OUTPUT_IEXEC) {
-
             /* read what the child says */
             buf[0] = '\0';
             buf[BUFSIZ] = '\0';

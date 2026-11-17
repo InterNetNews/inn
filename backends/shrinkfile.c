@@ -372,7 +372,6 @@ main(int ac, char *av[])
 
         /* If -n (no_op). */
         if (no_op) {
-
             /* Check if too big and exit zero if it is. */
             if (TooBig(F, maxsize)) {
                 if (Verbose)

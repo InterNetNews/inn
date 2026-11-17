@@ -142,7 +142,6 @@ main(int argc, char **argv)
      *  Get the user name in the passwd file.
      */
     if ((pwd = getpwnam(username)) == NULL) {
-
         /*
          *  No entry in the passwd file.
          */
@@ -154,7 +153,6 @@ main(int argc, char **argv)
      *  Make sure we managed to read in the password.
      */
     if (strcmp(pwd->pw_passwd, "*") == 0) {
-
         /*
          *  No permission to read passwords.
          */
@@ -166,7 +164,6 @@ main(int argc, char **argv)
      *  Verify the password.
      */
     if (strcmp(pwd->pw_passwd, crypt(password, pwd->pw_passwd)) != 0) {
-
         /*
          * Password was invalid.
          */

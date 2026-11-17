@@ -93,7 +93,6 @@ static int initialized_sasl =
 
 /* states the imap connection may be in */
 typedef enum {
-
     IMAP_DISCONNECTED = 1,
     IMAP_WAITING,
 
@@ -169,7 +168,6 @@ typedef enum {
 } lmtp_state_t;
 
 typedef struct imap_capabilities_s {
-
     int imap4;         /* does server support imap4bis? */
     int logindisabled; /* does the server allow the login command? */
 
@@ -178,7 +176,6 @@ typedef struct imap_capabilities_s {
 } imap_capabilities_t;
 
 typedef struct lmtp_capabilities_s {
-
     int Eightbitmime;
     int EnhancedStatusCodes;
     int pipelining;
@@ -203,7 +200,6 @@ typedef enum {
 } control_type_t;
 
 typedef struct control_item_s {
-
     Article article;
     char *folder;
     char *msgid;       /* only for cancel's */
@@ -212,7 +208,6 @@ typedef struct control_item_s {
 } control_item_t;
 
 typedef struct article_queue_s {
-
     control_type_t type;
 
     time_t arrived;
@@ -233,7 +228,6 @@ typedef struct article_queue_s {
 } article_queue_t;
 
 typedef struct Q_s {
-
     article_queue_t *head;
 
     article_queue_t *tail;
@@ -243,7 +237,6 @@ typedef struct Q_s {
 } Q_t;
 
 typedef struct connection_s {
-
     /* common stuff */
     char *ServerName;
 
@@ -604,7 +597,6 @@ AddToQueue(Q_t *q, void *item, control_type_t type, int addsmsg, bool must)
         q->head = newentry;
         q->tail = newentry;
     } else {
-
         q->tail->next = newentry;
         q->tail = newentry;
     }
@@ -868,7 +860,6 @@ FindHeader(Buffer *bufs, const char *header, char **start, char **end)
         if (*str == header[0]) {
             if ((strncasecmp(header, str, headerlen) == 0)
                 && (*(str + headerlen) == ':')) {
-
                 if (start) {
                     *start = str + headerlen + 1;
 
@@ -936,7 +927,6 @@ GetLine(char *buf, char *ret, int retmaxsize)
 static conn_ret
 WriteToWire(connection_t *cxn, EndpRWCB callback, EndPoint endp, Buffer *array)
 {
-
     if (array == NULL)
         return RET_FAIL;
 
@@ -1245,7 +1235,6 @@ AddControlMsg(connection_t *cxn, Article art, Buffer *bufs,
         }
 
         if (laststart < str) {
-
             res =
                 addCancelItem(cxn, laststart, str - laststart, control_header,
                               control_header_end - control_header, art, must);
@@ -1635,7 +1624,6 @@ SetupLMTPConnection(connection_t *cxn, char *serverName, int port)
                                  &cxn->saslconn_lmtp);
 
     if (saslresult != SASL_OK) {
-
         d_printf(0, "%s:%u:LMTP Error creating a new SASL connection (%s)\n",
                  hostPeerName(cxn->myHost), cxn->ident,
                  sasl_errstring(saslresult, NULL, NULL));
@@ -2067,7 +2055,6 @@ prepareReopenCbk(Connection cxn, int type)
 
 
     if (type == 0) {
-
         cxn->imap_sleepTimerId =
             prepareSleep(imap_reopenTimeoutCbk, cxn->imap_sleepTimeout, cxn);
         d_printf(1,
@@ -2231,7 +2218,6 @@ lmtp_authenticate(connection_t *cxn)
         &client_interact, &out, &outlen, &mechusing);
 
     if ((saslresult != SASL_OK) && (saslresult != SASL_CONTINUE)) {
-
         d_printf(0, "%s:%u:LMTP Error calling sasl_client_start (%s)\n",
                  hostPeerName(cxn->myHost), cxn->ident,
                  sasl_errstring(saslresult, NULL, NULL));
@@ -2289,11 +2275,9 @@ lmtp_getauthline(char *str, char **line, int *linelen)
     response_code = ask_code(str);
 
     if (response_code == 334) {
-
         /* continue */
 
     } else if (response_code == 235) {
-
         /* woohoo! authentication complete */
         return STAT_OK;
 
@@ -2360,7 +2344,6 @@ lmtp_writeCB(EndPoint e, IoStatus i, Buffer *b, void *d)
 
 
     switch (cxn->lmtp_state) {
-
     case LMTP_WRITING_LHLO:
         cxn->lmtp_state = LMTP_READING_LHLO;
         break;
@@ -2530,7 +2513,6 @@ imap_sendAuthStep(connection_t *cxn, char *str)
 
     /* check if sasl succeeded */
     if (saslresult != SASL_OK && saslresult != SASL_CONTINUE) {
-
         d_printf(0, "%s:%u:IMAP sasl_client_step failed with %s\n",
                  hostPeerName(cxn->myHost), cxn->ident,
                  sasl_errstring(saslresult, NULL, NULL));
@@ -2588,7 +2570,6 @@ imap_sendAuthenticate(connection_t *cxn)
 
     /* If no mechs try "login" */
     if (saslresult == SASL_NOMECH) {
-
 #else /* HAVE_SASL */
 
     { /* always do login */
@@ -2637,7 +2618,6 @@ imap_sendAuthenticate(connection_t *cxn)
 
 #ifdef HAVE_SASL
     if ((saslresult != SASL_OK) && (saslresult != SASL_CONTINUE)) {
-
         d_printf(
             0,
             "%s:%u:IMAP Error calling sasl_client_start (%s) mechusing = %s\n",
@@ -2853,7 +2833,6 @@ imap_ParseCapability(char *string, imap_capabilities_t **caps)
         (*caps) = xcalloc(1, sizeof(imap_capabilities_t));
 
     while ((*str) != '\0') {
-
         while (((*str) != '\0') && ((*str) != ' ')) {
             str++;
         }
@@ -2958,7 +2937,6 @@ reset:
 
     /* if we don't have a full line */
     if (ret == RET_NO_FULLLINE) {
-
         readBuffers = makeBufferArray(bufferTakeRef(cxn->imap_rBuffer), NULL);
 
         if (!prepareRead(e, readBuffers, imap_readCB, cxn, 1)) {
@@ -2983,7 +2961,6 @@ reset:
             imap_ParseCapability(str, &(cxn->imap_capabilities));
 
         } else if (strncasecmp(str, "SEARCH", 6) == 0) {
-
             str += 6;
 
             if ((*str) == ' ') {
@@ -3000,7 +2977,6 @@ reset:
             }
 
         } else if (strncasecmp(str, "OK ", 3) == 0) {
-
             if (cxn->imap_state == IMAP_READING_INTRO) {
                 imap_sendCapability(cxn); /* xxx errors */
                 return;
@@ -3016,7 +2992,6 @@ reset:
         goto reset;
 
     } else if ((str[0] == '+') && (str[1] == ' ')) {
-
         str += 2;
 
         if (cxn->imap_state == IMAP_READING_STEPAUTH) {
@@ -3082,7 +3057,6 @@ reset:
         case IMAP_READING_STEPAUTH:
 
             if (okno == 1) {
-
                 cxn->imap_sleepTimeout = init_reconnect_period;
 
                 cxn->imap_timeCon = theTime();
@@ -3109,7 +3083,6 @@ reset:
         case IMAP_READING_CREATE:
 
             if (okno == 1) {
-
                 d_printf(1, "%s:%u:IMAP Create of bboard successful\n",
                          hostPeerName(cxn->myHost), cxn->ident);
                 cxn->create_succeeded++;
@@ -3154,7 +3127,6 @@ reset:
         case IMAP_READING_SELECT:
 
             if (okno == 1) {
-
                 imap_sendSearch(cxn,
                                 cxn->current_control->data.control->msgid);
                 return;
@@ -3205,7 +3177,6 @@ reset:
         case IMAP_READING_STORE:
 
             if (okno == 1) {
-
                 d_printf(1, "%s:%u:IMAP Processed a Cancel fully\n",
                          hostPeerName(cxn->myHost), cxn->ident);
 
@@ -3219,7 +3190,6 @@ reset:
                 return;
 
             } else {
-
                 d_printf(1, "%s:%u:IMAP Store failed\n",
                          hostPeerName(cxn->myHost), cxn->ident);
                 ReQueue(cxn, &(cxn->imap_controlMsg_q), cxn->current_control);
@@ -3367,7 +3337,6 @@ reset:
     }
 
     switch (cxn->lmtp_state) {
-
     case LMTP_READING_INTRO:
 
         if (ask_code(str) != 220) {
@@ -3479,7 +3448,6 @@ reset:
         status = lmtp_getauthline(str, &in, &inlen);
 
         switch (status) {
-
         case STAT_CONT:
 
             saslresult =
@@ -4426,7 +4394,6 @@ DeleteIfDisconnected(Connection cxn)
      * can */
     if ((cxn->issue_quit >= 1) && (cxn->lmtp_state == LMTP_DISCONNECTED)
         && (cxn->imap_state == IMAP_DISCONNECTED)) {
-
         switch (cxn->issue_quit) {
         case 1:
             if (cxn->lmtp_state == LMTP_DISCONNECTED) {

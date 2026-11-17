@@ -232,7 +232,6 @@ PY_authenticate(char *file, char *User, char *Password, int *code,
     strlcpy(errorstring, temp, BIG_BUFFER);
 
     if (PyTuple_Size(result) == 3) {
-
         /* Get the username string. */
         item = PyTuple_GetItem(result, 2);
 

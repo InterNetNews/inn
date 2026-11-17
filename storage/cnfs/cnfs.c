@@ -1800,7 +1800,6 @@ cnfs_next(ARTHANDLE *article, const RETRTYPE amount)
 
     for (; cycbuff != (CYCBUFF *) NULL;
          cycbuff = cycbuff->next, priv.offset = 0) {
-
         if (!SMpreopen && !CNFSinit_disks(cycbuff)) {
             SMseterror(SMERR_INTERNAL, "cycbuff initialization fail");
             continue;
