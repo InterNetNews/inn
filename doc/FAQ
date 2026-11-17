@@ -69,9 +69,9 @@ Subject: Contents
     4.5.  Binary posting to non-binary group (Cleanfeed)
 
 5.  Problems on Specific Systems
-    5.1.  INN won't compile on SCO OpenServer / UnixWare / OpenUNIX
+    5.1.  INN won't compile on SCO OpenServer
     5.2.  Using raw devices on Solaris destroys the partition table
-    5.3.  Will INN run on Windows?
+    5.3.  Will INN work on Windows?
     5.4.  Why aren't INN's files where the documentation says they are?
     5.5.  Running INN on macOS
 
@@ -159,8 +159,10 @@ a STABLE snapshot before July 11th, 2022 to one dated after that.
 Subject: 1.3. Where can I get INN?
 
 The download site for INN is <https://downloads.isc.org/isc/inn/>.  In that
-directory are the various releases of INN, some additional documentation
-(particularly of security holes), the original INN Usenix paper.
+directory are the releases of INN (older ones being in the OLD
+subdirectory), contributed software in the contrib and unoff-contrib
+subdirectories, and some additional documentation (including the original
+INN Usenix paper) in the extra-docs subdirectory.
 
 There is also a snapshots subdirectory, in which you will find two sets
 of snapshots: ones at the top level, which are updated only when the
@@ -205,17 +207,18 @@ the links off of the INN home page have additional overview documentation
 or documentation on how to set up servers for specific roles.
 
 Another good resource is the newsgroup news.software.nntp (and the Google
-archives thereof) and the archive of the inn-workers mailing list.  A link
-to the latter is off the INN page referenced above.
+Groups archives thereof, which are read-only and stop in February 2024)
+and the archive of the inn-workers mailing list.  A link to the latter is
+off the INN page referenced above.
 
 Finally, the following additional links may be useful:
 
-<http://aplawrence.com/Unixart/newsserver.html>
+<https://aplawrence.com/Unixart/newsserver.html>
     A tutorial on setting up INN aimed at beginners using SCO Unix.  While
     it's mostly focused on SCO, it may be useful for any beginner to INN
     and news servers.
 
-<http://www.kozubik.com/published/inn_tutorial.txt>
+<https://www.kozubik.com/published/inn_tutorial.txt>
     A tutorial on setting up INN on FreeBSD.  Contains a lot of
     information focused on FreeBSD and its preferred file layout, so may
     be easier to follow than the generic instructions on that platform.
@@ -282,7 +285,7 @@ web pages:
     <https://lists.isc.org/mailman/listinfo/inn-committers>
     <https://lists.isc.org/mailman/listinfo/inn-bugs>
 
-inn-workers tends to be moderate volume (3-5 messages a day, but varying a
+inn-workers tends to be low volume (a few messages a month, but varying a
 lot depending on what's being discussed).  inn-committers is occasionally
 higher volume but entirely automatically generated GitHub push
 notifications.  inn-announce is a low-volume moderated list containing
@@ -321,16 +324,16 @@ Fourth, from the README:
     Note that INN is supported by Internet Systems Consortium, and
     although it is free for use and redistribution and incorporation into
     vendor products and export and anything else you can think of, it
-    costs money to produce.  That money comes from ISP's, hardware and
+    costs money to produce.  That money comes from ISPs, hardware and
     software vendors, companies who make extensive use of the software,
-    and generally kind hearted folk such as yourself.
+    and generally kind-hearted folk such as yourself.
 
     Internet Systems Consortium has also commissioned a DHCP server
     implementation and handles the official support/release of BIND.  You
     can learn more about the ISC's goals and accomplishments from the web
     page at <https://www.isc.org/>.
 
-The ISC provides ftp and web space and mailing lists and archives.
+The ISC provides download and web space, mailing lists and archives.
 Donations to help support all of that are greatly appreciated.
 
 ------------------------------
@@ -630,12 +633,13 @@ This can make it rather difficult to get enough debugging information out
 of it to determine what's going wrong if it's crashing immediately after
 startup or otherwise having serious difficulties.
 
-One approach is to run innd by hand directly, giving it the -d option.
-This requires setting up a configuration where innd doesn't need to bind
-to privileged ports, however.
+One approach is to run innd by hand directly as the news user, giving it
+the -d option.  With versions of INN prior to 2.5.0, this requires setting
+up a configuration where innd doesn't need to bind to privileged ports;
+later versions rely on the setuid root innbind helper to bind them.
 
 Another, sometimes better option, is move the innd binary to another name,
-like innd-real, and put a shell script in its place.  Here's an example,
+like innd-orig, and put a shell script in its place.  Here's an example,
 from Kai Henningsen:
 
     #! /bin/bash
@@ -654,6 +658,11 @@ This starts innd under strace, suitable for debugging startup core dumps
 and the like.  You can use this as a general model for a variety of
 debugging; for example, you could replace the strace invocation with an
 invocation of gdb and then start innd from inside gdb with the -d option.
+
+With INN 2.5.0 and later, note that the -f flag makes strace also trace
+the setuid root innbind helper, which then runs without root privileges,
+so innd will fail to bind to privileged ports.  If that happens, remove
+the -f and -F flags from the strace command line.
 
 ------------------------------
 
@@ -736,10 +745,11 @@ Subject: 3.8. sendmail isn't installed
 Yes, INN really does require sendmail.  It uses sendmail to send out the
 daily reports, mail messages to moderators, gateway news to mail, send
 statistics to the TOP1000 project, mail errors to the news administrator,
-etc. and it assumes that you have a program installed as /usr/sbin/sendmail
-or /usr/lib/sendmail that it can use to do this.  It does not speak SMTP,
-nor is it likely to ever speak SMTP; it's hard enough maintaining a package
-to speak NNTP.
+etc.  To do this, it runs the command set in the mta parameter in
+inn.conf, which in the sample inn.conf installed with INN points to the
+sendmail program found at configure time (usually /usr/sbin/sendmail or
+/usr/lib/sendmail).  It does not speak SMTP, nor is it likely to ever
+speak SMTP; it's hard enough maintaining a package to speak NNTP.
 
 If you need a very simple local sendmail implementation that just sends
 mail to a smarthost, there are several available (nullmailer, for
@@ -754,7 +764,7 @@ applicable.
 
 INN logs nearly all messages to syslog, so in general these error messages
 will be found in syslog.  If you aren't seeing anything from INN in syslog
-at all, make sure that you have it set up correctly (see 3.3).
+at all, make sure that you have it set up correctly (see 3.4).
 
 ------------------------------
 
@@ -908,14 +918,14 @@ Another alternative to find issues in your tradspool news spool is to run
 the scanspool utility.  It will notably report the above too high article
 numbers.
 
-If you're not already running INN 2.4, upgrade if you can.  Not only can
-you recover directly from this problem if you're using tradindexed
-overview, but INN 2.4 does a better job of flushing data to disk and is
-less likely to have this problem in the first place.
+If you're running a version of INN older than 2.4, upgrade if you can.
+Not only can you recover directly from this problem if you're using
+tradindexed overview, but INN 2.4 and later do a better job of flushing
+data to disk and are less likely to have this problem in the first place.
 
 ------------------------------
 
-Subject: 4.5. Binary posting to non-binary group
+Subject: 4.5. Binary posting to non-binary group (Cleanfeed)
 
 This message does not actually come from INN.  It's generated by
 Cleanfeed or cleanfeed-ng, and if you're seeing it, that means that you
@@ -965,12 +975,12 @@ just fine, but then gets invalid device errors when it tries to open them
 again, and the disks show up in format as needing to be repartitioned.
 
 The solution is to not use raw devices that include the first cylinder of
-the disk.  Solaris doesn't protect the superblock from being overwritten
-by an application writing to raw devices and includes it in the first
-cylinder of the disk, so unless you use a slice that starts with cylinder
-1 instead of 0, INN will invalidate the partition table when it tries to
-initialize the cycbuff and all further accesses will fail until you
-repartition.
+the disk.  Solaris doesn't protect the disk label (which contains the
+partition table) from being overwritten by an application writing to raw
+devices and stores it in the first cylinder of the disk, so unless you use
+a slice that starts with cylinder 1 instead of 0, INN will invalidate the
+partition table when it tries to initialize the cycbuff and all further
+accesses will fail until you repartition.
 
 Generally all that has to be done is to repartition the disk with slice 0
 starting from cylinder 1 and extending to the end of the disk and then
@@ -981,14 +991,20 @@ space, but generally not enough to care about.
 
 Subject: 5.3. Will INN work on Windows?
 
-It won't out of the box.  The standard INN distribution doesn't build on
-Windows.  It has, however, been built for Cygwin (a Unix-like environment
-for Windows) in the past and some of the necessary patches (although
-perhaps not all of them) have been incorporated into current INN releases.
+It won't out of the box.  The standard INN distribution doesn't build
+natively on Windows.  It has, however, been built for Cygwin (a Unix-like
+environment for Windows) in the past and some of the necessary patches
+(although perhaps not all of them) have been incorporated into current INN
+releases.
 
 Search for http://homepage.mac.com/imeowbot/inn/ at
-<http://web.archive.org/> for the previous work.  Don't forget to peruse
+<https://web.archive.org/> for the previous work.  Don't forget to peruse
 INSTALL if you download and want to try this.
+
+On recent versions of Windows, a simpler approach is to use the Windows
+Subsystem for Linux (WSL 2), which runs a real Linux kernel: INN can then
+be built and installed as on any Linux system, or installed from the
+package of the Linux distribution you chose.
 
 ------------------------------
 
@@ -1205,13 +1221,13 @@ with INN).
 
     convdate -n '15 Apr 2014 20:42 +0200' '16 Apr 2014 12:37 +0200'
 
-returns the two corresponding timestamps 1397586540 and 1397644620 that
+returns the two corresponding timestamps 1397587320 and 1397644620 that
 can then be used to retrieve a subset of articles to feed:
 
     cd <pathdb in inn.conf>
     perl -ne 'chomp; our ($hash, $timestamps, $_) = split " "; \
         my ($arrived, $expires, $posted) = split("~", $timestamps); \
-        print "$_\n" if $_ and $arrived >= 1397586540 \
+        print "$_\n" if $_ and $arrived >= 1397587320 \
             and $arrived <= 1397644620' history \
         | tr . / > <pathoutgoing in inn.conf>/list
     innxmit server list
@@ -1347,13 +1363,19 @@ identifiers.  (Even though domain: is set in inn.conf, note that this
 parameter also needs being present in readers.conf so as to trigger the
 expected behaviour).
 
-In INN 2.3.3 and later, you can set virtualhost: to true in an access
-stanza of readers.conf and then set domain: in the same stanza, and all
-posts coming from connections to which that access stanza applies will
-use that domain to generate message IDs.  So if you need to change the
-domain used to generate message IDs for every local post from your
-server, just add virtualhost: and domain: keys to every access stanza
-in readers.conf.  (Yes, this is really overkill for this option.)
+In INN 2.3.3 and later, you can also set virtualhost: to true in an
+access stanza of readers.conf and then set domain: in the same stanza,
+and all posts coming from connections to which that access stanza
+applies will use that domain to generate message IDs.  This was the only
+way before INN 2.7.1, and it is really overkill for this option, as
+virtualhost: makes nnrpd behave as if it were running on a server with a
+different name, which notably also changes the Path and Xref header
+fields.
+
+So if you need to change the domain used to generate message IDs for
+every local post from your server, just add a domain: key (and also a
+virtualhost: key with INN 2.7.0 and earlier) to every access stanza in
+readers.conf.
 
 ------------------------------
 
@@ -1495,13 +1517,15 @@ a Perl posting filter.  Try using a posting filter like this:
 
     sub filter_post {
         $modify_headers = 1;
-        delete $hdr{'Injection-Info'};
+        $hdr{'Injection-Info'} = undef;
         return '';
     }
 
 Note that you have to set $modify_headers to make changes to the article
-header field effective in the actual posted article.  Instead of removing
-the header field, you can also alter it if you modify
+header field effective in the actual posted article.  Also note that the
+header field has to be set to undef (or to the empty string) rather than
+removed from the %hdr hash with delete, which would leave it unchanged.
+Instead of removing the header field, you can also alter it if you modify
 $hdr{'Injection-Info'}.  If you only want to alter the host name used in
 Injection-Info, see the domain: parameter in readers.conf (and virtualhost:
 for INN 2.7.0 and earlier).
@@ -1542,13 +1566,14 @@ Subject: 6.13. Back up and restore an INN installation
 
 For a full backup, you need, at a minimum, to save all of the articles in
 $patharticles, the configuration files in $pathetc, and the active and
-newsgroup files in $pathdb.  If you have any custom filters you've
+newsgroups files in $pathdb.  If you have any custom filters you've
 installed, or a cleanfeed.local file, you'll want to keep that, as well as
 any custom authentication programs or files you're using (like a password
 file for news accounts).  You may also want to save HTML versions of the
 news.daily reports, if you've been generating them, and you may want to
-look at the first few lines of config.status in your original source tree
-so that you can be sure to use the same options to configure.
+look at the first few lines of config.log in your original source tree (or
+run ./config.status --config there) so that you can be sure to use the
+same options to configure.
 
 Note that most people only back up those portions of the news spool that
 they retain for a long time (like local hierarchies) and don't bother with
