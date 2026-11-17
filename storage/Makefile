@@ -215,8 +215,9 @@ buffindexed/buffindexed.o: buffindexed/buffindexed.c ../include/portable/system.
   ../include/inn/portable-socket.h ../include/inn/system.h \
   ../include/inn/portable-getaddrinfo.h \
   ../include/inn/portable-getnameinfo.h ../include/inn/portable-stdbool.h \
-  ../include/inn/innconf.h ../include/inn/macros.h ../include/inn/libinn.h \
-  ../include/inn/concat.h ../include/inn/xmalloc.h ../include/inn/xwrite.h \
+  ../include/inn/hashtab.h ../include/inn/macros.h \
+  ../include/inn/innconf.h ../include/inn/libinn.h ../include/inn/concat.h \
+  ../include/inn/xmalloc.h ../include/inn/xwrite.h \
   ../include/inn/messages.h ../include/inn/ov.h ../include/inn/history.h \
   ../include/inn/storage.h ../include/inn/options.h ../include/inn/paths.h \
   ovinterface.h buffindexed/shmem.h buffindexed/buffindexed.h
