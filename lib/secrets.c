@@ -4,6 +4,11 @@
 **  The functions in this file collapse the parse tree for inn-secrets.conf
 **  into the secrets struct that's used throughout INN.
 **
+**  Written by Julien Élie in 2022, based on lib/innconf.c.
+**
+**  Various bug fixes, code and documentation improvements since then
+**  in 2022, 2026.
+**
 **  When adding new inn-secrets.conf parameters, make sure to add them in all
 **  of the following places:
 **

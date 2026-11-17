@@ -1,5 +1,12 @@
 /*
 **  Routines for message identifiers: generation and checks.
+**
+**  Written by Julien Élie in 2008.  GenerateMessageID() comes from the
+**  former lib/genid.c, and IsValidMessageID() is based on code formerly
+**  in innd/art.c.
+**
+**  Various bug fixes, code and documentation improvements since then
+**  in 2008, 2009, 2017, 2018, 2021, 2023, 2026.
 */
 
 #include "portable/system.h"

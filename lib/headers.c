@@ -1,5 +1,11 @@
 /*
 **  Routines for headers: manipulation and checks.
+**
+**  Written by Julien Élie in 2008.  skip_cfws() comes from the RFC 2822
+**  date parser written by Russ Allbery (lib/date.c).
+**
+**  Various bug fixes, code and documentation improvements since then
+**  in 2008-2010, 2016, 2019, 2021-2023, 2026.
 */
 
 #include "portable/system.h"

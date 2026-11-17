@@ -3,6 +3,11 @@
 **
 **  The interface to reading inn-secrets.conf configuration file and managing
 **  the resulting secrets struct.
+**
+**  Written by Julien Élie in 2022, based on include/inn/innconf.h.
+**
+**  Various bug fixes, code and documentation improvements since then
+**  in 2022, 2026.
 */
 
 #ifndef INN_SECRETS_H

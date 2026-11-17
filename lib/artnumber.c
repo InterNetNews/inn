@@ -1,5 +1,10 @@
 /*
 **  Routines for article numbers: manipulation and checks.
+**
+**  Written by Julien Élie in 2008.
+**
+**  Various bug fixes, code and documentation improvements since then
+**  in 2010, 2021, 2026.
 */
 
 #include "portable/system.h"

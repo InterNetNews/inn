@@ -1,3 +1,13 @@
+/*
+**  Definitions shared by the ovsqlite overview method and its server.
+**
+**  Original implementation written by Bo Lindbergh (2020-12-17).
+**  <2bfjdsla52kztwejndzdstsxl9athp@gmail.com>
+**
+**  Various bug fixes, code and documentation improvements since then
+**  in 2021-2023.
+*/
+
 #ifndef OVSQLITE_PRIVATE_H
 #define OVSQLITE_PRIVATE_H
 
