@@ -30,13 +30,14 @@ files.  Specifically (but possibly not comprehensively):
    General Public License version 2 or later.  See doc/GPL for a copy of
    the GPL v2.
 
-   backends/shrinkfile.c, frontends/scanspool.in, lib/concat.c,
-   lib/inet_aton.c, lib/inet_ntoa.c, lib/pread.c, lib/pwrite.c,
-   lib/setenv.c, lib/seteuid.c, lib/strlcat.c and lib/strlcpy.c are in
-   the public domain.
+   backends/delayer.in, backends/ninpaths.c, backends/shrinkfile.c,
+   frontends/scanspool.in, include/inn/hashtab.h, include/inn/newsuser.h,
+   lib/concat.c, lib/hashtab.c, lib/newsuser.c, lib/pread.c, lib/pwrite.c,
+   lib/strlcat.c, and lib/strlcpy.c are in the public domain.
 
-   lib/snprintf.c may be used for any purpose as long as the author's
-   notice remains intact in all source code distributions.
+   lib/snprintf.c and tests/lib/snprintf-t.c may be used for any purpose
+   as long as the author's notice remains intact in all source code
+   distributions.
 
    control/pgpverify.in is under a BSD-style license (with the advertising
    clause) with UUNET Technologies, Inc. as the copyright holder.  See the
@@ -47,10 +48,10 @@ files.  Specifically (but possibly not comprehensively):
    beginning of those files for details.
 
    lib/strcasecmp.c, lib/strspn.c, and lib/strtok.c are taken from BSD
-   sources and are covered by the standard BSD license.  See those files
-   for more details.
+   sources and are covered by an old version of the BSD license (with the
+   advertising clause).  See those files for more details.
 
-   lib/md5.c is covered under the standard free MD5 license from RSA Data
+   lib/md5.c is covered by the standard free MD5 license from RSA Data
    Security.  See the file for more details.  A clarification is also
    provided here: <https://datatracker.ietf.org/ipr/157/>.
 
@@ -63,13 +64,15 @@ files.  Specifically (but possibly not comprehensively):
    similar to the new BSD license (no advertising clause) but with Thus
    plc as the copyright holder.  See those files for details.
 
-   lib/tst.c, include/inn/tst.h and doc/pod/tst.pod are derived from
-   tst1.3.tar.gz in www.octavian.org (no longer available), and are under
-   the new BSD license (no advertising clause), but with Peter A. Friend
-   as the copyright holder.
+   lib/tst.c, include/inn/tst.h, and doc/pod/libinn_tst.pod are derived
+   from tst1.3.tar.gz, formerly available from www.octavian.org (the site
+   disappeared in 2021), and are under the new BSD license (no advertising
+   clause), but with Peter A. Friend as the copyright holder.
 
-   tests/runtests.c is covered under a license very similar to the MIT/X
-   Consortium license.  See the beginning of the file for details.
+   Many files in the include, lib, m4, and tests directories, most of them
+   coming from the rra-c-util and C TAP Harness packages, have their own
+   copyright holders and are under permissive licenses, as stated by the
+   SPDX-License-Identifier line in each of them.
 
 Note that all portions of INN that link with core INN code have to be
 covered by licenses compatible with the license at the top of this file,
