@@ -1,15 +1,15 @@
 # Configuration for clang-format automated reformatting.  -*- yaml -*-
 #
-# This configuration requires Clang 13.0 or later.
+# This configuration requires Clang 21.1.0 or later.
 
 ---
-Language: Cpp
+Language: C
 BasedOnStyle: LLVM
 AlignArrayOfStructures: Left
 AlignConsecutiveMacros: AcrossEmptyLinesAndComments
 AlignEscapedNewlines: Left
 AllowShortEnumsOnASingleLine: false
-AlwaysBreakAfterReturnType: AllDefinitions
+BreakAfterReturnType: AllDefinitions
 BreakBeforeBinaryOperators: NonAssignment
 BreakBeforeBraces: WebKit
 ColumnLimit: 79
@@ -19,6 +19,7 @@ IncludeCategories:
 IndentPPDirectives: AfterHash
 IndentWidth: 4
 IndentWrappedFunctionNames: false
+InsertNewlineAtEOF: true
 MaxEmptyLinesToKeep: 2
 SpaceAfterCStyleCast: true
 ---
