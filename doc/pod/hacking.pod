@@ -13,7 +13,7 @@ the current development tree using Git from:
 
     <https://github.com/InterNetNews/inn.git>
 
-or browse the current development source on Github at:
+or browse the current development source on GitHub at:
 
     <https://github.com/InterNetNews/inn>
 
@@ -103,12 +103,11 @@ L<http://usenet.trigofacile.com/autobuild/inn/>.
 
 =head1 Documentation
 
-INN's documentation is currently somewhat in a state of flux.  Much of the
-documentation is still in the form of man pages written directly in nroff.
-Some parts of the documentation have been rewritten in POD; that
-documentation can be found in F<doc/pod>.  The canonical source for most
-of the text documentation, including F<README>, F<INSTALL>, F<NEWS>, and
-this file, is also POD.
+All of INN's man pages are generated from POD, as is most of the text
+documentation, including F<README>, F<INSTALL>, F<NEWS>, and this file.
+The POD sources can be found in F<doc/pod>, except for F<readme.pod> at the
+top of the source tree and a few man pages whose POD source is embedded in the
+corresponding script (like B<mailpost>).
 
 If you're modifying some part of INN's documentation and see that it has a
 POD version in F<doc/pod>, you should make the modifications to the POD
@@ -139,11 +138,12 @@ various flags right for B<pod2text> or B<pod2man>.
 
 INN has a set of generic error handling routines that should be used as
 much as possible so that the same syntax can be used for reporting errors
-everywhere in INN.  The six basic functions are notice, sysnotice, warn,
-syswarn, die, and sysdie; notice prints or logs an informative message,
-warn prints or logs a warning, and die does the same and then exits the
-current program.  The sys* versions add a colon, a space, and the value of
-strerror(errno) to the end of the message, and should be used to report
+everywhere in INN.  The seven basic functions are debug, notice, sysnotice,
+warn, syswarn, die, and sysdie; debug prints or logs a debugging message (only
+if handlers have been set up for it), notice prints or logs an informative
+message, warn prints or logs a warning, and die does the same and then exits
+the current program.  The sys* versions add a colon, a space, and the value
+of strerror(errno) to the end of the message, and should be used to report
 failing system calls.
 
 All of the actual error reporting is done via error handlers, and a
@@ -154,22 +154,23 @@ something other than NULL.  Several other error handlers are available,
 particularly including ones that use syslog.  See
 F<include/inn/messages.h> for all of the available options.
 
-There is a different set of error handlers for notice/sysnotice,
+There is a different set of error handlers for debug, notice/sysnotice,
 warn/syswarn, and die/sysdie.  To set them, make calls like:
 
     message_handlers_warn(1, message_log_stderr);
     message_handlers_die(2, message_log_stderr, message_log_syslog_err);
 
 The first argument is the number of handlers, and the remaining arguments
-are pointers to functions taking an int (the length of the formatted
+are pointers to functions taking a size_t (the length of the formatted
 message), a const char * (the format), a va_list (the arguments), and an
-int that's 0 if warn or die was called and equal to the value of errno if
-syswarn or sysdie was called.  The length of the formatted message is
-obtained by calling vsnprintf with the provided format and arguments, and
-therefore is reliable to use as the size of a buffer to malloc to hold the
-result of formatting the message provided that vsnprintf is used to format
-it (warning: the system vsprintf may produce more output under some
-circumstances, so always use vsnprintf).
+int that's 0 if debug, notice, warn, or die was called and equal to the
+value of errno if sysnotice, syswarn, or sysdie was called.  The length
+of the formatted message is obtained by calling vsnprintf with the
+provided format and arguments, and therefore is reliable to use as the
+size of a buffer to malloc to hold the result of formatting the message
+provided that vsnprintf is used to format it (warning: the system vsprintf
+may produce more output under some circumstances, so always use
+vsnprintf).
 
 The error handler can do anything it wishes; each error handler is called
 in the sequence given.  Error handlers shouldn't call warn or die unless
@@ -339,9 +340,10 @@ See the existing scripts for examples of how this is done.
 
 =head1 Include Files
 
-Include files relevant to all of INN, or relevant to the two libraries
-built as part of INN (the utility B<libinn> library and the B<libinnstorage>
-library that contains all storage and overview functions) are found in the
+Include files relevant to all of INN, or relevant to the three libraries
+built as part of INN (the utility B<libinn> library, the B<libinnstorage>
+library that contains all storage and overview functions, and the
+B<libinnhist> library that contains history functions) are found in the
 F<include> directory; other include files relevant only to a portion of INN
 are found in the relevant directory.
 
@@ -476,7 +478,7 @@ platform and is fixed up with portability tricks for older platforms, not
 the other way around.  You may assume an S<ANSI C> compiler.
 
 Try to use const wherever appropriate.  Don't use register; modern
-compilers will do as good of a job as you will in choosing what to put
+compilers will do as good a job as you will in choosing what to put
 into a register.  Don't bother with restrict (at least yet).
 
 =item *
@@ -697,7 +699,7 @@ Monitor changes carried on a few other projects.
 Check whether patches from OpenSSL (F<apps/lib/s_cb.c>, F<apps/s_server.c>
 and F<crypto/bio/bio_dump.c> at L<https://github.com/openssl/openssl>) could
 be merged into F<nnrpd/tls.c>, and new TLS versions could be supported in the
-F<tlsprotocols> parameter in F<inn.conf>.
+I<tlsprotocols> parameter in F<inn.conf>.
 
 =item *
 
@@ -826,7 +828,7 @@ Check out a copy of the release branch, and perform the following actions.
 
 =item *
 
-Run C<autogen> and C<configure> that are currently necessary to generate
+Run C<autogen> and C<configure>, which are currently necessary to generate
 F<Makefile.global>.
 
 =item *
@@ -889,7 +891,7 @@ a draft of the release announcement for proof-reading.  Install the testing
 release on at least one system and make sure that system runs fine for at
 least a few days.
 
-That's all for a testing release. The following steps only concern final
+That's all for a testing release.  The following steps only concern final
 releases.
 
 =item 16.
@@ -906,7 +908,7 @@ Update milestones in the GitHub bug tracker to reflect the new release.
 
 =item 18.
 
-Make the previously generated release tar file available into the public area
+Make the previously generated release tar file available in the public area
 of C<downloads.isc.org>.  Sign the release, creating a F<.asc> file, using:
 
     gpg --detach-sign --armor inn-Y.Y.Y.tar.gz
@@ -917,7 +919,7 @@ F<OLD> directory.
 (Currently, this is all done by Russ by updating the files in
 L<https://archives.eyrie.org/software/inn/> and then letting ISC
 automatically mirror them via rsync within a day.  The ISC web site does
-not need being updated as it does not directly link to the release, nor
+not need to be updated as it does not directly link to the release, nor
 mention the version of the last release.  Just check the information at
 L<https://www.isc.org/othersoftware/#INN> is still available and accurate,
 though.)
@@ -930,8 +932,8 @@ GitHub release.
 =item 20.
 
 After C<downloads.isc.org> has correctly mirrored the release, send an
-announce on inn-announce and in news.software.nntp (with a possible crosspost
-to news.admin.announce).
+announcement on inn-announce and in news.software.nntp (with a possible
+crosspost to news.admin.announce).
 
 =item 21.
 
@@ -982,7 +984,7 @@ Forrest Cavalier provides several tools related to earlier versions
 of INN (2.0 to 2.3.x).  His web site is a great source of information
 about Usenet in general.
 
-=item L<http://tools.ietf.org/html/draft-lutchann-ipv6-intro-00>
+=item L<https://datatracker.ietf.org/doc/html/draft-lutchann-ipv6-intro-00>
 
 A primer on IPv6 with pointers to the appropriate places for more
 technical details as needed, useful when working on IPv6 support in INN.
