@@ -566,7 +566,7 @@ and the I<no-check-high> value (less than about 5.0), then B<innfeed> may
 frequently go in and out of no-CHECK mode.  If the difference is too big,
 then it will make it harder to get out of no-CHECK mode when necessary
 (wasting bandwidth).  Keeping this to between 5.0 and 10.0 less than
-B<no-check-high> usually works pretty well.  The default value is C<90.0>.
+I<no-check-high> usually works pretty well.  The default value is C<90.0>.
 
 =item I<no-check-filter>
 

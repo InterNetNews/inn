@@ -294,7 +294,7 @@ foo.bar5.first.
 The newsgroup foo.bar4 is silently created on the news server, with
 the description "A newsgroup you want." added to the F<newsgroups>
 file.  In the absence of encoding values (either in the checkgroups
-message or in B</encoding/> and B</localencoding>), the default is
+message or in B</encoding/> and B</localencoding/>), the default is
 to decode the sentence as CP1252 and re-encode it as UTF-8.
 
 If C<doit=mail> was used, a mail would be sent to the news administrator

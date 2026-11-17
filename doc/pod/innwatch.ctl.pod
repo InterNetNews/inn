@@ -133,7 +133,7 @@ The remainder of the control file is skipped for the current pass.
 
 =back
 
-The last field specifies the reason that is used in those C<ctlinnd>
+The last field specifies the reason that is used in those B<ctlinnd>
 commands that require one.  More strictly, it is part of the reason,
 as B<innwatch> appends some information to it.
 

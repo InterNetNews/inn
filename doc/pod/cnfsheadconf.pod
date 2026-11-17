@@ -10,7 +10,7 @@ B<cnfsheadconf> [B<-hw>] [B<-c> I<cycbuff>]
 
 =head1 DESCRIPTION
 
-I<cnfsheadconf> reads I<pathetc>/cycbuff.conf and I<pathetc>/storage.conf
+B<cnfsheadconf> reads I<pathetc>/cycbuff.conf and I<pathetc>/storage.conf
 to determine which CNFS buffers are available.  It then reads all of them
 or the specified cyclic buffer via the B<-c> flag, and modifies the header
 as directed by the interactive user if B<-w> is used.

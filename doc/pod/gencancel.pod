@@ -151,7 +151,7 @@ result to standard output instead of actually injecting it):
     gencancel '<mid@news>' | inews -h -P -D
 
 If it all looks good, then inject it into the news system (without giving
-C<-D> to B<inews>):
+B<-D> to B<inews>):
 
     gencancel '<mid@news>' | inews -h -P
 

@@ -14,7 +14,7 @@ B<shlock> tries to create a lock file named I<name> and write
 the process ID I<pid> into it.  If the file already exists, B<shlock>
 will read the process ID from the file and test to see whether
 the process is currently running.  If the process exists, then the file
-will not be created.  I<shlock> exits with a zero status if it could
+will not be created.  B<shlock> exits with a zero status if it could
 create the lock file, or non-zero if the file refers to a currently
 active process.
 

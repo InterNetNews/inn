@@ -21,10 +21,10 @@ name, use the B<-f> flag.
 =item B<-f> I<filename>
 
 If the B<-f> flag is used, then the database files are named
-C<I<filename>.dir>, C<I<filename>.index>, and C<I<filename>.hash>.  If the
-B<-f> flag is not used, then a temporary link to the name C<history.n> is made
-and the database files are written as C<history.n.index>, C<history.n.hash>
-and C<history.n.dir>.
+F<I<filename>.dir>, F<I<filename>.index>, and F<I<filename>.hash>.  If the
+B<-f> flag is not used, then a temporary link to the name F<history.n> is made
+and the database files are written as F<history.n.index>, F<history.n.hash>
+and F<history.n.dir>.
 
 =item B<-i>
 
@@ -44,7 +44,7 @@ size (see B<-s>).
 
 =item B<-o>
 
-If the B<-o> flag is used, then the temporary link to C<history.n>
+If the B<-o> flag is used, then the temporary link to F<history.n>
 (or the name specified by the B<-f> flag) is not made and any existing
 F<history> files are overwritten.  If the old database exists, B<makedbz>
 will use it to determine the size of the new database (see B<-i>).
