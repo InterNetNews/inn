@@ -137,19 +137,36 @@ Andrew Gierth:
         keywords in filter returns.
 
 Russ Allbery:
+        Led INN development from 2000 to 2007 (the 2.3 and 2.4 series).
+        Always present and helpful afterwards, leading the architecture.
         Has done large amounts of clean-up on various pieces of the system
-        (especially the documentation and build system), and has helped
-        with the CVS pool maintenance.  Improved the speed and portability
-        of the Perl filter.  Rewrote the tradindexed overview method for
-        additional robustness.  Has done extensive work on libinn,
-        breaking out common code from other parts of INN.  Lots of other
-        fixes to various parts of INN.
+        (especially the documentation and build system).  Improved the
+        speed and portability of the Perl filter.  Rewrote the tradindexed
+        overview method for additional robustness, and the IPv6 support.
+        Wrote innbind, tinyleaf and the test suite framework, and broke
+        common code out into libinn and the portability layer synchronized
+        with rra-c-util.  Lots of other fixes to various parts of INN.
+
+Julien Élie:
+        Has been the main maintainer of INN since 2007 (the 2.5, 2.6 and
+        2.7 series).  Implemented the RFC 3977 version of NNTP in nnrpd
+        and innd, the COMPRESS extension, Cancel-Lock support, and Python 3
+        support.  Improved the TLS support, converted a large part of the
+        documentation to POD, wrote ovsqlite-util, and has fixed countless
+        bugs all over the code.
 
 Kai Henningsen:
         Implemented the 'C' and 'U' flags in newsfeeds.
 
 Julio Sanchez:
         Wrote the initial libtool support for INN.
+
+Miquel van Smoorenburg:
+        Integrated innfeed more tightly into INN and added the pathtmp
+        setting.  Implemented the Diablo-compatible hashfeed ('Q' flag in
+        newsfeeds), the pathcluster parameter, version 4 of the CNFS format
+        with 4 KB blocks, and separate IPv4 and IPv6 listening sockets in
+        innd.  Also fixed many bugs in rnews, innfeed, CNFS and nnrpd.
 
 Igor Timkin:
         Added min-queue-connection support to innfeed, added outgoing
@@ -184,6 +201,9 @@ Sven Paulus:
 Krischan Jodies:
         Wrote the SMB authenticator.
 
+Tim Martin:
+        Wrote the IMAP and LMTP backend of innfeed (imapfeed).
+
 Alex Kiernan:
         Wrote the history API, generalized the timer code in innd and
         innfeed into a generic timer library, reworked the NEWNEWS code
@@ -211,7 +231,75 @@ Nathan Lutchansky:
 Ken Murchison:
         Implemented SASL authentication support for nnrpd.
 
+Bear Giles:
+        Audited the code to replace unsafe string functions, and hardened
+        the TLS support in nnrpd.
+
+Kirill Berezin:
+        Allowed buffindexed buffers larger than 2 GB and greatly reduced
+        the expiration time of buffindexed overview data.
+
+Alexander Bartolich:
+        Improved innreport with XSL support, a CSS style sheet, proper HTML
+        escaping, and faster and more correct time parsing.  Added the
+        log-time-format parameter to innfeed.
+
+Geraint A. Edwards:
+        Greatly improved pullnews, adding more than twenty new flags
+        including header-only feeding and hashfeed support, and merged
+        backupfeed into it.
+
+Florian Schlichting:
+        Overhauled inncheck and modernized INN's Perl scripts (strict mode,
+        better checks).  Added incoming.conf checking to innd -S, wrote the
+        scanspool and procbatch manual pages, and contributed many other
+        fixes, notably to log rotation and article line length checks.
+
+Richard Kettlewell:
+        Contributed dozens of robustness and security fixes all over INN.
+        Made innxmit handle refused commands properly, modernized the HTML
+        output of innreport, fixed parallel builds, and improved the
+        developer documentation.
+
+Bo Lindbergh:
+        Wrote the ovsqlite overview storage method, ovsqlite-server and the
+        INN::ovsqlite_client Perl module.  Added support for wire-format
+        articles to sm.
+
+Kevin Bowling:
+        Wrote the hissqlite history storage method and hissqlite-util, and
+        greatly sped up expire and expireover on very large spools with
+        cancel tombstones and Bloom filters.  Tuned ovsqlite for many
+        readers with WAL support, added the pathhistory and maxlisten
+        parameters, and hardened many older code paths.
+
+Andreas Kempe:
+        Added blocklistd (formerly blacklistd) support to nnrpd.
+
+Christoph Biedl:
+        Turned delayer into a documented, configurable program, and added
+        the filtered and path options to storage.conf.  Also improved
+        perl-nocem and contributed various other fixes.
+
+Roman Donchenko:
+        Added ALPN TLS extension support to nnrpd, and modernized the
+        OpenSSL code.
+
 Also:
+
+Jon Zeeff:
+        Wrote the original dbz database library, later reworked by Henry
+        Spencer for C News, on which the history file indexing is based.
+
+Rob Robertson:
+        Added overview support to nnrpd with Rich Salz in 1993, and co-wrote
+        overchan and expireover.
+
+Brendan Kehoe:
+        Co-wrote inncheck with Rich Salz.
+
+Mike Cooper:
+        Wrote innwatch.
 
 Dave Barr:
         Kept INN alive after Rich Salz didn't have the time any more but
@@ -234,50 +322,51 @@ Marc Fournier:
 Joshua M. Thompson:
         Wrote the original INSTALL documentation.
 
+Peter A. Friend:
+        Wrote the ternary search tree implementation used by the nnrpd
+        message-ID cache.
+
 The following people helped above and beyond the call of duty with testing
 (provided patches, bug reports, suggestions, documentation improvements,
 and lobbying):
 
 Paul Vixie, Robert Elz, Evan Champion, Robert Keller, Barry Bouwsma,
 markd@mira.net.au, Ollivier Robert, Kevin Jameson, Heiko W. Rupp,
-Fletcher Mattox, Matus Uhlar, Gabor Kiss, Matthias Scheler,
-Richard Michael Todd, Trevor Riley, Alex Bligh, J. Porter Clark,
-Alan Brown, Bert Hyman, Petter Nilsen, Gary E. Miller, Kim Culhan,
-Marc Baudoin, Neal Becker, Bjorn Knutsson, Stephen Marquard,
-Frederick Korz, Benedict Lofstedt, Dan Ellis, Joe Ramey,
+Fletcher Mattox, Matus Uhlar, Gabor Kiss, Matthias Scheler, Trevor Riley,
+Alex Bligh, J. Porter Clark, Alan Brown, Bert Hyman, Petter Nilsen,
+Gary E. Miller, Kim Culhan, Marc Baudoin, Neal Becker, Bjorn Knutsson,
+Stephen Marquard, Frederick Korz, Benedict Lofstedt, Dan Ellis, Joe Ramey,
 Odd Einar Aurbakken, Jon Lewis, Dan Riley, Peter Eriksson, Ken Lalonde,
 Koichi Mouri, J. Richard Sladkey, Trine Krogstad, Holger Burbach,
-Per Hedeland, Larry Rosenman, Andrew Burgess, Michael Brunnbauer,
-Mohan Kokal, Robert R. Collier, Mark Hittinger, Miquel van Smoorenburg,
-Boyd Lynn Gerber, Yury B. Razbegin, Joe St. Sauver, Heiko Schlichting,
-John P. Speno, Scott Gifford, Steve Parr, Robert Kiessling,
-Francis Swasey, Paul Tomblin, Florian La Roche, Curt Welch,
+Per Hedeland, Larry Rosenman, Andrew Burgess, Michael Brunnbauer, Mohan Kokal,
+Robert R. Collier, Mark Hittinger, Boyd Lynn Gerber, Yury B. Razbegin,
+Joe St. Sauver, Heiko Schlichting, John P. Speno, Scott Gifford, Steve Parr,
+Robert Kiessling, Francis Swasey, Paul Tomblin, Florian La Roche, Curt Welch,
 Thomas Mike Michlmayr, Kizu Takashi, Michael Hall, Jeff King,
 Edward S. Marshall, Michael Schroeder, George Lindholm, Don Lewis,
 Christopher Masto, Hiroaki Sengoku, Yury July, Yar Tikhiy, Kees Bakker,
 Peter da Silva, Matt McLeod, Ed Korthof, Jan Rychter, Winfried Magerl,
 Andreas Lamrecht, Duane Currie, Ian Dickinson, Bettina Fink, Todd Olson,
 Jochen Erwied, Rebecca Ore, Felicia Neff, Ben Rosengart, Antonio Querubin,
-Bear Giles, Ian Hastie, Greg Andruk, Frank Copeland, Andrew Stribblehill,
-Erik Mouritzen, Ernst Boetsch, Piotr Meyer, David Canzi, Brandon Hume,
-Christopher P. Lindsey, Winfried Szukalski, Edvard Tuinder, Viktor Pilpenok,
-Frank McConnell, Ilya A. Kovalenko, Steve Youngs, Jacek Konieczny,
-Ilya Voronin, Sergey Babitch, Watanabe Katsuhiro, Fred Senault,
-Chris Caputo, Thomas Parleman, Adam J. Richter, Jim Dutton, Julien Élie,
-Ray Miller, Andreas M. Kirchwitz, Andrey Yakovlev, Christoph Biedl,
-Kai Gallasch, Ollivier Robert, Ivan Shmakov, Kachun Lee, Kirill Berezin,
+Ian Hastie, Greg Andruk, Frank Copeland, Andrew Stribblehill, Erik Mouritzen,
+Ernst Boetsch, Piotr Meyer, David Canzi, Brandon Hume, Christopher P. Lindsey,
+Winfried Szukalski, Edvard Tuinder, Viktor Pilpenok, Frank McConnell,
+Ilya A. Kovalenko, Steve Youngs, Jacek Konieczny, Ilya Voronin,
+Sergey Babitch, Watanabe Katsuhiro, Fred Senault, Chris Caputo,
+Thomas Parleman, Adam J. Richter, Jim Dutton, Ray Miller,
+Andreas M. Kirchwitz, Andrey Yakovlev, Kai Gallasch, Ivan Shmakov, Kachun Lee,
 Dieter Stussy, Alan Schwartz, Shalon Wood, Nick Couchman, Jakub Bogusz,
-J. Thomas Halliley, Matija Nalis, Geraint A. Edwards, Alexander Bartolich,
-David Hlacik, Andreas Mattheiss, James Ralston, Wim Lewis, Johan van Selst,
-Wolfgang M. Weyand, Berend Reitsma, William Kronert, Petr Novopashenniy,
-Steve Crook, John F. Morse, Tim Woodall, Jonathan Kamens, Kamil Jonca,
-S.P. Zeidler, Nix, Florian Schlichting, Torsten Jerzembeck, Harald Dunkel,
-Lars Magne Ingebrigtsen, Sam Varshavchik, Matthew Vernon, Ian Jackson,
-Edmund H. Ramm, Raphael Barrois, Bo Lindbergh, Matthias Meyser,
-Dennis Preiser, Paolo Amoroso, Dennis Davis, River Tarnell, Jochen Schmitt,
-Tim Fardell, Remco Rijnders, David Binderman, Tony Evans, Christian Garbs,
-Jesse Rehmer, Colin Watson, Lauri Tirkkonen, Christian Mock, Marcus Jodorf,
-Richard Kettlewell, Yuriy M. Kaminskiy, Bill Parker, Thomas Hochstein,
-Tanguy Ortolo, Michael Baeuerle, Kevin Bowling, Andreas Kempe, Hauke Lampe,
-Enrik Berkhan, Nigel Reed, Christian Clauss, Roberto Corrado, Roman Donchenko,
-Chris Knipe, Jose Luis Duran, Bernhard M. Wiedemann, Martin Burmester
+J. Thomas Halliley, Matija Nalis, David Hlacik, Andreas Mattheiss,
+James Ralston, Wim Lewis, Johan van Selst, Wolfgang M. Weyand, Berend Reitsma,
+William Kronert, Petr Novopashenniy, Steve Crook, John F. Morse, Tim Woodall,
+Jonathan Kamens, Kamil Jońca, S.P. Zeidler, Nix, Torsten Jerzembeck,
+Harald Dunkel, Lars Magne Ingebrigtsen, Sam Varshavchik, Matthew Vernon,
+Ian Jackson, Edmund H. Ramm, Raphael Barrois, Matthias Meyser, Dennis Preiser,
+Paolo Amoroso, Dennis Davis, River Tarnell, Jochen Schmitt, Tim Fardell,
+Remco Rijnders, David Binderman, Tony Evans, Christian Garbs, Jesse Rehmer,
+Colin Watson, Lauri Tirkkonen, Christian Mock, Marcus Jodorf,
+Yuriy M. Kaminskiy, Bill Parker, Thomas Hochstein, Tanguy Ortolo,
+Michael Baeuerle, Hauke Lampe, Enrik Berkhan, Nigel Reed, Christian Clauss,
+Roberto Corrado, Chris Knipe, Jose Luis Duran, Bernhard M. Wiedemann,
+Martin Burmester, Urs Janßen, Benoit Izac, Adam D. Barratt, Helmut Grohne,
+Herbert Xu, Adam Sjøgren, John Goerzen, Matthias Klose, Ivo Gandolfo
