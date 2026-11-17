@@ -9,10 +9,11 @@ To do this, run:
     ./configure
     make bootstrap
 
-You will need to have Autoconf 2.64 or later, Perl, a make that supports
-file inclusion, and a compiler installed.  This should generate, among
-other things, the README and HACKING files, which you can then read for
-more information about INN.
+You will need to have Autoconf 2.64 or later, Perl 5.12.0 or later, yacc
+(or Bison) and lex (or flex), a make that supports the "include FILE"
+syntax (such as GNU make), and a C compiler installed.  This should
+generate, among other things, the README and HACKING files, which you can
+then read for more information about INN.
 
 If you have difficulty bootstrapping the source, you should not work
 from a Git checkout.  Instead, download a snapshot or release and start
