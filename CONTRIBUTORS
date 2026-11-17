@@ -158,7 +158,7 @@ Julien Élie:
 Kai Henningsen:
         Implemented the 'C' and 'U' flags in newsfeeds.
 
-Julio Sanchez:
+Julio Sánchez:
         Wrote the initial libtool support for INN.
 
 Miquel van Smoorenburg:
@@ -187,7 +187,7 @@ Brian Kantor:
 Ilya Etingof:
         Added Python authentication support for nnrpd.
 
-Kenichi OKADA:
+Kenichi Okada:
         Added preliminary SSL and SASL support for nnrpd.
 
 Olaf Titz:
@@ -332,10 +332,10 @@ and lobbying):
 
 Paul Vixie, Robert Elz, Evan Champion, Robert Keller, Barry Bouwsma,
 markd@mira.net.au, Ollivier Robert, Kevin Jameson, Heiko W. Rupp,
-Fletcher Mattox, Matus Uhlar, Gabor Kiss, Matthias Scheler, Trevor Riley,
+Fletcher Mattox, Matus Uhlar, Gábor Kiss, Matthias Scheler, Trevor Riley,
 Alex Bligh, J. Porter Clark, Alan Brown, Bert Hyman, Petter Nilsen,
-Gary E. Miller, Kim Culhan, Marc Baudoin, Neal Becker, Bjorn Knutsson,
-Stephen Marquard, Frederick Korz, Benedict Lofstedt, Dan Ellis, Joe Ramey,
+Gary E. Miller, Kim Culhan, Marc Baudoin, Neal Becker, Björn Knutsson,
+Stephen Marquard, Frederick Korz, Benedict Löfstedt, Dan Ellis, Joe Ramey,
 Odd Einar Aurbakken, Jon Lewis, Dan Riley, Peter Eriksson, Ken Lalonde,
 Koichi Mouri, J. Richard Sladkey, Trine Krogstad, Holger Burbach,
 Per Hedeland, Larry Rosenman, Andrew Burgess, Michael Brunnbauer, Mohan Kokal,
@@ -353,20 +353,20 @@ Ernst Boetsch, Piotr Meyer, David Canzi, Brandon Hume, Christopher P. Lindsey,
 Winfried Szukalski, Edvard Tuinder, Viktor Pilpenok, Frank McConnell,
 Ilya A. Kovalenko, Steve Youngs, Jacek Konieczny, Ilya Voronin,
 Sergey Babitch, Watanabe Katsuhiro, Fred Senault, Chris Caputo,
-Thomas Parleman, Adam J. Richter, Jim Dutton, Ray Miller,
+Thomas Parmelan, Adam J. Richter, Jim Dutton, Ray Miller,
 Andreas M. Kirchwitz, Andrey Yakovlev, Kai Gallasch, Ivan Shmakov, Kachun Lee,
 Dieter Stussy, Alan Schwartz, Shalon Wood, Nick Couchman, Jakub Bogusz,
-J. Thomas Halliley, Matija Nalis, David Hlacik, Andreas Mattheiss,
+J. Thomas Halliley, Matija Nalis, David Hlačík, Andreas Mattheiss,
 James Ralston, Wim Lewis, Johan van Selst, Wolfgang M. Weyand, Berend Reitsma,
 William Kronert, Petr Novopashenniy, Steve Crook, John F. Morse, Tim Woodall,
 Jonathan Kamens, Kamil Jońca, S.P. Zeidler, Nix, Torsten Jerzembeck,
 Harald Dunkel, Lars Magne Ingebrigtsen, Sam Varshavchik, Matthew Vernon,
-Ian Jackson, Edmund H. Ramm, Raphael Barrois, Matthias Meyser, Dennis Preiser,
+Ian Jackson, Edmund H. Ramm, Raphaël Barrois, Matthias Meyser, Dennis Preiser,
 Paolo Amoroso, Dennis Davis, River Tarnell, Jochen Schmitt, Tim Fardell,
 Remco Rijnders, David Binderman, Tony Evans, Christian Garbs, Jesse Rehmer,
 Colin Watson, Lauri Tirkkonen, Christian Mock, Marcus Jodorf,
 Yuriy M. Kaminskiy, Bill Parker, Thomas Hochstein, Tanguy Ortolo,
-Michael Baeuerle, Hauke Lampe, Enrik Berkhan, Nigel Reed, Christian Clauss,
+Michael Bäuerle, Hauke Lampe, Enrik Berkhan, Nigel Reed, Christian Clauss,
 Roberto Corrado, Chris Knipe, Jose Luis Duran, Bernhard M. Wiedemann,
 Martin Burmester, Urs Janßen, Benoit Izac, Adam D. Barratt, Helmut Grohne,
 Herbert Xu, Adam Sjøgren, John Goerzen, Matthias Klose, Ivo Gandolfo
