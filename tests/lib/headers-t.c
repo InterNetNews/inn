@@ -1,5 +1,10 @@
 /*
 **  Test suite for manipulation and checks on headers.
+**
+**  Written by Julien Élie in 2016.
+**
+**  Various bug fixes, code and documentation improvements since then
+**  in 2019, 2021, 2022, 2026.
 */
 
 #define LIBTEST_NEW_FORMAT 1

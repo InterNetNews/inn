@@ -1,5 +1,10 @@
 /*
 **  Test suite for functions related to Cancel-Lock.
+**
+**  Written by Julien Élie in 2022.
+**
+**  Various bug fixes, code and documentation improvements since then
+**  in 2022, 2024, 2026.
 */
 
 #define LIBTEST_NEW_FORMAT 1

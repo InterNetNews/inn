@@ -1,5 +1,10 @@
 /*
 **  COMPRESS functionality.  RFC 8054.
+**
+**  Written by Julien Élie in 2015.
+**
+**  Various bug fixes, code and documentation improvements since then
+**  in 2017, 2021, 2026.
 */
 
 #include "portable/system.h"
