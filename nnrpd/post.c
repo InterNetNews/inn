@@ -209,8 +209,8 @@ StripOffHeaders(char *article)
         /* See if it's a known header field name. */
         c = islower((unsigned char) *p) ? toupper((unsigned char) *p) : *p;
         for (hp = Table; hp < ARRAY_END(Table); hp++) {
-            if (c == hp->Name[0] && p[hp->Size] == ':'
-                && strncasecmp(p, hp->Name, hp->Size) == 0) {
+            if (c == hp->Name[0] && strncasecmp(p, hp->Name, hp->Size) == 0
+                && p[hp->Size] == ':') {
                 if (hp->Type == HTobs) {
                     snprintf(Error, sizeof(Error), "Obsolete %s header field",
                              hp->Name);
