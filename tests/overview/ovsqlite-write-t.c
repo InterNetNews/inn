@@ -10,7 +10,13 @@
 #include "portable/system.h"
 
 #include <errno.h>
+#include <signal.h>
 #include <sys/stat.h>
+#include <sys/time.h>
+
+#ifdef HAVE_SQLITE3
+#    include <sqlite3.h>
+#endif
 
 #include "inn/innconf.h"
 #include "inn/libinn.h"
@@ -21,6 +27,69 @@
 
 /* The same fake token used by overview-t.c. */
 static const TOKEN faketoken = {1, 1, ""};
+
+#ifdef HAVE_SQLITE3
+/* Use an independent connection while the writer stays open.  Resetting the
+   count statement ends each read snapshot, so polling cannot pin old data. */
+static int
+wait_for_commit(int expected)
+{
+    sqlite3 *db = NULL;
+    sqlite3_stmt *stmt = NULL;
+    char *path;
+    struct timeval start, now;
+    sqlite3_int64 count = -1;
+    int status, result = 0;
+
+    path = concatpath(innconf->pathoverview, "ovsqlite.db");
+    status = sqlite3_open_v2(path, &db, SQLITE_OPEN_READONLY, NULL);
+    free(path);
+    if (status != SQLITE_OK)
+        goto error;
+    status = sqlite3_prepare_v2(db, "pragma journal_mode", -1, &stmt, NULL);
+    if (status != SQLITE_OK || sqlite3_step(stmt) != SQLITE_ROW
+        || sqlite3_column_text(stmt, 0) == NULL)
+        goto error;
+    if (strcmp((const char *) sqlite3_column_text(stmt, 0), "wal") != 0) {
+        result = -1;
+        goto done;
+    }
+    sqlite3_finalize(stmt);
+    stmt = NULL;
+    status = sqlite3_prepare_v2(db, "select count(*) from artinfo", -1, &stmt,
+                                NULL);
+    if (status != SQLITE_OK)
+        goto error;
+    gettimeofday(&start, NULL);
+    for (;;) {
+        if (sqlite3_step(stmt) != SQLITE_ROW)
+            goto error;
+        count = sqlite3_column_int64(stmt, 0);
+        sqlite3_reset(stmt);
+        if (count == expected) {
+            result = 1;
+            break;
+        }
+        gettimeofday(&now, NULL);
+        if (now.tv_sec - start.tv_sec > 2
+            || (now.tv_sec - start.tv_sec == 2
+                && now.tv_usec >= start.tv_usec))
+            break;
+        usleep(10000);
+    }
+    diag("independent committed rows: %lld/%d", (long long) count, expected);
+    goto done;
+
+error:
+    diag("independent SQLite read failed: %s",
+         db == NULL ? "no connection" : sqlite3_errmsg(db));
+done:
+    sqlite3_finalize(stmt);
+    if (db != NULL)
+        sqlite3_close(db);
+    return result;
+}
+#endif
 
 /* Parse a line from the overview data file.  Nul-terminates the group name
  * at the beginning of the buffer and returns a pointer to the start of the
@@ -60,7 +129,10 @@ main(void)
     int i;
     bool seen;
 
-    test_init(3);
+    test_init(4);
+    /* The fresh server's configured 30-second transaction limit cannot
+       produce a false pass before this whole-writer deadline. */
+    alarm(20);
 
     if (access("../data/overview/basic", F_OK) == 0) {
         if (chdir("../data") < 0)
@@ -135,12 +207,27 @@ main(void)
     /* Test 2: all articles were loaded. */
     ok(2, narticles > 0);
 
-    /* Test 3: close succeeds. */
+    /* Test 3: idle commit makes rows visible before the writer disconnects. */
+#ifdef HAVE_SQLITE3
+    {
+        int result = wait_for_commit(narticles);
+
+        if (result < 0)
+            skip(3, "SQLite did not enable WAL mode");
+        else
+            ok(3, result);
+    }
+#else
+    skip(3, "SQLite support not compiled");
+#endif
+
+    /* Test 4: close succeeds. */
     OVclose();
-    ok(3, true);
+    ok(4, true);
 
     for (i = 0; i < ngroups; i++)
         free(seen_groups[i]);
 
+    alarm(0);
     return 0;
 }

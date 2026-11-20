@@ -155,7 +155,17 @@ C<10>.
 =back
 
 A transaction occurs every I<transrowlimit> articles or I<transtimelimit>
-seconds, whichever is smaller.  You are encouraged to keep the default
+seconds, whichever is smaller.  With I<walmode> enabled, it is also committed
+after 250 milliseconds without another modifying request.  Read-only requests
+do not extend that interval.  This makes changes visible to direct WAL readers
+soon after writing becomes idle, instead of waiting for the full transaction
+time limit.  It does not guarantee visibility immediately after article
+acceptance: direct readers see only committed transactions.  Under continuous
+writes, the row and time limits still apply.  Scheduling and the time spent
+handling requests can delay a commit.  With I<walmode> disabled, transaction
+batching is unchanged.
+
+You are encouraged to keep the default
 value for row limits and, instead, adjust the time limit according to
 how many articles your news server usually accepts per second during
 normal operation (you can find statistics about incoming articles in

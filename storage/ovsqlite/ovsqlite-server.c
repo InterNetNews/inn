@@ -124,12 +124,14 @@ static unsigned long pagesize;
 static unsigned long cachesize;
 static unsigned long mmapsize;
 static struct timeval transaction_time_limit = {10, 0};
+static const struct timeval transaction_idle_limit = {0, 250000};
 static unsigned long transaction_row_limit = 10000;
 static unsigned long wal_checkpoint_threshold = 1000;
 
 static bool in_transaction;
 static unsigned int transaction_rowcount;
 static struct timeval next_commit;
+static struct timeval next_idle_commit;
 static int wal_pages;
 
 
@@ -835,9 +837,17 @@ begin_transaction(void)
     struct timeval now;
     int status;
 
-    if (in_transaction)
+    if (in_transaction && !use_wal)
         return;
     gettimeofday(&now, NULL);
+    /* WAL readers use separate connections and cannot see this transaction.
+       Keep batching while write requests arrive, but commit after a short
+       write-idle interval. Read-only requests must not postpone this deadline.
+     */
+    if (use_wal)
+        next_idle_commit = timeval_sum(now, transaction_idle_limit);
+    if (in_transaction)
+        return;
     next_commit = timeval_sum(now, transaction_time_limit);
     status = sqlite3_step(sql_main.begin);
     if (status != SQLITE_DONE)
@@ -2215,6 +2225,15 @@ mainloop(void)
 
             gettimeofday(&now, NULL);
             delta = timeval_difference(next_commit, now);
+            if (use_wal) {
+                struct timeval idle_delta;
+
+                idle_delta = timeval_difference(next_idle_commit, now);
+                if (idle_delta.tv_sec < delta.tv_sec
+                    || (idle_delta.tv_sec == delta.tv_sec
+                        && idle_delta.tv_usec < delta.tv_usec))
+                    delta = idle_delta;
+            }
             if (delta.tv_sec < 0 || delta.tv_usec < 0
                 || transaction_rowcount >= transaction_row_limit) {
                 commit_transaction();
