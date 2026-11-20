@@ -367,6 +367,13 @@ CHANclose_nntp(CHANNEL *cp, const char *name)
         cp->Data.Overview.left = 0;
         cp->Data.Overview.used = 0;
     }
+    if (cp->Data.Headers.size != 0) {
+        free(cp->Data.Headers.data);
+        cp->Data.Headers.data = NULL;
+        cp->Data.Headers.size = 0;
+        cp->Data.Headers.left = 0;
+        cp->Data.Headers.used = 0;
+    }
     if (cp->Data.XrefBufLength != 0) {
         free(cp->Data.Xref);
         cp->Data.Xref = NULL;
