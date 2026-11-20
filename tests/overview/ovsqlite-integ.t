@@ -14,6 +14,31 @@ printcount() {
     count=$(expr $count + 1)
 }
 
+# Report test $1 of the TAP output in $burst_output as the next test, named
+# $2: ok, not ok (also when the test is missing), or a skip with its own
+# reason, independently of the other tests of that output.  If the program
+# that made the output did not exit with status 0 ($burst_rc), no result of
+# it counts as ok, even if it printed all of them.
+forward_result() {
+    if [ "$burst_rc" -ne 0 ]; then
+        printcount "not ok" "$2 (burst writer status $burst_rc)"
+        return
+    fi
+    inner=$(echo "$burst_output" | grep -E "^(not )?ok $1( |\$)" | head -n 1)
+    case "$inner" in
+    "ok $1 # skip"* | "ok $1 # SKIP"*)
+        reason=$(echo "$inner" | sed 's/^ok [0-9]* # [sS][kK][iI][pP] *//')
+        printcount "ok" "# skip $reason"
+        ;;
+    "ok $1" | "ok $1 "*)
+        printcount "ok" "$2"
+        ;;
+    *)
+        printcount "not ok" "$2"
+        ;;
+    esac
+}
+
 # runtests preserves its caller's working directory.  Normalize to the test
 # build directory so this test works when runtests is called from either the
 # repository root or the tests directory.
@@ -69,7 +94,7 @@ for prog in "$server" "$writer" "$reader"; do
     fi
 done
 
-echo 24
+echo 30
 
 # Set up temp directory with config files.  Use absolute paths because
 # the C test programs chdir to the test data directory before reading
@@ -328,6 +353,53 @@ else
     echo "# Reader after restart failed (rc=$reader_rc):"
     echo "$reader_output" | sed 's/^/# /'
     printcount "not ok" "# reader after restart"
+fi
+
+# Tests 25-30: the idle commit and the writes that keep postponing it.
+# Start a server once more and let the writer add a burst of articles to
+# one group, one article every 100 milliseconds, while an independent SQL
+# connection checks that nothing is committed during the burst and that the
+# commit follows once the writes stop, even with read requests arriving.
+# This is done last because the burst changes the database.
+rm -f "$tmpdir/ovsqlite.sock"
+$server -d >"$tmpdir/server3.log" 2>&1 &
+server_pid=$!
+waited=0
+while [ ! -S "$tmpdir/ovsqlite.sock" ] && [ $waited -lt 50 ]; do
+    if ! kill -0 $server_pid 2>/dev/null; then
+        break
+    fi
+    sleep 0.1
+    waited=$(expr $waited + 1)
+done
+if [ -S "$tmpdir/ovsqlite.sock" ] && kill -0 $server_pid 2>/dev/null; then
+    printcount "ok" "# server start for the burst"
+    burst_output=$($writer burst 2>&1)
+    burst_rc=$?
+    if [ $burst_rc -ne 0 ]; then
+        echo "# Burst writer failed (rc=$burst_rc):"
+        echo "$burst_output" | sed 's/^/# /'
+    fi
+    forward_result 1 "# burst writer open"
+    forward_result 2 "# no commit during a burst of writes"
+    forward_result 3 "# idle commit not postponed by read requests"
+    forward_result 4 "# burst writer close"
+else
+    echo "# Server start for the burst failed, log:"
+    sed 's/^/# /' "$tmpdir/server3.log"
+    printcount "not ok" "# server start for the burst"
+    printcount "not ok" "# burst writer open"
+    printcount "not ok" "# no commit during a burst of writes"
+    printcount "not ok" "# idle commit not postponed by read requests"
+    printcount "not ok" "# burst writer close"
+fi
+kill $server_pid 2>/dev/null
+wait $server_pid 2>/dev/null
+server_rc=$?
+if [ $server_rc -eq 0 ] || [ $server_rc -eq 143 ]; then
+    printcount "ok" "# server stop after the burst"
+else
+    printcount "not ok" "# server stop after the burst (status $server_rc)"
 fi
 
 # Clean up.
