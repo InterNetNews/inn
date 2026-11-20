@@ -34,6 +34,7 @@ int
 nArgify(char *line, char ***argvp, int n)
 {
     char *p;
+    int count;
 
     if (*argvp != NULL) {
         free(*argvp[0]);
@@ -48,7 +49,13 @@ nArgify(char *line, char ***argvp, int n)
     /* Allocate worst-case amount of space. */
     *argvp = xmalloc((strlen(p) + 2) * sizeof(char *));
 
-    return reArgify(p, *argvp, n, true);
+    /* A line without any word gives an empty vector whose first element is
+       NULL: the copy is then not referenced and has to be freed here, as
+       callers only free (*argvp)[0]. */
+    count = reArgify(p, *argvp, n, true);
+    if (count == 0)
+        free(p);
+    return count;
 }
 
 
