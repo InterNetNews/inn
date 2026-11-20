@@ -585,7 +585,8 @@ CMDnewgroups(int ac, char *av[])
 
         return;
     }
-    qsort(grouplist, numgroups, sizeof(GROUPDATA), GroupCompare);
+    if (numgroups > 0)
+        qsort(grouplist, numgroups, sizeof(GROUPDATA), GroupCompare);
     Reply("%d New newsgroups follow\r\n", NNTP_OK_NEWGROUPS);
     for (numfound = numgroups; (p = QIOread(qp)) && numfound;) {
         /* p will contain the name of the newsgroup.
