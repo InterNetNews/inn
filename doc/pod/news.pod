@@ -99,6 +99,14 @@ immediate visibility after acceptance, and non-WAL batching is unchanged.
 
 =item *
 
+Before switching the overview database to WAL mode, B<ovsqlite-server> now
+checks with a scratch database that WAL mode works in I<pathoverview>, and
+otherwise uses PERSIST mode with a warning.  On some network filesystems,
+such as an NFS mount on an illumos client, SQLite reported WAL mode as
+enabled although it could not use it, which left the database unreadable.
+
+=item *
+
 The use of the I<domain> parameter is now disambiguated:
 
 =over 2

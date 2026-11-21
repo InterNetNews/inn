@@ -102,6 +102,15 @@ filesystems such as NFS when B<innd> and B<nnrpd> are not exclusively run on
 one mount consumer.  Disable this parameter if I<pathoverview> is shared on a
 network filesystem between two different hosts.
 
+Before switching a database not yet in WAL mode, B<ovsqlite-server> checks
+that WAL mode works in I<pathoverview> with a scratch database,
+F<ovsqlite.db-probe>, which it removes afterwards.  Where it does not, for
+instance on a network filesystem whose client cannot map SQLite's
+shared-memory file, B<ovsqlite-server> logs a warning and uses PERSIST
+mode as if this parameter were false.  This check does not detect a
+I<pathoverview> shared between hosts, and it cannot repair a database
+already left in WAL mode on such a filesystem.
+
 The default value is true.
 
 =item I<readercachesize>

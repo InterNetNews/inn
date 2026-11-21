@@ -94,7 +94,7 @@ for prog in "$server" "$writer" "$reader"; do
     fi
 done
 
-echo 30
+echo 39
 
 # Set up temp directory with config files.  Use absolute paths because
 # the C test programs chdir to the test data directory before reading
@@ -402,5 +402,166 @@ else
     printcount "not ok" "# server stop after the burst (status $server_rc)"
 fi
 
+# Tests 31-39: the WAL probe.  A directory in place of the shared-memory
+# file of the probe's scratch database makes WAL mode unusable there, as on
+# a filesystem where that file cannot be mapped.  The server must then warn,
+# keep a new database in rollback mode, and still store and serve data.
+fbdir="$(pwd)/ov-tmp-integ-fallback"
+rm -rf "$fbdir"
+mkdir -p "$fbdir/ovsqlite.db-probe-shm"
+cat >"$fbdir/inn.conf" <<EOF
+domain:          news.example.com
+pathhost:        inn.example.com
+mta:             "/usr/sbin/sendmail -oi -oem %s"
+hismethod:       hisv6
+enableoverview:  true
+ovmethod:        ovsqlite
+wireformat:      true
+
+pathnews:        .
+patharchive:     archive
+patharticles:    spool
+pathoverview:    $fbdir
+pathrun:         $fbdir
+pathetc:         $fbdir
+pathdb:          $fbdir
+pathlog:         $fbdir
+pathtmp:         $fbdir
+EOF
+cp "$tmpdir/ovsqlite.conf" "$fbdir/ovsqlite.conf"
+INNCONF="$fbdir/inn.conf"
+export INNCONF
+
+# Start a server against $fbdir with log file $1; return 0 once it listens.
+# Wait up to 30 seconds: a new database can take several seconds on a slow
+# system.
+start_fallback_server() {
+    rm -f "$fbdir/ovsqlite.sock"
+    $server -d >"$fbdir/$1" 2>&1 &
+    server_pid=$!
+    waited=0
+    while [ ! -S "$fbdir/ovsqlite.sock" ] && [ $waited -lt 300 ]; do
+        if ! kill -0 $server_pid 2>/dev/null; then
+            break
+        fi
+        sleep 0.1
+        waited=$(expr $waited + 1)
+    done
+    [ -S "$fbdir/ovsqlite.sock" ] && kill -0 $server_pid 2>/dev/null
+}
+
+# Stop the server; return 0 if it exited normally or on SIGTERM.
+stop_fallback_server() {
+    kill $server_pid 2>/dev/null
+    wait $server_pid 2>/dev/null
+    server_rc=$?
+    [ $server_rc -eq 0 ] || [ $server_rc -eq 143 ]
+}
+
+# Run the reader through the server; return 0 if all its tests passed.
+fallback_reader() {
+    reader_output=$($reader 2>&1)
+    reader_rc=$?
+    reader_count=$(echo "$reader_output" | grep -c "^ok ")
+    if [ $reader_rc -eq 0 ] && [ "$reader_count" -eq 5 ]; then
+        return 0
+    fi
+    echo "# Reader failed (rc=$reader_rc):"
+    echo "$reader_output" | sed 's/^/# /'
+    return 1
+}
+
+# Print bytes 18 and 19 of the header of database $1 as two decimal numbers:
+# "1 1" in rollback mode, "2 2" in WAL mode.  od pads differently between
+# systems ("1 1 ", "001 001"), so normalize its output.
+header_bytes() {
+    set -- $(od -An -tu1 -j18 -N2 "$1" 2>/dev/null)
+    if [ $# -eq 2 ]; then
+        echo "$(expr "$1" + 0) $(expr "$2" + 0)"
+    fi
+}
+
+if start_fallback_server server.log; then
+    printcount "ok" "# server start with an unusable WAL probe"
+    if grep -q 'WAL mode does not work' "$fbdir/server.log"; then
+        printcount "ok" "# probe failure reported"
+    else
+        sed 's/^/# /' "$fbdir/server.log"
+        printcount "not ok" "# probe failure reported"
+    fi
+    # The writer must see a database not in WAL mode (its test 3 skipped).
+    writer_output=$($writer 2>&1)
+    writer_rc=$?
+    writer_count=$(echo "$writer_output" | grep -c "^ok ")
+    if [ $writer_rc -eq 0 ] && [ "$writer_count" -eq 4 ] \
+        && echo "$writer_output" | grep -qi '^ok 3.*# *skip'; then
+        printcount "ok" "# writer works in rollback mode"
+    else
+        echo "# Writer failed (rc=$writer_rc):"
+        echo "$writer_output" | sed 's/^/# /'
+        printcount "not ok" "# writer works in rollback mode"
+    fi
+    if fallback_reader; then
+        printcount "ok" "# data read back through the server"
+    else
+        printcount "not ok" "# data read back through the server"
+    fi
+    if stop_fallback_server; then
+        printcount "ok" "# server stopped in rollback mode"
+    else
+        printcount "not ok" "# server stopped in rollback mode (status $server_rc)"
+    fi
+else
+    echo "# Server start with an unusable WAL probe failed, log:"
+    sed 's/^/# /' "$fbdir/server.log"
+    printcount "not ok" "# server start with an unusable WAL probe"
+    printcount "not ok" "# probe failure reported"
+    printcount "not ok" "# writer works in rollback mode"
+    printcount "not ok" "# data read back through the server"
+    printcount "not ok" "# server stopped in rollback mode"
+    kill $server_pid 2>/dev/null
+    wait $server_pid 2>/dev/null
+fi
+
+header=$(header_bytes "$fbdir/ovsqlite.db")
+if [ "$header" = "1 1" ]; then
+    printcount "ok" "# database not switched to WAL mode"
+else
+    printcount "not ok" "# database not switched to WAL mode (header: $header)"
+fi
+
+# The data must survive a restart, which runs the failing probe again on
+# the existing database, and the database must stay out of WAL mode.
+restart_ok=false
+if start_fallback_server server2.log && fallback_reader; then
+    restart_ok=true
+fi
+if ! stop_fallback_server; then
+    restart_ok=false
+fi
+header=$(header_bytes "$fbdir/ovsqlite.db")
+if [ "$restart_ok" = true ] && [ "$header" = "1 1" ]; then
+    printcount "ok" "# data kept after a restart, still not in WAL mode"
+else
+    sed 's/^/# /' "$fbdir/server2.log"
+    printcount "not ok" "# data kept after a restart (header: $header)"
+fi
+
+if [ ! -e "$fbdir/ovsqlite.db-probe" ] \
+    && [ ! -e "$fbdir/ovsqlite.db-probe-wal" ]; then
+    printcount "ok" "# scratch database removed after a failed probe"
+else
+    printcount "not ok" "# scratch database removed after a failed probe"
+fi
+if [ ! -e "$tmpdir/ovsqlite.db-probe" ] \
+    && [ ! -e "$tmpdir/ovsqlite.db-probe-wal" ] \
+    && [ ! -e "$tmpdir/ovsqlite.db-probe-shm" ]; then
+    printcount "ok" "# scratch database removed after a working probe"
+else
+    printcount "not ok" "# scratch database removed after a working probe"
+fi
+INNCONF="$tmpdir/inn.conf"
+export INNCONF
+
 # Clean up.
-rm -rf "$tmpdir"
+rm -rf "$tmpdir" "$fbdir"

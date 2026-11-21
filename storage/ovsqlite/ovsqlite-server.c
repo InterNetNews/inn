@@ -45,8 +45,10 @@
 #    include "sql-main.h"
 
 #    define OVSQLITE_DB_FILE           "ovsqlite.db"
+#    define OVSQLITE_PROBE_FILE        "ovsqlite.db-probe"
 #    define OVSQLITE_BUSY_TIMEOUT_MS   999999999
 #    define CHECKPOINT_BUSY_TIMEOUT_MS 10000
+#    define PROBE_BUSY_TIMEOUT_MS      10000
 
 #    ifdef HAVE_ZLIB
 
@@ -616,6 +618,142 @@ enable_wal(void)
     return true;
 }
 
+/* Remove the scratch database of wal_probe() and the files SQLite keeps
+   beside it.  Errors are ignored; a leftover is removed on the next start. */
+static void
+remove_wal_probe(const char *path)
+{
+    static const char *const suffixes[] = {"", "-wal", "-shm", "-journal",
+                                           NULL};
+    const char *const *suffix;
+    char *name;
+
+    for (suffix = suffixes; *suffix != NULL; suffix++) {
+        name = concat(path, *suffix, (char *) 0);
+        unlink(name);
+        free(name);
+    }
+}
+
+/* Return true if the database open on db is in WAL mode. */
+static bool
+in_wal_mode(sqlite3 *db)
+{
+    sqlite3_stmt *stmt;
+    const char *text;
+    bool wal = false;
+
+    if (sqlite3_prepare_v2(db, "pragma journal_mode;", -1, &stmt, NULL)
+        != SQLITE_OK)
+        return false;
+    if (sqlite3_step(stmt) == SQLITE_ROW) {
+        text = (const char *) sqlite3_column_text(stmt, 0);
+        wal = text != NULL && strcmp(text, "wal") == 0;
+    }
+    sqlite3_finalize(stmt);
+    return wal;
+}
+
+/* Check that WAL mode works in the overview directory before switching the
+   real database to it.  Where the shared-memory file cannot be mapped, as
+   on an illumos NFS client, the journal mode pragma still returns "wal" and
+   writes the WAL header, then the first transaction fails and the database
+   can no longer be opened.  Try it on a scratch database first: switch it
+   to WAL mode, write a row, close it, and read the row back through a new
+   connection.  Return true only if all of that worked. */
+static bool
+wal_probe(void)
+{
+    char *path;
+    sqlite3 *probe = NULL;
+    sqlite3_stmt *stmt = NULL;
+    const char *text;
+    char *errmsg = NULL;
+    char reason[256];
+    bool ok = false;
+    int status;
+
+    path = concatpath(innconf->pathoverview, OVSQLITE_PROBE_FILE);
+    remove_wal_probe(path);
+    status = sqlite3_open_v2(path, &probe,
+                             SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL);
+    if (status != SQLITE_OK) {
+        snprintf(reason, sizeof reason, "cannot create %s: %s", path,
+                 probe ? sqlite3_errmsg(probe) : sqlite3_errstr(status));
+        goto done;
+    }
+    sqlite3_busy_timeout(probe, PROBE_BUSY_TIMEOUT_MS);
+    status = sqlite3_prepare_v2(probe, "pragma journal_mode = 'WAL';", -1,
+                                &stmt, NULL);
+    if (status == SQLITE_OK)
+        status = sqlite3_step(stmt);
+    if (status != SQLITE_ROW) {
+        snprintf(reason, sizeof reason, "journal mode pragma failed: %s",
+                 sqlite3_errmsg(probe));
+        goto done;
+    }
+    text = (const char *) sqlite3_column_text(stmt, 0);
+    if (text == NULL || strcmp(text, "wal") != 0) {
+        snprintf(reason, sizeof reason, "journal mode is %s",
+                 text != NULL ? text : "unknown");
+        goto done;
+    }
+    /* The statement is complete only after its single row. */
+    status = sqlite3_step(stmt);
+    if (status == SQLITE_DONE) {
+        status = sqlite3_finalize(stmt);
+        stmt = NULL;
+    }
+    if (status != SQLITE_OK) {
+        snprintf(reason, sizeof reason, "journal mode pragma failed: %s",
+                 sqlite3_errmsg(probe));
+        goto done;
+    }
+    status = sqlite3_exec(probe,
+                          "create table probe (x integer);"
+                          " insert into probe values (1);",
+                          NULL, NULL, &errmsg);
+    if (status != SQLITE_OK) {
+        snprintf(reason, sizeof reason, "write failed: %s",
+                 errmsg != NULL ? errmsg : sqlite3_errstr(status));
+        goto done;
+    }
+    sqlite3_close_v2(probe);
+    probe = NULL;
+
+    /* The header now says WAL; a new connection has to map the shared
+       memory again to read it. */
+    status = sqlite3_open_v2(path, &probe, SQLITE_OPEN_READWRITE, NULL);
+    if (status == SQLITE_OK) {
+        sqlite3_busy_timeout(probe, PROBE_BUSY_TIMEOUT_MS);
+        status = sqlite3_prepare_v2(probe, "select x from probe;", -1, &stmt,
+                                    NULL);
+    }
+    if (status == SQLITE_OK)
+        status = sqlite3_step(stmt);
+    if (status != SQLITE_ROW || sqlite3_column_int(stmt, 0) != 1) {
+        snprintf(reason, sizeof reason, "read after reopen failed: %s",
+                 probe ? sqlite3_errmsg(probe) : sqlite3_errstr(status));
+        goto done;
+    }
+    if (!in_wal_mode(probe)) {
+        snprintf(reason, sizeof reason, "not in WAL mode after reopen");
+        goto done;
+    }
+    ok = true;
+
+done:
+    sqlite3_finalize(stmt);
+    sqlite3_free(errmsg);
+    sqlite3_close_v2(probe);
+    remove_wal_probe(path);
+    if (!ok)
+        warn("WAL mode does not work in %s (%s); using a rollback journal",
+             innconf->pathoverview, reason);
+    free(path);
+    return ok;
+}
+
 static void
 open_db(void)
 {
@@ -760,6 +898,12 @@ open_db(void)
             sqlite3_free(errmsg);
         }
     }
+    /* Never switch the real database to WAL mode where WAL does not work:
+       it would be left unreadable.  Use a rollback journal there, as with
+       walmode set to false.  A database already in WAL mode has just been
+       read through its shared memory, so WAL mode works for it. */
+    if (use_wal && !in_wal_mode(connection) && !wal_probe())
+        use_wal = false;
     if (use_wal) {
         /* As before, leave the synchronous setting alone when the journal
            mode pragma itself failed. */
