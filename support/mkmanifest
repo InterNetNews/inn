@@ -289,6 +289,7 @@ tests/expire/tombstone-hisexpire.t
 tests/expire/tombstone.t
 tests/innd/artparse.t
 tests/innd/chan.t
+tests/innd/xref-realloc.t
 tests/lib/artnumber.t
 tests/lib/asprintf.t
 tests/lib/bloom.t
