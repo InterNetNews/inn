@@ -506,7 +506,11 @@ if start_fallback_server server.log; then
     else
         printcount "not ok" "# data read back through the server"
     fi
-    if stop_fallback_server; then
+    # A successful journal deletion at shutdown must not be reported as
+    # a failure.
+    if stop_fallback_server \
+        && ! grep -q 'failed to delete the rollback journal' \
+            "$fbdir/server.log"; then
         printcount "ok" "# server stopped in rollback mode"
     else
         printcount "not ok" "# server stopped in rollback mode (status $server_rc)"

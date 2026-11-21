@@ -955,6 +955,9 @@ close_db(void)
         int status;
 
         status = sqlite3_step(sql_main.delete_journal);
+        /* The pragma returns the new journal mode as a row first. */
+        if (status == SQLITE_ROW)
+            status = sqlite3_step(sql_main.delete_journal);
         if (status != SQLITE_DONE)
             notice("failed to delete the rollback journal: %s",
                    sqlite3_errmsg(connection));
