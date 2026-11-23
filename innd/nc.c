@@ -1657,24 +1657,31 @@ NCproc(CHANNEL *cp)
 
         if (movedata) { /* move data rather than extend buffer */
             TMRstart(TMR_DATAMOVE);
-            if (cp->Start > 0)
+            if (cp->Start > 0) {
+                uintptr_t first, last, value;
+
+                /* Parsed header values point into the retained input, but
+                   generated values may use separate allocations. */
+                first = (uintptr_t) (void *) &bp->data[cp->Start];
+                last = (uintptr_t) (void *) &bp->data[bp->used];
+                if (cp->State == CSgetheader || cp->State == CSgetbody
+                    || cp->State == CSeatarticle) {
+                    data->CurHeader -= cp->Start;
+                    data->Body -= cp->Start;
+                    value = (uintptr_t) (void *) data->BytesHeader;
+                    if (value >= first && value <= last)
+                        data->BytesHeader -= cp->Start;
+                    for (i = 0; i < MAX_ARTHEADER; i++) {
+                        value = (uintptr_t) (void *) hc[i].Value;
+                        if (value >= first && value <= last)
+                            hc[i].Value -= cp->Start;
+                    }
+                }
                 memmove(bp->data, &bp->data[cp->Start], bp->used - cp->Start);
+            }
             bp->used -= cp->Start;
             bp->left += cp->Start;
             cp->Next -= cp->Start;
-            if (cp->State == CSgetheader || cp->State == CSgetbody
-                || cp->State == CSeatarticle) {
-                /* adjust offset only in CSgetheader, CSgetbody or CSeatarticle
-                 */
-                data->CurHeader -= cp->Start;
-                data->Body -= cp->Start;
-                if (data->BytesHeader != NULL)
-                    data->BytesHeader -= cp->Start;
-                for (i = 0; i < MAX_ARTHEADER; i++, hc++) {
-                    if (hc->Value != NULL)
-                        hc->Value -= cp->Start;
-                }
-            }
             cp->Start = 0;
             TMRstop(TMR_DATAMOVE);
         }
