@@ -169,8 +169,6 @@ output(struct client *client, int fd, struct buffer *buffer,
     /* Read the data. */
     buffer_compact(buffer);
     count = buffer_read(buffer, fd);
-    if (buffer->left >= buffer->size - 1)
-        return -1;
     if (count < 0) {
         syswarn("%s auth: read error", client->host);
         return count;
@@ -178,6 +176,8 @@ output(struct client *client, int fd, struct buffer *buffer,
 
     /* If reached end of file, process anything left as a line. */
     if (count == 0) {
+        if (buffer->left >= buffer->size)
+            return -1;
         if (buffer->left > 0) {
             buffer->data[buffer->used + buffer->left] = '\0';
             handler(client, buffer->data + buffer->used, user);
@@ -200,6 +200,8 @@ output(struct client *client, int fd, struct buffer *buffer,
         start = buffer->data + buffer->used;
         line = memchr(start, '\n', buffer->left);
     }
+    if (buffer->left >= buffer->size - 1)
+        return -1;
     return count;
 }
 
@@ -289,7 +291,9 @@ handle_output(struct client *client, struct process *process)
         }
         if (done) {
             close(process->read_fd);
+            process->read_fd = -1;
             close(process->error_fd);
+            process->error_fd = -1;
             if (count < 0) {
                 warn("%s auth: output too long from program", client->host);
                 killed = true;
@@ -384,8 +388,10 @@ auth_external(struct client *client, const char *command,
 
     /* Get the results. */
     user = handle_output(client, process);
-    close(process->read_fd);
-    close(process->error_fd);
+    if (process->read_fd >= 0)
+        close(process->read_fd);
+    if (process->error_fd >= 0)
+        close(process->error_fd);
     free(process);
     return user;
 }
