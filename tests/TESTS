@@ -70,6 +70,7 @@ overview/tradindexed
 overview/xref
 perl/minimum-version
 storage/archive
+storage/archive-path
 storage/caf
 storage/cancel-tombstone
 storage/makehistory
