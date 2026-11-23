@@ -15,6 +15,8 @@
 
 #include "portable/system.h"
 
+#include <assert.h>
+
 /* Needed on AIX 4.1 to get fd_set and friends. */
 #ifdef HAVE_SYS_SELECT_H
 #    include <sys/select.h>
@@ -765,6 +767,27 @@ WCHANsetfrombuffer(CHANNEL *cp, struct buffer *bp)
 
 
 /*
+**  If pointer refers to used data in buffer, store its offset and return
+**  true.  Integer comparisons avoid relational comparisons between pointers
+**  to unrelated allocations (generated header values may be separate).
+*/
+static bool
+CHANoffset(const struct buffer *buffer, const char *pointer, size_t *offset)
+{
+    uintptr_t base, value;
+
+    if (pointer == NULL)
+        return false;
+    base = (uintptr_t) (const void *) buffer->data;
+    value = (uintptr_t) (const void *) pointer;
+    if (value < base || value - base > buffer->used)
+        return false;
+    *offset = (size_t) (value - base);
+    return true;
+}
+
+
+/*
 **  Internal function to resize the in buffer for a given channel to the new
 **  size given, adjusting pointers as required.
 */
@@ -772,43 +795,40 @@ static void
 CHANresize(CHANNEL *cp, size_t size)
 {
     struct buffer *bp;
-    char *p;
-    size_t change;
-    ptrdiff_t offset;
+    bool adjust, have_bytes_header;
+    bool have_header[MAX_ARTHEADER] = {false};
+    size_t bytes_header_offset = 0;
+    size_t header_offset[MAX_ARTHEADER] = {0};
     int i;
     HDRCONTENT *hc = cp->Data.HdrContent;
 
     bp = &cp->In;
-    change = size - bp->size;
+    assert(size >= bp->used);
     bp->size = size;
-    bp->left += change;
-    p = bp->data;
+    bp->left = size - bp->used;
 
-    /* Reallocate the buffer and adjust offsets if realloc moved the location
-       of the memory region.  Only adjust offsets if we're in a state where we
-       care about the header contents.
+    /* Save offsets before reallocating, since pointers into the old allocation
+       become invalid if realloc moves it.  Only article parsing states have
+       pointers into the input buffer that need to be preserved.  Generated
+       header values may live in separate allocations and must not move. */
+    adjust = cp->State == CSgetheader || cp->State == CSgetbody
+             || cp->State == CSeatarticle;
+    have_bytes_header = false;
+    if (adjust) {
+        have_bytes_header = CHANoffset(bp, cp->Data.BytesHeader,
+                                      &bytes_header_offset);
+        for (i = 0; i < MAX_ARTHEADER; i++)
+            have_header[i] = CHANoffset(bp, hc[i].Value, &header_offset[i]);
+    }
 
-       FIXME: This is invalid C, although it will work on most (all?)  common
-       systems.  The pointers need to be reduced to offsets and then turned
-       back into relative pointers rather than adjusting the pointers
-       directly, since as soon as realloc is called, pointers into the old
-       space become invalid and may not be used further, even for arithmetic.
-       (Not to mention that two pointers to different objects may not be
-       compared and arithmetic may not be performed on them. */
     TMRstart(TMR_DATAMOVE);
     bp->data = xrealloc(bp->data, bp->size);
-    offset = p - bp->data;
-    if (offset != 0) {
-        if (cp->State == CSgetheader || cp->State == CSgetbody
-            || cp->State == CSeatarticle) {
-            if (cp->Data.BytesHeader != NULL)
-                cp->Data.BytesHeader -= offset;
-            for (i = 0; i < MAX_ARTHEADER; i++, hc++) {
-                if (hc->Value != NULL)
-                    hc->Value -= offset;
-            }
-        }
-    }
+    if (have_bytes_header)
+        cp->Data.BytesHeader = bp->data + bytes_header_offset;
+    if (adjust)
+        for (i = 0; i < MAX_ARTHEADER; i++)
+            if (have_header[i])
+                hc[i].Value = bp->data + header_offset[i];
     TMRstop(TMR_DATAMOVE);
 }
 

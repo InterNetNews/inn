@@ -49,7 +49,7 @@ main(void)
     int fd;
     CHANNEL *cp;
 
-    test_init(15);
+    test_init(20);
     initialize();
     message_handlers_notice(0);
 
@@ -106,6 +106,9 @@ writedone(CHANNEL *cp)
 static void
 reader(CHANNEL *cp)
 {
+    static char external_header[] = "generated";
+    size_t oldsize;
+
     ok(9, true);
     ok_int(10, strlen("some output"), CHANreadtext(cp));
     ok_int(11, strlen("some output"), cp->In.used);
@@ -116,16 +119,31 @@ reader(CHANNEL *cp)
     cp->In.used++;
     cp->In.left--;
     ok_string(12, "some output", cp->In.data);
+
+    /* Force the input buffer to grow while parsed header pointers refer into
+       it.  Their offsets must survive, while generated data stays external. */
+    cp->State = CSgetheader;
+    cp->Data.BytesHeader = cp->In.data + 2;
+    cp->Data.HdrContent[HDR__SUBJECT].Value = cp->In.data + 5;
+    cp->Data.HdrContent[HDR__KEYWORDS].Value = external_header;
+    cp->In.used = cp->In.size - LOW_WATER;
+    oldsize = cp->In.size;
+    ok_int(13, 0, CHANreadtext(cp));
+    ok(14, cp->In.size > oldsize);
+    ok_int(15, 2, cp->Data.BytesHeader - cp->In.data);
+    ok_int(16, 5,
+           cp->Data.HdrContent[HDR__SUBJECT].Value - cp->In.data);
+    ok(17, cp->Data.HdrContent[HDR__KEYWORDS].Value == external_header);
     SCHANwakeup(&Now);
 }
 
 __attribute__((__noreturn__)) static void
 wakeup(CHANNEL *cp)
 {
-    ok(13, true);
-    ok_string(14, "some random text", cp->Argument);
+    ok(18, true);
+    ok_string(19, "some random text", cp->Argument);
     CHANclose(cp, CHANname(cp));
-    ok_int(15, CTfree, cp->Type);
+    ok_int(20, CTfree, cp->Type);
     CHANshutdown();
     unlink("output");
     exit(0);
