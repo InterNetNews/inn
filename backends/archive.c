@@ -28,6 +28,12 @@ struct config {
     bool flat;           /* Use a flat directory structure. */
 };
 
+#ifdef TESTING
+struct buffer *archive_test_build_path(const char *, const char *,
+                                       const char *);
+int main(int, char *[]);
+#endif
+
 
 /*
 **  Try to make one directory.  Return false on error.
