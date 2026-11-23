@@ -755,6 +755,7 @@ CMDpost(int ac, char *av[])
     fflush(stdout);
 
     p = article;
+    *p = '\0';
     end = &article[size];
 
     longline = 0;
