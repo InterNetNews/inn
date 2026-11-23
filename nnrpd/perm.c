@@ -528,7 +528,9 @@ SetDefaultAccess(ACCESSGROUP *curaccess)
     curaccess->addinjectionpostingaccount =
         innconf->addinjectionpostingaccount;
     curaccess->addinjectionpostinghost = innconf->addinjectionpostinghost;
-    curaccess->nnrpdposthost = innconf->nnrpdposthost;
+    curaccess->nnrpdposthost = NULL;
+    if (innconf->nnrpdposthost)
+        curaccess->nnrpdposthost = xstrdup(innconf->nnrpdposthost);
     curaccess->nnrpdpostport = innconf->nnrpdpostport;
     curaccess->nnrpdoverstats = innconf->nnrpdoverstats;
     curaccess->backoff_auth = innconf->backoffauth;
