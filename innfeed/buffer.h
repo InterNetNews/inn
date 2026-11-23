@@ -102,9 +102,6 @@ unsigned int bufferRefCount(Buffer buff);
 /* insert a null byte at the end of the data region */
 void bufferAddNullByte(Buffer buff);
 
-/* append the data of src to the data of dest, if dest is big enough */
-bool concatBuffer(Buffer dest, Buffer src);
-
 /* expand the buffer's memory by the given AMT */
 bool expandBuffer(Buffer buff, size_t amt);
 

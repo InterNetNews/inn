@@ -57,6 +57,9 @@ newBuffer(size_t size)
 {
     Buffer nb;
 
+    if (size == SIZE_MAX)
+        die("Cannot allocate an oversized buffer");
+
     if (bufferPool == NULL)
         fillBufferPool();
 
@@ -96,6 +99,8 @@ Buffer
 newBufferByCharP(const char *ptr, size_t size, size_t dataSize)
 {
     Buffer nb;
+
+    ASSERT(dataSize <= size);
 
     if (bufferPool == NULL)
         fillBufferPool();
@@ -250,7 +255,8 @@ bufferDataSize(Buffer buff)
 void
 bufferIncrDataSize(Buffer buff, size_t size)
 {
-    if (buff->dataSize + size > buff->memSize)
+    if (buff->dataSize > buff->memSize
+        || size > buff->memSize - buff->dataSize)
         die("Trying to make a buffer data size bigger than its memory alloc");
     else
         buff->dataSize += size;
@@ -259,7 +265,7 @@ bufferIncrDataSize(Buffer buff, size_t size)
 void
 bufferDecrDataSize(Buffer buff, size_t size)
 {
-    ASSERT(size > buff->dataSize);
+    ASSERT(size <= buff->dataSize);
 
     buff->dataSize -= size;
 }
@@ -267,9 +273,8 @@ bufferDecrDataSize(Buffer buff, size_t size)
 void
 bufferSetDataSize(Buffer buff, size_t size)
 {
+    ASSERT(size <= buff->memSize);
     buff->dataSize = size;
-
-    ASSERT(buff->dataSize <= buff->memSize);
 }
 
 void
@@ -344,8 +349,9 @@ dupBufferArray(Buffer *array)
 
     newArr = xmalloc(sizeof(Buffer) * (count + 1));
 
-    for (count = 0; array[count] != NULL; count++)
-        newArr[count] = bufferTakeRef(array[count]);
+    if (array != NULL)
+        for (count = 0; array[count] != NULL; count++)
+            newArr[count] = bufferTakeRef(array[count]);
 
     newArr[count] = NULL;
 
@@ -373,7 +379,7 @@ copyBuffer(Buffer dest, Buffer src)
 {
     char *baseDest = bufferBase(dest);
     char *baseSrc = bufferBase(src);
-    unsigned int amt = bufferDataSize(src);
+    size_t amt = bufferDataSize(src);
 
     if (amt > bufferSize(dest))
         return false;
@@ -398,39 +404,8 @@ bufferAddNullByte(Buffer buff)
 {
     char *p = bufferBase(buff);
 
+    ASSERT(buff->dataSize <= buff->memSize);
     p[buff->dataSize] = '\0';
-}
-
-
-/* append the src buffer to the dest buffer growing the dest as needed.
-   Can only be done to deletable buffers. */
-bool
-concatBuffer(Buffer dest, Buffer src)
-{
-    ASSERT(dest->deletable);
-
-    if (!dest->deletable)
-        return false; /* yeah, i know this is taken care of above */
-
-    if ((dest->dataSize + src->dataSize) > dest->memSize) {
-        char *newMem = xcalloc(dest->dataSize + src->dataSize + 1, 1);
-
-        bufferByteCount += ((dest->dataSize + src->dataSize) - dest->memSize);
-
-        memcpy(newMem, dest->mem, dest->dataSize);
-
-        ASSERT(dest->mem != NULL);
-        free(dest->mem);
-
-        dest->mem = newMem;
-        dest->memSize = dest->dataSize + src->dataSize; /* yep. 1 less */
-    }
-
-    memcpy(&dest->mem[dest->dataSize], src->mem, dest->dataSize);
-
-    dest->dataSize += src->dataSize;
-
-    return true;
 }
 
 
@@ -438,13 +413,20 @@ concatBuffer(Buffer dest, Buffer src)
 bool
 expandBuffer(Buffer buff, size_t amt)
 {
+    size_t newsize;
+
     d_printf(2, "Expanding buffer....\n");
 
     if (!buff->deletable)
         return false;
+    if (amt > SIZE_MAX - buff->memSize)
+        return false;
+    newsize = buff->memSize + amt;
+    if (newsize == SIZE_MAX)
+        return false;
 
     bufferByteCount += amt;
-    buff->memSize += amt;
+    buff->memSize = newsize;
 
     buff->mem = xrealloc(buff->mem, buff->memSize + 1);
 
@@ -458,49 +440,69 @@ expandBuffer(Buffer buff, size_t amt)
 bool
 nntpPrepareBuffer(Buffer buffer)
 {
-    int msize, newDsize, dsize, extra;
+    size_t newDsize, dsize, extra;
     char *base, p, *src, *dst;
     bool needfinal = false;
 
     ASSERT(buffer != NULL);
 
     dsize = buffer->dataSize;
-    msize = buffer->memSize - 1;
+    if (dsize > buffer->memSize)
+        return false;
     base = buffer->mem;
 
     extra = 3;
     p = '\0';
-    for (src = base + dsize - 1; src > base;) {
-        if (*src == '\n') {
-            extra++;
-            if (p == '.')
+    if (dsize > 0) {
+        for (src = base + dsize - 1; src > base;) {
+            if (*src == '\n') {
+                if (extra == SIZE_MAX)
+                    return false;
                 extra++;
+                if (p == '.') {
+                    if (extra == SIZE_MAX)
+                        return false;
+                    extra++;
+                }
+            }
+            p = *src--;
         }
-        p = *src--;
-    }
-    if (*src == '\n') {
-        extra++;
-        if (p == '.')
+        if (*src == '\n') {
+            if (extra == SIZE_MAX)
+                return false;
             extra++;
+            if (p == '.') {
+                if (extra == SIZE_MAX)
+                    return false;
+                extra++;
+            }
+        }
     }
 
     if (dsize > 0 && base[dsize - 1] != '\n') {
         needfinal = true;
+        if (extra > SIZE_MAX - 2)
+            return false;
         extra += 2;
     }
 
+    if (extra > SIZE_MAX - dsize)
+        return false;
     newDsize = dsize + extra;
 
-    if (msize - dsize < extra) {
-        d_printf(2, "Expanding buffer in nntpPrepareBuffer (from %d to %d)\n",
-                 msize, msize + (extra - (msize - dsize)));
+    if (buffer->memSize - dsize < extra) {
+        size_t growth = extra - (buffer->memSize - dsize);
 
-        if (!expandBuffer(buffer, extra - (msize - dsize))) {
+        d_printf(2,
+                 "Expanding buffer in nntpPrepareBuffer (from %zu to %zu)\n",
+                 buffer->memSize, buffer->memSize + growth);
+
+        if (!expandBuffer(buffer, growth)) {
             d_printf(1, "Expand failed...\n");
             return false;
         }
 
-        ASSERT(dsize == (int) buffer->dataSize);
+        ASSERT(dsize == buffer->dataSize);
 
         base = buffer->mem;
     }
@@ -531,7 +533,7 @@ nntpPrepareBuffer(Buffer buffer)
                 }
                 *dst-- = '\n';
                 *dst = '\r';
-                if (--extra <= 0)
+                if (--extra == 0)
                     break;
                 p = '\0';
                 dst--;
