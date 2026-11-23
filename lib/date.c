@@ -566,8 +566,9 @@ parse_legacy_timezone(const char *p, long *offset, bool obsolete)
         return NULL;
     max = end - p;
     for (i = 0; i < ARRAY_SIZE(ZONE_OFFSET); i++)
-        if (strncasecmp(ZONE_OFFSET[i].name, p, max) == 0) {
-            p += strlen(ZONE_OFFSET[i].name);
+        if (strlen(ZONE_OFFSET[i].name) == max
+            && strncasecmp(ZONE_OFFSET[i].name, p, max) == 0) {
+            p += max;
             *offset = ZONE_OFFSET[i].offset;
             return p;
         }
@@ -577,10 +578,10 @@ parse_legacy_timezone(const char *p, long *offset, bool obsolete)
     }
     if (obsolete)
         for (i = 0; i < ARRAY_SIZE(OBS_ZONE_OFFSET); i++) {
-            if (strlen(OBS_ZONE_OFFSET[i].name) > max)
+            if (strlen(OBS_ZONE_OFFSET[i].name) != max)
                 continue;
             if (strncasecmp(OBS_ZONE_OFFSET[i].name, p, max) == 0) {
-                p += strlen(OBS_ZONE_OFFSET[i].name);
+                p += max;
                 *offset = OBS_ZONE_OFFSET[i].offset;
                 return p;
             }

@@ -75,7 +75,8 @@ static const struct test_date test_dates_lax[] = {
     {"Tue, 23 Feb 1993 13:40:33 EET",           730467633UL },
     {"21 Apr 1998 15:42:04",                    893198524UL },
     {"Sat, 22 May 2004 23:41:27 -0700 EST",     1085287287UL},
-    {"21 Apr 1998 15:42:04 and other bits",     893173324UL }
+    {"21 Apr 1998 15:42:04 and other bits",     893173324UL },
+    {"21 Apr 1998 15:42:04 GM",                 893173324UL }
 };
 
 static void
