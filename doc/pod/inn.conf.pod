@@ -1122,8 +1122,8 @@ determined by nnrpd's PID and launch time.  Currently the information
 recorded includes initial connection and posting; only information about
 clients listed in F<nnrpd.track> is recorded.  In addition, every posted
 article will be saved in I<pathlog>/trackposts/track.I<message-id>, where
-I<message-id> is the message ID of the post.  This is a boolean value and
-the default is false.
+I<message-id> is the message ID of the post (in which any C</> is replaced
+with C<_>).  This is a boolean value and the default is false.
 
 =item I<tradindexedmmap>
 
