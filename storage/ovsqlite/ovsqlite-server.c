@@ -2123,18 +2123,30 @@ handle_read(client_t *client)
     unsigned int code;
 
     for (;;) {
-        bool have_size;
         size_t left, want;
         ssize_t got;
         size_t request_size;
 
         left = client->request->left;
-        have_size = left >= 4;
-        if (have_size) {
-            request_size = *(uint32_t *) (void *) client->request->data;
-            want = request_size - left;
+        if (left < sizeof(uint32_t)) {
+            want = sizeof(uint32_t) - left;
         } else {
-            want = 5 - left;
+            uint32_t encoded_size;
+
+            memcpy(&encoded_size, client->request->data, sizeof(encoded_size));
+            request_size = encoded_size;
+            if (request_size < 5) {
+                simple_response(client, response_bad_request);
+                return;
+            }
+            if (request_size >= 0x100000) {
+                simple_response(client, response_oversized);
+                return;
+            }
+            if (left >= request_size)
+                break;
+            buffer_resize(client->request, request_size);
+            want = request_size - left;
         }
         got = read(client->sock, client->request->data + left, want);
         if (got == -1) {
@@ -2154,20 +2166,6 @@ handle_read(client_t *client)
         client->request->left = left += got;
         if ((size_t) got < want)
             return;
-        if (have_size)
-            break;
-        request_size = *(uint32_t *) (void *) client->request->data;
-        if (request_size < 5) {
-            simple_response(client, response_bad_request);
-            return;
-        }
-        if (request_size >= 0x100000) {
-            simple_response(client, response_oversized);
-            return;
-        }
-        if (left >= request_size)
-            break;
-        buffer_resize(client->request, request_size);
     }
     FD_CLR(client->sock, &read_fds);
     code = start_request(client);

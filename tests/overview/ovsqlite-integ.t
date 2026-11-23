@@ -69,7 +69,7 @@ for prog in "$server" "$writer" "$reader"; do
     fi
 done
 
-echo 23
+echo 24
 
 # Set up temp directory with config files.  Use absolute paths because
 # the C test programs chdir to the test data directory before reading
@@ -140,7 +140,24 @@ else
     exit 1
 fi
 
-# Tests 2-4: run the writer (3 TAP tests from inside).
+# Test 2: a malformed short frame is rejected without an oversized read.
+if perl -MIO::Socket::UNIX -MSocket=SOCK_STREAM -e '
+    my $socket = IO::Socket::UNIX->new(
+        Type => SOCK_STREAM,
+        Peer => $ARGV[0],
+    ) or exit 1;
+    syswrite($socket, pack("L", 3)) == 4 or exit 2;
+    my $response = "";
+    sysread($socket, $response, 5) == 5 or exit 3;
+    my ($length, $code) = unpack("LC", $response);
+    exit(($length == 5 && $code == 0xc1) ? 0 : 4);
+' "$tmpdir/ovsqlite.sock"; then
+    printcount "ok" "# malformed short request"
+else
+    printcount "not ok" "# malformed short request"
+fi
+
+# Tests 3-5: run the writer (3 TAP tests from inside).
 writer_output=$($writer 2>&1)
 writer_rc=$?
 writer_count=$(echo "$writer_output" | grep -c "^ok ")
@@ -156,7 +173,7 @@ else
     printcount "not ok" "# writer close"
 fi
 
-# Test 5: stop the server gracefully.
+# Test 6: stop the server gracefully.
 kill $server_pid 2>/dev/null
 wait $server_pid 2>/dev/null
 if [ $? -le 128 ] || [ $? -eq 143 ]; then
@@ -165,7 +182,7 @@ else
     printcount "ok" "# server stopped (signal)"
 fi
 
-# Tests 6-15: report database statistics and vacuum with ovsqlite-util.
+# Tests 7-16: report database statistics and vacuum with ovsqlite-util.
 # Run the source directly with -p so the test does not depend on an installed
 # INN::Config and innconfval.  The server is already stopped, so vacuum can
 # take an exclusive lock offline.
@@ -261,7 +278,7 @@ else
     fi
 fi
 
-# Tests 16-20: run the reader (5 TAP tests from inside).
+# Tests 17-21: run the reader (5 TAP tests from inside).
 reader_output=$($reader 2>&1)
 reader_rc=$?
 reader_count=$(echo "$reader_output" | grep -c "^ok ")
@@ -281,7 +298,7 @@ else
     printcount "not ok" "# reopen"
 fi
 
-# Tests 21-23: server restart resilience.
+# Tests 22-24: server restart resilience.
 # Simulate INN restart: start a new server against the existing WAL database,
 # shut it down, verify the reader can still read all data.  This is the
 # scenario where nnrpd outlives a server restart cycle.
