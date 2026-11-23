@@ -38,6 +38,14 @@ if ($arg eq 'okay') {
     print STDOUT "User:tester\r\n";
     print STDOUT "   User:wrong\r\n";
 
+} elsif ($arg eq 'full-lines') {
+    # Fill the first read with complete lines.  They should be consumed before
+    # deciding whether the remaining partial line is too long.
+    for (1 .. 128) {
+        print STDOUT "Ignored\n";
+    }
+    print STDOUT "User:tester\r\n";
+
 } elsif ($arg eq 'error') {
     print STDERR "This is an error\n";
     exit 1;

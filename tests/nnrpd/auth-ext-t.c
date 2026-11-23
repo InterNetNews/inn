@@ -120,12 +120,13 @@ main(void)
     struct client *client;
     char *result;
 
-    plan(12 * 6 + 2);
+    plan(13 * 6 + 2);
 
     client = client_new();
 
     test_external(client, "okay", "tester", NULL);
     test_external(client, "garbage", "tester", NULL);
+    test_external(client, "full-lines", "tester", NULL);
     test_external(client, "error", NULL,
                   "example.com auth: program error: This is an error\n");
     test_external(client, "interspersed", "tester",
