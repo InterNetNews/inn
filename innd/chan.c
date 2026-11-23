@@ -395,7 +395,7 @@ CHANclose_nntp(CHANNEL *cp, const char *name)
                 tmplabel = RClabelname(tempchan);
                 if (tmplabel == NULL)
                     continue;
-                if (strcmp(label, tmplabel) == 0 && tempchan->ActiveCnx != 0) {
+                if (strcmp(label, tmplabel) == 0 && tempchan->ActiveCnx == 0) {
                     tempchan->ActiveCnx = cp->ActiveCnx;
                     RCHANadd(tempchan);
                     break;
@@ -596,15 +596,27 @@ CHANiter(int *ip, enum channel_type type)
 **  When removing a channel from the read and write masks, we want to lower
 **  the last file descriptor if we removed the highest one.  Called from both
 **  RCHANremove and WCHANremove.
+**
+**  An NNTP channel paused because its peer is over max-connections is in
+**  neither mask, but it must stay at or below the last file descriptor so
+**  that the main loop still checks its hold time and CHANclose_nntp can
+**  resume it.
 */
 static void
 CHANresetlast(int fd)
 {
+    CHANNEL *cp;
+
     if (fd == channels.max_fd)
         while (!FD_ISSET(channels.max_fd, &channels.read_set)
                && !FD_ISSET(channels.max_fd, &channels.write_set)
-               && channels.max_fd > 1)
+               && channels.max_fd > 1) {
+            cp = &channels.table[channels.max_fd];
+            if (cp->Type == CTnntp && cp->fd >= 0 && cp->MaxCnx > 0
+                && cp->ActiveCnx == 0)
+                break;
             channels.max_fd--;
+        }
 }
 
 
@@ -1050,7 +1062,7 @@ CHANcount_active(CHANNEL *cp)
     char *label, *tmplabel;
     int fd;
 
-    if (cp->fd < 0 || cp->Type != CTnntp || cp->ActiveCnx == 0)
+    if (cp->fd < 0 || cp->Type != CTnntp || cp->ActiveCnx != 0)
         return;
     found = 1;
     label = RClabelname(cp);

@@ -133,6 +133,31 @@ files behind after a failed creation, and the buffindexed overview method
 validates its F<group.index> file and no longer frees memory twice when
 mapping overview data fails.  Many thanks to Kevin Bowling for the patches.
 
+=item *
+
+B<innd> enforces again the I<max-connections> and I<hold-time> parameters
+set in F<incoming.conf>.  They were not enforced since S<INN 2.5.0>: a peer
+could open more simultaneous connections than its I<max-connections>, and
+C<ctlinnd name> reported all its connections as paused.  As the sample
+F<incoming.conf> sets I<max-connections> to C<8> for every peer, with the
+default I<hold-time> of C<0>, B<innd> now refuses the ninth simultaneous
+connection of a peer with a 400 response and logs C<too many connections
+from> followed by the label of the peer.  The limit applies to each peer
+block, and is shared by all the hostnames it lists.  When I<hold-time> is
+set to a positive value, extra connections are paused instead of refused,
+as described in incoming.conf(5).
+
+This also applies to the peer C<ME> of the sample F<incoming.conf>, which
+lists C<localhost>, C<127.0.0.1> and C<::1>:  TCP connections from these
+addresses count under it, like those of B<innxmit>, B<pullnews> or B<suck>
+feeding localhost, or of B<rnews> posting to localhost over TCP.  When
+B<nnrpd> posts over TCP to a server set with its I<nnrpdposthost> parameter,
+its connection counts under the peer entry matching its source address, if
+any; if the connection is refused, B<nnrpd> falls back to spooling the post.
+A reload of F<incoming.conf> only applies the limit to new connections.  If
+some of your peers open more connections, raise I<max-connections> for them,
+or globally, before upgrading.
+
 =back
 
 =head1 Changes in 2.7.5 (not yet released)
