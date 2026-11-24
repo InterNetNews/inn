@@ -1501,8 +1501,9 @@ ARTpost(char *article, char *idbuff, bool *permanent)
 
     /* Tracking. */
     if (PERMaccessconf->readertrack) {
-        TrackID = concat(innconf->pathlog, "/trackposts/track.",
-                         HDR(HDR__MESSAGEID), (char *) 0);
+        q = TrackPostFilename(HDR(HDR__MESSAGEID));
+        TrackID = concat(innconf->pathlog, "/trackposts/", q, (char *) 0);
+        free(q);
         if ((ftd = fopen(TrackID, "w")) == NULL) {
             DirTrackID = concatpath(innconf->pathlog, "trackposts");
             MakeDirectory(DirTrackID, false);
