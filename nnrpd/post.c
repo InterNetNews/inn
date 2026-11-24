@@ -1501,14 +1501,8 @@ ARTpost(char *article, char *idbuff, bool *permanent)
 
     /* Tracking. */
     if (PERMaccessconf->readertrack) {
-        /* A message identifier may contain '/', which cannot be part of
-         * a file name. */
-        q = xstrdup(HDR(HDR__MESSAGEID));
-        for (p = q; *p != '\0'; p++)
-            if (*p == '/')
-                *p = '_';
-        TrackID =
-            concat(innconf->pathlog, "/trackposts/track.", q, (char *) 0);
+        q = TrackPostFilename(HDR(HDR__MESSAGEID));
+        TrackID = concat(innconf->pathlog, "/trackposts/", q, (char *) 0);
         free(q);
         if ((ftd = fopen(TrackID, "w")) == NULL) {
             DirTrackID = concatpath(innconf->pathlog, "trackposts");

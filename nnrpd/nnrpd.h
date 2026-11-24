@@ -247,6 +247,7 @@ extern void InitBackoffConstants(void);
 extern char *PostRecFilename(char *ip, char *user);
 extern int LockPostRec(char *path);
 extern void UnlockPostRec(char *path);
+extern char *TrackPostFilename(const char *message_id);
 extern int RateLimit(long *sleeptime, char *path);
 extern void ExitWithStats(int x, bool readconf) __attribute__((__noreturn__));
 extern char *GetHeader(const char *header, bool stripspaces);

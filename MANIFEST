@@ -700,6 +700,7 @@ nnrpd/sasl.c                          SASL authentication for nnrpd
 nnrpd/tls.c                           Transport layer security
 nnrpd/tls.h                           Transport layer security data types
 nnrpd/track.c                         Track client behavior
+nnrpd/trackpost.c                     File names for tracked posts
 nnrpd/zlib.c                          Compression support for nnrpd
 perl                                  Perl libraries (Directory)
 perl/INN                              INN Perl modules (Directory)
@@ -1040,6 +1041,7 @@ tests/lib/xwrite-t.c                  Tests for lib/xwrite.c
 tests/nnrpd                           Test suite for nnrpd (Directory)
 tests/nnrpd/auth-ext-t.c              Tests for auth_external in nnrpd
 tests/nnrpd/auth-test.in              Helper program for external auth tests
+tests/nnrpd/trackpost-t.c             Tests for tracked post file names
 tests/overview                        Test suite for overview (Directory)
 tests/overview/api-t.c                Basic tests for overview API
 tests/overview/overchan.t             Tests for backends/overchan
