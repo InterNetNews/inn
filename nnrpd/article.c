@@ -693,15 +693,10 @@ GetHeader(const char *header, bool stripspaces)
                     }
                 }
                 if (pathheader && (VirtualPathlen > 0)) {
-                    const char *endofpath;
-                    const char *endofarticle;
-
-                    endofarticle = ARThandle->data + ARThandle->len - 1;
-                    endofpath = wire_endheader(p, endofarticle);
-                    if (endofpath == NULL)
-                        return NULL;
-                    for (s = p, prevchar = '\0';
-                         s + VirtualPathlen + 1 < endofpath; prevchar = *s++) {
+                    /* Only search for the virtual path in the field body,
+                     * which ends at q. */
+                    for (s = p, prevchar = '\0'; s + VirtualPathlen < q;
+                         prevchar = *s++) {
                         if ((prevchar != '\0' && prevchar != '!')
                             || *s != *VirtualPath
                             || strncasecmp(s, VirtualPath, VirtualPathlen - 1)
@@ -712,7 +707,7 @@ GetHeader(const char *header, bool stripspaces)
                             continue;
                         break;
                     }
-                    if (s + VirtualPathlen + 1 < endofpath) {
+                    if (s + VirtualPathlen < q) {
                         memcpy(retval, s, q - s);
                         *(retval + (int) (q - s)) = '\0';
                     } else {
