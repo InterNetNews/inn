@@ -127,9 +127,9 @@ sub mailto {
         die "bad $sendmail";
     }
 
-    my $smgr = "$sm -q $t |";
+    my $smgr = "$sm -q $t";
 
-    unless (open(SMGR, $smgr)) {
+    unless (open(SMGR, '-|', $sm, '-q', $t)) {
         syslog('error', "$smgr failed!") if ($use_syslog);
         die "bad $smgr";
     }

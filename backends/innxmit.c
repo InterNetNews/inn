@@ -589,11 +589,11 @@ REMread(char *start, int size)
     *p = '\0';
 
     /* Handle the dot escape. */
-    if (*p == '.') {
-        if (p[1] == '\n' && p[2] == '\0')
+    if (*start == '.') {
+        if (start[1] == '\n' && start[2] == '\0')
             /* EOF. */
             return false;
-        for (q = &start[1]; (*p++ = *q++) != '\0';)
+        for (p = start, q = &start[1]; (*p++ = *q++) != '\0';)
             continue;
     }
     return true;
