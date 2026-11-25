@@ -656,8 +656,11 @@ GetHeader(const char *header, bool stripspaces)
              * dot-stuffed, so skip the first char in the search (all the
              * articles are read in wire format when accessed by the storage
              * manager). */
-            if (*header == '.' && *p == '.')
+            if (*header == '.' && *p == '.') {
                 p++;
+                if (p >= cmplimit)
+                    break;
+            }
             if (strncasecmp(p, header, headerlen) == 0 && p[headerlen] == ':'
                 && ISWHITE(p[headerlen + 1])) {
                 p += headerlen + 2;
