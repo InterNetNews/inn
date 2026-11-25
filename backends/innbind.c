@@ -224,7 +224,7 @@ create_socket(struct binding *binding, const char *spec)
 #endif
     else
         die("unknown protocol family %d in %s", binding->family, spec);
-    if (fd < -1)
+    if (fd < 0)
         sysdie("cannot create socket for %s", spec);
 
     /* Mark it reusable if possible. */
