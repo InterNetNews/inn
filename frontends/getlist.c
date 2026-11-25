@@ -124,11 +124,10 @@ print_active(struct nntp *nntp, const char *types)
         group = cvector_split_space(line, group);
         if (group->count != 4) {
             warn("malformed line from server: %s", line);
-            continue;
-        }
-        if (strchr(types, group->strings[3][0]) != NULL)
+        } else if (strchr(types, group->strings[3][0]) != NULL) {
             printf("%s %s %s %s\n", group->strings[0], group->strings[1],
                    group->strings[2], group->strings[3]);
+        }
         status = nntp_read_line(nntp, &line);
     }
     if (status != NNTP_READ_OK)
