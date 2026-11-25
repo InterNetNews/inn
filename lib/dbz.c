@@ -1191,6 +1191,20 @@ getconf(FILE *df, dbzconfig *cp)
         return false;
     }
 #endif /* DO_TAGGED_HASH */
+    if (cp->tsize < 2) {
+        warn("dbz: invalid table size (%ld)", cp->tsize);
+        return false;
+    }
+#ifdef DO_TAGGED_HASH
+    if ((uintmax_t) cp->tsize > SIZE_MAX / SOF) {
+#else
+    if ((uintmax_t) cp->tsize
+        > SIZE_MAX
+              / ((sizeof(of_t) > sizeof(erec)) ? sizeof(of_t) : sizeof(erec))) {
+#endif
+        warn("dbz: table size is too large (%ld)", cp->tsize);
+        return false;
+    }
     debug("size %ld", cp->tsize);
 
     /* second line, the usages */
