@@ -43,7 +43,7 @@ sub control_sendme {
         }
         close GREPHIST or logdie("Cannot run grephistory: $!");
 
-        if (-s $tempfile and $site =~ /^[a-zA-Z0-9.-_]+$/) {
+        if (-s $tempfile and $site =~ /^[a-zA-Z0-9._-]+$/) {
             open(TEMPFILE, $tempfile) or logdie("Cannot open $tempfile: $!");
             open(BATCH, ">>$INN::Config::batch/$site.work")
               or logdie("Cannot open $INN::Config::batch/$site.work: $!");

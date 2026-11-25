@@ -216,8 +216,9 @@ END
         if ($status ne 'not change') {
             # The status 'be made (un)moderated' prevails over
             # 'have a new description' so it is executed.
-            ctlinnd('newgroup', $groupname, $modcmd, $sender)
-              if $status ne 'have a new description';
+            return
+              if $status ne 'have a new description'
+              and not ctlinnd('newgroup', $groupname, $modcmd, $sender);
             # We know the description has changed.
             update_desc($ngname, $ngdesc) if $ngdesc and $ngname eq $groupname;
         }

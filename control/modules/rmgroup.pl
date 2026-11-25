@@ -76,7 +76,7 @@ END
             logmsg("skipping rmgroup $groupname $sender (would $status)");
         }
     } elsif ($action eq 'doit' and $status !~ /(not change|be unapproved)/) {
-        ctlinnd('rmgroup', $groupname);
+        return if not ctlinnd('rmgroup', $groupname);
         # Update newsgroups too.
         my $lockfile = "$INN::Config::locks/LOCK.newsgroups";
 
