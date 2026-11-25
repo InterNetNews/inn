@@ -479,7 +479,7 @@ static void
 ARTsendmmap(SENDTYPE what)
 {
     const char *p, *q, *r;
-    const char *s, *path, *xref, *endofpath;
+    const char *s, *path, *xref, *endofpath, *endofxref;
     char lastchar;
 
     ARTcount++;
@@ -532,15 +532,26 @@ ARTsendmmap(SENDTYPE what)
                 return;
             }
         }
-        endofpath = wire_endheader(path, ARThandle->data + ARThandle->len - 1);
-        if (endofpath == NULL) {
+        /* The scan selecting the part to send also defines the valid range
+         * for all rewrite pointers.  In particular, do not mix its bare-LF
+         * boundary with wire_findheader()'s CRLF boundary. */
+        if (path >= p || xref >= p) {
             SendIOv(".\r\n", 3);
             ARTgetsize += 3;
             PushIOv();
             ARTget++;
             return;
         }
-        if ((r = memchr(xref, ' ', p - xref)) == NULL || r == p) {
+        endofpath = wire_endheader(path, p - 1);
+        endofxref = wire_endheader(xref, p - 1);
+        if (endofpath == NULL || endofxref == NULL) {
+            SendIOv(".\r\n", 3);
+            ARTgetsize += 3;
+            PushIOv();
+            ARTget++;
+            return;
+        }
+        if ((r = memchr(xref, ' ', endofxref - xref)) == NULL) {
             SendIOv(".\r\n", 3);
             ARTgetsize += 3;
             PushIOv();
