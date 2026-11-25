@@ -2507,7 +2507,7 @@ gettoken(ARTNUM artnum, TOKEN *token)
         }
     }
     /* i == 0 */
-    if (Gib[offset].artnum != artnum) {
+    if (offset >= Gibcount || Gib[offset].artnum != artnum) {
         /* article not found */
         return false;
     }
