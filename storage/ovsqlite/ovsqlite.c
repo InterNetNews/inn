@@ -1558,7 +1558,7 @@ expire_one(char const *group, int *low, struct history *h)
                     delete = true;
                 }
             } else {
-                delete = !OVhisthasmsgid(h, overview);
+                delete = !OVhisthasmsgid(h, overview, overview_len);
             }
             if (!delete && innconf->groupbaseexpiry) {
                 delete = OVgroupbasedexpire(token, group, overview,
