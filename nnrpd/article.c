@@ -65,7 +65,7 @@ PushIOvHelper(struct iovec *vec, int *countp)
     TMRstart(TMR_NNTPWRITE);
 
 #if defined(HAVE_ZLIB)
-    if (compression_layer_on) {
+    if (compression_layer_on && !tls_compression_on) {
         int i;
 
         for (i = 0; i < *countp; i++) {

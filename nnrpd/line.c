@@ -87,7 +87,7 @@ line_doread(void *p, size_t len, int timeout)
     do {
 #if defined(HAVE_ZLIB)
         /* Process data that may already be available in the zlib buffer. */
-        if (compression_layer_on
+        if (compression_layer_on && !tls_compression_on
             && (zstream_in->avail_in > 0 || zstream_inflate_needed)) {
             int r;
 
@@ -247,7 +247,7 @@ line_doread(void *p, size_t len, int timeout)
 #endif /* HAVE_SASL */
 
 #if defined(HAVE_ZLIB)
-        if (compression_layer_on && n > 0) {
+        if (compression_layer_on && !tls_compression_on && n > 0) {
             size_t zconsumed;
 
             if (zstream_in->avail_in > 0 && zstream_in->next_in != Z_NULL) {
