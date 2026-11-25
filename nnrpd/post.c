@@ -279,7 +279,10 @@ CheckControl(char *ctrl)
     *p = '\0';
 
     if (strcasecmp(ctrl, "cancel") == 0) {
-        for (q = p + 1; ISWHITE(*q); q++)
+        q = p;
+        if (save != '\0')
+            q++;
+        for (; ISWHITE(*q); q++)
             continue;
         if (*q == '\0')
             return "Message-ID missing in cancel";
