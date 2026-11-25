@@ -653,6 +653,7 @@ tradspool_store(const ARTHANDLE article, const STORAGECLASS class)
     ng = xrefs[0];
     DeDotify(ng);
     artnum = atol(p);
+#if ULONG_MAX > UINT32_MAX
     if (artnum > UINT32_MAX) {
         token.type = TOKEN_EMPTY;
         SMseterror(SMERR_UNDEFINED,
@@ -662,6 +663,7 @@ tradspool_store(const ARTHANDLE article, const STORAGECLASS class)
         free(xrefs);
         return token;
     }
+#endif
 
     token = MakeToken(ng, artnum, class);
 
