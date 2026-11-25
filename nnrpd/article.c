@@ -1417,9 +1417,15 @@ CMDpat(int ac, char *av[])
                 hdr ? NNTP_OK_HDR : NNTP_OK_HEAD, av[1]);
 
             if ((text = GetHeader(av[1], false)) != NULL
-                && (!pattern || uwildmat_simple(text, pattern)))
-                Printf("%s %s\r\n", hdr ? "0" : p, text);
-            else if (hdr) {
+                && (!pattern || uwildmat_simple(text, pattern))) {
+                const char *number = hdr ? "0" : p;
+
+                SendIOv(number, strlen(number));
+                SendIOv(" ", 1);
+                SendIOv(text, strlen(text));
+                SendIOv("\r\n", 2);
+                PushIOv();
+            } else if (hdr) {
                 /* We always have to answer something with HDR. */
                 Printf("0 \r\n");
             }
