@@ -1258,7 +1258,7 @@ sub crossFeedGroup {
                         print LOG "." unless $quiet;
                         push @warns,
                           "Post $i to server declined ($code): $msg"
-                          if $msg !~ /^435 $msgid$/
+                          if $msg !~ /^435 \Q$msgid\E$/
                           and $msg !~ /duplicate message-id/io;
                         $refused{$group}++;
                         $info{server}{$server}{refused}++;
