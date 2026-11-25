@@ -970,15 +970,6 @@ get_active(char *host, int hostid, int *len, struct grp *grp, int *errs)
         }
 
         /*
-         * if the hi water length is too small, malloc and resize
-         */
-        if (i != ARTNUMPRINTSIZE) {
-            p = xmalloc(ARTNUMPRINTSIZE + 1);
-            memcpy(p, cur->hi,
-                   ((i > ARTNUMPRINTSIZE) ? ARTNUMPRINTSIZE : i) + 1);
-        }
-
-        /*
          * check for bad chars in the low water mark
          */
         for (p = cur->low, i = 0; *p && isdigit((unsigned char) *p);
@@ -1001,15 +992,6 @@ get_active(char *host, int hostid, int *len, struct grp *grp, int *errs)
                      cur->name, cur->hi, i, ARTNUMPRINTSIZE);
             cur->ignore |= ERROR_FORMAT;
             continue;
-        }
-
-        /*
-         * if the low water length is too small, malloc and resize
-         */
-        if (i != ARTNUMPRINTSIZE) {
-            p = xmalloc(ARTNUMPRINTSIZE + 1);
-            memcpy(p, cur->low,
-                   ((i > ARTNUMPRINTSIZE) ? ARTNUMPRINTSIZE : i) + 1);
         }
 
         /* check for a bad group type */
