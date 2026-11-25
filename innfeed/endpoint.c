@@ -880,7 +880,7 @@ doRead(EndPoint endp)
 
                 if (readAmt >= (bs - bds)) {
                     bufferSetDataSize(buffers[currIdx + idx], bs);
-                    readAmt -= bs;
+                    readAmt -= bs - bds;
                     endp->inBufferIdx++;
                 } else {
                     endp->inIndex = readAmt;
