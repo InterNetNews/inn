@@ -653,6 +653,15 @@ tradspool_store(const ARTHANDLE article, const STORAGECLASS class)
     ng = xrefs[0];
     DeDotify(ng);
     artnum = atol(p);
+    if (artnum > UINT32_MAX) {
+        token.type = TOKEN_EMPTY;
+        SMseterror(SMERR_UNDEFINED,
+                   "article number is too large for a tradspool token");
+        for (i = 0; i < numxrefs; ++i)
+            free(xrefs[i]);
+        free(xrefs);
+        return token;
+    }
 
     token = MakeToken(ng, artnum, class);
 
