@@ -183,8 +183,8 @@ PYmidfilter(char *messageID, int msglen)
     if (!PythonFilterActive || PYFilterObject == NULL || msgid_method == NULL)
         return NULL;
 
-    result =
-        PyObject_CallFunction(msgid_method, (char *) "s#", messageID, msglen);
+    result = PyObject_CallFunction(msgid_method, (char *) "s#", messageID,
+                                   (Py_ssize_t) msglen);
     if ((result != NULL) && PyObject_IsTrue(result))
         strlcpy(buf, PyString_AS_STRING(result), sizeof(buf));
     else
