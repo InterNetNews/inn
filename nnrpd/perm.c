@@ -1522,6 +1522,12 @@ PERMgetinitialaccess(char *readersconf)
     /* Remove unused access groups. */
     strip_accessgroups();
 
+    /* Keep an empty, terminated list when access is supplied by a hook or no
+     * access group applies.  Later permission setup always iterates this list,
+     * and access hooks replace its first entry. */
+    if (access_realms == NULL)
+        access_realms = xcalloc(2, sizeof(ACCESSGROUP *));
+
     if (auth_realms == NULL) {
         /* No one can talk, empty file. */
         syslog(L_NOTICE, "%s no_permission", Client.host);
