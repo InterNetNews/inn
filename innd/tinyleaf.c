@@ -267,7 +267,7 @@ main(int argc, char *argv[])
             shutdown(&state);
         case NNTP_READ_LONG:
             warn("long line received");
-            break;
+            shutdown(&state);
         default:
             sysdie("internal: unknown NNTP library status");
         }

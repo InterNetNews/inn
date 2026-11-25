@@ -249,6 +249,7 @@ process_line(QIOSTATE *qp, int *queued, int *deleted)
     char *p;
     char *dir = NULL;
     int dlen = -1;
+    size_t linelen;
 
     *queued = 0;
     *deleted = 0;
@@ -283,9 +284,11 @@ process_line(QIOSTATE *qp, int *queued, int *deleted)
                 }
                 list = filelist_new(dir);
             } else {
+                linelen = strlen(line);
                 if ((dlen < 0 && strchr(line, '/'))
                     || (dlen >= 0
-                        && (line[dlen] != '/' || strchr(line + dlen + 1, '/')
+                        && ((size_t) dlen >= linelen || line[dlen] != '/'
+                            || strchr(line + dlen + 1, '/')
                             || strncmp(dir, line, dlen))))
                     return list;
             }
