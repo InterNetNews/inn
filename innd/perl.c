@@ -339,7 +339,7 @@ XS(XS_INN_addhist)
         croak("Usage INN::addhist(msgid,[arrival,articletime,expire,token])");
 
     for (i = 0; i < items; i++)
-        parambuf[i] = (char *) SvPV_nolen(ST(0));
+        parambuf[i] = (char *) SvPV_nolen(ST(i));
 
     /* If any of the times are missing, they should default to now. */
     if (i < 4) {
