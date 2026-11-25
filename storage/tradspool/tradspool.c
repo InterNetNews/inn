@@ -576,7 +576,6 @@ CrackXref(char *xref, unsigned int *lenp)
 {
     char *p;
     char **xrefs;
-    char **created_links = NULL;
     char *q;
     unsigned int len, xrefsize;
 
@@ -619,6 +618,7 @@ TOKEN
 tradspool_store(const ARTHANDLE article, const STORAGECLASS class)
 {
     char **xrefs;
+    char **created_links = NULL;
     char *xrefhdr;
     TOKEN token;
     unsigned int numxrefs;
