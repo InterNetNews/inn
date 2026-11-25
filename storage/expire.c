@@ -633,29 +633,42 @@ ARTreadschema(void)
 **  since we might be reusing the line later.
 */
 static char *
-OVERGetHeader(const char *p, int field)
+OVERGetHeader(const char *p, int len, int field)
 {
     static char *buff;
     static int buffsize;
     int i;
     ARTOVERFIELD *fp;
+    const char *end;
     const char *next;
 
+    if (p == NULL || len <= 0 || field < 0)
+        return NULL;
+    end = p + len;
     fp = &ARTfields[field];
 
     /* Skip leading headers. */
-    for (; field-- >= 0 && *p; p++)
-        if ((p = strchr(p, '\t')) == NULL)
+    for (i = 0; i <= field; i++) {
+        p = memchr(p, '\t', end - p);
+        if (p == NULL)
             return NULL;
-    if (*p == '\0')
+        p++;
+    }
+    if (p >= end)
         return NULL;
 
-    if (fp->HasHeader)
+    if (fp->HasHeader) {
+        if ((size_t) (end - p) < (size_t) fp->Length + 2)
+            return NULL;
         p += fp->Length + 2;
+    }
 
     if (fp->NeedsHeader) { /* find an exact match */
-        while (strncmp(fp->Header, p, fp->Length) != 0) {
-            if ((p = strchr(p, '\t')) == NULL)
+        while ((size_t) (end - p) < (size_t) fp->Length + 2
+               || memcmp(fp->Header, p, fp->Length) != 0
+               || p[fp->Length] != ':') {
+            p = memchr(p, '\t', end - p);
+            if (p == NULL)
                 return NULL;
             p++;
         }
@@ -663,11 +676,11 @@ OVERGetHeader(const char *p, int field)
     }
 
     /* Figure out length; get space. */
-    if ((next = strpbrk(p, "\n\r\t")) != NULL) {
-        i = next - p;
-    } else {
-        i = strlen(p);
-    }
+    for (next = p; next < end && *next != '\n' && *next != '\r'
+                   && *next != '\t';
+         next++)
+        ;
+    i = next - p;
     if (buffsize == 0) {
         buffsize = i;
         buff = xmalloc(buffsize + 1);
@@ -740,7 +753,7 @@ OVfindheaderindex(void)
 */
 bool
 OVgroupbasedexpire(TOKEN token, const char *group, const char *data,
-                   int len UNUSED, time_t arrived, time_t expires)
+                   int len, time_t arrived, time_t expires)
 {
     static char *Group = NULL;
     char *p;
@@ -763,7 +776,7 @@ OVgroupbasedexpire(TOKEN token, const char *group, const char *data,
     }
 
     if (OVusepost) {
-        if ((p = OVERGetHeader(data, Dateindex)) == NULL) {
+        if ((p = OVERGetHeader(data, len, Dateindex)) == NULL) {
             EXPoverindexdrop++;
             return true;
         }
@@ -775,7 +788,7 @@ OVgroupbasedexpire(TOKEN token, const char *group, const char *data,
     } else {
         when = arrived;
     }
-    if ((Xref = OVERGetHeader(data, Xrefindex)) == NULL) {
+    if ((Xref = OVERGetHeader(data, len, Xrefindex)) == NULL) {
         if (Group != NULL) {
             free(Group);
         }
@@ -856,14 +869,14 @@ OVgroupbasedexpire(TOKEN token, const char *group, const char *data,
 }
 
 bool
-OVhisthasmsgid(struct history *h, const char *data)
+OVhisthasmsgid(struct history *h, const char *data, int len)
 {
     char *p;
 
     if (!ReadOverviewfmt) {
         OVfindheaderindex();
     }
-    if ((p = OVERGetHeader(data, Messageidindex)) == NULL)
+    if ((p = OVERGetHeader(data, len, Messageidindex)) == NULL)
         return false;
 
     /* Fast path: if article is in the Bloom filter, it (probably) exists.

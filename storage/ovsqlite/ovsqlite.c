@@ -113,7 +113,7 @@ reader_unpack_length(z_stream *stream)
     walk = stream->next_in;
     c = *walk++;
     lenlen = 1;
-    while (c & (1U << (8 - lenlen)))
+    while (lenlen <= 5 && (c & (1U << (8 - lenlen))))
         lenlen++;
     if (lenlen > 5 || lenlen > stream->avail_in)
         return ~0U;
@@ -181,9 +181,12 @@ reader_decompress(uint8_t const *overview, uint32_t overview_len,
             (char *) reader_inflation.next_out - reader_flate->data;
         reader_inflation.next_in = NULL;
         reader_inflation.avail_in = 0;
-        if (status != Z_STREAM_END || reader_inflation.avail_out > 0)
+        if (status != Z_STREAM_END || reader_inflation.avail_out > 0) {
+            inflateReset(&reader_inflation);
             return NULL;
-        inflateReset(&reader_inflation);
+        }
+        if (inflateReset(&reader_inflation) != Z_OK)
+            return NULL;
         *out_len = reader_flate->left;
         return (uint8_t *) reader_flate->data;
     } else {
@@ -1555,7 +1558,7 @@ expire_one(char const *group, int *low, struct history *h)
                     delete = true;
                 }
             } else {
-                delete = !OVhisthasmsgid(h, overview);
+                delete = !OVhisthasmsgid(h, overview, overview_len);
             }
             if (!delete && innconf->groupbaseexpiry) {
                 delete = OVgroupbasedexpire(token, group, overview,

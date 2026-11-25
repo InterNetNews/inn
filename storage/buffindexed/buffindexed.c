@@ -2507,7 +2507,7 @@ gettoken(ARTNUM artnum, TOKEN *token)
         }
     }
     /* i == 0 */
-    if (Gib[offset].artnum != artnum) {
+    if (offset >= Gibcount || Gib[offset].artnum != artnum) {
         /* article not found */
         return false;
     }
@@ -2681,7 +2681,7 @@ buffindexed_expiregroup(const char *group, int *lo, struct history *h)
                 continue;
             SMfreearticle(ah);
         } else {
-            if (!OVhisthasmsgid(h, data))
+            if (!OVhisthasmsgid(h, data, len))
                 continue;
         }
         if (innconf->groupbaseexpiry

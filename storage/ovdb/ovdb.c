@@ -2913,7 +2913,7 @@ ovdb_expiregroup(const char *group, int *lo, struct history *h)
                     } else
                         SMfreearticle(ah);
                 } else {
-                    if (!delete && !OVhisthasmsgid(h, p)) {
+                    if (!delete && !OVhisthasmsgid(h, p, sz)) {
                         delete = 1;
                     }
                 }

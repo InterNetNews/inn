@@ -905,7 +905,7 @@ tdx_data_expire_start(const char *group, struct group_data *data,
                 continue;
             SMfreearticle(ah);
         } else {
-            if (!OVhisthasmsgid(history, article.overview))
+            if (!OVhisthasmsgid(history, article.overview, article.overlen))
                 continue;
         }
         if (innconf->groupbaseexpiry)

@@ -618,6 +618,7 @@ TOKEN
 tradspool_store(const ARTHANDLE article, const STORAGECLASS class)
 {
     char **xrefs;
+    char **created_links = NULL;
     char *xrefhdr;
     TOKEN token;
     unsigned int numxrefs;
@@ -627,7 +628,7 @@ tradspool_store(const ARTHANDLE article, const STORAGECLASS class)
     int fd;
     size_t used;
     char *nonwfarticle; /* copy of article converted to non-wire format */
-    unsigned int i;
+    unsigned int i, j;
     size_t length, nonwflen;
 
     memset(&token, 0, sizeof(token));
@@ -652,6 +653,17 @@ tradspool_store(const ARTHANDLE article, const STORAGECLASS class)
     ng = xrefs[0];
     DeDotify(ng);
     artnum = atol(p);
+#if ULONG_MAX > UINT32_MAX
+    if (artnum > UINT32_MAX) {
+        token.type = TOKEN_EMPTY;
+        SMseterror(SMERR_UNDEFINED,
+                   "article number is too large for a tradspool token");
+        for (i = 0; i < numxrefs; ++i)
+            free(xrefs[i]);
+        free(xrefs);
+        return token;
+    }
+#endif
 
     token = MakeToken(ng, artnum, class);
 
@@ -730,6 +742,7 @@ tradspool_store(const ARTHANDLE article, const STORAGECLASS class)
     /* Blah, this is ugly.  Have to make symlinks under other pathnames for
      * backward compatibility purposes. */
     if (numxrefs > 1) {
+        created_links = xcalloc(numxrefs, sizeof(char *));
         for (i = 1; i < numxrefs; ++i) {
             if ((p = strchr(xrefs[i], ':')) == NULL)
                 continue;
@@ -754,6 +767,18 @@ tradspool_store(const ARTHANDLE article, const STORAGECLASS class)
                         syswarn("tradspool: could not symlink %s to %s", path,
                                 linkpath);
                         token.type = TOKEN_EMPTY;
+                        for (j = 1; j < i; j++) {
+                            if (created_links[j] != NULL) {
+                                if (unlink(created_links[j]) < 0
+                                    && errno != ENOENT)
+                                    syswarn("tradspool: could not remove %s",
+                                            created_links[j]);
+                                free(created_links[j]);
+                            }
+                        }
+                        free(created_links);
+                        if (unlink(path) < 0 && errno != ENOENT)
+                            syswarn("tradspool: could not remove %s", path);
                         free(dirname);
                         free(linkpath);
                         free(path);
@@ -765,8 +790,12 @@ tradspool_store(const ARTHANDLE article, const STORAGECLASS class)
                 }
                 free(dirname);
             }
+            created_links[i] = xstrdup(linkpath);
             free(linkpath);
         }
+        for (i = 1; i < numxrefs; i++)
+            free(created_links[i]);
+        free(created_links);
     }
     free(path);
     for (i = 0; i < numxrefs; ++i)
@@ -791,11 +820,8 @@ OpenArticle(const char *path, RETRTYPE amount)
             SMseterror(SMERR_UNDEFINED, NULL);
             return NULL;
         }
-        art = xmalloc(sizeof(ARTHANDLE));
+        art = xcalloc(1, sizeof(ARTHANDLE));
         art->type = TOKEN_TRADSPOOL;
-        art->data = NULL;
-        art->len = 0;
-        art->private = NULL;
         return art;
     }
 
@@ -1206,6 +1232,10 @@ tradspool_next(ARTHANDLE *article, const RETRTYPE amount)
         art->groupslen = 0;
         newpriv = (PRIV_TRADSPOOL *) art->private;
         newpriv->artbase = NULL;
+    } else if (amount == RETR_STAT) {
+        /* SMnext needs private iteration state even though OpenArticle does
+         * not need storage-private data for a status-only result. */
+        art->private = xcalloc(1, sizeof(PRIV_TRADSPOOL));
     } else {
         /* Skip linked (not symlinked) crossposted articles.
 
