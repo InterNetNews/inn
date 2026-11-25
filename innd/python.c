@@ -517,8 +517,9 @@ PY_hashstring(PyObject *self UNUSED, PyObject *args)
         wpos = p;
 
         /* And trailing. */
-        for (p = &wpos[worksize]; worksize > 0 && isspace((unsigned char) *p);
-             p--) {
+        for (p = wpos + worksize; worksize > 0
+                                  && isspace((unsigned char) p[-1]);) {
+            p--;
             if (*p == '\n')
                 lines--;
             worksize--;
@@ -527,9 +528,11 @@ PY_hashstring(PyObject *self UNUSED, PyObject *args)
         /* Chop last 3 lines if we have >= 5.  From above chop the
          * last line which has no CR so we use 1 less here. */
         if (lines >= 4) {
-            for (i = 0, p = wpos + worksize; i < 2; p--)
+            for (i = 0, p = wpos + worksize; i < 2 && p > wpos;) {
+                p--;
                 if (*p == '\n')
                     i++;
+            }
             worksize = p - wpos;
         }
 
