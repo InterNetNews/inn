@@ -809,11 +809,8 @@ OpenArticle(const char *path, RETRTYPE amount)
             SMseterror(SMERR_UNDEFINED, NULL);
             return NULL;
         }
-        art = xmalloc(sizeof(ARTHANDLE));
+        art = xcalloc(1, sizeof(ARTHANDLE));
         art->type = TOKEN_TRADSPOOL;
-        art->data = NULL;
-        art->len = 0;
-        art->private = NULL;
         return art;
     }
 
@@ -1224,6 +1221,10 @@ tradspool_next(ARTHANDLE *article, const RETRTYPE amount)
         art->groupslen = 0;
         newpriv = (PRIV_TRADSPOOL *) art->private;
         newpriv->artbase = NULL;
+    } else if (amount == RETR_STAT) {
+        /* SMnext needs private iteration state even though OpenArticle does
+         * not need storage-private data for a status-only result. */
+        art->private = xcalloc(1, sizeof(PRIV_TRADSPOOL));
     } else {
         /* Skip linked (not symlinked) crossposted articles.
 
