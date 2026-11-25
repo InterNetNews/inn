@@ -312,7 +312,7 @@ copy_method(METHOD *orig)
     ret = xmalloc(sizeof(METHOD));
     memset(ConfigBit, '\0', ConfigBitsize);
 
-    ret->name = xstrdup(orig->name);
+    ret->name = orig->name != NULL ? xstrdup(orig->name) : NULL;
     if (orig->program != NULL) {
         ret->program = xstrdup(orig->program);
     } else {
@@ -1521,6 +1521,12 @@ PERMgetinitialaccess(char *readersconf)
 
     /* Remove unused access groups. */
     strip_accessgroups();
+
+    /* Keep an empty, terminated list when access is supplied by a hook or no
+     * access group applies.  Later permission setup always iterates this list,
+     * and access hooks replace its first entry. */
+    if (access_realms == NULL)
+        access_realms = xcalloc(2, sizeof(ACCESSGROUP *));
 
     if (auth_realms == NULL) {
         /* No one can talk, empty file. */

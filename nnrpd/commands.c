@@ -102,13 +102,6 @@ PERMgeneric(char *av[], char *accesslist, size_t size)
 
     av += 2;
 
-    PERMcanread = false;
-    PERMcanpost = false;
-    PERMaccessconf->locpost = false;
-    PERMaccessconf->allowapproved = false;
-    PERMaccessconf->allowihave = false;
-    PERMaccessconf->allownewnews = false;
-
     if (!*av) {
         Reply("%d No authenticator provided\r\n", NNTP_ERR_SYNTAX);
         return -1;
@@ -243,6 +236,8 @@ PERMgeneric(char *av[], char *accesslist, size_t size)
         return -1;
     }
 
+    /* Do not replace the current identity or permissions until the helper
+     * has returned a complete successful result. */
     PERMcanread = strchr(fields[1], 'R') != NULL;
     PERMcanpost = strchr(fields[1], 'P') != NULL;
     PERMaccessconf->allowapproved = strchr(fields[1], 'A') != NULL;
@@ -290,8 +285,6 @@ CMDauthinfo(int ac, char *av[])
         /* Go on parsing the command line. */
         ac--;
         (void) reArgify(av[ac], &av[ac], -1, true);
-
-        strlcpy(PERMuser, "<none>", sizeof(PERMuser));
 
         /* Arguments are checked by PERMgeneric(). */
         switch (PERMgeneric(av, accesslist, sizeof(accesslist))) {
