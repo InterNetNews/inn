@@ -64,7 +64,7 @@ main(int argc, char *argv[])
                 s = getservbyname(optarg, "tcp");
                 if (s == NULL)
                     die("cannot getsrvbyname(%s, tcp)", optarg);
-                identport = s->s_port;
+                identport = ntohs(s->s_port);
             } else
                 identport = atoi(optarg);
             break;
