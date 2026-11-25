@@ -479,7 +479,7 @@ static void
 ARTsendmmap(SENDTYPE what)
 {
     const char *p, *q, *r;
-    const char *s, *path, *xref, *endofpath;
+    const char *s, *path, *xref, *endofpath, *endofxref;
     char lastchar;
 
     ARTcount++;
@@ -532,15 +532,26 @@ ARTsendmmap(SENDTYPE what)
                 return;
             }
         }
-        endofpath = wire_endheader(path, ARThandle->data + ARThandle->len - 1);
-        if (endofpath == NULL) {
+        /* The scan selecting the part to send also defines the valid range
+         * for all rewrite pointers.  In particular, do not mix its bare-LF
+         * boundary with wire_findheader()'s CRLF boundary. */
+        if (path >= p || xref >= p) {
             SendIOv(".\r\n", 3);
             ARTgetsize += 3;
             PushIOv();
             ARTget++;
             return;
         }
-        if ((r = memchr(xref, ' ', p - xref)) == NULL || r == p) {
+        endofpath = wire_endheader(path, p - 1);
+        endofxref = wire_endheader(xref, p - 1);
+        if (endofpath == NULL || endofxref == NULL) {
+            SendIOv(".\r\n", 3);
+            ARTgetsize += 3;
+            PushIOv();
+            ARTget++;
+            return;
+        }
+        if ((r = memchr(xref, ' ', endofxref - xref)) == NULL) {
             SendIOv(".\r\n", 3);
             ARTgetsize += 3;
             PushIOv();
@@ -645,8 +656,11 @@ GetHeader(const char *header, bool stripspaces)
              * dot-stuffed, so skip the first char in the search (all the
              * articles are read in wire format when accessed by the storage
              * manager). */
-            if (*header == '.' && *p == '.')
+            if (*header == '.' && *p == '.') {
                 p++;
+                if (p >= cmplimit)
+                    break;
+            }
             if (strncasecmp(p, header, headerlen) == 0 && p[headerlen] == ':'
                 && ISWHITE(p[headerlen + 1])) {
                 p += headerlen + 2;
@@ -677,9 +691,9 @@ GetHeader(const char *header, bool stripspaces)
                     }
                 if (q == limit)
                     return NULL;
-                if (strncasecmp("Path", header, headerlen) == 0)
+                if (headerlen == 4 && strcasecmp("Path", header) == 0)
                     pathheader = true;
-                else if (strncasecmp("Xref", header, headerlen) == 0)
+                else if (headerlen == 4 && strcasecmp("Xref", header) == 0)
                     xrefheader = true;
                 if (retval == NULL) {
                     /* Possibly add '!' (a second one) at the end of the
@@ -1417,9 +1431,15 @@ CMDpat(int ac, char *av[])
                 hdr ? NNTP_OK_HDR : NNTP_OK_HEAD, av[1]);
 
             if ((text = GetHeader(av[1], false)) != NULL
-                && (!pattern || uwildmat_simple(text, pattern)))
-                Printf("%s %s\r\n", hdr ? "0" : p, text);
-            else if (hdr) {
+                && (!pattern || uwildmat_simple(text, pattern))) {
+                const char *number = hdr ? "0" : p;
+
+                SendIOv(number, strlen(number));
+                SendIOv(" ", 1);
+                SendIOv(text, strlen(text));
+                SendIOv("\r\n", 2);
+                PushIOv();
+            } else if (hdr) {
                 /* We always have to answer something with HDR. */
                 Printf("0 \r\n");
             }
