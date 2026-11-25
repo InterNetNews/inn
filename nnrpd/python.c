@@ -122,6 +122,19 @@ static struct hash *files;
 static char *dynamic_file;
 
 
+/* Convert a Python string without leaving an encoding exception pending. */
+static const char *
+PYstring(PyObject *object)
+{
+    const char *string;
+
+    string = PyString_AsString(object);
+    if (string == NULL)
+        PyErr_Clear();
+    return string;
+}
+
+
 /*
 **  Authenticate connecting host by username&password.
 **
@@ -228,7 +241,13 @@ PY_authenticate(char *file, char *User, char *Password, int *code,
     }
 
     /* Store error string. */
-    temp = PyString_AS_STRING(item);
+    temp = PYstring(item);
+    if (temp == NULL) {
+        syslog(L_ERROR,
+               "python authenticate method returned bad error string");
+        Reply("%d Internal error (2).  Goodbye!\r\n", NNTP_FAIL_TERMINATING);
+        ExitWithStats(1, true);
+    }
     strlcpy(errorstring, temp, BIG_BUFFER);
 
     if (PyTuple_Size(result) == 3) {
@@ -245,7 +264,14 @@ PY_authenticate(char *file, char *User, char *Password, int *code,
         }
 
         /* Store user string. */
-        temp = PyString_AS_STRING(item);
+        temp = PYstring(item);
+        if (temp == NULL) {
+            syslog(L_ERROR,
+                   "python authenticate method returned bad username string");
+            Reply("%d Internal error (2).  Goodbye!\r\n",
+                  NNTP_FAIL_TERMINATING);
+            ExitWithStats(1, true);
+        }
         strlcpy(newUser, temp, BIG_BUFFER);
     }
 
@@ -278,6 +304,7 @@ PY_access(char *file, struct vector *access_vec, char *User)
 {
     PyObject *result, *key, *value, *proc;
     char *buffer;
+    const char *key_string, *value_string;
     int authnum;
     int i;
     Py_ssize_t pos;
@@ -369,9 +396,20 @@ PY_access(char *file, struct vector *access_vec, char *User)
             ExitWithStats(1, false);
         }
 
-        strlcpy(buffer, PyString_AsString(key), BIG_BUFFER);
+        key_string = PYstring(key);
+        value_string = PYstring(value);
+        if (key_string == NULL || value_string == NULL) {
+            syslog(L_ERROR,
+                   "python access method returned a string that cannot be "
+                   "encoded as UTF-8");
+            Reply("%d Internal error (2).  Goodbye!\r\n",
+                  NNTP_FAIL_TERMINATING);
+            ExitWithStats(1, false);
+        }
+
+        strlcpy(buffer, key_string, BIG_BUFFER);
         strlcat(buffer, ": \"", BIG_BUFFER);
-        strlcat(buffer, PyString_AsString(value), BIG_BUFFER);
+        strlcat(buffer, value_string, BIG_BUFFER);
         strlcat(buffer, "\"\n", BIG_BUFFER);
 
         vector_add(access_vec, buffer);
@@ -498,7 +536,16 @@ PY_dynamic(char *User, char *NewsGroup, int PostFlag, char **reply_message)
     if (result == Py_None) {
         string = NULL;
     } else {
-        temp = PyString_AS_STRING(result);
+        temp = PYstring(result);
+        if (temp == NULL) {
+            syslog(L_ERROR,
+                   "python dynamic method (%s access) returned a string that "
+                   "cannot be encoded as UTF-8",
+                   PostFlag ? "post" : "read");
+            Reply("%d Internal error (2).  Goodbye!\r\n",
+                  NNTP_FAIL_TERMINATING);
+            ExitWithStats(1, false);
+        }
         string = xstrdup(temp);
     }
 
