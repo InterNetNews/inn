@@ -634,7 +634,13 @@ sub ctlinnd {
 
     my $st = system("$INN::Config::newsbin/ctlinnd", '-s', $cmd, @args);
     logdie('Cannot run ctlinnd: ' . $!) if $st == -1;
-    logdie('ctlinnd returned status ' . ($st & 255)) if $st > 0;
+    if ($st > 0) {
+        my $result
+          = ($st & 127) ? 'signal ' . ($st & 127) : 'status ' . ($st >> 8);
+        logmsg("ctlinnd returned $result", 'err');
+        return 0;
+    }
+    return 1;
 }
 
 # Run convdate on the given arguments.
