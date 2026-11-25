@@ -312,7 +312,7 @@ copy_method(METHOD *orig)
     ret = xmalloc(sizeof(METHOD));
     memset(ConfigBit, '\0', ConfigBitsize);
 
-    ret->name = xstrdup(orig->name);
+    ret->name = orig->name != NULL ? xstrdup(orig->name) : NULL;
     if (orig->program != NULL) {
         ret->program = xstrdup(orig->program);
     } else {
