@@ -576,6 +576,7 @@ CrackXref(char *xref, unsigned int *lenp)
 {
     char *p;
     char **xrefs;
+    char **created_links = NULL;
     char *q;
     unsigned int len, xrefsize;
 
@@ -627,7 +628,7 @@ tradspool_store(const ARTHANDLE article, const STORAGECLASS class)
     int fd;
     size_t used;
     char *nonwfarticle; /* copy of article converted to non-wire format */
-    unsigned int i;
+    unsigned int i, j;
     size_t length, nonwflen;
 
     memset(&token, 0, sizeof(token));
@@ -730,6 +731,7 @@ tradspool_store(const ARTHANDLE article, const STORAGECLASS class)
     /* Blah, this is ugly.  Have to make symlinks under other pathnames for
      * backward compatibility purposes. */
     if (numxrefs > 1) {
+        created_links = xcalloc(numxrefs, sizeof(char *));
         for (i = 1; i < numxrefs; ++i) {
             if ((p = strchr(xrefs[i], ':')) == NULL)
                 continue;
@@ -754,6 +756,18 @@ tradspool_store(const ARTHANDLE article, const STORAGECLASS class)
                         syswarn("tradspool: could not symlink %s to %s", path,
                                 linkpath);
                         token.type = TOKEN_EMPTY;
+                        for (j = 1; j < i; j++) {
+                            if (created_links[j] != NULL) {
+                                if (unlink(created_links[j]) < 0
+                                    && errno != ENOENT)
+                                    syswarn("tradspool: could not remove %s",
+                                            created_links[j]);
+                                free(created_links[j]);
+                            }
+                        }
+                        free(created_links);
+                        if (unlink(path) < 0 && errno != ENOENT)
+                            syswarn("tradspool: could not remove %s", path);
                         free(dirname);
                         free(linkpath);
                         free(path);
@@ -765,8 +779,12 @@ tradspool_store(const ARTHANDLE article, const STORAGECLASS class)
                 }
                 free(dirname);
             }
+            created_links[i] = xstrdup(linkpath);
             free(linkpath);
         }
+        for (i = 1; i < numxrefs; i++)
+            free(created_links[i]);
+        free(created_links);
     }
     free(path);
     for (i = 0; i < numxrefs; ++i)
