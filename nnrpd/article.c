@@ -677,9 +677,9 @@ GetHeader(const char *header, bool stripspaces)
                     }
                 if (q == limit)
                     return NULL;
-                if (strncasecmp("Path", header, headerlen) == 0)
+                if (headerlen == 4 && strcasecmp("Path", header) == 0)
                     pathheader = true;
-                else if (strncasecmp("Xref", header, headerlen) == 0)
+                else if (headerlen == 4 && strcasecmp("Xref", header) == 0)
                     xrefheader = true;
                 if (retval == NULL) {
                     /* Possibly add '!' (a second one) at the end of the
