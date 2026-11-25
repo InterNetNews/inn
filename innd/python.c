@@ -44,6 +44,8 @@ typedef int Py_ssize_t;
 #    if PY_MAJOR_VERSION >= 3
 #        define PyInt_FromLong             PyLong_FromLong
 #        define PyString_AS_STRING         PyUnicode_AsUTF8
+#        define PyString_AsString          PyUnicode_AsUTF8
+#        define PyString_Check             PyUnicode_Check
 #        define PyString_FromStringAndSize PyBytes_FromStringAndSize
 #        define PyString_InternFromString  PyUnicode_InternFromString
 #        define PYBUFF_FROMMEMORY(str, len) \
@@ -72,6 +74,26 @@ static PyObject *art_method = NULL;
 static PyObject *mode_method = NULL;
 static PyObject *pre_reload_method = NULL;
 static PyObject *close_method = NULL;
+
+
+/* Convert a filter return value to a string without leaving a Python
+ * exception pending or passing NULL to a C string function. */
+static const char *
+PYstring(PyObject *object, const char *method)
+{
+    const char *string;
+
+    if (!PyString_Check(object)) {
+        syslog(L_ERROR, "python %s method returned a non-string", method);
+        return NULL;
+    }
+    string = PyString_AsString(object);
+    if (string == NULL) {
+        PyErr_Clear();
+        syslog(L_ERROR, "python %s method returned an invalid string", method);
+    }
+    return string;
+}
 
 
 /*
@@ -121,6 +143,8 @@ PYartfilter(const ARTDATA *data, char *artBody, long artLen, int lines)
     const HDRCONTENT *hc = data->HdrContent;
     int hdrnum;
     int i;
+    int truth;
+    const char *string;
     static char buf[256];
     PyObject *result;
 
@@ -151,10 +175,19 @@ PYartfilter(const ARTDATA *data, char *artBody, long artLen, int lines)
 
     /* Now see if the filter likes it. */
     result = PyObject_CallFunction(art_method, (char *) "O", PYheaders);
-    if ((result != NULL) && PyObject_IsTrue(result))
-        strlcpy(buf, PyString_AS_STRING(result), sizeof(buf));
-    else
-        *buf = '\0';
+    *buf = '\0';
+    if (result != NULL && result != Py_None) {
+        truth = PyObject_IsTrue(result);
+        if (truth > 0) {
+            string = PYstring(result, "filter_art");
+            if (string != NULL)
+                strlcpy(buf, string, sizeof(buf));
+        } else if (truth < 0) {
+            PyErr_Clear();
+            syslog(L_ERROR,
+                   "python filter_art method returned an invalid value");
+        }
+    }
     Py_XDECREF(result);
 
     /* Clean up after ourselves. */
@@ -178,6 +211,8 @@ char *
 PYmidfilter(char *messageID, int msglen)
 {
     static char buf[256];
+    int truth;
+    const char *string;
     PyObject *result;
 
     if (!PythonFilterActive || PYFilterObject == NULL || msgid_method == NULL)
@@ -185,10 +220,19 @@ PYmidfilter(char *messageID, int msglen)
 
     result = PyObject_CallFunction(msgid_method, (char *) "s#", messageID,
                                    (Py_ssize_t) msglen);
-    if ((result != NULL) && PyObject_IsTrue(result))
-        strlcpy(buf, PyString_AS_STRING(result), sizeof(buf));
-    else
-        *buf = '\0';
+    *buf = '\0';
+    if (result != NULL && result != Py_None) {
+        truth = PyObject_IsTrue(result);
+        if (truth > 0) {
+            string = PYstring(result, "filter_messageid");
+            if (string != NULL)
+                strlcpy(buf, string, sizeof(buf));
+        } else if (truth < 0) {
+            PyErr_Clear();
+            syslog(L_ERROR,
+                   "python filter_messageid method returned an invalid value");
+        }
+    }
     Py_XDECREF(result);
 
     if (*buf != '\0')
