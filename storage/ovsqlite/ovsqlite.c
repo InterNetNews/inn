@@ -181,9 +181,12 @@ reader_decompress(uint8_t const *overview, uint32_t overview_len,
             (char *) reader_inflation.next_out - reader_flate->data;
         reader_inflation.next_in = NULL;
         reader_inflation.avail_in = 0;
-        if (status != Z_STREAM_END || reader_inflation.avail_out > 0)
+        if (status != Z_STREAM_END || reader_inflation.avail_out > 0) {
+            inflateReset(&reader_inflation);
             return NULL;
-        inflateReset(&reader_inflation);
+        }
+        if (inflateReset(&reader_inflation) != Z_OK)
+            return NULL;
         *out_len = reader_flate->left;
         return (uint8_t *) reader_flate->data;
     } else {
