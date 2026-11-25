@@ -658,13 +658,13 @@ OVERGetHeader(const char *p, int len, int field)
         return NULL;
 
     if (fp->HasHeader) {
-        if ((size_t) (end - p) < fp->Length + 2)
+        if ((size_t) (end - p) < (size_t) fp->Length + 2)
             return NULL;
         p += fp->Length + 2;
     }
 
     if (fp->NeedsHeader) { /* find an exact match */
-        while ((size_t) (end - p) < fp->Length + 2
+        while ((size_t) (end - p) < (size_t) fp->Length + 2
                || memcmp(fp->Header, p, fp->Length) != 0
                || p[fp->Length] != ':') {
             p = memchr(p, '\t', end - p);
