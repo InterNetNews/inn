@@ -178,7 +178,10 @@ krb5_check_password(const char *principal, const char *password)
         creds_valid = true;
         memset(&vopts, 0, sizeof(vopts));
         krb5_verify_init_creds_opt_init(&vopts);
-        code = krb5_verify_init_creds(ctx, &creds, princ, NULL, NULL, &vopts);
+        /* Use a local host principal from the default keytab when one is
+         * available.  Whether missing key material is fatal remains under
+         * the Kerberos library's verify_ap_req_nofail policy. */
+        code = krb5_verify_init_creds(ctx, &creds, NULL, NULL, NULL, &vopts);
     }
 
     if (code == 0)
