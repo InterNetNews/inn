@@ -450,7 +450,7 @@ sub pgp_verify {
   eval {
     ($sigfile, $sigfilename)
       = tempfile ('pgpverify-signature-XXXXXXXXXX', DIR => $tmpdir,
-                  UNLINK => 0);
+                  SUFFIX => '.asc', UNLINK => 0);
   };
   unless ($sigfile) {
     &errmsg ("Unable to create signature temp file in $tmpdir: $@\n");
