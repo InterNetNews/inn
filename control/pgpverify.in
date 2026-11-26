@@ -340,7 +340,7 @@ sub parse_header {
     last if /^$/;
     if (/^(\S+):[ \t](.+)/) {
       ($label, $value) = ($1, $2);
-      $dup{$label} = 1 if $header{$label};
+      $dup{$label} = 1 if exists $header{$label};
       $header{$label} = $value;
     } elsif (/^\s/) {
       &fail("$0: non-header at line $.: $_\n") unless $label;
