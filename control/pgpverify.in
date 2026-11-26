@@ -676,7 +676,7 @@ sub errmsg {
       # program if the message was logged.  I wish there were a way to
       # send a message to stderr if and only if the syslog attempt failed.
       &openlog($0, 'pid', $syslog_facility);
-      &syslog($syslog_level, $_[0]);
+      &syslog($syslog_level, '%s', $message);
       &closelog();
     }
   }
