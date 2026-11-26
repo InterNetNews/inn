@@ -95,6 +95,9 @@ ensure_news_grp(bool may_setgid)
 
     get_news_uid_gid(NULL, &gid, true);
     if (may_setgid && geteuid() == 0) {
+        if (setgroups(1, &gid) < 0) {
+            sysdie("failed to set supplementary groups");
+        }
         if (setgid(gid) < 0) {
             sysdie("failed to setgid");
         }
