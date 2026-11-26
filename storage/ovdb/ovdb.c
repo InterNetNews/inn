@@ -2006,7 +2006,7 @@ ovdb_add(const char *group, ARTNUM artnum, TOKEN token, char *data, int len,
         databuf = xmalloc(databuflen);
     }
 #    ifdef HAVE_ZLIB
-    if (ovdb_conf.compress) {
+    if (ovdb_conf.compress && len <= MAX_UNZIP_SZ) {
         /* Allow for worst-case compression */
         c_sz = len + (len / 1000) + 20;
     }
@@ -2025,7 +2025,10 @@ ovdb_add(const char *group, ARTNUM artnum, TOKEN token, char *data, int len,
     ((struct ovdata *) (void *) databuf)->expires = expires;
 
 #    ifdef HAVE_ZLIB
-    if (ovdb_conf.compress && len > COMPRESS_MIN) {
+    /* Records larger than MAX_UNZIP_SZ cannot be read back through the
+     * compressed-record path, so retain them in the supported uncompressed
+     * form. */
+    if (ovdb_conf.compress && len > COMPRESS_MIN && len <= MAX_UNZIP_SZ) {
         uint32_t sz;
         c_sz -= sizeof(uint32_t);
         ret = compress(
