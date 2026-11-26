@@ -238,11 +238,11 @@ $log_date = -t STDOUT; # Do it if STDOUT is to a terminal.
 require 5;
 
 use strict;
-use vars qw($gpg $gpg_has_allow_weak_digest_algos_flag $gpgv $pgp $keyring $tmp
+use vars qw($gpg $gpg_has_allow_weak_digest_algos_flag $gpgv $pgp $keyring
             $tmpdir $lockdir $syslog_method $syslog_facility $syslog_level
             $log_date $findid $test $messageid);
 
-use Fcntl qw(O_WRONLY O_CREAT O_EXCL);
+use File::Temp qw(tempfile);
 use FileHandle;
 use IPC::Open3 qw(open3);
 use POSIX qw(strftime);
@@ -265,7 +265,7 @@ $gpg = $INN::Config::gpg if $INN::Config::gpg;
 $gpg_has_allow_weak_digest_algos_flag
   = $INN::Config::gpg_has_allow_weak_digest_algos_flag
   if $INN::Config::gpg_has_allow_weak_digest_algos_flag;
-$tmp = ($INN::Config::pathtmp ? $INN::Config::pathtmp : $tmpdir) . "/pgp$$";
+$tmpdir = $INN::Config::pathtmp if $INN::Config::pathtmp;
 $lockdir = $INN::Config::locks if $INN::Config::locks;
 $syslog_facility = $INN::Config::syslog_facility if $INN::Config::syslog_facility;
 if (! $keyring && $INN::Config::newsetc) {
@@ -446,10 +446,15 @@ sub pgp_verify {
   # PGP v5 *requires* there be some subheader or another.  *sigh*.  So we
   # supply one if Version isn't given.  :)
   my $umask = umask 077;
-  my $filename = $tmpdir . '/pgp' . time . '.' . $$;
-  my $sigfile = new FileHandle "$filename.asc", O_WRONLY|O_EXCL|O_CREAT;
+  my ($sigfile, $sigfilename);
+  eval {
+    ($sigfile, $sigfilename)
+      = tempfile ('pgpverify-signature-XXXXXXXXXX', DIR => $tmpdir,
+                  UNLINK => 0);
+  };
   unless ($sigfile) {
-    &errmsg ("Unable to open temp file $filename.asc: $!\n");
+    &errmsg ("Unable to create signature temp file in $tmpdir: $@\n");
+    umask $umask;
     return (255, undef);
   }
   if ($pgpstyle eq 'PGP2') {
@@ -471,10 +476,15 @@ sub pgp_verify {
   close $sigfile;
 
   # Signature saved.  Now save the actual message.
-  my $datafile = new FileHandle "$filename", O_WRONLY|O_EXCL|O_CREAT;
+  my ($datafile, $datafilename);
+  eval {
+    ($datafile, $datafilename)
+      = tempfile ('pgpverify-data-XXXXXXXXXX', DIR => $tmpdir, UNLINK => 0);
+  };
   unless ($datafile) {
-    &errmsg ("Unable to open temp file $filename: $!\n");
-    unlink "$filename.asc";
+    &errmsg ("Unable to create data temp file in $tmpdir: $@\n");
+    unlink $sigfilename;
+    umask $umask;
     return (255, undef);
   }
   print $datafile $message;
@@ -518,15 +528,15 @@ sub pgp_verify {
       }
     }
   }
-  push (@command, "$filename.asc");
-  push (@command, $filename);
+  push (@command, $sigfilename);
+  push (@command, $datafilename);
   my $input = new FileHandle;
   my $output = new FileHandle;
   my $pid = eval { open3 ($input, $output, $output, @command) };
   if ($@) {
     &errmsg ($@);
     &errmsg ("Execution of $command[0] failed.\n");
-    unlink ($filename, "$filename.asc");
+    unlink ($datafilename, $sigfilename);
     return (255, undef);
   }
   close $input;
@@ -591,7 +601,7 @@ sub pgp_verify {
   }
   close $input;
   waitpid ($pid, 0);
-  unlink ($filename, "$filename.asc");
+  unlink ($datafilename, $sigfilename);
   umask $umask;
 
   if (defined ($findid) and $ok eq 0 and $signer ne $findid) {
