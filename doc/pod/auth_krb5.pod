@@ -22,6 +22,14 @@ Kerberos PAM module.  A full Kerberos PAM module is more sophisticated
 about how it validates passwords and has a much broader array of options
 than this authenticator.
 
+B<auth_krb5> asks the Kerberos library to verify the returned credentials
+against a local host key in the default keytab.  If no suitable key is
+available, the library may skip this verification and return success.  This
+behavior is controlled by the Kerberos C<verify_ap_req_nofail> setting, which
+is normally false.  Sites that require protection against a spoofed KDC
+should enable that setting and install a C<host/FQDN@REALM> key in the default
+keytab, readable by the account that runs B<auth_krb5>.
+
 =head1 OPTIONS
 
 =over 4
