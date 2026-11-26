@@ -889,6 +889,8 @@ tests/authprogs/ident-t.c             Tests for authprogs/ident
 tests/clients                         Test suite for NNTP clients (Directory)
 tests/clients/getlist.t               Tests for frontends/getlist
 tests/clients/server-list.in          Dummy server for getlist testing
+tests/control                         Test suite for control (Directory)
+tests/control/pgpverify-header.t      Test duplicate signed-header detection in pgpverify
 tests/data                            Data for the test suite (Directory)
 tests/data/articles                   Testing news articles (Directory)
 tests/data/articles/1                 News article for testing
