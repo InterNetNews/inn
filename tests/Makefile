@@ -34,9 +34,9 @@ TESTS	= authprogs/ident.t expire/tombstone.t expire/tombstone-hisexpire.t \
 	lib/reservedfd.t \
 	lib/setenv.t lib/snprintf.t lib/strlcat.t \
 	lib/strlcpy.t lib/tst.t lib/uwildmat.t lib/vector.t lib/wire.t \
-	lib/xwrite.t nnrpd/auth-ext.t overview/api.t overview/buffindexed.t \
-	overview/ovsqlite.t overview/tdx-group.t overview/tradindexed.t \
-	overview/xref.t \
+	lib/xwrite.t nnrpd/auth-ext.t nnrpd/tlscompress.t overview/api.t \
+	overview/buffindexed.t overview/ovsqlite.t overview/tdx-group.t \
+	overview/tradindexed.t overview/xref.t \
 	storage/caf.t storage/cancel-tombstone.t util/innbind.t
 
 ##  Extra stuff that needs to be built before tests can be run.
@@ -342,6 +342,12 @@ nnrpd/auth-ext.t: nnrpd/auth-ext-t.o ../nnrpd/auth-ext.o tap/basic.o tap/message
 
 nnrpd/auth-test: nnrpd/auth-test.in $(FIXSCRIPT)
 	$(FIX) -i nnrpd/auth-test.in
+
+nnrpd/tlscompress.t: nnrpd/tlscompress-t.o ../nnrpd/line.o ../nnrpd/zlib.o \
+	    tap/basic.o $(LIBINN)
+	$(LINK) nnrpd/tlscompress-t.o ../nnrpd/line.o ../nnrpd/zlib.o \
+	    tap/basic.o $(LIBINN) $(SSL_LIBS) $(CRYPTO_LIBS) $(SASL_LIBS) \
+	    $(ZLIB_LDFLAGS) $(ZLIB_LIBS) $(LIBS)
 
 overview/api.t: overview/api-t.o tap/basic.o $(STORAGEDEPS)
 	$(LINKDEPS) overview/api-t.o tap/basic.o $(STORAGELIBS) $(LIBS)
