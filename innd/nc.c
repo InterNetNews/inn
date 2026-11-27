@@ -1085,6 +1085,59 @@ NC_unimp(CHANNEL *cp)
 }
 
 
+/* Consume an article that must be rejected without retaining its contents.
+ * Return true when its multiline terminator has been found. */
+bool
+NCdiscardarticle(CHANNEL *cp)
+{
+    struct buffer *bp = &cp->In;
+    size_t cut, i, keep;
+
+    if (cp->LargeArtSize == 0 && bp->used - cp->Start >= 3
+        && memcmp(&bp->data[cp->Start], ".\r\n", 3) == 0) {
+        cp->Next = cp->Start + 3;
+        return true;
+    }
+    for (i = cp->Next; i + 5 <= bp->used; i++) {
+        if (memcmp(&bp->data[i], "\r\n.\r\n", 5) == 0) {
+            cp->Next = i + 5;
+            return true;
+        }
+    }
+
+    keep = bp->used - cp->Start;
+    if (keep > SAVE_AMT)
+        keep = SAVE_AMT;
+    cut = bp->used - keep;
+    cp->LargeArtSize += cut - cp->Start;
+    if (cut > 0)
+        memmove(bp->data, &bp->data[cut], keep);
+    bp->used = keep;
+    bp->left = bp->size - keep;
+    cp->Start = 0;
+    cp->Next = 0;
+    return false;
+}
+
+
+/* Restore the rejection text and logging once an incrementally discarded
+ * oversized article has reached its terminator. */
+void
+NCloglargearticle(CHANNEL *cp)
+{
+    unsigned long long size = cp->LargeArtSize + cp->Next - cp->Start;
+
+    notice("%s internal rejecting huge article (%llu > %lu)", CHANname(cp),
+           size, innconf->maxartsize);
+    snprintf(cp->Error + 4, sizeof(cp->Error) - 4,
+             "Article of %llu bytes exceeds local limit of %lu bytes", size,
+             innconf->maxartsize);
+    ARTlogrejectsaved(cp, cp->LargeArtMessageID, cp->LargeArtFeedsite, NULL);
+    free(cp->LargeArtFeedsite);
+    cp->LargeArtFeedsite = NULL;
+}
+
+
 /*
 **  Check whatever data is available on the channel.  If we got the
 **  full amount (i.e., the command or the whole article) process it.
@@ -1410,14 +1463,45 @@ NCproc(CHANNEL *cp)
 
             break;
 
+        case CSdiscardarticle:
+            if (NCdiscardarticle(cp))
+                goto discarded_article;
+            movedata = false;
+            readmore = true;
+            break;
+
+        discarded_article:
+            NCloglargearticle(cp);
+            cp->State = CSgotlargearticle;
+            goto article_complete;
+
         case CSgetheader:
         case CSgetbody:
         case CSeatarticle:
             TMRstart(TMR_ARTPARSE);
             ARTparse(cp);
             TMRstop(TMR_ARTPARSE);
-            if (cp->State == CSgetbody || cp->State == CSgetheader
-                || cp->State == CSeatarticle) {
+            if (cp->State == CSeatarticle) {
+                /* Once the size limit has been crossed, discard the remaining
+                 * body incrementally instead of retaining it until the
+                 * terminator.  Process the bytes already buffered before
+                 * reading more. */
+                if (HDR_FOUND(HDR__MESSAGE_ID)) {
+                    HDR_LASTCHAR_SAVE(HDR__MESSAGE_ID);
+                    HDR_PARSE_START(HDR__MESSAGE_ID);
+                    cp->LargeArtMessageID = xstrdup(HDR(HDR__MESSAGE_ID));
+                    HDR_PARSE_END(HDR__MESSAGE_ID);
+                }
+                ARTpreparelogreject(cp);
+                cp->LargeArtFeedsite = xstrdup(data->Feedsite);
+                data->HdrContent[HDR__MESSAGE_ID].Value = NULL;
+                data->HdrContent[HDR__MESSAGE_ID].Length = 0;
+                cp->State = CSdiscardarticle;
+                movedata = false;
+                readmore = false;
+                break;
+            }
+            if (cp->State == CSgetbody || cp->State == CSgetheader) {
                 if (cp->Next - cp->Start > innconf->datamovethreshold
                     || (innconf->maxartsize != 0
                         && cp->Size
@@ -1431,10 +1515,19 @@ NCproc(CHANNEL *cp)
                 break;
             }
 
+        article_complete:
             /* If error is set, we're rejecting this article.  There is no need
              * to call ARTlog() as it has already been done during ARTparse().
              */
             if (*cp->Error != '\0') {
+                if (cp->LargeArtMessageID != NULL) {
+                    if (!HIScheck(History, cp->LargeArtMessageID)
+                        && !InndHisRemember(cp->LargeArtMessageID, 0))
+                        syslog(L_ERROR, "%s cant write history %s %m", LogName,
+                               cp->LargeArtMessageID);
+                    free(cp->LargeArtMessageID);
+                    cp->LargeArtMessageID = NULL;
+                }
                 if (innconf->remembertrash && (Mode == OMrunning)
                     && HDR_FOUND(HDR__MESSAGE_ID)) {
                     HDR_LASTCHAR_SAVE(HDR__MESSAGE_ID);

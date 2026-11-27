@@ -979,7 +979,9 @@ tests/expire/tombstone-t.c            Tests for tombstone library
 tests/innd                            Test suite for innd (Directory)
 tests/innd/artparse-t.c               Tests for ARTparse in innd
 tests/innd/chan-t.c                   Tests for CHAN functions in innd
+tests/innd/discard-t.c                Tests for bounded article discarding
 tests/innd/fakeinnd.c                 Provide symbols defined by innd/innd.c
+tests/innd/maxartsize-t.c             Tests for oversized articles in innd
 tests/lib                             Test suite for libinn (Directory)
 tests/lib/artnumber-t.c               Tests for lib/artnumber.c
 tests/lib/asprintf-t.c                Tests for lib/asprintf.c

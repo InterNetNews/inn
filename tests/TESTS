@@ -8,6 +8,8 @@ expire/tombstone-e2e
 expire/tombstone-hisexpire
 innd/artparse
 innd/chan
+innd/discard
+innd/maxartsize
 lib/artnumber
 lib/asprintf
 lib/bloom
