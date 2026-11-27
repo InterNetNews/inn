@@ -102,6 +102,15 @@ filesystems such as NFS when B<innd> and B<nnrpd> are not exclusively run on
 one mount consumer.  Disable this parameter if I<pathoverview> is shared on a
 network filesystem between two different hosts.
 
+Before switching a database not yet in WAL mode, B<ovsqlite-server> checks
+that WAL mode works in I<pathoverview> with a scratch database,
+F<ovsqlite.db-probe>, which it removes afterwards.  Where it does not, for
+instance on a network filesystem whose client cannot map SQLite's
+shared-memory file, B<ovsqlite-server> logs a warning and uses PERSIST
+mode as if this parameter were false.  This check does not detect a
+I<pathoverview> shared between hosts, and it cannot repair a database
+already left in WAL mode on such a filesystem.
+
 The default value is true.
 
 =item I<readercachesize>
@@ -155,7 +164,19 @@ C<10>.
 =back
 
 A transaction occurs every I<transrowlimit> articles or I<transtimelimit>
-seconds, whichever is smaller.  You are encouraged to keep the default
+seconds, whichever is smaller.  When SQLite uses WAL mode (I<walmode> is
+enabled and SQLite accepted it), a transaction is also committed after
+250 milliseconds without another modifying request.  Read-only requests
+do not extend that interval.  This makes changes visible to direct WAL readers
+soon after writing becomes idle, instead of waiting for the full transaction
+time limit.  It does not guarantee visibility immediately after article
+acceptance: direct readers see only committed transactions.  Under continuous
+writes, the row and time limits still apply.  Scheduling and the time spent
+handling requests can delay a commit.  Otherwise, for instance with
+I<walmode> disabled or when SQLite cannot use WAL mode, transaction batching
+is unchanged.
+
+You are encouraged to keep the default
 value for row limits and, instead, adjust the time limit according to
 how many articles your news server usually accepts per second during
 normal operation (you can find statistics about incoming articles in

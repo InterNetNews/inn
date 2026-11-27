@@ -14,6 +14,31 @@ printcount() {
     count=$(expr $count + 1)
 }
 
+# Report test $1 of the TAP output in $burst_output as the next test, named
+# $2: ok, not ok (also when the test is missing), or a skip with its own
+# reason, independently of the other tests of that output.  If the program
+# that made the output did not exit with status 0 ($burst_rc), no result of
+# it counts as ok, even if it printed all of them.
+forward_result() {
+    if [ "$burst_rc" -ne 0 ]; then
+        printcount "not ok" "$2 (burst writer status $burst_rc)"
+        return
+    fi
+    inner=$(echo "$burst_output" | grep -E "^(not )?ok $1( |\$)" | head -n 1)
+    case "$inner" in
+    "ok $1 # skip"* | "ok $1 # SKIP"*)
+        reason=$(echo "$inner" | sed 's/^ok [0-9]* # [sS][kK][iI][pP] *//')
+        printcount "ok" "# skip $reason"
+        ;;
+    "ok $1" | "ok $1 "*)
+        printcount "ok" "$2"
+        ;;
+    *)
+        printcount "not ok" "$2"
+        ;;
+    esac
+}
+
 # runtests preserves its caller's working directory.  Normalize to the test
 # build directory so this test works when runtests is called from either the
 # repository root or the tests directory.
@@ -69,7 +94,7 @@ for prog in "$server" "$writer" "$reader"; do
     fi
 done
 
-echo 23
+echo 39
 
 # Set up temp directory with config files.  Use absolute paths because
 # the C test programs chdir to the test data directory before reading
@@ -140,23 +165,30 @@ else
     exit 1
 fi
 
-# Tests 2-4: run the writer (3 TAP tests from inside).
+# Tests 2-5: run the writer (4 TAP tests from inside), including visibility
+# on an independent connection before the writer closes.
 writer_output=$($writer 2>&1)
 writer_rc=$?
 writer_count=$(echo "$writer_output" | grep -c "^ok ")
-if [ $writer_rc -eq 0 ] && [ "$writer_count" -eq 3 ]; then
+if [ $writer_rc -eq 0 ] && [ "$writer_count" -eq 4 ]; then
     printcount "ok" "# writer open"
     printcount "ok" "# writer load"
+    if echo "$writer_output" | grep -qi '^ok 3.*# *skip'; then
+        printcount "ok" "# skip SQLite did not enable WAL mode"
+    else
+        printcount "ok" "# idle commit visible while writer remains open"
+    fi
     printcount "ok" "# writer close"
 else
     echo "# Writer failed (rc=$writer_rc):"
     echo "$writer_output" | sed 's/^/# /'
     printcount "not ok" "# writer open"
     printcount "not ok" "# writer load"
+    printcount "not ok" "# idle commit visible while writer remains open"
     printcount "not ok" "# writer close"
 fi
 
-# Test 5: stop the server gracefully.
+# Test 6: stop the server gracefully.
 kill $server_pid 2>/dev/null
 wait $server_pid 2>/dev/null
 if [ $? -le 128 ] || [ $? -eq 143 ]; then
@@ -165,7 +197,7 @@ else
     printcount "ok" "# server stopped (signal)"
 fi
 
-# Tests 6-15: report database statistics and vacuum with ovsqlite-util.
+# Tests 7-16: report database statistics and vacuum with ovsqlite-util.
 # Run the source directly with -p so the test does not depend on an installed
 # INN::Config and innconfval.  The server is already stopped, so vacuum can
 # take an exclusive lock offline.
@@ -261,7 +293,7 @@ else
     fi
 fi
 
-# Tests 16-20: run the reader (5 TAP tests from inside).
+# Tests 17-21: run the reader (5 TAP tests from inside).
 reader_output=$($reader 2>&1)
 reader_rc=$?
 reader_count=$(echo "$reader_output" | grep -c "^ok ")
@@ -281,7 +313,7 @@ else
     printcount "not ok" "# reopen"
 fi
 
-# Tests 21-23: server restart resilience.
+# Tests 22-24: server restart resilience.
 # Simulate INN restart: start a new server against the existing WAL database,
 # shut it down, verify the reader can still read all data.  This is the
 # scenario where nnrpd outlives a server restart cycle.
@@ -323,5 +355,217 @@ else
     printcount "not ok" "# reader after restart"
 fi
 
+# Tests 25-30: the idle commit and the writes that keep postponing it.
+# Start a server once more and let the writer add a burst of articles to
+# one group, one article every 100 milliseconds, while an independent SQL
+# connection checks that nothing is committed during the burst and that the
+# commit follows once the writes stop, even with read requests arriving.
+# This is done last because the burst changes the database.
+rm -f "$tmpdir/ovsqlite.sock"
+$server -d >"$tmpdir/server3.log" 2>&1 &
+server_pid=$!
+waited=0
+while [ ! -S "$tmpdir/ovsqlite.sock" ] && [ $waited -lt 50 ]; do
+    if ! kill -0 $server_pid 2>/dev/null; then
+        break
+    fi
+    sleep 0.1
+    waited=$(expr $waited + 1)
+done
+if [ -S "$tmpdir/ovsqlite.sock" ] && kill -0 $server_pid 2>/dev/null; then
+    printcount "ok" "# server start for the burst"
+    burst_output=$($writer burst 2>&1)
+    burst_rc=$?
+    if [ $burst_rc -ne 0 ]; then
+        echo "# Burst writer failed (rc=$burst_rc):"
+        echo "$burst_output" | sed 's/^/# /'
+    fi
+    forward_result 1 "# burst writer open"
+    forward_result 2 "# no commit during a burst of writes"
+    forward_result 3 "# idle commit not postponed by read requests"
+    forward_result 4 "# burst writer close"
+else
+    echo "# Server start for the burst failed, log:"
+    sed 's/^/# /' "$tmpdir/server3.log"
+    printcount "not ok" "# server start for the burst"
+    printcount "not ok" "# burst writer open"
+    printcount "not ok" "# no commit during a burst of writes"
+    printcount "not ok" "# idle commit not postponed by read requests"
+    printcount "not ok" "# burst writer close"
+fi
+kill $server_pid 2>/dev/null
+wait $server_pid 2>/dev/null
+server_rc=$?
+if [ $server_rc -eq 0 ] || [ $server_rc -eq 143 ]; then
+    printcount "ok" "# server stop after the burst"
+else
+    printcount "not ok" "# server stop after the burst (status $server_rc)"
+fi
+
+# Tests 31-39: the WAL probe.  A directory in place of the shared-memory
+# file of the probe's scratch database makes WAL mode unusable there, as on
+# a filesystem where that file cannot be mapped.  The server must then warn,
+# keep a new database in rollback mode, and still store and serve data.
+fbdir="$(pwd)/ov-tmp-integ-fallback"
+rm -rf "$fbdir"
+mkdir -p "$fbdir/ovsqlite.db-probe-shm"
+cat >"$fbdir/inn.conf" <<EOF
+domain:          news.example.com
+pathhost:        inn.example.com
+mta:             "/usr/sbin/sendmail -oi -oem %s"
+hismethod:       hisv6
+enableoverview:  true
+ovmethod:        ovsqlite
+wireformat:      true
+
+pathnews:        .
+patharchive:     archive
+patharticles:    spool
+pathoverview:    $fbdir
+pathrun:         $fbdir
+pathetc:         $fbdir
+pathdb:          $fbdir
+pathlog:         $fbdir
+pathtmp:         $fbdir
+EOF
+cp "$tmpdir/ovsqlite.conf" "$fbdir/ovsqlite.conf"
+INNCONF="$fbdir/inn.conf"
+export INNCONF
+
+# Start a server against $fbdir with log file $1; return 0 once it listens.
+# Wait up to 30 seconds: a new database can take several seconds on a slow
+# system.
+start_fallback_server() {
+    rm -f "$fbdir/ovsqlite.sock"
+    $server -d >"$fbdir/$1" 2>&1 &
+    server_pid=$!
+    waited=0
+    while [ ! -S "$fbdir/ovsqlite.sock" ] && [ $waited -lt 300 ]; do
+        if ! kill -0 $server_pid 2>/dev/null; then
+            break
+        fi
+        sleep 0.1
+        waited=$(expr $waited + 1)
+    done
+    [ -S "$fbdir/ovsqlite.sock" ] && kill -0 $server_pid 2>/dev/null
+}
+
+# Stop the server; return 0 if it exited normally or on SIGTERM.
+stop_fallback_server() {
+    kill $server_pid 2>/dev/null
+    wait $server_pid 2>/dev/null
+    server_rc=$?
+    [ $server_rc -eq 0 ] || [ $server_rc -eq 143 ]
+}
+
+# Run the reader through the server; return 0 if all its tests passed.
+fallback_reader() {
+    reader_output=$($reader 2>&1)
+    reader_rc=$?
+    reader_count=$(echo "$reader_output" | grep -c "^ok ")
+    if [ $reader_rc -eq 0 ] && [ "$reader_count" -eq 5 ]; then
+        return 0
+    fi
+    echo "# Reader failed (rc=$reader_rc):"
+    echo "$reader_output" | sed 's/^/# /'
+    return 1
+}
+
+# Print bytes 18 and 19 of the header of database $1 as two decimal numbers:
+# "1 1" in rollback mode, "2 2" in WAL mode.  od pads differently between
+# systems ("1 1 ", "001 001"), so normalize its output.
+header_bytes() {
+    set -- $(od -An -tu1 -j18 -N2 "$1" 2>/dev/null)
+    if [ $# -eq 2 ]; then
+        echo "$(expr "$1" + 0) $(expr "$2" + 0)"
+    fi
+}
+
+if start_fallback_server server.log; then
+    printcount "ok" "# server start with an unusable WAL probe"
+    if grep -q 'WAL mode does not work' "$fbdir/server.log"; then
+        printcount "ok" "# probe failure reported"
+    else
+        sed 's/^/# /' "$fbdir/server.log"
+        printcount "not ok" "# probe failure reported"
+    fi
+    # The writer must see a database not in WAL mode (its test 3 skipped).
+    writer_output=$($writer 2>&1)
+    writer_rc=$?
+    writer_count=$(echo "$writer_output" | grep -c "^ok ")
+    if [ $writer_rc -eq 0 ] && [ "$writer_count" -eq 4 ] \
+        && echo "$writer_output" | grep -qi '^ok 3.*# *skip'; then
+        printcount "ok" "# writer works in rollback mode"
+    else
+        echo "# Writer failed (rc=$writer_rc):"
+        echo "$writer_output" | sed 's/^/# /'
+        printcount "not ok" "# writer works in rollback mode"
+    fi
+    if fallback_reader; then
+        printcount "ok" "# data read back through the server"
+    else
+        printcount "not ok" "# data read back through the server"
+    fi
+    # A successful journal deletion at shutdown must not be reported as
+    # a failure.
+    if stop_fallback_server \
+        && ! grep -q 'failed to delete the rollback journal' \
+            "$fbdir/server.log"; then
+        printcount "ok" "# server stopped in rollback mode"
+    else
+        printcount "not ok" "# server stopped in rollback mode (status $server_rc)"
+    fi
+else
+    echo "# Server start with an unusable WAL probe failed, log:"
+    sed 's/^/# /' "$fbdir/server.log"
+    printcount "not ok" "# server start with an unusable WAL probe"
+    printcount "not ok" "# probe failure reported"
+    printcount "not ok" "# writer works in rollback mode"
+    printcount "not ok" "# data read back through the server"
+    printcount "not ok" "# server stopped in rollback mode"
+    kill $server_pid 2>/dev/null
+    wait $server_pid 2>/dev/null
+fi
+
+header=$(header_bytes "$fbdir/ovsqlite.db")
+if [ "$header" = "1 1" ]; then
+    printcount "ok" "# database not switched to WAL mode"
+else
+    printcount "not ok" "# database not switched to WAL mode (header: $header)"
+fi
+
+# The data must survive a restart, which runs the failing probe again on
+# the existing database, and the database must stay out of WAL mode.
+restart_ok=false
+if start_fallback_server server2.log && fallback_reader; then
+    restart_ok=true
+fi
+if ! stop_fallback_server; then
+    restart_ok=false
+fi
+header=$(header_bytes "$fbdir/ovsqlite.db")
+if [ "$restart_ok" = true ] && [ "$header" = "1 1" ]; then
+    printcount "ok" "# data kept after a restart, still not in WAL mode"
+else
+    sed 's/^/# /' "$fbdir/server2.log"
+    printcount "not ok" "# data kept after a restart (header: $header)"
+fi
+
+if [ ! -e "$fbdir/ovsqlite.db-probe" ] \
+    && [ ! -e "$fbdir/ovsqlite.db-probe-wal" ]; then
+    printcount "ok" "# scratch database removed after a failed probe"
+else
+    printcount "not ok" "# scratch database removed after a failed probe"
+fi
+if [ ! -e "$tmpdir/ovsqlite.db-probe" ] \
+    && [ ! -e "$tmpdir/ovsqlite.db-probe-wal" ] \
+    && [ ! -e "$tmpdir/ovsqlite.db-probe-shm" ]; then
+    printcount "ok" "# scratch database removed after a working probe"
+else
+    printcount "not ok" "# scratch database removed after a working probe"
+fi
+INNCONF="$tmpdir/inn.conf"
+export INNCONF
+
 # Clean up.
-rm -rf "$tmpdir"
+rm -rf "$tmpdir" "$fbdir"
