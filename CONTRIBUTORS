@@ -148,12 +148,12 @@ Russ Allbery:
         with rra-c-util.  Lots of other fixes to various parts of INN.
 
 Julien Élie:
-        Has been the main maintainer of INN since 2007 (the 2.5, 2.6 and
-        2.7 series).  Implemented the RFC 3977 version of NNTP in nnrpd
-        and innd, the COMPRESS extension, Cancel-Lock support, and Python 3
-        support.  Improved the TLS support, converted a large part of the
-        documentation to POD, wrote ovsqlite-util, and has fixed countless
-        bugs all over the code.
+        Was the main maintainer of INN from 2008 to 2026 (the 2.5, 2.6
+        and 2.7 series).  Implemented the RFC 3977 version of NNTP in
+        nnrpd and innd, the COMPRESS extension, Cancel-Lock support, and
+        Python 3 support.  Improved the TLS support, converted a large
+        part of the documentation to POD, wrote ovsqlite-util, and fixed
+        countless bugs all over the code.
 
 Kai Henningsen:
         Implemented the 'C' and 'U' flags in newsfeeds.
