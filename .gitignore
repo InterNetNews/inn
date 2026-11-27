@@ -206,6 +206,7 @@
 /tests/innd/artparse.t
 /tests/innd/chan.t
 /tests/innd/discard.t
+/tests/innd/maxartsize.t
 /tests/lib/artnumber.t
 /tests/lib/asprintf.t
 /tests/lib/bloom.t
