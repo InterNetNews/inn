@@ -17,7 +17,7 @@ LIBM_LDFLAGS    = '-lm'
 ##  added to EXTRA.
 
 TESTS	= authprogs/ident.t expire/tombstone.t expire/tombstone-hisexpire.t \
-	innd/artparse.t innd/chan.t lib/artnumber.t \
+	innd/artparse.t innd/chan.t innd/xref-realloc.t lib/artnumber.t \
 	lib/asprintf.t lib/bloom.t lib/bloom-hiswalk.t lib/buffer.t \
 	lib/canlock.t lib/concat.t lib/conffile.t \
 	lib/confparse.t lib/daemon.t lib/date.t \
@@ -126,6 +126,10 @@ innd/artparse.t: innd/artparse-t.o innd/fakeinnd.o tap/basic.o $(INNOBJS)
 
 innd/chan.t: innd/chan-t.o innd/fakeinnd.o tap/basic.o $(INNOBJS)
 	$(LINK) innd/chan-t.o innd/fakeinnd.o tap/basic.o $(INNOBJS) $(INNDLIBS)
+
+innd/xref-realloc.t: innd/xref-realloc-t.o innd/fakeinnd.o tap/basic.o $(INNOBJS)
+	$(LINK) innd/xref-realloc-t.o innd/fakeinnd.o tap/basic.o $(INNOBJS) \
+	    $(INNDLIBS)
 
 lib/artnumber.t: lib/artnumber-t.o tap/basic.o $(LIBINN)
 	$(LINK) lib/artnumber-t.o tap/basic.o $(LIBINN)

@@ -717,6 +717,7 @@ extern bool ARTreadschema(void);
 extern const char *ARTreadarticle(char *files);
 extern char *ARTreadheader(char *files);
 extern bool ARTpost(CHANNEL *cp);
+extern bool ARTassignnumbers(ARTDATA *data); /* exposed for the xref-realloc test */
 extern void ARTcancel(const ARTDATA *data, const char *MessageID,
                       bool Trusted);
 extern void ARTclose(void);
