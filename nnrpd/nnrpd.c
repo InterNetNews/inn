@@ -264,7 +264,7 @@ ExitWithStats(int x, bool readconf)
 #endif /* HAVE_SASL */
 
 #if defined(HAVE_ZLIB)
-    if (compression_layer_on) {
+    if (compression_layer_on && !tls_compression_on) {
         inflateEnd(zstream_in);
         free(zstream_in);
         free(zbuf_in);
@@ -698,7 +698,7 @@ write_buffer(const char *buff, ssize_t len)
     p = buff;
 
 #if defined(HAVE_ZLIB)
-    if (compression_layer_on) {
+    if (compression_layer_on && !tls_compression_on) {
         int r;
 
         zstream_out->next_in = (unsigned char *) p;

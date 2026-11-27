@@ -342,6 +342,7 @@ tests/lib/xmalloc
 tests/lib/xwrite.t
 tests/nnrpd/auth-ext.t
 tests/nnrpd/auth-test
+tests/nnrpd/tlscompress.t
 tests/overview/api.t
 tests/overview/buffindexed.t
 tests/overview/ovsqlite.t
