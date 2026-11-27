@@ -310,6 +310,7 @@ enum channel_state {
     CSgotlargearticle,
     CSnoarticle,
     CSeatarticle,
+    CSdiscardarticle,
     CSeatcommand,
     CSgetxbatch,
     CScancel
@@ -400,7 +401,9 @@ typedef struct _CHANNEL {
     struct _WIP *PrecommitWIP[PRECOMMITCACHESIZE];
     int PrecommitiCachenext;
     int XBatchSize;
-    int LargeArtSize;
+    unsigned long long LargeArtSize;
+    char *LargeArtMessageID;
+    char *LargeArtFeedsite;
     int LargeCmdSize;
     int ActiveCnx;
     int MaxCnx;
@@ -723,7 +726,10 @@ extern void ARTclose(void);
 extern void ARTsetup(void);
 extern void ARTprepare(CHANNEL *cp);
 extern void ARTparse(CHANNEL *cp);
+extern void ARTpreparelogreject(CHANNEL *cp);
 extern void ARTlogreject(CHANNEL *cp, const char *text);
+extern void ARTlogrejectsaved(CHANNEL *cp, const char *messageid,
+                              const char *feedsite, const char *text);
 extern void ARTreject(Reject_type, CHANNEL *);
 
 extern bool CHANsleeping(CHANNEL *cp);
@@ -788,6 +794,8 @@ extern bool NGrenumber(NEWSGROUP *ngp);
 extern bool NGlowmark(NEWSGROUP *ngp, long lomark);
 
 extern void NCclearwip(CHANNEL *cp);
+extern bool NCdiscardarticle(CHANNEL *cp);
+extern void NCloglargearticle(CHANNEL *cp);
 extern void NCclose(void);
 extern void NCsetup(void);
 extern void NCwritereply(CHANNEL *cp, const char *text);
